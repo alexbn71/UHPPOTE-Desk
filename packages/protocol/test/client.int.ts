@@ -35,6 +35,7 @@ afterEach(() => {
   fake.offline = false
   fake.dropRate = 0
   fake.latencyMs = 0
+  fake.dropNext = 0
 })
 
 describe('dispositivo', () => {
@@ -297,11 +298,14 @@ describe('robustezza', () => {
   })
 
   it('retry recupera una perdita di pacchetto', async () => {
-    let calls = 0
-    const c = new UhppoteClient({ bindAddress: '127.0.0.1', timeoutMs: 300, retries: 3, onRequest: (i) => (calls = i.attempts) })
-    fake.dropRate = 0.5
-    for (let i = 0; i < 10; i++) await c.getTime(target)
-    expect(calls).toBeGreaterThanOrEqual(1)
+    const attempts: number[] = []
+    const c = new UhppoteClient({ bindAddress: '127.0.0.1', timeoutMs: 300, retries: 2, onRequest: (i) => attempts.push(i.attempts) })
+    fake.dropNext = 2 // le prime due richieste vanno perse, la terza riceve risposta
+    expect(await c.getTime(target)).not.toBeNull()
+    expect(attempts).toEqual([3])
+    fake.dropNext = 3 // oltre i tentativi disponibili
+    await expect(c.getTime(target)).rejects.toBeInstanceOf(TimeoutError)
+    expect(attempts).toEqual([3, 3])
   })
 
   it('richieste concorrenti sono serializzate per controller', async () => {

@@ -102,6 +102,8 @@ export class FakeController {
   latencyMs = 0
   /** Probabilità [0..1] di ignorare una richiesta. */
   dropRate = 0
+  /** Numero di prossime richieste da ignorare (perdita deterministica). */
+  dropNext = 0
   /** Se true non risponde a nulla (simula controller spento/scollegato). */
   offline = false
   /** Function code per cui il controller risponde ok = false (simula un rifiuto). */
@@ -332,6 +334,10 @@ export class FakeController {
     const target = r.controller
     if (target !== 0 && target !== this.id) return null
     if (target === 0 && r.functionCode !== F.GetController) return null
+    if (this.dropNext > 0) {
+      this.dropNext--
+      return null
+    }
     if (this.dropRate > 0 && Math.random() < this.dropRate) return null
     this.requestCount.set(r.functionCode, (this.requestCount.get(r.functionCode) ?? 0) + 1)
     if (this.latencyMs > 0) await new Promise((res) => setTimeout(res, this.latencyMs))
