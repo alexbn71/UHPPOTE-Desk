@@ -11,6 +11,7 @@ This guide explains how to install UHPPOTE Desk with Docker on a server or NAS a
 | Architecture | `linux/amd64` |
 | Ports | `8080/tcp` web interface (configurable) · `60001/udp` events from the controllers |
 | Volume | `/data`: database, backups, photos, test reports — a named volume or a host folder |
+| Icon | `https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png` (label `net.unraid.docker.icon`) |
 | User | the application runs as `PUID:PGID` (default `1000:1000`); see [Data folder and permissions](#data-folder-and-permissions) |
 
 The image is built and verified by GitHub Actions on every change: tests, a trial start of the container, publication.

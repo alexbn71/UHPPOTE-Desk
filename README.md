@@ -1,3 +1,5 @@
+<p align="center"><img src="apps/web/public/icon.svg" width="112" alt="UHPPOTE Desk icon"></p>
+
 # UHPPOTE Desk
 
 Web application (Node.js + React) to manage **UHPPOTE UT0311-L0x** access controllers (in particular the 4-door UT0311-L04), replacing the Windows "Access Control" software (N3000).
@@ -88,6 +90,20 @@ Recommended procedure when the controller arrives:
 - The server returns error **codes** (`errors.*`) that the browser translates; synchronisation progress and the CSV exports (events, attendance) also follow the selected language.
 - To add a language: copy `en.ts` to `<code>.ts`, translate it, register it in `i18n/index.ts` (`LANGUAGES` and `resources`) and import the matching `dayjs/locale/<code>` in `apps/web/src/i18n.ts`.
 - Server logs and protocol messages are in English. The hardware test tool (`npm run hw`) is currently in Italian.
+
+## Icon
+
+The application icon is in [apps/web/public](apps/web/public) and is served by the app itself (e.g. `http://<server>:8080/icon-512.png`):
+
+| File | Use |
+|---|---|
+| `icon.svg` | Vector source (logo in the header and login page, favicon) |
+| `icon-512.png` | Docker/Unraid icon, web app manifest |
+| `icon-192.png` | Web app manifest (Android) |
+| `icon-180.png` | Apple touch icon |
+| `icon-32.png` | PNG favicon |
+
+Public URL for Docker managers: `https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png` (also set in the image label `net.unraid.docker.icon` and in the Unraid template).
 
 ## Installation with Docker
 

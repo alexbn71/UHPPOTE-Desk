@@ -47,6 +47,13 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/apps/server/dist ./server
 COPY --from=build /app/apps/web/dist ./web
 COPY --from=build /app/tools/hwtest/dist ./hwtest
+LABEL org.opencontainers.image.title="UHPPOTE Desk" \
+      org.opencontainers.image.description="Web application to manage UHPPOTE UT0311-L0x access controllers" \
+      org.opencontainers.image.source="https://github.com/alexbn71/UHPPOTE-Desk" \
+      org.opencontainers.image.url="https://github.com/alexbn71/UHPPOTE-Desk" \
+      org.opencontainers.image.documentation="https://github.com/alexbn71/UHPPOTE-Desk/blob/main/docs/DOCKER.md" \
+      net.unraid.docker.icon="https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png" \
+      net.unraid.docker.webui="http://[IP]:[PORT:8080]/"
 COPY docker/entrypoint.sh /usr/local/bin/uhppote-entrypoint
 RUN sed -i 's/\r$//' /usr/local/bin/uhppote-entrypoint && chmod 0755 /usr/local/bin/uhppote-entrypoint \
  && mkdir -p /data && chown node:node /data

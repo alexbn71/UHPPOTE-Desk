@@ -16,7 +16,7 @@
   <Overview>Management of UHPPOTE UT0311-L0x access controllers. Requires "host" networking to discover the controllers and receive their UDP events. User interface in English, Italian, Spanish, French and German.</Overview>
   <Category>HomeAutomation: Security:</Category>
   <WebUI>http://[IP]:8080/</WebUI>
-  <Icon>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/favicon.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
   <Config Name="Data" Target="/data" Default="/mnt/user/appdata/uhppote-desk" Mode="rw" Description="Database, backups, test reports" Type="Path" Display="always" Required="true">/mnt/user/appdata/uhppote-desk</Config>
   <Config Name="PUID" Target="PUID" Default="99" Description="User ID that will own the data folder (Unraid: 99 = nobody)" Type="Variable" Display="advanced" Required="true">99</Config>

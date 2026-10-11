@@ -1,5 +1,4 @@
 import { Alert, Button, Center, Group, Paper, PasswordInput, Stack, TextInput, Title } from '@mantine/core'
-import { IconShieldLock } from '@tabler/icons-react'
 import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -38,7 +37,7 @@ export function LoginPage() {
               <LanguageSelect />
             </Group>
             <Center>
-              <IconShieldLock size={48} color="var(--mantine-color-blue-6)" />
+              <img src="/icon.svg" width={64} height={64} alt="" />
             </Center>
             <Title order={3} ta="center">
               {t('app.name')}

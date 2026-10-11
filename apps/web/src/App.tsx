@@ -15,7 +15,6 @@ import {
   IconRefresh,
   IconReportAnalytics,
   IconSettings,
-  IconShieldLock,
   IconSitemap,
   IconUsers,
   IconUserShield,
@@ -127,7 +126,7 @@ function Shell({ children }: { children: ReactNode }) {
         <Group h="100%" px="md" justify="space-between">
           <Group gap="sm">
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <IconShieldLock size={24} color="var(--mantine-color-blue-6)" />
+            <img src="/icon.svg" width={28} height={28} alt="" />
             <Title order={4}>{t('app.name')}</Title>
             <Tooltip label={live.connected ? t('nav.liveOn') : t('nav.liveOff')}>
               <Badge color={live.connected ? 'green' : 'red'} variant="dot">
