@@ -76,54 +76,13 @@ Procedura consigliata all'arrivo della scheda:
    docker exec -it uhppote-desk node hwtest/cli.js --serial 423187757 --ip 192.168.1.100 --level 5
    ```
 
-## Deploy su NAS (Docker)
+## Installazione con Docker
 
-L'immagine viene costruita e testata da GitHub Actions a ogni push su `main` e pubblicata come `ghcr.io/alexbn71/uhppote-desk:latest` (linux/amd64).
+L'immagine pronta è `ghcr.io/alexbn71/uhppote-desk:latest`. La guida completa è in **[docs/DOCKER.md](docs/DOCKER.md)**: requisiti di rete (rete `host` obbligatoria), elenco delle variabili d'ambiente, esempi per Docker Compose, `docker run`, Unraid, Synology e QNAP, primo avvio, aggiornamenti e problemi frequenti.
 
-### Unraid
+In breve, l'unica variabile obbligatoria è `UHPPOTE_LISTENER_PUBLIC` (IP:porta del server come lo vedono le schede, es. `192.168.1.10:60001`); è consigliato impostare anche `UHPPOTE_BROADCAST` (broadcast della subnet delle schede, es. `192.168.1.255:60000`) e `TZ`.
 
-1. Copiare [docker/unraid/uhppote-desk.xml](docker/unraid/uhppote-desk.xml) in `/boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml` (es. dal terminale di Unraid:
-   `wget -O /boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docker/unraid/uhppote-desk.xml`).
-2. *Docker → Add Container → Template: uhppote-desk*, compilare le variabili (vedi tabella *Variabili di configurazione*: almeno `UHPPOTE_LISTENER_PUBLIC` e, consigliato, `UHPPOTE_BROADCAST`), verificare che la porta web sia libera e applicare.
-3. Il container gira come `nobody:users` (99:100), i dati sono in `/mnt/user/appdata/uhppote-desk`.
-4. Interfaccia: `http://<IP-del-server>:8080` — password iniziale di `admin` nel log del container se non impostata.
-
-### Docker Compose
-
-```bash
-cp docker/.env.example docker/.env       # impostare UHPPOTE_LISTENER_PUBLIC con l'IP del NAS, broadcast di subnet, password admin
-docker compose -f docker/docker-compose.yml up -d
-docker logs uhppote-desk                 # password admin generata (se non impostata)
-```
-
-- `network_mode: host` è **necessario**: con la rete bridge di Docker il broadcast non esce e gli eventi UDP delle schede non arrivano.
-- Dati (database, backup giornalieri, foto) nel volume `/data`.
-- Esporre l'interfaccia solo in LAN/VPN; per HTTPS usare il reverse proxy del NAS e impostare `SECURE_COOKIES=true`.
-- Il protocollo delle schede non è autenticato né cifrato: si consiglia una VLAN dedicata per schede e NAS.
-
-## Variabili di configurazione
-
-| Variabile | Default | Descrizione |
-|---|---|---|
-| `HTTP_PORT` / `HTTP_HOST` | `8080` / `0.0.0.0` | Interfaccia web |
-| `DATA_DIR` | `./data` | Database SQLite, backup |
-| `WEB_DIR` | — | Cartella del frontend compilato (in Docker `/app/web`) |
-| `INITIAL_ADMIN_PASSWORD` | generata | Password del primo `admin` |
-| `SECURE_COOKIES` | `false` | Cookie solo HTTPS |
-| `SESSION_HOURS` | `12` | Durata della sessione |
-| `UHPPOTE_BIND_ADDR` | `0.0.0.0` | IP locale verso le schede (indicarlo su host con più interfacce) |
-| `UHPPOTE_BROADCAST` | `255.255.255.255:60000` | Broadcast per la ricerca (meglio quello di subnet, es. `192.168.1.255:60000`) |
-| `UHPPOTE_LISTEN` | `0.0.0.0:60001` | Dove ricevere gli eventi |
-| `UHPPOTE_LISTENER_PUBLIC` | — | IP:porta di questo server, programmato nelle schede come destinazione eventi |
-| `UHPPOTE_TIMEOUT_MS` / `UHPPOTE_RETRIES` | `2500` / `1` | Timeout e tentativi (solo operazioni idempotenti) |
-| `UHPPOTE_DEBUG` | `false` | Log esadecimale di tutti i pacchetti |
-| `HEALTH_INTERVAL_SEC` | `15` | Polling dello stato delle schede |
-| `COLLECT_INTERVAL_SEC` | `300` | Raccolta eventi di sicurezza (oltre al push) |
-| `TIME_SYNC_THRESHOLD_SEC` | `30` | Deriva oltre la quale l'ora della scheda viene corretta |
-| `INITIAL_BACKFILL` | `5000` | Eventi storici scaricati al primo collegamento |
-| `BACKUP_HOUR` / `BACKUP_KEEP` | `2` / `14` | Backup giornaliero del database (−1 = disattivato) |
-| `TZ` | ora del sistema | Fuso orario (es. `Europe/Rome`): determina l'ora inviata alle schede e quella dei report |
-| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
+Per lo sviluppo locale si usano le stesse variabili, in un file `.env` nella root del progetto (vedi `.env.example`).
 
 ## Riferimenti
 
