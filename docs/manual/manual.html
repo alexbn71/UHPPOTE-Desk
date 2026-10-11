@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UHPPOTE Desk — User manual</title>
+<style>
+  :root {
+    --blue: #1557a8;
+    --blue2: #2b8ae6;
+    --blue-soft: #e8f1fc;
+    --green: #2f9e6e;
+    --green-soft: #e6f6ee;
+    --orange: #d9480f;
+    --orange-soft: #fff1e6;
+    --violet: #6741d9;
+    --violet-soft: #f0ebff;
+    --ink: #1d2733;
+    --muted: #5d6b7d;
+    --line: #dbe3ee;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.2pt/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color: var(--ink); }
+  .page { padding: 0 18mm; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
+  h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  b, strong { color: #14212f; }
+  code, .k { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: #eef3f9; padding: 0.2mm 1.2mm; border-radius: 1mm; }
+  .ui { font-weight: 600; color: var(--blue); }
+  .part { break-before: page; }
+  .chapter { break-before: auto; }
+  .avoid { break-inside: avoid; }
+
+  /* cover */
+  .cover { height: 263mm; display: flex; flex-direction: column; justify-content: space-between; padding: 0 18mm; break-after: page; }
+  .cover .band { margin-top: 10mm; border-radius: 6mm; padding: 16mm 14mm 14mm; color: #fff; background: linear-gradient(135deg, #1557a8 0%, #2b8ae6 60%, #34c38f 130%); position: relative; overflow: hidden; }
+  .cover .band::after { content: ""; position: absolute; right: -30mm; bottom: -40mm; width: 110mm; height: 110mm; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .cover img { width: 30mm; height: 30mm; background: #fff; border-radius: 7mm; padding: 2mm; }
+  .cover h1 { color: #fff; border: 0; font-size: 34pt; margin: 8mm 0 0; padding: 0; }
+  .cover .subtitle { font-size: 16pt; opacity: 0.95; margin-top: 1mm; }
+  .cover .tagline { margin-top: 10mm; font-size: 11pt; max-width: 130mm; opacity: 0.95; }
+  .cover .meta { color: var(--muted); font-size: 9.5pt; border-top: 1px solid var(--line); padding-top: 4mm; display: flex; justify-content: space-between; }
+  .cover .chips { display: flex; gap: 3mm; flex-wrap: wrap; margin: 8mm 0 0; }
+  .cover .chip { background: var(--blue-soft); color: var(--blue); border-radius: 10mm; padding: 1.5mm 4mm; font-size: 9pt; font-weight: 600; }
+
+  /* table of contents */
+  .toc ol { list-style: none; padding: 0; }
+  .toc > ol > li { margin: 3mm 0 1mm; font-weight: 700; color: var(--blue); }
+  .toc ol ol { padding-left: 6mm; font-weight: 400; columns: 2; column-gap: 8mm; }
+  .toc ol ol li { margin: 0.6mm 0; break-inside: avoid; }
+  .toc a { color: inherit; text-decoration: none; }
+  .toc .num { display: inline-block; min-width: 9mm; color: var(--muted); }
+
+  /* part opener */
+  .opener { border-radius: 5mm; padding: 10mm 12mm; margin: 4mm 0 6mm; color: #fff; }
+  .opener .label { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9pt; opacity: 0.9; }
+  .opener h1 { color: #fff; border: 0; margin: 1mm 0 2mm; padding: 0; font-size: 24pt; }
+  .opener p { margin: 0; opacity: 0.95; }
+  .o-blue { background: linear-gradient(135deg, #1557a8, #2b8ae6); }
+  .o-green { background: linear-gradient(135deg, #1f7a52, #34c38f); }
+  .o-violet { background: linear-gradient(135deg, #5235b8, #8c6ff0); }
+  .o-orange { background: linear-gradient(135deg, #b8390a, #f08c3a); }
+  .o-slate { background: linear-gradient(135deg, #2f3e52, #5d7290); }
+
+  /* section badges per menu group */
+  .grp { display: block; width: fit-content; break-after: avoid; margin-top: 7mm; font-size: 8pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 1.5mm; padding: 0.6mm 2.2mm; margin-bottom: 1mm; }
+  .grp + h2 { margin-top: 1.5mm; }
+  td .grp { margin-top: 0; }
+  .g-ops { background: var(--green-soft); color: var(--green); }
+  .g-reg { background: var(--violet-soft); color: var(--violet); }
+  .g-cfg { background: var(--blue-soft); color: var(--blue); }
+  .g-adm { background: var(--orange-soft); color: var(--orange); }
+
+  /* figures */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(20, 50, 90, 0.10); margin: 0 auto; }
+  figure.narrow img { max-width: 70%; }
+  figure.half img { max-width: 52%; }
+  figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
+  figcaption b { color: var(--blue); }
+
+  /* callouts */
+  .box { border-radius: 2.5mm; padding: 2.5mm 4mm 2.5mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; border-left: 4px solid; }
+  .box > b:first-child { display: block; margin-bottom: 0.5mm; }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .tip { background: var(--green-soft); border-color: var(--green); }
+  .tip > b:first-child { color: var(--green); }
+  .note { background: var(--blue-soft); border-color: var(--blue2); }
+  .note > b:first-child { color: var(--blue); }
+  .warn { background: var(--orange-soft); border-color: var(--orange); }
+  .warn > b:first-child { color: var(--orange); }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; break-inside: auto; }
+  th { background: var(--blue); color: #fff; text-align: left; font-weight: 600; padding: 1.6mm 2.4mm; }
+  td { padding: 1.4mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f9fd; }
+  tr { break-inside: avoid; }
+  td.c, th.c { text-align: center; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: #b0b9c6; }
+
+  /* steps */
+  ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.2mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0.2mm; width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--blue2); color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+
+  /* concept cards */
+  .cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 3mm 0 4mm; }
+  .concept { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; background: #fbfdff; }
+  .concept h4 { margin-top: 0; display: flex; align-items: center; gap: 2mm; }
+  .concept h4 .dot { width: 3mm; height: 3mm; border-radius: 50%; display: inline-block; }
+  .concept p { margin-bottom: 0; font-size: 9.5pt; }
+  .diagram { margin: 3mm 0 5mm; break-inside: avoid; }
+  .diagram svg { width: 100%; height: auto; }
+  .kbd { border: 1px solid #c3cddb; border-bottom-width: 2px; border-radius: 1mm; padding: 0 1.4mm; font-size: 8.5pt; background: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ===================================================================== COVER -->
+<section class="cover">
+  <div class="band">
+    <img src="../../apps/web/public/icon.svg" alt="">
+    <h1>UHPPOTE Desk</h1>
+    <div class="subtitle">User manual</div>
+    <div class="tagline">Web application to manage UHPPOTE UT0311-L0x access controllers: doors, cards, permissions, time profiles, real-time monitoring, event history and attendance.</div>
+  </div>
+  <div>
+    <div class="chips">
+      <span class="chip">Access control</span><span class="chip">Live monitor</span><span class="chip">Time profiles</span><span class="chip">Attendance</span><span class="chip">Multi-operator</span><span class="chip">EN · IT · ES · FR · DE</span>
+    </div>
+  </div>
+  <div class="meta"><span>Version <span data-version>0.1.0</span> · <span data-date></span></span><span>github.com/alexbn71/UHPPOTE-Desk</span></div>
+</section>
+
+<!-- ===================================================================== CONTENTS -->
+<section class="page toc">
+  <h1>Contents</h1>
+  <ol>
+    <li><a href="#part1">Part 1 — Understanding UHPPOTE Desk</a>
+      <ol>
+        <li><a href="#what"><span class="num">1</span>What UHPPOTE Desk is</a></li>
+        <li><a href="#how"><span class="num">2</span>How the system works</a></li>
+        <li><a href="#concepts"><span class="num">3</span>Basic concepts</a></li>
+        <li><a href="#roles"><span class="num">4</span>Operators and roles</a></li>
+        <li><a href="#interface"><span class="num">5</span>The user interface</a></li>
+        <li><a href="#start"><span class="num">6</span>Getting started</a></li>
+      </ol>
+    </li>
+    <li><a href="#part2">Part 2 — Operations</a>
+      <ol>
+        <li><a href="#dashboard"><span class="num">7</span>Dashboard</a></li>
+        <li><a href="#monitor"><span class="num">8</span>Monitor</a></li>
+        <li><a href="#events"><span class="num">9</span>Event history</a></li>
+        <li><a href="#attendance"><span class="num">10</span>Attendance</a></li>
+      </ol>
+    </li>
+    <li><a href="#part3">Part 3 — Registry</a>
+      <ol>
+        <li><a href="#people"><span class="num">11</span>People</a></li>
+        <li><a href="#cards"><span class="num">12</span>Cards</a></li>
+        <li><a href="#permissions"><span class="num">13</span>Permissions</a></li>
+        <li><a href="#structure"><span class="num">14</span>Departments and zones</a></li>
+      </ol>
+    </li>
+    <li><a href="#part4">Part 4 — Configuration</a>
+      <ol>
+        <li><a href="#controllers"><span class="num">15</span>Controllers</a></li>
+        <li><a href="#doors"><span class="num">16</span>Doors</a></li>
+        <li><a href="#profiles"><span class="num">17</span>Time profiles</a></li>
+        <li><a href="#tasks"><span class="num">18</span>Scheduled tasks</a></li>
+        <li><a href="#sync"><span class="num">19</span>Synchronisation</a></li>
+      </ol>
+    </li>
+    <li><a href="#part5">Part 5 — Administration</a>
+      <ol>
+        <li><a href="#operators"><span class="num">20</span>Operators</a></li>
+        <li><a href="#audit"><span class="num">21</span>Audit log</a></li>
+        <li><a href="#system"><span class="num">22</span>System</a></li>
+        <li><a href="#password"><span class="num">23</span>Change password</a></li>
+      </ol>
+    </li>
+    <li><a href="#part6">Part 6 — Reference</a>
+      <ol>
+        <li><a href="#reasons"><span class="num">24</span>Event reasons</a></li>
+        <li><a href="#modes"><span class="num">25</span>Door modes and access rules</a></li>
+        <li><a href="#trouble"><span class="num">26</span>Troubleshooting</a></li>
+        <li><a href="#glossary"><span class="num">27</span>Glossary</a></li>
+      </ol>
+    </li>
+  </ol>
+  <div class="box note"><b>About this manual</b>
+    <p>The screenshots were taken from a demonstration installation with one simulated 4-door controller and invented people. Your names, numbers and dates will differ. Installation (Docker, network, environment variables) is covered in a separate guide, <code>docs/DOCKER.md</code> in the project repository.</p>
+  </div>
+  <div class="box note"><b>Acknowledgements</b><p>UHPPOTE Desk is built on the protocol knowledge published by the open-source <b>uhppoted</b> project (codeberg.org/uhppoted). UHPPOTE Desk is an independent project, not affiliated with uhppoted or with the controller manufacturer.</p></div>
+</section>
+
+<!-- ===================================================================== PART 1 -->
+<section class="page part" id="part1">
+  <div class="opener o-blue"><div class="label">Part 1</div><h1>Understanding UHPPOTE Desk</h1><p>What the application does, how it talks to the access controllers and the few ideas you need before using it.</p></div>
+
+  <h2 id="what">1 · What UHPPOTE Desk is</h2>
+  <p>UHPPOTE Desk is a <b>web application</b> to manage UHPPOTE <b>UT0311-L0x</b> access controllers (1, 2 or 4 doors; this manual uses the 4-door UT0311-L04). It replaces the Windows program supplied with the controllers ("Access Control", N3000) with a modern application that:</p>
+  <ul>
+    <li>runs on a server or NAS (normally as a Docker container) and is used from any <b>browser</b> — PC, tablet or phone — without installing anything;</li>
+    <li>is used by <b>several operators at the same time</b>, each with a role (administrator, operator, read-only) and, if needed, restricted to some areas of the building;</li>
+    <li>keeps people, cards and permissions in its own <b>database</b> and automatically sends every change to the controllers;</li>
+    <li>receives the swipes and alarms <b>in real time</b>, keeps the full <b>event history</b> and computes <b>attendance</b> (hours worked, late arrivals, absences);</li>
+    <li>is available in <b>English, Italian, Spanish, French and German</b>; each user chooses the language.</li>
+  </ul>
+
+  <h2 id="how">2 · How the system works</h2>
+  <p>An access control installation is made of three parts: the <b>controllers</b> mounted near the doors, the <b>server</b> running UHPPOTE Desk and the <b>browsers</b> of the operators.</p>
+  <div class="diagram">
+    <svg viewBox="0 0 760 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+      <defs>
+        <linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1557a8"/><stop offset="1" stop-color="#2b8ae6"/></linearGradient>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5d6b7d"/></marker>
+        <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f9e6e"/></marker>
+      </defs>
+      <!-- browsers -->
+      <g>
+        <rect x="10" y="40" width="150" height="190" rx="14" fill="#f0ebff" stroke="#c9bdf5"/>
+        <text x="85" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="#6741d9">Operators</text>
+        <rect x="32" y="82" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="107" text-anchor="middle" font-size="12" fill="#1d2733">Browser (PC)</text>
+        <rect x="32" y="132" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="157" text-anchor="middle" font-size="12" fill="#1d2733">Tablet / phone</text>
+        <text x="85" y="200" text-anchor="middle" font-size="10.5" fill="#5d6b7d">any number of users</text>
+        <text x="85" y="214" text-anchor="middle" font-size="10.5" fill="#5d6b7d">with roles</text>
+      </g>
+      <!-- server -->
+      <g>
+        <rect x="255" y="30" width="230" height="210" rx="14" fill="url(#gs)"/>
+        <text x="370" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">UHPPOTE Desk server</text>
+        <text x="370" y="76" text-anchor="middle" font-size="10.5" fill="#dbe9fb">Docker on a server / NAS</text>
+        <rect x="275" y="90" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#1557a8">Database (source of truth)</text>
+        <rect x="275" y="132" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="154" text-anchor="middle" font-size="11.5" fill="#1557a8">Synchronisation · Event collector</text>
+        <rect x="275" y="174" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="196" text-anchor="middle" font-size="11.5" fill="#1557a8">Attendance · Audit · Backups</text>
+      </g>
+      <!-- controllers -->
+      <g>
+        <rect x="580" y="30" width="170" height="100" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Controller 1</text>
+        <text x="665" y="76" text-anchor="middle" font-size="10.5" fill="#1d2733">UT0311-L04 · 4 doors</text>
+        <text x="665" y="94" text-anchor="middle" font-size="10.5" fill="#5d6b7d">readers · locks · sensors</text>
+        <text x="665" y="110" text-anchor="middle" font-size="10.5" fill="#5d6b7d">exit buttons</text>
+        <rect x="580" y="145" width="170" height="85" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="172" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Controller 2 …</text>
+        <text x="665" y="192" text-anchor="middle" font-size="10.5" fill="#1d2733">decides on its own,</text>
+        <text x="665" y="208" text-anchor="middle" font-size="10.5" fill="#1d2733">even when offline</text>
+      </g>
+      <!-- arrows -->
+      <line x1="162" y1="120" x2="250" y2="120" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="250" y1="150" x2="164" y2="150" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="206" y="112" text-anchor="middle" font-size="10" fill="#5d6b7d">HTTP</text>
+      <text x="206" y="168" text-anchor="middle" font-size="10" fill="#5d6b7d">live updates</text>
+      <line x1="488" y1="90" x2="575" y2="80" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="531" y="74" text-anchor="middle" font-size="10" fill="#5d6b7d">commands</text>
+      <line x1="575" y1="190" x2="490" y2="180" stroke="#2f9e6e" stroke-width="2" marker-end="url(#ag)"/>
+      <text x="531" y="203" text-anchor="middle" font-size="10" fill="#2f9e6e">events</text>
+      <text x="531" y="140" text-anchor="middle" font-size="9.5" fill="#5d6b7d">LAN · UDP 60000 / 60001</text>
+    </svg>
+  </div>
+  <ul>
+    <li><b>The controllers decide.</b> When a card is swiped, the controller itself checks whether that card may open that door at that time, and opens the lock. It does not ask the server, so doors keep working even if the server or the network is down.</li>
+    <li><b>The server is the reference.</b> People, cards, permissions, time profiles and settings are kept in the UHPPOTE Desk database. Every change made in the application is sent straight away to the controllers that are online. A controller that was offline is brought up to date with a <span class="ui">Synchronisation</span>.</li>
+    <li><b>Events flow back.</b> Every swipe, door opening or alarm is recorded in the controller's memory and sent to the server. The server stores it in the event history and shows it live. If the network was down, the missing events are downloaded from the controller as soon as it is back: none is lost.</li>
+  </ul>
+  <div class="box note"><b>Why this matters</b>
+    <p>Do not change the controllers with other programs (the original Windows software or the controller's web page) while UHPPOTE Desk manages them: the application would undo those changes at the next synchronisation, because its database is the reference.</p>
+  </div>
+
+  <h2 id="concepts" class="chapter">3 · Basic concepts</h2>
+  <div class="cards2">
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controller</h4><p>The electronic board that manages 1, 2 or 4 doors. It is identified by its <b>serial number</b> (9 digits on the S/N label) and reached over the LAN by its IP address. It stores up to tens of thousands of cards and events.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Door</h4><p>Each controller output: a card <b>reader</b>, an electric <b>lock</b> (relay), optionally a <b>door sensor</b> (open/closed) and an <b>exit button</b>. In the application a door has a name, an operating mode and an opening time.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Person</h4><p>Someone who passes through the doors: employee code, name, department, validity period, optional keypad PIN, photo and attendance shift.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Card</h4><p>A proximity card or key fob. Its <b>number</b> has 8 digits in Wiegand-26 format: facility code × 100000 + card code, for example <code>10058400</code> = facility 100, code 58400. A card can be assigned to a person, or registered as free.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Permission</h4><p>The right of a person to open a door: <b>always</b>, or only within a <b>time profile</b>. Permissions belong to the person and apply to all of their cards.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Time profile</h4><p>A time window (days of the week, up to 3 time intervals, validity dates) numbered 2–254. It can be linked to another profile to extend it, e.g. weekdays + Saturday morning.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Event</h4><p>Anything the controller records: card swipes (granted or denied, with the reason), door opened/closed, exit button, alarms, power on, remote opening.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Synchronisation</h4><p>Aligning a controller with the database. It happens automatically for every change; the <span class="ui">Synchronisation</span> page checks and repairs differences (e.g. after a long offline period).</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Zone and department</h4><p><b>Zones</b> group controllers (buildings, floors) and can restrict what an operator may command. <b>Departments</b> organise people and filter attendance reports.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Attendance</h4><p>Swipes on readers flagged for attendance are used as clock-in/clock-out punches. With shifts, holidays and leave the application computes hours worked, overtime and late arrivals.</p></div>
+  </div>
+  <h3>How an access is decided</h3>
+  <p>When a card is swiped on a door, the controller grants access only if <b>all</b> of these are true; otherwise it denies access and records the reason (see <a href="#reasons">Event reasons</a>):</p>
+  <ol class="steps">
+    <li>the card is stored on the controller (a card of an inactive person, or a lost or disabled card, is removed from the controllers);</li>
+    <li>today is within the validity period of the card holder;</li>
+    <li>the person has a permission on that door — always, or with a time profile that includes the current day and time;</li>
+    <li>the door rules allow it: door mode, interlock, anti-passback, first card, and the PIN when the reader has a keypad.</li>
+  </ol>
+</section>
+
+<section class="page chapter">
+  <h2 id="roles">4 · Operators and roles</h2>
+  <p>Everybody who uses the application logs in with their own <b>operator</b> account. Each operator has one of three roles. Administrators can also restrict an operator to some <b>zones</b>: remote door opening and synchronisation are then allowed only on the controllers of those zones.</p>
+  <table>
+    <thead><tr><th>What the operator can do</th><th class="c">Read-only</th><th class="c">Operator</th><th class="c">Administrator</th></tr></thead>
+    <tr><td>See dashboard, monitor, event history, attendance reports, people, cards, permissions, controllers, doors, time profiles, tasks, system information</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Export events and attendance to CSV</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Create and edit people, cards, photos, permissions; import people from CSV; departments</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Open doors remotely</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Attendance: shifts, holidays, leave, manual punches</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Compare and align cards, synchronise the time, download events</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Controllers (add, network, advanced settings, reset), doors, time profiles, scheduled tasks, zones, full synchronisation</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Operators, audit log, backups</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+  </table>
+  <p>Pages and buttons that a role cannot use are hidden or disabled. Every change and every command sent to a controller is recorded in the <a href="#audit">Audit log</a> with the name of the operator.</p>
+
+  <h2 id="interface">5 · The user interface</h2>
+  <figure><img src="shots/dashboard.png"><figcaption><b>Figure 1</b> — The main window: header at the top, navigation on the left, the selected page on the right.</figcaption></figure>
+  <h3>Header</h3>
+  <ul>
+    <li><b>LIVE badge</b> — green when the browser receives real-time updates from the server (events, door states, synchronisation progress). It turns red, <span class="ui">Offline</span>, if the connection to the server is lost; it reconnects by itself. It refers to the connection between your browser and the server, not to the controllers.</li>
+    <li><b>User name and role</b> of the logged-in operator.</li>
+    <li><b>Language</b> (<span class="kbd">文A</span> icon) — English, Italiano, Español, Français, Deutsch. The choice is remembered by the browser; on the first visit the browser language is used.</li>
+    <li><b>Change password</b> (key icon) and <b>Log out</b>.</li>
+  </ul>
+  <figure class="half"><img src="shots/language.png"><figcaption><b>Figure 2</b> — The language menu.</figcaption></figure>
+  <h3>Navigation</h3>
+  <p>The menu on the left is divided into four groups, which are also the parts of this manual:</p>
+  <table>
+    <thead><tr><th>Group</th><th>Pages</th><th>Used for</th></tr></thead>
+    <tr><td><span class="grp g-ops">Operations</span></td><td>Dashboard, Monitor, Event history, Attendance</td><td>day-to-day supervision</td></tr>
+    <tr><td><span class="grp g-reg">Registry</span></td><td>People, Cards, Permissions, Departments and zones</td><td>who can go where</td></tr>
+    <tr><td><span class="grp g-cfg">Configuration</span></td><td>Controllers, Doors, Time profiles, Scheduled tasks, Synchronisation</td><td>hardware and rules</td></tr>
+    <tr><td><span class="grp g-adm">Administration</span></td><td>Operators, Audit log, System</td><td>users and maintenance</td></tr>
+  </table>
+  <p>Messages appear in the top-right corner: green for completed operations, red for errors. A yellow message <span class="ui">Saved, but not sent to every controller</span> means the change is in the database but some controller was unreachable; it will be aligned at the next synchronisation.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="start">6 · Getting started</h2>
+  <h3>Logging in</h3>
+  <figure class="half"><img src="shots/login.png"><figcaption><b>Figure 3</b> — The login page.</figcaption></figure>
+  <p>Open the address of the server in the browser (for example <code>http://192.168.1.10:8080</code>) and log in. The first administrator is <code>admin</code>:</p>
+  <ul>
+    <li>if the server was installed with the <code>ADMIN_PASSWORD</code> variable, use that password. It can be changed only by changing the variable and restarting the server;</li>
+    <li>otherwise a temporary password was generated on the first start and written in the server log. You are asked to choose a new password immediately.</li>
+  </ul>
+  <p>After several wrong passwords the account is blocked for a few minutes. Sessions expire after some hours of use (12 by default).</p>
+  <h3>First configuration — checklist</h3>
+  <ol class="steps">
+    <li><b>Controllers</b> → <span class="ui">Search network</span>: find the controllers, add them and give them a name (<a href="#controllers">chapter 15</a>). If a controller has a factory IP address outside your network, change it from its page.</li>
+    <li><b>Doors</b>: give each door a meaningful name, check mode and opening time, and flag the readers to be used for attendance (<a href="#doors">chapter 16</a>).</li>
+    <li><b>Time profiles</b>: create the time windows you need, e.g. "Office hours" (<a href="#profiles">chapter 17</a>). Permissions valid "always" do not need one.</li>
+    <li><b>Departments and zones</b>: create the organisation of the company and, optionally, the zones of the building (<a href="#structure">chapter 14</a>).</li>
+    <li><b>People</b>: create them one by one or import a CSV file; assign cards and permissions (<a href="#people">chapter 11</a>). You can read the number of a new card simply by swiping it on any reader.</li>
+    <li><b>Operators</b>: create an account for every user of the application with the right role (<a href="#operators">chapter 20</a>).</li>
+    <li>Check on the <b>Monitor</b> that swipes appear in real time. If they do not, see <a href="#trouble">Troubleshooting</a>.</li>
+  </ol>
+  <div class="box tip"><b>Tip</b><p>Before the hardware arrives you can try everything with the controller simulator included in the Docker image (see <code>docs/DOCKER.md</code>, "Trying the app without a controller").</p></div>
+</section>
+
+<!-- ===================================================================== PART 2 -->
+<section class="page part" id="part2">
+  <div class="opener o-green"><div class="label">Part 2</div><h1>Operations</h1><p>Day-to-day supervision: controller status, live swipes, event history and attendance.</p></div>
+
+  <span class="grp g-ops">Operations</span>
+  <h2 id="dashboard">7 · Dashboard</h2>
+  <p>The first page after logging in. For every controller it shows a panel with:</p>
+  <ul>
+    <li>the name, the <span class="ui">Online</span>/<span class="ui">Offline</span> state, serial number and IP address, and the time of the last contact. If the controller's clock is wrong by more than a few seconds the drift is shown (the time is corrected automatically);</li>
+    <li>a tile for every active door with its <b>mode</b> (Controlled, Normally open, Normally closed), the <b>door sensor</b> state (Open/Closed) and the <b>lock</b> icon, orange when the relay is active (lock released);</li>
+    <li>the <span class="ui">Open</span> button to open the door remotely (operators and administrators): after the confirmation the lock is released for the opening time of the door, and a "Remote opening" event is recorded;</li>
+    <li>red badges for <b>Fire alarm</b> or <b>Forced lock</b> when those inputs of the controller are active.</li>
+  </ul>
+  <p>Below, <span class="ui">Latest events</span> lists the most recent events of all controllers; denied accesses are highlighted in red. <span class="ui">Open monitor</span> goes to the live monitor.</p>
+  <p>The dashboard of Figure 1 shows a typical day: a remote opening, a door opened and closed, an exit button and a card that is not registered (<i>Card 10065001 — No access rights</i>).</p>
+
+  <span class="grp g-ops">Operations</span>
+  <h2 id="monitor">8 · Monitor</h2>
+  <figure><img src="shots/monitor.png"><figcaption><b>Figure 4</b> — Live monitor: the last swipe with the photo of the person, and the events of the session.</figcaption></figure>
+  <p>The monitor shows swipes and alarms the moment the controller sends them — the equivalent of the "Monitor" of the original software, for example for a reception desk.</p>
+  <ul>
+    <li><b>Last swipe</b>: photo (or initials), name and card of the person, outcome (<span class="yes">GRANTED</span> / <span style="color:#d9480f;font-weight:700">DENIED</span>), reason, door and direction (In/Out), time. An unregistered card is shown as <i>Unregistered card</i>.</li>
+    <li><b>Events in this session</b>: every event received since the page was opened (up to the most recent 300), newest first.</li>
+    <li>Filters at the top: a single controller, and <span class="ui">Card swipes only</span> to hide door and alarm events.</li>
+  </ul>
+  <div class="box note"><b>Note</b><p>The monitor shows only what arrives while it is open. Everything is stored in any case: older events are in the <a href="#events">Event history</a>. If swipes do not appear here but do appear later in the history, the server is not receiving events in real time — see <a href="#trouble">Troubleshooting</a>.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Operations</span>
+  <h2 id="events">9 · Event history</h2>
+  <figure><img src="shots/events.png"><figcaption><b>Figure 5</b> — Event history with filters.</figcaption></figure>
+  <p>All the events collected from the controllers, newest first. Use the filters to find what you need:</p>
+  <ul>
+    <li><b>From / To</b> — period;</li>
+    <li><b>Controller</b> and <b>Door</b>;</li>
+    <li><b>Person</b> or <b>Card number</b>;</li>
+    <li><b>Outcome</b> — granted or denied only.</li>
+  </ul>
+  <p>Each row shows date and time (controller time), controller, door with direction arrow (↘ in, ↗ out), type (Card, Door, Alarm), person or card, outcome, reason and the index of the event in the controller memory. <span class="ui">Export CSV</span> downloads the filtered events in the current language, ready for Excel.</p>
+  <div class="box note"><b>Where events come from</b><p>Events arrive in real time from the controllers and are also downloaded automatically every few minutes and whenever a controller comes back online, so the history is complete even after network or server outages. The controller memory is circular: if a controller stays disconnected so long that its memory fills up, the oldest events are overwritten.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Operations</span>
+  <h2 id="attendance">10 · Attendance</h2>
+  <p>UHPPOTE Desk computes working hours from the swipes on the readers flagged as <b>attendance readers</b> (on the <a href="#doors">Doors</a> page) — typically the main entrance. Only <b>granted</b> swipes count. The page has five tabs.</p>
+  <h3>Report</h3>
+  <figure><img src="shots/attendance-report.png"><figcaption><b>Figure 6</b> — Attendance report: period summary and daily detail.</figcaption></figure>
+  <p>Choose the period (from the first of the current month to today by default), and optionally a department or a person. The <b>Period summary</b> shows, per person: hours worked, expected hours, overtime, total late arrivals, days of absence and days with anomalies. The <b>Daily detail</b> shows every day with its status (Present, Absent, Public holiday, Day off, Holiday, Permit, Sick leave, Business trip, Anomaly), first in, last out, hours worked, lateness and all the punches; punches entered manually are marked with <b>*</b>. <span class="ui">Export CSV</span> downloads the detail.</p>
+  <div class="box note"><b>How hours are computed</b>
+    <ul>
+      <li>Punches are paired in chronological order: in, out, in, out… The direction of the reader is not needed.</li>
+      <li>With only one pair of punches in a day, the <b>break</b> of the shift is deducted automatically; with two or more pairs the actual break is used.</li>
+      <li>An odd number of punches (e.g. a forgotten exit swipe) is an <b>anomaly</b>: the last punch is ignored until it is corrected with a manual punch.</li>
+      <li>Lateness and early exit take into account the <b>tolerance</b> of the shift. Time beyond the expected hours is overtime; on days off and holidays all the time worked is overtime.</li>
+      <li>Night shifts (ending after midnight) are attributed to the day on which they started.</li>
+      <li>A person without a shift has no expected hours: only the hours worked are computed.</li>
+    </ul>
+  </div>
+  <h3>Shifts</h3>
+  <figure><img src="shots/attendance-shifts.png"><figcaption><b>Figure 7</b> — Work shifts.</figcaption></figure>
+  <p>A shift defines start and end time, break (minutes), tolerance (minutes) and working days. A shift that ends before it starts (e.g. 22:00–06:00) is a night shift. Assign the shift in the details of each person (<a href="#people">People</a>).</p>
+  <h3>Holidays</h3>
+  <figure><img src="shots/attendance-holidays.png"><figcaption><b>Figure 8</b> — Public holidays.</figcaption></figure>
+  <p>Days on which nobody is expected to work. Add them one by one (date and description) or import the Italian public holidays of a year with one click, Easter included. Add your local holidays, company closures and bridges as needed.</p>
+  <h3>Leave and absences</h3>
+  <figure><img src="shots/attendance-leaves.png"><figcaption><b>Figure 9</b> — Leave and absences.</figcaption></figure>
+  <p>Record holidays, permits, sick leave, business trips and other absences for a person and a range of dates. Those days are no longer counted as absences in the report.</p>
+  <h3>Manual punches</h3>
+  <figure><img src="shots/attendance-punches.png"><figcaption><b>Figure 10</b> — Manual punches.</figcaption></figure>
+  <p>Add a punch that the reader did not record — for example a forgotten exit swipe — with person, date and time, direction and a reason. Manual punches are marked with * in the report and recorded in the audit log.</p>
+</section>
+
+<!-- ===================================================================== PART 3 -->
+<section class="page part" id="part3">
+  <div class="opener o-violet"><div class="label">Part 3</div><h1>Registry</h1><p>People, cards and access permissions: who can go where, and when.</p></div>
+
+  <span class="grp g-reg">Registry</span>
+  <h2 id="people">11 · People</h2>
+  <figure><img src="shots/people.png"><figcaption><b>Figure 11</b> — The list of people.</figcaption></figure>
+  <p>The list shows employee code, name, department, cards, validity and status. Search by name, employee code or card number. Click a row to open the details; <span class="ui">New person</span> creates one.</p>
+  <h3>Details</h3>
+  <figure class="narrow"><img src="shots/person-details.png"><figcaption><b>Figure 12</b> — Person details.</figcaption></figure>
+  <ul>
+    <li><b>Employee code</b> (unique) and <b>last/first name</b>; department, e-mail, phone, notes.</li>
+    <li><b>Access valid from / until</b> — outside this period all the person's cards are refused by the controllers.</li>
+    <li><b>Keypad PIN</b> (up to 6 digits, 0 = none) — requested by readers with a keypad when the door works in "card + PIN" mode.</li>
+    <li><b>Shift</b> — for attendance.</li>
+    <li><b>Photo</b> — JPEG, PNG or WebP; it is shown on the monitor.</li>
+    <li><b>Active</b> — when disabled, the person's cards are removed from all controllers (the history is kept). Use it for people who leave temporarily or permanently.</li>
+  </ul>
+  <h3>Cards of a person</h3>
+  <figure class="narrow"><img src="shots/person-cards.png"><figcaption><b>Figure 13</b> — Cards tab.</figcaption></figure>
+  <p>Type the 8-digit card number and <span class="ui">Add</span>, or use <b>Capture from a reader</b>: swipe the new card on any reader and it appears among the unknown cards read in the last 10 minutes; click it to assign it. A person can have several cards.</p>
+  <ul>
+    <li><span class="ui">Lost</span> — replaces a lost card: the old one is marked as lost and removed from the controllers, the new number gets the same permissions immediately.</li>
+    <li><b>Delete</b> — removes the card from the database and from every controller.</li>
+  </ul>
+  <h3>Permissions of a person</h3>
+  <figure class="narrow"><img src="shots/person-permissions.png"><figcaption><b>Figure 14</b> — Permissions tab.</figcaption></figure>
+  <p>One row per door of every controller. Tick the doors the person may open and choose, for each, <b>Always</b> or a <b>time profile</b>. <b>First card</b> marks the person as able to "open" a door that uses the first-card function (see <a href="#controllers">Controllers → Advanced settings</a>). <span class="ui">Save permissions</span> sends them to the controllers immediately.</p>
+  <h3>Importing people from a CSV file</h3>
+  <p><span class="ui">Import CSV</span> reads a file with a header row; the separator (semicolon, comma or tab) is detected automatically. Recognised columns:</p>
+  <table>
+    <thead><tr><th>Column</th><th>Accepted header names</th><th>Notes</th></tr></thead>
+    <tr><td>Employee code</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>required; an existing code updates that person</td></tr>
+    <tr><td>Last name</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>required</td></tr>
+    <tr><td>First name</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
+    <tr><td>Card</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>8-digit Wiegand-26 number</td></tr>
+    <tr><td>Department</td><td><code>department</code>, <code>reparto</code></td><td>created if missing; sub-departments with <code>\</code>, e.g. <code>Production\Assembly</code></td></tr>
+  </table>
+  <p>The result shows how many people and cards were created or updated, and the rows with errors. Imported people have no permissions: assign them afterwards, for example with the bulk assignment of the <a href="#permissions">Permissions</a> page. An export of the original Windows software can usually be imported directly.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Registry</span>
+  <h2 id="cards">12 · Cards</h2>
+  <figure><img src="shots/cards.png"><figcaption><b>Figure 15</b> — All registered cards.</figcaption></figure>
+  <p>All the cards known to the application, assigned or free, with status (Active, Lost, Disabled) and registration date. Filter <span class="ui">Free</span> to see the cards not yet given to anybody; a free card can be assigned from the list.</p>
+  <ul>
+    <li><b>Cards read but not registered (last hour)</b> — every unknown card swiped on any reader appears here: click it to register it, as a free card or directly assigned to a person. Numbers that are not valid Wiegand-26 cards are shown greyed out and cannot be registered.</li>
+    <li><b>Batch registration</b> — registers a whole range of numbers as free cards (up to 1000), e.g. a new box of cards with consecutive numbers.</li>
+  </ul>
+  <div class="box note"><b>Card numbers</b><p>The controllers accept Wiegand-26 numbers only: facility code 0–255 and card code 0–65535, written as facility × 100000 + code. The number printed on many cards (e.g. <code>100,58400</code> or <code>0006612288</code>) corresponds to this format; if in doubt, swipe the card and read its number in the unknown cards list.</p></div>
+
+  <span class="grp g-reg">Registry</span>
+  <h2 id="permissions">13 · Permissions</h2>
+  <figure><img src="shots/permissions.png"><figcaption><b>Figure 16</b> — Matrix of people and doors, and bulk assignment.</figcaption></figure>
+  <p>The equivalent of "Access Privilege" in the original software: a matrix with one row per person and one column per door. <b>✓</b> means always allowed, a number means allowed within that time profile. Filter the people to find someone quickly.</p>
+  <p>With <b>Bulk assignment</b> you select several people and several doors, optionally a time profile, and <span class="ui">Grant</span> or <span class="ui">Revoke</span> all those permissions in one go — for example to give a whole new department access to the entrance.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Registry</span>
+  <h2 id="structure">14 · Departments and zones</h2>
+  <figure><img src="shots/structure.png"><figcaption><b>Figure 17</b> — Departments and zones are trees.</figcaption></figure>
+  <ul>
+    <li><b>Departments</b> organise the staff: they are used to filter the list of people and the attendance reports. A department can belong to another one (e.g. Production → Assembly).</li>
+    <li><b>Zones</b> group controllers, e.g. by building or floor. They are used to restrict operators: an operator restricted to a zone (and its sub-zones) can open doors and synchronise only the controllers of that zone.</li>
+  </ul>
+  <p>Use <span class="ui">New</span>, edit and delete; deleting an item also deletes its sub-items. People and controllers of a deleted department or zone are kept, without department or zone.</p>
+</section>
+
+<!-- ===================================================================== PART 4 -->
+<section class="page part" id="part4">
+  <div class="opener o-blue"><div class="label">Part 4</div><h1>Configuration</h1><p>Controllers, doors and the rules they apply. Most of these pages are for administrators.</p></div>
+
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="controllers">15 · Controllers</h2>
+  <figure><img src="shots/controllers.png"><figcaption><b>Figure 18</b> — The controllers configured in the application.</figcaption></figure>
+  <p>The list of controllers with name, serial number, address, firmware, status and last contact. Click a row to open its page.</p>
+  <h3>Finding and adding a controller</h3>
+  <figure><img src="shots/discovery.png"><figcaption><b>Figure 19</b> — Network search.</figcaption></figure>
+  <ol class="steps">
+    <li>Click <span class="ui">Search network</span>, then <span class="ui">Start search</span>. The server sends a broadcast on the local network and lists every controller that answers within a few seconds, with serial number, IP, MAC and firmware.</li>
+    <li>Click <span class="ui">Add</span> next to a controller. Give it a name, check IP address and port (60000), transport (UDP; TCP only for recent firmware) and optionally a zone.</li>
+    <li>Save: the controller appears online within a few seconds. The application programs it to send its events to the server, synchronises its clock and downloads its stored events.</li>
+  </ol>
+  <p>A controller can also be added manually with its serial number. The search works only if the server is on the same network segment as the controllers; with Docker, the container must use the "host" network.</p>
+  <div class="box tip"><b>Controller already in use?</b><p>If the controller already contains cards (for example from the original software) and the application database has none, nothing is deleted when you add it. Import the people first, then use <a href="#sync">Synchronisation → Compare</a> to see the differences before aligning.</p></div>
+
+  <h3>Controller page — Diagnostics</h3>
+  <figure><img src="shots/controller-diagnostics.png"><figcaption><b>Figure 20</b> — Diagnostics: everything read live from the controller.</figcaption></figure>
+  <p>Read directly from the controller: serial number, IP, gateway, MAC, firmware version and date, controller time, number of stored cards, last event, download bookmark, event listener (where the controller sends its events), anti-passback and system error. The <b>Doors</b> table shows mode, opening delay, sensor and relay of each door, as stored in the controller.</p>
+  <ul>
+    <li><span class="ui">Read again from controller</span> refreshes the data.</li>
+    <li><span class="ui">Synchronise time</span> sets the controller clock to the server time. This also happens automatically when the drift exceeds 30 seconds.</li>
+    <li><span class="ui">Download events</span> downloads at once the events not yet collected.</li>
+  </ul>
+
+  <h3>Network and configuration</h3>
+  <figure><img src="shots/controller-network.png"><figcaption><b>Figure 21</b> — Configuration in the application, controller IP and event destination.</figcaption></figure>
+  <ul>
+    <li><b>Configuration in the application</b> — how the application reaches the controller: serial number, name, IP and port (empty IP = broadcast), transport, zone and <b>Enabled</b> (a disabled controller is neither monitored nor synchronised). <span class="ui">Remove</span> deletes the controller and its event history from the database, without changing the controller.</li>
+    <li><b>Controller IP address</b> — changes the IP, netmask and gateway stored <b>in the controller</b>. Use it to move a new controller from its factory address to your network. The command is sent by broadcast, so it works even if the current address is not reachable; afterwards the application checks the new address.</li>
+    <li><b>Event destination (listener)</b> — the address to which the controller sends every event: the server. It is set automatically when the server is configured with <code>UHPPOTE_LISTENER_PUBLIC</code>; <span class="ui">Configure automatically</span> applies it now, <span class="ui">Set manually</span> sets a different address and the status auto-send interval.</li>
+  </ul>
+  <div class="box warn"><b>Careful</b><p>A wrong IP address, netmask or gateway makes the controller unreachable. It can then be reconfigured only from a computer on the same network segment, with a network search.</p></div>
+
+  <h3>Advanced settings</h3>
+  <figure><img src="shots/controller-advanced.png"><figcaption><b>Figure 22</b> — Access rules, keypads and first card.</figcaption></figure>
+  <p>Settings that apply to the whole controller. They are stored in the database and sent to the controller with <span class="ui">Save and send to the controller</span>.</p>
+  <ul>
+    <li><b>Interlock</b> — doors of a group cannot be open at the same time (airlocks, e.g. doors 1 and 2): a door opens only when the others of its group are closed. Requires door sensors.</li>
+    <li><b>Anti-passback</b> — prevents passing a card back to someone else: after entering through a reader of one group, the card must exit through a reader of the other group before it can enter again. See <a href="#modes">chapter 25</a> for the groupings.</li>
+    <li><b>Record door and button events</b> — also records door opened/closed and exit button events (recommended).</li>
+    <li><b>PC control</b> — the controller asks the server before granting access. Not recommended: doors stop working when the server is unreachable.</li>
+    <li><b>Status auto-send</b> — the controller sends its status to the server every N seconds besides the events (0 = events only).</li>
+    <li><b>Keypads</b> — tick the readers that have a keypad. <b>Door passcodes</b>: up to 4 codes per door (up to 6 digits) that open the door when typed on the keypad, without a card.</li>
+    <li><b>First card</b> — in the chosen hours and days the door stays locked until the first authorised person with the "First card" permission swipes in; then the door switches to the chosen mode (e.g. normally open) until the end of the period. Typical use: a shop entrance that opens to the public only after the manager has arrived.</li>
+  </ul>
+
+  <h3>Maintenance</h3>
+  <figure><img src="shots/controller-maintenance.png"><figcaption><b>Figure 23</b> — Synchronisation history and factory reset.</figcaption></figure>
+  <p><b>Synchronisation history</b> lists the synchronisations of this controller, with operator, outcome and summary. <b>Factory reset</b> clears the network settings, listener, cards and events of the controller. The stored cards are first saved to a file in the server backup folder; to confirm, type the serial number. After a reset the controller must be configured again (IP, then synchronisation).</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="doors">16 · Doors</h2>
+  <figure><img src="shots/doors.png"><figcaption><b>Figure 24</b> — The doors of all the controllers.</figcaption></figure>
+  <p>Every door of every controller with its name, mode, opening time, live state and attendance flag. <span class="ui">Open</span> opens it remotely. Edit a door to change:</p>
+  <ul>
+    <li><b>Name</b> — used everywhere in the application (dashboard, events, permissions).</li>
+    <li><b>Mode</b> — <i>Controlled</i> (normal: opens with an authorised card), <i>Normally open</i> (always unlocked) or <i>Normally closed</i> (always locked, even for valid cards).</li>
+    <li><b>Opening time</b> — seconds the lock stays released after a granted swipe, the exit button or a remote opening.</li>
+    <li><b>Active</b> — inactive doors (e.g. unused outputs) are hidden from the dashboard and from permissions.</li>
+    <li><b>Reader used for attendance</b> — swipes on this reader become attendance punches.</li>
+  </ul>
+  <p>Mode and opening time are sent to the controller immediately.</p>
+
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="profiles">17 · Time profiles</h2>
+  <figure><img src="shots/time-profiles.png"><figcaption><b>Figure 25</b> — Time profiles.</figcaption></figure>
+  <p>A time profile tells <b>when</b> a permission is valid. Each profile has:</p>
+  <ul>
+    <li>an <b>ID</b> from 2 to 254 (the number stored in the controller) and a name;</li>
+    <li>a validity period (<b>Valid from / until</b>);</li>
+    <li>the <b>days</b> of the week;</li>
+    <li>up to three <b>time intervals</b>, e.g. 08:00–12:30 and 13:30–18:00;</li>
+    <li>optionally a <b>linked profile</b>: if a swipe does not fall within this profile, the linked one is checked too. Linking is the way to combine different hours on different days.</li>
+  </ul>
+  <figure class="narrow"><img src="shots/time-profile-edit.png"><figcaption><b>Figure 26</b> — Editing a profile: "Saturday morning" is linked to "Office hours".</figcaption></figure>
+  <p>When a profile is saved, all the profiles are sent again to every controller. A profile used by some permission cannot be deleted.</p>
+  <div class="box tip"><b>Example</b><p>"Office hours" (2) = Mon–Fri 07:30–19:00; "Saturday morning" (4) = Sat 08:00–12:30, linked to 2. A permission with profile 4 allows access on weekdays during office hours <i>and</i> on Saturday morning.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="tasks">18 · Scheduled tasks</h2>
+  <figure><img src="shots/tasks.png"><figcaption><b>Figure 27</b> — Scheduled tasks run by the controllers.</figcaption></figure>
+  <p>Actions that a controller runs <b>by itself</b> at a given time, on the chosen days and within a validity period — for example the warehouse door <i>normally open</i> at 07:00 and back to <i>controlled</i> at 18:00. Each task has controller, door, action, start time, days, validity and an Active switch. Available actions:</p>
+  <table>
+    <thead><tr><th>Action</th><th>Effect from the start time</th></tr></thead>
+    <tr><td>Door controlled / normally open / normally closed</td><td>changes the mode of the door</td></tr>
+    <tr><td>Disable / enable time profiles</td><td>time profiles are ignored (cards valid at any time) or applied again</td></tr>
+    <tr><td>Card only (no PIN) · Card + PIN on entry · Card + PIN</td><td>how readers with a keypad ask for the PIN</td></tr>
+    <tr><td>Enable / disable multi-card</td><td>access requires several different authorised cards in sequence (number of cards set in the task)</td></tr>
+    <tr><td>Single opening</td><td>opens the door once</td></tr>
+    <tr><td>Disable / enable exit button</td><td>ignores or re-enables the exit button</td></tr>
+  </table>
+
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="sync">19 · Synchronisation</h2>
+  <figure><img src="shots/sync.png"><figcaption><b>Figure 28</b> — Comparing the database with a controller.</figcaption></figure>
+  <p>Every change is sent to the controllers when it is made. If a controller was unreachable at that moment (switched off, network fault), it is aligned here. The page lists the controllers with their state and these commands:</p>
+  <ul>
+    <li><span class="ui">Compare</span> — reads all the cards from the controller and shows the differences: cards to add, cards to update (permissions, validity, PIN) and cards to remove (present on the controller but not in the database). Nothing is changed.</li>
+    <li><span class="ui">Align cards</span> — applies those differences to the cards.</li>
+    <li><span class="ui">Full synchronisation</span> (administrators) — sends again door configuration, time profiles, tasks, advanced settings and all the cards. It may take a few minutes with many cards; progress is shown live.</li>
+  </ul>
+  <div class="box note"><b>Automatic recovery</b><p>When a controller comes back online <b>without any card</b> while the database expects some (factory reset, replaced controller), the application runs a full synchronisation by itself. Any other difference is only reported in the server log, so that cards are never deleted without an operator deciding it.</p></div>
+</section>
+
+<!-- ===================================================================== PART 5 -->
+<section class="page part" id="part5">
+  <div class="opener o-orange"><div class="label">Part 5</div><h1>Administration</h1><p>Users of the application, traceability and server maintenance. Administrators only, except the System page.</p></div>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="operators">20 · Operators</h2>
+  <figure><img src="shots/operators.png"><figcaption><b>Figure 29</b> — Operators of the application.</figcaption></figure>
+  <p>The accounts that can log in to the application. For each operator: username, display name, role (see <a href="#roles">chapter 4</a>), zones and last login.</p>
+  <ul>
+    <li><span class="ui">New operator</span> — choose username, name, role and optionally zones. If you leave the password empty, a temporary password is generated and shown once: give it to the person, who must change it at first login.</li>
+    <li><b>Reset password</b> — generates a new temporary password.</li>
+    <li><b>Active</b> — a disabled operator cannot log in; their operations remain in the audit log, as they do when an operator is deleted.</li>
+  </ul>
+  <p>You cannot lower your own role, disable or delete yourself, so there is always at least one administrator.</p>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="audit">21 · Audit log</h2>
+  <figure><img src="shots/audit.png"><figcaption><b>Figure 30</b> — Every change and every command, with operator and outcome.</figcaption></figure>
+  <p>The log of every change made in the application and every command sent to the controllers: date and time, operator (or <i>system</i> for automatic operations), action (e.g. <code>open-door</code>, <code>put-card</code>, <code>sync-cards</code>, <code>login</code>), target, outcome and details. Filter by action to answer questions like "who opened the back office door yesterday?".</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Administration</span>
+  <h2 id="system">22 · System</h2>
+  <figure><img src="shots/system.png"><figcaption><b>Figure 31</b> — Server information.</figcaption></figure>
+  <ul>
+    <li><b>Server</b> — version, host name, uptime, network interfaces, and the amount of data (controllers, people, cards, events).</li>
+    <li><b>Communication with the controllers</b> — the network settings of the server: local address, discovery broadcast, event listening port and the <b>programmed listener</b>, i.e. the address the controllers send their events to. A warning appears if it is not set: events then arrive only with the periodic download, not in real time.</li>
+    <li><b>Database backup</b> — a copy of the database is made every night (at 02:00 by default, the last 14 are kept) in the <code>backups</code> folder of the server data. <span class="ui">Create backup now</span> makes one immediately, e.g. before a large import. Administrators only.</li>
+  </ul>
+
+  <h2 id="password">23 · Change password</h2>
+  <figure class="narrow"><img src="shots/password.png"><figcaption><b>Figure 32</b> — Changing your password.</figcaption></figure>
+  <p>From the key icon in the header. Enter the current password and the new one twice (at least 8 characters). Your other open sessions are closed. If the <code>admin</code> password is set by the server's <code>ADMIN_PASSWORD</code> variable, the page explains that it can be changed only there.</p>
+</section>
+
+<!-- ===================================================================== PART 6 -->
+<section class="page part" id="part6">
+  <div class="opener o-slate"><div class="label">Part 6</div><h1>Reference</h1><p>Event reasons, door modes and rules, troubleshooting and glossary.</p></div>
+
+  <h2 id="reasons">24 · Event reasons</h2>
+  <p>Every event carries a reason code, shown as text in the monitor and the history.</p>
+  <table>
+    <thead><tr><th style="width:12mm">Code</th><th style="width:58mm">Reason</th><th>Meaning</th></tr></thead>
+    <tr><td>1</td><td>Card swipe</td><td>access granted with a card</td></tr>
+    <tr><td>6</td><td>No access rights</td><td>card unknown to the controller, or no permission on that door</td></tr>
+    <tr><td>7</td><td>Incorrect password</td><td>wrong PIN on the keypad</td></tr>
+    <tr><td>8</td><td>Anti-passback</td><td>the card must first pass through a reader of the other group</td></tr>
+    <tr><td>9</td><td>Multi-card</td><td>more cards are required to open</td></tr>
+    <tr><td>10</td><td>First card</td><td>door waiting for the first authorised card</td></tr>
+    <tr><td>11</td><td>Door normally closed</td><td>the door is set to normally closed</td></tr>
+    <tr><td>12</td><td>Interlock</td><td>another door of the interlock group is open</td></tr>
+    <tr><td>13</td><td>Outside time profile</td><td>the permission is not valid at this day/time</td></tr>
+    <tr><td>15</td><td>Invalid time zone</td><td>the time profile is not defined on the controller</td></tr>
+    <tr><td>18</td><td>Access denied</td><td>access refused by the controller for a reason not covered by the other codes</td></tr>
+    <tr><td>20</td><td>Exit button</td><td>door opened with the exit button</td></tr>
+    <tr><td>23 / 24</td><td>Door opened / Door closed</td><td>door sensor (with "Record door and button events")</td></tr>
+    <tr><td>25</td><td>Door opened (supervisor password)</td><td>opened with a door passcode</td></tr>
+    <tr><td>28 / 29</td><td>Controller power on / reset</td><td>the controller was switched on or reset</td></tr>
+    <tr><td>31–34</td><td>Button invalid</td><td>exit button refused (door locked, offline, interlock, threat)</td></tr>
+    <tr><td>37</td><td>Door open too long</td><td>the door was left open</td></tr>
+    <tr><td>38</td><td>Forced open</td><td>door opened without a valid access</td></tr>
+    <tr><td>39</td><td>Fire</td><td>fire alarm input active</td></tr>
+    <tr><td>40</td><td>Forced closed</td><td>forced lock input active</td></tr>
+    <tr><td>41–43</td><td>Theft prevention · 24×7 zone · Emergency</td><td>alarm inputs</td></tr>
+    <tr><td>44 / 45</td><td>Remote opening</td><td>opened from the application (or a USB reader)</td></tr>
+  </table>
+  <p>Rows of denied accesses and alarms are highlighted in red in the dashboard, monitor and history.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="modes">25 · Door modes and access rules</h2>
+  <h3>Door modes</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Mode</th><th>Behaviour</th></tr></thead>
+    <tr><td>Controlled</td><td>normal operation: the lock opens for an authorised card, the exit button or a remote opening</td></tr>
+    <tr><td>Normally open</td><td>the lock is always released (e.g. during opening hours, with a scheduled task)</td></tr>
+    <tr><td>Normally closed</td><td>the lock is always locked; cards are refused (reason 11)</td></tr>
+  </table>
+  <h3>Interlock</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Option</th><th>Doors that cannot be open at the same time</th></tr></thead>
+    <tr><td>Doors 1 and 2</td><td>1 with 2</td></tr>
+    <tr><td>Doors 3 and 4</td><td>3 with 4</td></tr>
+    <tr><td>Doors 1-2 and 3-4</td><td>1 with 2, and 3 with 4 (two independent airlocks)</td></tr>
+    <tr><td>Doors 1, 2 and 3</td><td>any two of 1, 2 and 3</td></tr>
+    <tr><td>Doors 1, 2, 3 and 4</td><td>any two of the four doors</td></tr>
+  </table>
+  <h3>Anti-passback</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Option</th><th>Reader groups (entry : exit)</th></tr></thead>
+    <tr><td>(1:2);(3:4)</td><td>reader 1 alternates with reader 2, and reader 3 with reader 4</td></tr>
+    <tr><td>(1,3):(2,4)</td><td>readers 1 and 3 alternate with readers 2 and 4</td></tr>
+    <tr><td>1:(2,3)</td><td>reader 1 alternates with readers 2 and 3</td></tr>
+    <tr><td>1:(2,3,4)</td><td>reader 1 alternates with readers 2, 3 and 4</td></tr>
+  </table>
+  <p>On a 4-door controller with one reader per door, "reader N" is the reader of door N. On 1- and 2-door controllers with in and out readers, check the controller documentation for the numbering.</p>
+
+  <h2 id="trouble">26 · Troubleshooting</h2>
+  <table>
+    <thead><tr><th style="width:52mm">Problem</th><th>What to check</th></tr></thead>
+    <tr><td>The network search finds nothing</td><td>Server and controllers on the same network segment; cable and power; firewall allowing UDP port 60000; with Docker, "host" networking. Try adding the controller manually with its IP address.</td></tr>
+    <tr><td>Controller shown Offline</td><td>IP address and port in <i>Network and configuration</i>; ping the controller; another program using the controller at the same time.</td></tr>
+    <tr><td>Swipes do not appear in the Monitor, but appear later in the history</td><td>Real-time events are not reaching the server: set <code>UHPPOTE_LISTENER_PUBLIC</code> on the server (see the warning on the <a href="#system">System</a> page), allow inbound UDP port 60001, then <i>Configure automatically</i> the listener on the controller page.</td></tr>
+    <tr><td>A card is refused although it has permissions</td><td>Look at the reason in the history: 13 means outside the time profile; 6 means the card is not on the controller or has no permission on that door — run <i>Compare</i> on the Synchronisation page. Check that the person and the card are active and that today is within the person's validity period.</td></tr>
+    <tr><td>"Saved, but not sent to every controller"</td><td>Some controller was offline. When it is back, use <i>Align cards</i> or <i>Full synchronisation</i>.</td></tr>
+    <tr><td>"Card number not valid for Wiegand-26"</td><td>The number must have facility ≤ 255 and code ≤ 65535. Swipe the card and use the number shown among the unknown cards.</td></tr>
+    <tr><td>Wrong time in events or reports</td><td>Server time zone (<code>TZ</code> variable); the controller clock is corrected automatically, or use <i>Synchronise time</i>.</td></tr>
+    <tr><td>Forgotten administrator password</td><td>Set <code>ADMIN_PASSWORD</code> on the server and restart it; then log in as <code>admin</code>.</td></tr>
+  </table>
+
+  <h2 id="glossary">27 · Glossary</h2>
+  <table>
+    <thead><tr><th style="width:42mm">Term</th><th>Meaning</th></tr></thead>
+    <tr><td>Broadcast</td><td>a network message sent to all the devices of the local network; used to find controllers</td></tr>
+    <tr><td>Controller</td><td>the access control board (UHPPOTE UT0311-L01/L02/L04)</td></tr>
+    <tr><td>Event index</td><td>progressive number of an event in the controller memory</td></tr>
+    <tr><td>Facility code</td><td>the first part (0–255) of a Wiegand-26 card number</td></tr>
+    <tr><td>First card</td><td>function that keeps a door locked until an authorised person arrives</td></tr>
+    <tr><td>Interlock</td><td>doors that cannot be open at the same time (airlock)</td></tr>
+    <tr><td>Anti-passback</td><td>prevents a card from entering twice without exiting</td></tr>
+    <tr><td>Listener</td><td>the server address to which a controller sends its events</td></tr>
+    <tr><td>Punch</td><td>a swipe used for attendance (clock in / clock out)</td></tr>
+    <tr><td>Relay</td><td>the output of the controller that releases the electric lock</td></tr>
+    <tr><td>Synchronisation</td><td>aligning a controller with the application database</td></tr>
+    <tr><td>Time profile</td><td>days and hours in which a permission is valid (ID 2–254)</td></tr>
+    <tr><td>Wiegand-26</td><td>the card format accepted by the controllers: facility × 100000 + code</td></tr>
+    <tr><td>Zone</td><td>group of controllers, used to restrict operators</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

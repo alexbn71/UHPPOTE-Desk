@@ -27,6 +27,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).
 
+**User manual** (PDF, with screenshots of every page): [docs/UHPPOTE-Desk-Manual.pdf](docs/UHPPOTE-Desk-Manual.pdf). It is generated from [docs/manual](docs/manual) with `npm run manual`.
+
 The full technical analysis (protocol, design decisions, risks) is in [ANALYSIS.md](ANALYSIS.md).
 
 ## Repository layout
