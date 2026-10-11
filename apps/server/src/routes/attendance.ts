@@ -13,6 +13,7 @@ import type { AppContext } from '../context.js'
 import { weekdaysFromString, weekdaysToString } from '../db/database.js'
 import { computeAttendance, type Leave, type Punch } from '../services/attendance.js'
 import { toCsv } from '../util/csv.js'
+import { requestTranslator } from '../util/lang.js'
 import { addDays } from '../util/time.js'
 
 interface ShiftRow {
@@ -89,11 +90,12 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     ctx.audit.log(req.user, 'delete-holiday', `holiday:${date}`)
     return { ok: true }
   })
-  /** Festività nazionali italiane per un anno (fisse + Pasquetta). */
+  /** Italian public holidays for a year (fixed dates + Easter Monday), named in the request language. */
   app.post('/holidays/italian/:year', operator, async (req) => {
     const { year } = z.object({ year: z.coerce.number().int().min(2000).max(2100) }).parse(req.params)
+    const tr = requestTranslator(req)
     const list = italianHolidays(year)
-    for (const h of list) ctx.db.run('INSERT OR IGNORE INTO holidays (date, name) VALUES (?, ?)', [h.date, h.name])
+    for (const h of list) ctx.db.run('INSERT OR IGNORE INTO holidays (date, name) VALUES (?, ?)', [h.date, tr.t(`holidays.${h.key}`)])
     ctx.audit.log(req.user, 'import-holidays', `year:${year}`, { count: list.length })
     return { added: list.length }
   })
@@ -164,8 +166,8 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
 
   const report = (query: unknown) => {
     const q = attendanceQuerySchema.parse(query)
-    if (q.from > q.to) throw new HttpError(400, 'Intervallo di date non valido')
-    if (addDays(q.from, 400) < q.to) throw new HttpError(400, 'Intervallo massimo: 400 giorni')
+    if (q.from > q.to) throw new HttpError(400, 'invalidRange')
+    if (addDays(q.from, 400) < q.to) throw new HttpError(400, 'rangeTooLong')
     const shiftMap = new Map(shifts().map((s) => [s.id, s]))
     const people = ctx.people
       .list({ active: true, ...(q.departmentId ? { departmentId: q.departmentId } : {}) })
@@ -189,17 +191,25 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     return computeAttendance({ from: q.from, to: q.to, people, punches, holidays, leaves })
   }
 
-  app.get('/attendance/report', viewer, async (req) => report(req.query))
+  const withoutLang = (query: unknown) => {
+    const { lang: _lang, ...rest } = (query ?? {}) as Record<string, unknown>
+    return rest
+  }
+
+  app.get('/attendance/report', viewer, async (req) => report(withoutLang(req.query)))
 
   app.get('/attendance/report.csv', viewer, async (req, reply) => {
-    const rows = report(req.query)
-    const h = (m: number) => (m / 60).toFixed(2).replace('.', ',')
+    const rows = report(withoutLang(req.query))
+    const tr = requestTranslator(req)
+    const h = (m: number) => (m / 60).toFixed(2)
     const csv = toCsv([
-      ['Persona', 'Data', 'Stato', 'Entrata', 'Uscita', 'Ore lavorate', 'Ore previste', 'Ritardo (min)', 'Uscita anticipata (min)', 'Straordinario', 'Timbrature', 'Anomalie'],
+      ['person', 'date', 'status', 'in', 'out', 'worked', 'expected', 'late', 'earlyLeave', 'overtime', 'punches', 'anomalies'].map((k) =>
+        tr.t(`csv.attendance.${k}`),
+      ),
       ...rows.map((r) => [
         r.personName,
         r.date,
-        r.status,
+        tr.attendanceStatus(r.status),
         r.firstIn,
         r.lastOut,
         h(r.workedMinutes),
@@ -208,19 +218,33 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
         r.earlyLeaveMinutes,
         h(r.overtimeMinutes),
         r.punches.map((p) => `${p.time}${p.source === 'manuale' ? '*' : ''}`).join(' '),
-        r.anomalies.join(', '),
+        r.anomalies.map((a) => tr.anomaly(a)).join(', '),
       ]),
     ])
     return reply
       .header('Content-Type', 'text/csv; charset=utf-8')
-      .header('Content-Disposition', 'attachment; filename="presenze.csv"')
+      .header('Content-Disposition', 'attachment; filename="attendance.csv"')
       .send(csv)
   })
 }
 
-/** Festività nazionali italiane (incluse Pasqua e Lunedì dell'Angelo). */
-export function italianHolidays(year: number): { date: string; name: string }[] {
-  // algoritmo di Gauss/Meeus per la Pasqua gregoriana
+export type HolidayKey =
+  | 'newYear'
+  | 'epiphany'
+  | 'easter'
+  | 'easterMonday'
+  | 'liberation'
+  | 'labour'
+  | 'republic'
+  | 'assumption'
+  | 'allSaints'
+  | 'immaculate'
+  | 'christmas'
+  | 'stStephen'
+
+/** Italian public holidays (including Easter and Easter Monday); names are translation keys under `holidays.*`. */
+export function italianHolidays(year: number): { date: string; key: HolidayKey }[] {
+  // Gauss/Meeus algorithm for the Gregorian Easter date
   const a = year % 19
   const b = Math.floor(year / 100)
   const c = year % 100
@@ -238,17 +262,17 @@ export function italianHolidays(year: number): { date: string; name: string }[] 
   const pad = (n: number) => String(n).padStart(2, '0')
   const easter = `${year}-${pad(month)}-${pad(day)}`
   return [
-    { date: `${year}-01-01`, name: 'Capodanno' },
-    { date: `${year}-01-06`, name: 'Epifania' },
-    { date: easter, name: 'Pasqua' },
-    { date: addDays(easter, 1), name: "Lunedì dell'Angelo" },
-    { date: `${year}-04-25`, name: 'Festa della Liberazione' },
-    { date: `${year}-05-01`, name: 'Festa del Lavoro' },
-    { date: `${year}-06-02`, name: 'Festa della Repubblica' },
-    { date: `${year}-08-15`, name: 'Ferragosto' },
-    { date: `${year}-11-01`, name: 'Ognissanti' },
-    { date: `${year}-12-08`, name: 'Immacolata Concezione' },
-    { date: `${year}-12-25`, name: 'Natale' },
-    { date: `${year}-12-26`, name: 'Santo Stefano' },
+    { date: `${year}-01-01`, key: 'newYear' },
+    { date: `${year}-01-06`, key: 'epiphany' },
+    { date: easter, key: 'easter' },
+    { date: addDays(easter, 1), key: 'easterMonday' },
+    { date: `${year}-04-25`, key: 'liberation' },
+    { date: `${year}-05-01`, key: 'labour' },
+    { date: `${year}-06-02`, key: 'republic' },
+    { date: `${year}-08-15`, key: 'assumption' },
+    { date: `${year}-11-01`, key: 'allSaints' },
+    { date: `${year}-12-08`, key: 'immaculate' },
+    { date: `${year}-12-25`, key: 'christmas' },
+    { date: `${year}-12-26`, key: 'stStephen' },
   ]
 }

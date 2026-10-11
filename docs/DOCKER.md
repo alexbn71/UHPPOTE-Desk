@@ -141,8 +141,8 @@ On both, make sure the data folder is writable by the container user (see the no
 ## First start
 
 1. Open `http://<server-IP>:<HTTP_PORT>` and log in as `admin` with the initial password. You are asked for a new password immediately.
-2. **Controller → Cerca in rete** (Search network): the controllers reachable by broadcast are listed with serial number, IP and firmware. **Aggiungi** (Add) registers them in the app.
-3. As soon as a controller is online, the app sends it the event destination (`UHPPOTE_LISTENER_PUBLIC`) and synchronises its clock. You can check this in **Controller → detail → Diagnostica** (Diagnostics), "Listener eventi" (event listener) entry.
+2. **Controllers → Search network**: the controllers reachable by broadcast are listed with serial number, IP and firmware. **Add** registers them in the app. The interface language can be changed from the language menu in the header.
+3. As soon as a controller is online, the app sends it the event destination (`UHPPOTE_LISTENER_PUBLIC`) and synchronises its clock. You can check this in **Controllers → (controller) → Diagnostics**, "Event listener" entry.
 
 ## Commissioning from the container
 
@@ -154,12 +154,12 @@ docker exec -it uhppote-desk node hwtest/cli.js --serial <S/N> --ip <controller 
 docker exec -it uhppote-desk node hwtest/cli.js --serial <S/N> --ip <controller IP> --level 5   # full deployment check
 ```
 
-Reports are saved in `/data/reports`. The test levels are described in the [README](../README.md#commissioning-with-a-real-controller). The tool's own messages are in Italian.
+Reports are saved in `/data/reports`. The test levels are described in the [README](../README.md#commissioning-with-a-real-controller). The tool's prompts are currently in Italian.
 
 ## Updates and backups
 
 - **Update**: `docker compose pull && docker compose up -d`. On Unraid: *Check for updates* → *Update*. The database schema is upgraded automatically at startup.
-- **Automatic backup**: every day at `BACKUP_HOUR` into `/data/backups`, or manually from *Sistema → Crea backup ora* (System → Create backup now). For a complete backup, copy the data folder.
+- **Automatic backup**: every day at `BACKUP_HOUR` into `/data/backups`, or manually from *System → Create backup now*. For a complete backup, copy the data folder.
 - Before a controller factory reset, its cards are saved to `/data/backups/cards-<serial>-<date>.json`.
 
 ## Troubleshooting
@@ -167,9 +167,9 @@ Reports are saved in `/data/reports`. The test levels are described in the [READ
 | Symptom | Likely cause | Solution |
 |---|---|---|
 | Network search finds no controllers | The container is not using `host` networking, the controller is on another subnet, or the broadcast leaves through the wrong interface | Use `host` networking; set `UHPPOTE_BROADCAST` to the subnet broadcast and/or `UHPPOTE_BIND_ADDR`; alternatively add the controller manually with its IP |
-| Controller online but events delayed (only every `COLLECT_INTERVAL_SEC`) | `UHPPOTE_LISTENER_PUBLIC` missing or wrong, or UDP port 60001 blocked | Check in *Diagnostica* that "Listener eventi" shows the server IP; open UDP port 60001 in the firewall |
-| Log warning "UHPPOTE_LISTENER_PUBLIC non impostato" (not set) | Variable missing | Set it and restart the container |
-| Log error "impossibile avviare il listener eventi" (cannot start the event listener); the server runs but events arrive only every `COLLECT_INTERVAL_SEC` | Another service is already using UDP port 60001 | Change `UHPPOTE_LISTEN` and `UHPPOTE_LISTENER_PUBLIC` |
+| Controller online but events delayed (only every `COLLECT_INTERVAL_SEC`) | `UHPPOTE_LISTENER_PUBLIC` missing or wrong, or UDP port 60001 blocked | Check in *Diagnostics* that "Event listener" shows the server IP; open UDP port 60001 in the firewall |
+| Log warning "UHPPOTE_LISTENER_PUBLIC not set" | Variable missing | Set it and restart the container |
+| Log error "cannot start the event listener"; the server runs but events arrive only every `COLLECT_INTERVAL_SEC` | Another service is already using UDP port 60001 | Change `UHPPOTE_LISTEN` and `UHPPOTE_LISTENER_PUBLIC` |
 | Startup error about the database / permissions on `/data` | The data folder is not writable by the container user | Fix the permissions or use `--user` (see above) |
 | The web interface does not open | Port in use or blocked by the firewall | Change `HTTP_PORT` |
 | Wrong time on the controllers or in reports | `TZ` not set | Set `TZ`, e.g. `Europe/Rome` |

@@ -110,7 +110,7 @@ describe('suite hardware contro FakeController', () => {
     try {
       const { results } = await runSuite({ ...opts, timeoutMs: 200 }, [1], new FakeDriver(fake), { only: ['L1.1'] })
       expect(results[0]!.status).toBe('fail')
-      expect(results[0]!.details.join()).toMatch(/nessuna risposta/)
+      expect(results[0]!.details.join()).toMatch(/no reply/)
     } finally {
       fake.offline = false
     }

@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: 'http://127.0.0.1:8090',
-    locale: 'it-IT',
+    locale: 'en-US',
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

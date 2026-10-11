@@ -3,10 +3,12 @@ import { modals } from '@mantine/modals'
 import { IconEdit, IconKey, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { OperatorDto, Role } from '@uhppote-desk/shared'
-import { ROLE_LABELS } from '@uhppote-desk/shared'
+import { ROLES } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
 import { api, notifyError } from '../lib/api'
+import { useCodes } from '../lib/codes'
 import { fmtDateTime } from '../lib/format'
 import { treeOptions, useZones } from '../lib/queries'
 
@@ -21,6 +23,8 @@ interface Form {
 }
 
 export function OperatorsPage() {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const qc = useQueryClient()
   const zones = useZones()
   const operators = useQuery({ queryKey: ['operators'], queryFn: () => api.get<OperatorDto[]>('/operators') })
@@ -45,9 +49,9 @@ export function OperatorsPage() {
 
   const resetPassword = (o: OperatorDto) =>
     modals.openConfirmModal({
-      title: `Reimposta password di ${o.username}`,
-      children: <Text size="sm">Verrà generata una password temporanea da cambiare al primo accesso.</Text>,
-      labels: { confirm: 'Reimposta', cancel: 'Annulla' },
+      title: t('operators.resetTitle', { user: o.username }),
+      children: <Text size="sm">{t('operators.resetInfo')}</Text>,
+      labels: { confirm: t('operators.resetPassword'), cancel: t('common.cancel') },
       onConfirm: () =>
         api
           .post<{ password: string }>(`/operators/${o.id}/reset-password`)
@@ -57,9 +61,9 @@ export function OperatorsPage() {
 
   const remove = (o: OperatorDto) =>
     modals.openConfirmModal({
-      title: `Elimina ${o.username}`,
-      children: <Text size="sm">L'operatore verrà eliminato (le sue operazioni restano nel registro).</Text>,
-      labels: { confirm: 'Elimina', cancel: 'Annulla' },
+      title: t('operators.deleteTitle', { user: o.username }),
+      children: <Text size="sm">{t('operators.deleteInfo')}</Text>,
+      labels: { confirm: t('common.delete'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
@@ -71,28 +75,28 @@ export function OperatorsPage() {
   return (
     <>
       <PageHeader
-        title="Operatori"
-        description="Utenti dell'applicazione. Amministratore: tutto; Operatore: anagrafica, permessi, apertura porte, sincronizzazione; Sola lettura: consultazione."
+        title={t('operators.title')}
+        description={t('operators.description')}
         actions={
           <Button leftSection={<IconPlus size={16} />} onClick={() => setForm({ username: '', displayName: '', role: 'operator', active: true, password: '', zoneIds: [] })}>
-            Nuovo operatore
+            {t('operators.new')}
           </Button>
         }
       />
       {generated && (
-        <Alert color="blue" withCloseButton onClose={() => setGenerated(null)} mb="md" title="Password temporanea">
-          Utente <b>{generated.username}</b>: <Code>{generated.password}</Code> — comunicarla all'interessato; dovrà cambiarla al primo accesso.
+        <Alert color="blue" withCloseButton onClose={() => setGenerated(null)} mb="md" title={t('operators.tempPasswordTitle')}>
+          <Code>{t('operators.tempPassword', { user: generated.username, password: generated.password })}</Code>
         </Alert>
       )}
       <Card withBorder>
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Utente</Table.Th>
-              <Table.Th>Nome</Table.Th>
-              <Table.Th>Ruolo</Table.Th>
-              <Table.Th>Zone</Table.Th>
-              <Table.Th>Ultimo accesso</Table.Th>
+              <Table.Th>{t('operators.colUser')}</Table.Th>
+              <Table.Th>{t('operators.colName')}</Table.Th>
+              <Table.Th>{t('operators.colRole')}</Table.Th>
+              <Table.Th>{t('operators.colZones')}</Table.Th>
+              <Table.Th>{t('operators.colLastLogin')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -103,20 +107,20 @@ export function OperatorsPage() {
                 <Table.Td>{o.displayName}</Table.Td>
                 <Table.Td>
                   <Badge variant="light" color={o.role === 'admin' ? 'red' : o.role === 'operator' ? 'blue' : 'gray'}>
-                    {ROLE_LABELS[o.role]}
+                    {codes.role(o.role)}
                   </Badge>
                 </Table.Td>
-                <Table.Td>{o.zoneIds.length ? o.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', ') : 'Tutte'}</Table.Td>
+                <Table.Td>{o.zoneIds.length ? o.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', ') : t('operators.allZones')}</Table.Td>
                 <Table.Td>{fmtDateTime(o.lastLoginAt)}</Table.Td>
                 <Table.Td>
                   <Group gap={0} justify="flex-end">
-                    <IconButton label="Modifica" onClick={() => setForm({ ...o, password: '', zoneIds: o.zoneIds.map(String) })}>
+                    <IconButton label={t('common.edit')} onClick={() => setForm({ ...o, password: '', zoneIds: o.zoneIds.map(String) })}>
                       <IconEdit size={16} />
                     </IconButton>
-                    <IconButton label="Reimposta password" onClick={() => resetPassword(o)}>
+                    <IconButton label={t('operators.resetPassword')} onClick={() => resetPassword(o)}>
                       <IconKey size={16} />
                     </IconButton>
-                    <IconButton label="Elimina" color="red" onClick={() => remove(o)}>
+                    <IconButton label={t('common.delete')} color="red" onClick={() => remove(o)}>
                       <IconTrash size={16} />
                     </IconButton>
                   </Group>
@@ -126,28 +130,22 @@ export function OperatorsPage() {
           </Table.Tbody>
         </Table>
       </Card>
-      <Modal opened={!!form} onClose={() => setForm(null)} title={form?.id ? 'Modifica operatore' : 'Nuovo operatore'}>
+      <Modal opened={!!form} onClose={() => setForm(null)} title={form?.id ? t('operators.editTitle') : t('operators.newTitle')}>
         {form && (
           <Stack>
-            <TextInput label="Nome utente" value={form.username} onChange={(e) => setForm({ ...form, username: e.currentTarget.value })} />
-            <TextInput label="Nome visualizzato" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.currentTarget.value })} />
-            <Select label="Ruolo" data={Object.entries(ROLE_LABELS).map(([v, l]) => ({ value: v, label: l }))} value={form.role} onChange={(v) => setForm({ ...form, role: (v as Role) ?? 'viewer' })} />
-            <MultiSelect
-              label="Limita alle zone"
-              description="Vuoto = tutti i controller. Vale per apertura porte e sincronizzazione."
-              data={treeOptions(zones.data)}
-              value={form.zoneIds}
-              onChange={(v) => setForm({ ...form, zoneIds: v })}
-            />
+            <TextInput label={t('operators.username')} value={form.username} onChange={(e) => setForm({ ...form, username: e.currentTarget.value })} />
+            <TextInput label={t('operators.displayName')} value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.currentTarget.value })} />
+            <Select label={t('operators.role')} data={ROLES.map((r) => ({ value: r, label: codes.role(r) }))} value={form.role} onChange={(v) => setForm({ ...form, role: (v as Role) ?? 'viewer' })} />
+            <MultiSelect label={t('operators.zones')} description={t('operators.zonesHint')} data={treeOptions(zones.data)} value={form.zoneIds} onChange={(v) => setForm({ ...form, zoneIds: v })} />
             <PasswordInput
-              label={form.id ? 'Nuova password (opzionale)' : 'Password (opzionale)'}
-              description="Se vuota viene generata una password temporanea"
+              label={form.id ? t('operators.passwordNew') : t('operators.passwordOptional')}
+              description={t('operators.passwordHint')}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.currentTarget.value })}
             />
-            <Switch label="Attivo" checked={form.active} onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })} />
+            <Switch label={t('operators.activeSwitch')} checked={form.active} onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })} />
             <Button onClick={() => void save()} disabled={!form.username || !form.displayName}>
-              Salva
+              {t('common.save')}
             </Button>
           </Stack>
         )}

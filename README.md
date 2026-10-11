@@ -4,7 +4,7 @@ Web application (Node.js + React) to manage **UHPPOTE UT0311-L0x** access contro
 
 Features: controller discovery and configuration, people/cards/permissions with automatic synchronisation, time profiles, scheduled tasks, interlock, anti-passback, keypads and door passcodes, first card, remote door opening, live monitor with photos, event history, attendance (shifts, holidays, leave, manual punches, reports), operators with roles and an audit log.
 
-> The user interface is in **Italian**. Where this documentation refers to menu items, the Italian label is shown with its English meaning.
+The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).
 
 The full technical analysis (protocol, design decisions, risks) is in [ANALYSIS.md](ANALYSIS.md).
 
@@ -13,7 +13,7 @@ The full technical analysis (protocol, design decisions, risks) is in [ANALYSIS.
 | Path | Content |
 |---|---|
 | [packages/protocol](packages/protocol) | TypeScript codec for the 34 commands, UDP/TCP transport, client with a per-controller queue, event listener, **FakeController** (emulator for tests) |
-| [packages/shared](packages/shared) | zod API schemas, DTOs, Italian labels for protocol codes |
+| [packages/shared](packages/shared) | zod API schemas, DTOs, translations (`src/i18n`) |
 | [apps/server](apps/server) | Fastify backend: SQLite (`node:sqlite`), authentication and roles, synchronisation, event collection, monitoring, attendance, WebSocket |
 | [apps/web](apps/web) | React + Mantine frontend |
 | [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L5) and a development simulator |
@@ -35,7 +35,7 @@ npm run sim                     # terminal 1: simulated controller on 0.0.0.0:60
 npm run dev                     # terminal 2: server (http://localhost:8080) + web with hot reload (http://localhost:5173)
 ```
 
-On first start the user `admin` is created with the password from `INITIAL_ADMIN_PASSWORD` (it must be changed at first login). Under *Controller → Cerca in rete* (Search network) the simulator is found just like a real controller.
+On first start the user `admin` is created with the password from `INITIAL_ADMIN_PASSWORD` (it must be changed at first login). Under *Controllers → Search network* the simulator is found just like a real controller.
 
 ## Tests
 
@@ -44,7 +44,7 @@ On first start the user `admin` is created with the password from `INITIAL_ADMIN
 | `npm test` | Unit: codec against the **official uhppoted vectors** (35 messages), differential tests against the npm `uhppoted` library, BCD/Wiegand encodings, attendance engine, sync, CSV |
 | `npm run test:int` | Integration on real sockets: client ↔ FakeController (UDP/TCP, listener, timeouts, retries), end-to-end server (API → UDP → events → DB → WebSocket), hardware suite against the simulator |
 | `UHPPOTED_SIM=127.0.0.1 npm run test:int` | Additionally: tests against the **official uhppoted simulator** (an independent Go implementation). Start it first: `docker compose -f docker/docker-compose.test.yml up -d` or, on Windows, `uhppote-simulator.exe --devices <dir>` (release v0.9.0 on codeberg.org/uhppoted/uhppoted-simulator) |
-| `npm run e2e` | Playwright: login and password change, discovery and adding a controller, person + card + permission → card on the controller, live monitor, every page without errors, roles |
+| `npm run e2e` | Playwright: login and password change, discovery and adding a controller, person + card + permission → card on the controller, live monitor, every page without errors, language switching, roles |
 | `npm run typecheck` | Type checking of all packages |
 
 The same checks (typecheck, unit and integration tests) run on every push in GitHub Actions, followed by the Docker image build.
@@ -61,7 +61,7 @@ Recommended procedure when the controller arrives:
 
 1. **Connection**: controller and PC on the same network (same switch). Note the serial number (S/N label, 9 digits).
 2. **Network and firewall**: on Windows allow inbound UDP on port 60001 for Node.js.
-3. **Discovery and IP**: start the app (`npm run dev`), *Controller → Cerca in rete* (Search network). If the factory IP is not in your subnet, change it from *Controller → detail → Rete e configurazione → Invia nuovo IP* (Network and configuration → Send new IP).
+3. **Discovery and IP**: start the app (`npm run dev`), *Controllers → Search network*. If the factory IP is not in your subnet, change it from *Controllers → (controller) → Network and configuration → Send new IP to the controller*.
 4. **Network and read-only checks** (L0, L1):
    ```bash
    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 0,1
@@ -80,6 +80,14 @@ Recommended procedure when the controller arrives:
    ```bash
    docker exec -it uhppote-desk node hwtest/cli.js --serial 423187757 --ip 192.168.1.100 --level 5
    ```
+
+## Languages
+
+- The language is chosen from the language menu in the header (or on the login page) and remembered in the browser; on first visit the browser language is used, falling back to English.
+- All texts live in [packages/shared/src/i18n](packages/shared/src/i18n): `en.ts` is the reference, the other files (`it`, `es`, `fr`, `de`) must provide exactly the same keys — this is enforced by TypeScript and by a unit test that also checks that every `{{placeholder}}` is kept.
+- The server returns error **codes** (`errors.*`) that the browser translates; synchronisation progress and the CSV exports (events, attendance) also follow the selected language.
+- To add a language: copy `en.ts` to `<code>.ts`, translate it, register it in `i18n/index.ts` (`LANGUAGES` and `resources`) and import the matching `dayjs/locale/<code>` in `apps/web/src/i18n.ts`.
+- Server logs and protocol messages are in English. The hardware test tool (`npm run hw`) is currently in Italian.
 
 ## Installation with Docker
 

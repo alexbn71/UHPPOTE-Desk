@@ -242,10 +242,28 @@ describe('eventi', () => {
     await waitFor(async () => (await api('GET', '/cards/unknown')).json().some((c: { card: number }) => c.card === 10077777))
   })
 
-  it('export CSV', async () => {
+  it('export CSV in the requested language', async () => {
     const r = await api('GET', '/events/export.csv')
     expect(r.headers['content-type']).toContain('text/csv')
     expect(r.body).toContain('Rossi Mario')
+    expect(r.body).toContain('Date/time;Controller;Door')
+    const it = await api('GET', '/events/export.csv?lang=it')
+    expect(it.body).toContain('Data/ora;Controller;Porta')
+    expect(it.body).toContain('Nessun diritto di accesso')
+  })
+
+  it('API errors carry a translatable code and parameters', async () => {
+    const r = await api('PUT', '/time-profiles/20', {
+      name: 'x',
+      validFrom: '2026-01-01',
+      validTo: '2026-12-31',
+      weekdays: [true, true, true, true, true, false, false],
+      segments: [{ start: '10:00', end: '09:00' }],
+      linkedTo: null,
+    })
+    expect(r.statusCode).toBe(400)
+    expect(r.json()).toEqual({ error: 'Invalid interval: 10:00-09:00', code: 'invalidSegment', params: { start: '10:00', end: '09:00' } })
+    expect((await api('GET', '/people/999999')).json()).toMatchObject({ code: 'personNotFound' })
   })
 })
 

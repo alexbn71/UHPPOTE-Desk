@@ -2,14 +2,15 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import '@mantine/dates/styles.css'
 import './styles.css'
-import 'dayjs/locale/it'
-import { StrictMode } from 'react'
+import './i18n'
+import { StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MantineProvider, createTheme } from '@mantine/core'
 import { DatesProvider } from '@mantine/dates'
 import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { App } from './App'
 import { AuthProvider } from './lib/auth'
 
@@ -25,19 +26,28 @@ const queryClient = new QueryClient({
   },
 })
 
+/** Providers whose texts/formats depend on the current language. */
+function LocalizedProviders({ children }: { children: ReactNode }) {
+  const { t, i18n } = useTranslation()
+  const locale = (i18n.resolvedLanguage ?? 'en').slice(0, 2)
+  return (
+    <DatesProvider settings={{ locale, firstDayOfWeek: 1 }}>
+      <ModalsProvider labels={{ confirm: t('common.confirm'), cancel: t('common.cancel') }}>{children}</ModalsProvider>
+    </DatesProvider>
+  )
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="auto">
-      <DatesProvider settings={{ locale: 'it', firstDayOfWeek: 1 }}>
-        <QueryClientProvider client={queryClient}>
-          <ModalsProvider labels={{ confirm: 'Conferma', cancel: 'Annulla' }}>
-            <Notifications position="top-right" />
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </ModalsProvider>
-        </QueryClientProvider>
-      </DatesProvider>
+      <QueryClientProvider client={queryClient}>
+        <LocalizedProviders>
+          <Notifications position="top-right" />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </LocalizedProviders>
+      </QueryClientProvider>
     </MantineProvider>
   </StrictMode>,
 )

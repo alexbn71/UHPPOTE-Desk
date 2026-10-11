@@ -4,11 +4,13 @@ import { modals } from '@mantine/modals'
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { TASK_LABELS } from '@uhppote-desk/shared'
-import { IconButton, PageHeader, WeekdaysInput, weekdaysText } from '../components/common'
+import { useTranslation } from 'react-i18next'
+import { TASK_TYPES } from '@uhppote-desk/shared'
+import { IconButton, PageHeader, WeekdaysInput } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { fmtDate, today } from '../lib/format'
+import { useCodes } from '../lib/codes'
+import { DATE_INPUT_FORMAT, fmtDate, today } from '../lib/format'
 import { useControllers } from '../lib/queries'
 
 interface Task {
@@ -24,12 +26,16 @@ interface Task {
   enabled: boolean
 }
 
+type TaskForm = Omit<Task, 'id'> & { id?: number }
+
 export function TasksPage() {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const qc = useQueryClient()
   const { can } = useAuth()
   const controllers = useControllers()
   const tasks = useQuery({ queryKey: ['tasks'], queryFn: () => api.get<Task[]>('/tasks') })
-  const [edit, setEdit] = useState<Partial<Task> & Omit<Task, 'id'> & { id?: number } | null>(null)
+  const [edit, setEdit] = useState<TaskForm | null>(null)
   const ctrlName = (id: number) => controllers.data?.find((c) => c.id === id)?.name ?? `#${id}`
 
   const save = async () => {
@@ -37,8 +43,8 @@ export function TasksPage() {
     try {
       const { id, ...body } = edit
       const r = id ? await api.put<{ pushError: string | null }>(`/tasks/${id}`, body) : await api.post<{ pushError: string | null }>('/tasks', body)
-      if (r.pushError) notifyError(new Error(`Salvato, ma non inviato al controller: ${r.pushError}`))
-      else notifyOk('Task salvato e inviato al controller')
+      if (r.pushError) notifyError(new Error(t('tasks.savedNotSent', { error: r.pushError })))
+      else notifyOk(t('tasks.saved'))
       setEdit(null)
       void qc.invalidateQueries({ queryKey: ['tasks'] })
     } catch (err) {
@@ -46,15 +52,15 @@ export function TasksPage() {
     }
   }
 
-  const remove = (t: Task) =>
+  const remove = (task: Task) =>
     modals.openConfirmModal({
-      title: 'Elimina task',
-      children: <Text size="sm">Eliminare il task «{TASK_LABELS[t.task]}» delle {t.startTime}?</Text>,
-      labels: { confirm: 'Elimina', cancel: 'Annulla' },
+      title: t('tasks.deleteTitle'),
+      children: <Text size="sm">{t('tasks.deleteConfirm', { task: codes.task(task.task), time: task.startTime })}</Text>,
+      labels: { confirm: t('common.delete'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
-          .del(`/tasks/${t.id}`)
+          .del(`/tasks/${task.id}`)
           .then(() => qc.invalidateQueries({ queryKey: ['tasks'] }))
           .catch(notifyError),
     })
@@ -62,8 +68,8 @@ export function TasksPage() {
   return (
     <>
       <PageHeader
-        title="Task programmati"
-        description="Azioni eseguite automaticamente dal controller a un orario (es. porta aperta di giorno, chiusa la notte)"
+        title={t('tasks.title')}
+        description={t('tasks.description')}
         actions={
           can('admin') && (
             <Button
@@ -83,7 +89,7 @@ export function TasksPage() {
                 })
               }
             >
-              Nuovo task
+              {t('tasks.new')}
             </Button>
           )
         }
@@ -92,35 +98,35 @@ export function TasksPage() {
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Controller</Table.Th>
-              <Table.Th>Porta</Table.Th>
-              <Table.Th>Ora</Table.Th>
-              <Table.Th>Azione</Table.Th>
-              <Table.Th>Giorni</Table.Th>
-              <Table.Th>Validità</Table.Th>
+              <Table.Th>{t('tasks.colController')}</Table.Th>
+              <Table.Th>{t('tasks.colDoor')}</Table.Th>
+              <Table.Th>{t('tasks.colTime')}</Table.Th>
+              <Table.Th>{t('tasks.colAction')}</Table.Th>
+              <Table.Th>{t('tasks.colDays')}</Table.Th>
+              <Table.Th>{t('tasks.colValidity')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {(tasks.data ?? []).map((t) => (
-              <Table.Tr key={t.id} opacity={t.enabled ? 1 : 0.5}>
-                <Table.Td>{ctrlName(t.controllerId)}</Table.Td>
-                <Table.Td>{t.door}</Table.Td>
-                <Table.Td className="mono">{t.startTime}</Table.Td>
+            {(tasks.data ?? []).map((task) => (
+              <Table.Tr key={task.id} opacity={task.enabled ? 1 : 0.5}>
+                <Table.Td>{ctrlName(task.controllerId)}</Table.Td>
+                <Table.Td>{task.door}</Table.Td>
+                <Table.Td className="mono">{task.startTime}</Table.Td>
                 <Table.Td>
-                  {TASK_LABELS[t.task]} {!t.enabled && <Badge color="gray">disattivato</Badge>}
+                  {codes.task(task.task)} {!task.enabled && <Badge color="gray">{t('tasks.disabled')}</Badge>}
                 </Table.Td>
-                <Table.Td>{weekdaysText(t.weekdays)}</Table.Td>
+                <Table.Td>{codes.weekdaysText(task.weekdays)}</Table.Td>
                 <Table.Td>
-                  {fmtDate(t.validFrom)} – {fmtDate(t.validTo)}
+                  {fmtDate(task.validFrom)} – {fmtDate(task.validTo)}
                 </Table.Td>
                 <Table.Td>
                   {can('admin') && (
                     <Group gap={0} justify="flex-end">
-                      <IconButton label="Modifica" onClick={() => setEdit(t)}>
+                      <IconButton label={t('common.edit')} onClick={() => setEdit(task)}>
                         <IconEdit size={16} />
                       </IconButton>
-                      <IconButton label="Elimina" color="red" onClick={() => remove(t)}>
+                      <IconButton label={t('common.delete')} color="red" onClick={() => remove(task)}>
                         <IconTrash size={16} />
                       </IconButton>
                     </Group>
@@ -132,39 +138,39 @@ export function TasksPage() {
         </Table>
         {tasks.data?.length === 0 && (
           <Text c="dimmed" ta="center" py="md">
-            Nessun task programmato
+            {t('tasks.none')}
           </Text>
         )}
       </Card>
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.id ? 'Modifica task' : 'Nuovo task'}>
+      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.id ? t('tasks.editTitle') : t('tasks.newTitle')}>
         {edit && (
           <Stack>
             <SimpleGrid cols={2}>
               <Select
-                label="Controller"
+                label={t('common.controller')}
                 data={(controllers.data ?? []).map((c) => ({ value: String(c.id), label: c.name }))}
                 value={String(edit.controllerId)}
                 onChange={(v) => setEdit({ ...edit, controllerId: Number(v) })}
               />
-              <Select label="Porta" data={['1', '2', '3', '4']} value={String(edit.door)} onChange={(v) => setEdit({ ...edit, door: Number(v) })} />
+              <Select label={t('common.door')} data={['1', '2', '3', '4']} value={String(edit.door)} onChange={(v) => setEdit({ ...edit, door: Number(v) })} />
             </SimpleGrid>
             <Select
-              label="Azione"
-              data={Object.entries(TASK_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+              label={t('tasks.action')}
+              data={TASK_TYPES.map((v) => ({ value: String(v), label: codes.task(v) }))}
               value={String(edit.task)}
               onChange={(v) => setEdit({ ...edit, task: Number(v) })}
             />
             {edit.task === 8 && (
-              <NumberInput label="Numero tessere richieste" min={0} max={255} value={edit.moreCards} onChange={(v) => setEdit({ ...edit, moreCards: Number(v) || 0 })} />
+              <NumberInput label={t('tasks.moreCards')} min={0} max={255} value={edit.moreCards} onChange={(v) => setEdit({ ...edit, moreCards: Number(v) || 0 })} />
             )}
-            <TextInput label="Ora di esecuzione (HH:mm)" value={edit.startTime} onChange={(e) => setEdit({ ...edit, startTime: e.currentTarget.value })} w={160} />
-            <WeekdaysInput label="Giorni" value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
+            <TextInput label={t('tasks.startTime')} value={edit.startTime} onChange={(e) => setEdit({ ...edit, startTime: e.currentTarget.value })} w={200} />
+            <WeekdaysInput label={t('common.days')} value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
             <SimpleGrid cols={2}>
-              <DateInput label="Dal" valueFormat="DD/MM/YYYY" value={edit.validFrom} onChange={(v) => v && setEdit({ ...edit, validFrom: v })} />
-              <DateInput label="Al" valueFormat="DD/MM/YYYY" value={edit.validTo} onChange={(v) => v && setEdit({ ...edit, validTo: v })} />
+              <DateInput label={t('common.from')} valueFormat={DATE_INPUT_FORMAT} value={edit.validFrom} onChange={(v) => v && setEdit({ ...edit, validFrom: v })} />
+              <DateInput label={t('common.to')} valueFormat={DATE_INPUT_FORMAT} value={edit.validTo} onChange={(v) => v && setEdit({ ...edit, validTo: v })} />
             </SimpleGrid>
-            <Switch label="Attivo" checked={edit.enabled} onChange={(e) => setEdit({ ...edit, enabled: e.currentTarget.checked })} />
-            <Button onClick={() => void save()}>Salva e invia</Button>
+            <Switch label={t('tasks.activeSwitch')} checked={edit.enabled} onChange={(e) => setEdit({ ...edit, enabled: e.currentTarget.checked })} />
+            <Button onClick={() => void save()}>{t('tasks.saveAndSend')}</Button>
           </Stack>
         )}
       </Modal>

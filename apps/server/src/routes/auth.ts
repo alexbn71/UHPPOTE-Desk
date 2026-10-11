@@ -11,14 +11,14 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     const body = loginSchema.parse(req.body)
     const key = `${req.ip}|${body.username.toLowerCase()}`
     const f = failures.get(key)
-    if (f && f.until > Date.now()) throw new HttpError(429, 'Troppi tentativi falliti, riprovare tra qualche minuto')
+    if (f && f.until > Date.now()) throw new HttpError(429, 'tooManyAttempts')
 
     const result = await ctx.auth.login(body.username, body.password, req.ip, req.headers['user-agent'] ?? '')
     if (!result) {
       const count = (f?.count ?? 0) + 1
       failures.set(key, { count, until: count >= 5 ? Date.now() + 5 * 60_000 : 0 })
       ctx.audit.log(null, 'login-failed', `operator:${body.username}`, { ip: req.ip })
-      throw new HttpError(401, 'Credenziali non valide')
+      throw new HttpError(401, 'invalidCredentials')
     }
     failures.delete(key)
     ctx.audit.log(result.user, 'login', `operator:${result.user.username}`, { ip: req.ip })
@@ -41,15 +41,15 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
   })
 
   app.get('/auth/me', async (req) => {
-    if (!req.user) throw new HttpError(401, 'Autenticazione richiesta')
+    if (!req.user) throw new HttpError(401, 'unauthenticated')
     return { user: req.user }
   })
 
   app.post('/auth/password', async (req) => {
-    if (!req.user) throw new HttpError(401, 'Autenticazione richiesta')
+    if (!req.user) throw new HttpError(401, 'unauthenticated')
     const body = changePasswordSchema.parse(req.body)
     const ok = await ctx.auth.changePassword(req.user.id, body.currentPassword, body.newPassword)
-    if (!ok) throw new HttpError(400, 'Password attuale errata')
+    if (!ok) throw new HttpError(400, 'wrongPassword')
     ctx.auth.revokeSessions(req.user.id, req.cookies[SESSION_COOKIE])
     ctx.audit.log(req.user, 'change-password', `operator:${req.user.username}`)
     return { ok: true }
@@ -81,7 +81,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     const { id } = idParam.parse(req.params)
     const body = operatorInputSchema.parse(req.body)
     if (id === req.user!.id && (body.role !== 'admin' || !body.active)) {
-      throw new HttpError(400, 'Non puoi ridurre i tuoi permessi o disattivare il tuo utente')
+      throw new HttpError(400, 'selfDemote')
     }
     ctx.db.tx(() => {
       ctx.db.run('UPDATE operators SET username = ?, display_name = ?, role = ?, active = ? WHERE id = ?', [
@@ -111,7 +111,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
 
   app.delete('/operators/:id', admin, async (req) => {
     const { id } = idParam.parse(req.params)
-    if (id === req.user!.id) throw new HttpError(400, 'Non puoi eliminare il tuo utente')
+    if (id === req.user!.id) throw new HttpError(400, 'selfDelete')
     ctx.db.run('DELETE FROM operators WHERE id = ?', [id])
     ctx.audit.log(req.user, 'delete-operator', `operator:${id}`)
     return { ok: true }

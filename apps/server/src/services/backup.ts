@@ -24,7 +24,7 @@ export class BackupService {
         try {
           this.run()
         } catch (err) {
-          this.opts.logger?.error?.(`backup fallito: ${(err as Error).message}`)
+          this.opts.logger?.error?.(`backup failed: ${(err as Error).message}`)
         }
       }
     }, 60_000)
@@ -40,7 +40,7 @@ export class BackupService {
     const file = path.join(this.dir, `uhppote-desk-${stamp}.sqlite`)
     this.db.backup(file)
     this.rotate()
-    this.opts.logger?.info?.(`backup creato: ${file}`)
+    this.opts.logger?.info?.(`backup created: ${file}`)
     return file
   }
 

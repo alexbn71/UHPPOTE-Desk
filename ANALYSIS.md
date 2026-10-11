@@ -336,7 +336,7 @@ Quality is ensured by the official vectors (`test-data.json`), differential test
           └───────────────────────────────────┘
 ```
 
-**Monorepo (npm workspaces)**: `packages/protocol`, `packages/shared` (zod schemas, DTOs, enums and Italian labels for the codes), `apps/server`, `apps/web`, `tools/hwtest` (hardware test suite), `docker/`.
+**Monorepo (npm workspaces)**: `packages/protocol`, `packages/shared` (zod schemas, DTOs, enums and the translations of every text), `apps/server`, `apps/web`, `tools/hwtest` (hardware test suite), `docker/`.
 
 **Data model** (SQLite): controllers, doors, zones, departments, people, cards, permissions, time_profiles, tasks, controller_settings, events (unique per controller + epoch + index), shifts / holidays / leaves / manual_punches, operators, operator_zones, sessions, audit_log, sync_runs, settings.
 
@@ -412,6 +412,7 @@ Implemented following the architecture in §9, with one change from the original
 | Time profiles, tasks, doors, interlock, anti-passback, keypads, door passcodes, first card, special events, PC control | ✅ | server integration |
 | Attendance: shifts (including night shifts), holidays (including Easter), leave/absences, manual punches, report + CSV | ✅ | unit |
 | Operators with roles and zones, audit log, daily backup | ✅ | server integration + E2E |
+| Multilingual interface: English (base), Italian, Spanish, French, German; translated server errors, sync progress and CSV exports | ✅ | unit (key/placeholder consistency) + server integration + E2E |
 | Hardware commissioning suite L0–L5 | ✅ | run against the FakeController (all levels) and the uhppoted simulator (L0–L2) |
 | Docker image | ✅ | built, smoke-tested and published by GitHub Actions |
 

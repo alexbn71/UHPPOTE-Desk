@@ -23,12 +23,14 @@ import { modals } from '@mantine/modals'
 import { IconAlertTriangle, IconClock, IconDownload, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import type { ControllerDto, ControllerSettings } from '@uhppote-desk/shared'
-import { ANTIPASSBACK_LABELS, DOOR_MODE_LABELS, FIRST_CARD_MODE_LABELS, INTERLOCK_LABELS, reasonLabel } from '@uhppote-desk/shared'
+import { ANTIPASSBACK_MODES, FIRST_CARD_MODES, INTERLOCK_MODES } from '@uhppote-desk/shared'
 import { PageHeader, WeekdaysInput } from '../components/common'
-import { api, notifyError, notifyOk } from '../lib/api'
+import { api, errorMessage, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { useCodes } from '../lib/codes'
 import { fmtDate, fmtDateTime } from '../lib/format'
 import { useLive } from '../lib/live'
 import { ControllerFormFields, controllerBody, type ControllerForm } from './Controllers'
@@ -54,15 +56,16 @@ interface Info {
 }
 
 function Diagnostics({ id }: { id: number }) {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const info = useQuery({ queryKey: ['controller-info', id], queryFn: () => api.get<Info>(`/controllers/${id}/info`), retry: false })
   const { can } = useAuth()
   const [busy, setBusy] = useState<string | null>(null)
 
-  const action = async (name: string, fn: () => Promise<unknown>, ok: string) => {
+  const action = async (name: string, fn: () => Promise<string>) => {
     setBusy(name)
     try {
-      await fn()
-      notifyOk(ok)
+      notifyOk(await fn())
       void info.refetch()
     } catch (err) {
       notifyError(err)
@@ -73,10 +76,10 @@ function Diagnostics({ id }: { id: number }) {
 
   if (info.isError) {
     return (
-      <Alert color="red" icon={<IconAlertTriangle />} title="Controller non raggiungibile">
-        {(info.error as Error).message}
+      <Alert color="red" icon={<IconAlertTriangle />} title={t('controllerDetail.unreachable')}>
+        {errorMessage(info.error)}
         <Button mt="sm" size="xs" variant="light" onClick={() => void info.refetch()}>
-          Riprova
+          {t('controllerDetail.retry')}
         </Button>
       </Alert>
     )
@@ -86,29 +89,32 @@ function Diagnostics({ id }: { id: number }) {
     <Stack>
       <Group>
         <Button variant="default" leftSection={<IconRefresh size={16} />} loading={info.isFetching} onClick={() => void info.refetch()}>
-          Rileggi dal controller
+          {t('controllerDetail.reread')}
         </Button>
         {can('operator') && (
           <>
-            <Button variant="default" leftSection={<IconClock size={16} />} loading={busy === 'time'} onClick={() => void action('time', () => api.post(`/controllers/${id}/time-sync`), 'Ora sincronizzata')}>
-              Sincronizza ora
+            <Button
+              variant="default"
+              leftSection={<IconClock size={16} />}
+              loading={busy === 'time'}
+              onClick={() => void action('time', async () => (await api.post(`/controllers/${id}/time-sync`), t('controllerDetail.timeSynced')))}
+            >
+              {t('controllerDetail.syncTime')}
             </Button>
             <Button
               variant="default"
               leftSection={<IconDownload size={16} />}
               loading={busy === 'collect'}
               onClick={() =>
-                void action(
-                  'collect',
-                  async () => {
-                    const r = await api.post<{ collected: number; skipped: number }>(`/controllers/${id}/collect`)
-                    notifyOk(`Eventi scaricati: ${r.collected}${r.skipped ? ` (sovrascritti: ${r.skipped})` : ''}`)
-                  },
-                  'Raccolta eventi completata',
-                )
+                void action('collect', async () => {
+                  const r = await api.post<{ collected: number; skipped: number }>(`/controllers/${id}/collect`)
+                  return r.skipped
+                    ? t('controllerDetail.collectedSkipped', { n: r.collected, skipped: r.skipped })
+                    : t('controllerDetail.collected', { n: r.collected })
+                })
               }
             >
-              Scarica eventi
+              {t('controllerDetail.collect')}
             </Button>
           </>
         )}
@@ -118,23 +124,31 @@ function Diagnostics({ id }: { id: number }) {
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Card withBorder>
               <Title order={5} mb="xs">
-                Dispositivo
+                {t('controllerDetail.device')}
               </Title>
               <Table>
                 <Table.Tbody>
                   {[
-                    ['Numero di serie', d.device.controller],
-                    ['Indirizzo IP', `${d.device.address} / ${d.device.netmask}`],
-                    ['Gateway', d.device.gateway],
-                    ['MAC', d.device.mac],
-                    ['Firmware', `${d.device.version} del ${fmtDate(d.device.date)}`],
-                    ['Ora del controller', fmtDateTime(d.time)],
-                    ['Tessere memorizzate', d.cards],
-                    ['Ultimo evento', d.status.event ? `#${d.status.event.index} — ${reasonLabel(d.status.event.reason)} (${fmtDateTime(d.status.event.timestamp)})` : 'nessuno'],
-                    ['Segnalibro download', d.eventIndex],
-                    ['Listener eventi', `${d.listener.address}:${d.listener.port}${d.listener.interval ? ` (auto-invio ogni ${d.listener.interval}s)` : ''}`],
-                    ['Anti-passback', ANTIPASSBACK_LABELS[d.antipassback] ?? d.antipassback],
-                    ['Errore di sistema', d.status.systemError],
+                    [t('controllerDetail.serial'), d.device.controller],
+                    [t('controllerDetail.ip'), `${d.device.address} / ${d.device.netmask}`],
+                    [t('controllerDetail.gateway'), d.device.gateway],
+                    [t('controllerDetail.mac'), d.device.mac],
+                    [t('controllerDetail.firmware'), t('controllerDetail.firmwareValue', { version: d.device.version, date: fmtDate(d.device.date) })],
+                    [t('controllerDetail.controllerTime'), fmtDateTime(d.time)],
+                    [t('controllerDetail.storedCards'), d.cards],
+                    [
+                      t('controllerDetail.lastEvent'),
+                      d.status.event
+                        ? t('controllerDetail.lastEventValue', { index: d.status.event.index, reason: codes.reason(d.status.event.reason), time: fmtDateTime(d.status.event.timestamp) })
+                        : t('common.none'),
+                    ],
+                    [t('controllerDetail.bookmark'), d.eventIndex],
+                    [
+                      t('controllerDetail.listener'),
+                      `${d.listener.address}:${d.listener.port}${d.listener.interval ? ` ${t('controllerDetail.listenerAutosend', { n: d.listener.interval })}` : ''}`,
+                    ],
+                    [t('controllerDetail.antipassback'), codes.antipassback(d.antipassback)],
+                    [t('controllerDetail.systemError'), d.status.systemError],
                   ].map(([k, v]) => (
                     <Table.Tr key={String(k)}>
                       <Table.Td c="dimmed" w={200}>
@@ -150,38 +164,37 @@ function Diagnostics({ id }: { id: number }) {
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Card withBorder>
               <Title order={5} mb="xs">
-                Porte (stato letto dal controller)
+                {t('controllerDetail.doorsTitle')}
               </Title>
               <Table>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Porta</Table.Th>
-                    <Table.Th>Modalità</Table.Th>
-                    <Table.Th>Ritardo</Table.Th>
-                    <Table.Th>Sensore</Table.Th>
-                    <Table.Th>Relè</Table.Th>
+                    <Table.Th>{t('common.door')}</Table.Th>
+                    <Table.Th>{t('controllerDetail.colMode')}</Table.Th>
+                    <Table.Th>{t('controllerDetail.colDelay')}</Table.Th>
+                    <Table.Th>{t('controllerDetail.colSensor')}</Table.Th>
+                    <Table.Th>{t('controllerDetail.colRelay')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {d.doors.map((door, i) => (
                     <Table.Tr key={door.door}>
                       <Table.Td>{door.door}</Table.Td>
-                      <Table.Td>{DOOR_MODE_LABELS[door.mode] ?? door.mode}</Table.Td>
-                      <Table.Td>{door.delay}s</Table.Td>
+                      <Table.Td>{codes.doorMode(door.mode)}</Table.Td>
+                      <Table.Td>{t('common.seconds', { n: door.delay })}</Table.Td>
                       <Table.Td>
                         <Badge color={d.status.doorOpen[i] ? 'orange' : 'teal'} variant="light">
-                          {d.status.doorOpen[i] ? 'Aperta' : 'Chiusa'}
+                          {d.status.doorOpen[i] ? t('dashboard.doorOpen') : t('dashboard.doorClosed')}
                         </Badge>
                       </Table.Td>
-                      <Table.Td>{d.status.relayUnlocked[i] ? 'Sbloccato' : 'Bloccato'}</Table.Td>
+                      <Table.Td>{d.status.relayUnlocked[i] ? t('controllerDetail.unlocked') : t('controllerDetail.locked')}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
               </Table>
               {(d.status.fireAlarm || d.status.forceLock) && (
                 <Alert color="red" mt="sm">
-                  {d.status.fireAlarm && 'Ingresso allarme incendio attivo. '}
-                  {d.status.forceLock && 'Ingresso blocco forzato attivo.'}
+                  {d.status.fireAlarm && t('controllerDetail.fireAlarmActive')} {d.status.forceLock && t('controllerDetail.forcedLockActive')}
                 </Alert>
               )}
             </Card>
@@ -193,6 +206,7 @@ function Diagnostics({ id }: { id: number }) {
 }
 
 function Network({ c }: { c: ControllerDto }) {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const navigate = useNavigate()
   const [form, setForm] = useState<ControllerForm>({ ...c, serial: c.serial, host: c.host ?? '', zoneId: c.zoneId ? String(c.zoneId) : null })
@@ -202,7 +216,7 @@ function Network({ c }: { c: ControllerDto }) {
   const save = async () => {
     try {
       await api.put(`/controllers/${c.id}`, controllerBody(form))
-      notifyOk('Controller aggiornato')
+      notifyOk(t('controllerDetail.updated'))
       void qc.invalidateQueries({ queryKey: ['controllers'] })
     } catch (err) {
       notifyError(err)
@@ -211,21 +225,16 @@ function Network({ c }: { c: ControllerDto }) {
 
   const setIpAddress = () =>
     modals.openConfirmModal({
-      title: 'Cambio indirizzo IP del controller',
-      children: (
-        <Text size="sm">
-          Il controller verrà riconfigurato con IP {ip.address}/{ip.netmask}, gateway {ip.gateway}. Se l'indirizzo non è raggiungibile da questo server la scheda
-          non sarà più contattabile finché non verrà riconfigurata (dalla stessa rete, via broadcast). Continuare?
-        </Text>
-      ),
-      labels: { confirm: 'Cambia IP', cancel: 'Annulla' },
+      title: t('controllerDetail.sendIpTitle'),
+      children: <Text size="sm">{t('controllerDetail.sendIpConfirm', ip)}</Text>,
+      labels: { confirm: t('controllerDetail.sendIpButton'), cancel: t('common.cancel') },
       confirmProps: { color: 'orange' },
       onConfirm: () =>
         api
           .post<{ verified: boolean }>(`/controllers/${c.id}/set-ip`, ip)
           .then((r) => {
-            if (r.verified) notifyOk('IP impostato e verificato')
-            else notifyError(new Error('Comando inviato ma il controller non risponde sul nuovo IP: verificare con la ricerca in rete'))
+            if (r.verified) notifyOk(t('controllerDetail.ipVerified'))
+            else notifyError(new Error(t('controllerDetail.ipNotVerified')))
             void qc.invalidateQueries({ queryKey: ['controllers'] })
           })
           .catch(notifyError),
@@ -233,9 +242,9 @@ function Network({ c }: { c: ControllerDto }) {
 
   const remove = () =>
     modals.openConfirmModal({
-      title: 'Rimuovi controller',
-      children: <Text size="sm">Il controller e il suo storico eventi verranno rimossi dal database (la scheda non viene modificata).</Text>,
-      labels: { confirm: 'Rimuovi', cancel: 'Annulla' },
+      title: t('controllerDetail.removeTitle'),
+      children: <Text size="sm">{t('controllerDetail.removeInfo')}</Text>,
+      labels: { confirm: t('common.remove'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
@@ -251,14 +260,14 @@ function Network({ c }: { c: ControllerDto }) {
     <SimpleGrid cols={{ base: 1, md: 2 }}>
       <Card withBorder>
         <Title order={5} mb="sm">
-          Configurazione nell'applicazione
+          {t('controllerDetail.appConfig')}
         </Title>
         <Stack>
           <ControllerFormFields form={form} setForm={setForm} />
           <Group>
-            <Button onClick={() => void save()}>Salva</Button>
+            <Button onClick={() => void save()}>{t('common.save')}</Button>
             <Button color="red" variant="light" leftSection={<IconTrash size={16} />} onClick={remove}>
-              Rimuovi
+              {t('common.remove')}
             </Button>
           </Group>
         </Stack>
@@ -266,25 +275,25 @@ function Network({ c }: { c: ControllerDto }) {
       <Stack>
         <Card withBorder>
           <Title order={5} mb="sm">
-            Indirizzo IP della scheda
+            {t('controllerDetail.ipTitle')}
           </Title>
           <Stack>
             <SimpleGrid cols={3}>
-              <TextInput label="IP" value={ip.address} onChange={(e) => setIp({ ...ip, address: e.currentTarget.value })} />
-              <TextInput label="Netmask" value={ip.netmask} onChange={(e) => setIp({ ...ip, netmask: e.currentTarget.value })} />
-              <TextInput label="Gateway" value={ip.gateway} onChange={(e) => setIp({ ...ip, gateway: e.currentTarget.value })} />
+              <TextInput label={t('controllerDetail.listenerIp')} value={ip.address} onChange={(e) => setIp({ ...ip, address: e.currentTarget.value })} />
+              <TextInput label={t('controllerDetail.netmask')} value={ip.netmask} onChange={(e) => setIp({ ...ip, netmask: e.currentTarget.value })} />
+              <TextInput label={t('controllerDetail.gateway')} value={ip.gateway} onChange={(e) => setIp({ ...ip, gateway: e.currentTarget.value })} />
             </SimpleGrid>
             <Button variant="light" color="orange" onClick={setIpAddress} disabled={!ip.address || !ip.netmask || !ip.gateway}>
-              Invia nuovo IP alla scheda
+              {t('controllerDetail.sendIp')}
             </Button>
           </Stack>
         </Card>
         <Card withBorder>
           <Title order={5} mb="sm">
-            Destinazione eventi (listener)
+            {t('controllerDetail.listenerTitle')}
           </Title>
           <Text size="sm" c="dimmed" mb="sm">
-            La scheda invia ogni evento a un solo indirizzo. Normalmente viene configurato in automatico (variabile UHPPOTE_LISTENER_PUBLIC).
+            {t('controllerDetail.listenerInfo')}
           </Text>
           <Group>
             <Button
@@ -292,17 +301,17 @@ function Network({ c }: { c: ControllerDto }) {
               onClick={() =>
                 api
                   .post<{ changed: boolean }>(`/controllers/${c.id}/listener`, null)
-                  .then((r) => notifyOk(r.changed ? 'Listener aggiornato' : 'Listener già corretto'))
+                  .then((r) => notifyOk(r.changed ? t('controllerDetail.listenerUpdated') : t('controllerDetail.listenerAlreadyOk')))
                   .catch(notifyError)
               }
             >
-              Configura automaticamente
+              {t('controllerDetail.listenerAuto')}
             </Button>
           </Group>
           <SimpleGrid cols={3} mt="sm">
-            <TextInput label="IP" value={listener.address} onChange={(e) => setListener({ ...listener, address: e.currentTarget.value })} />
-            <NumberInput label="Porta" value={listener.port} onChange={(v) => setListener({ ...listener, port: Number(v) })} hideControls />
-            <NumberInput label="Auto-invio (s)" value={listener.interval} min={0} max={255} onChange={(v) => setListener({ ...listener, interval: Number(v) })} />
+            <TextInput label={t('controllerDetail.listenerIp')} value={listener.address} onChange={(e) => setListener({ ...listener, address: e.currentTarget.value })} />
+            <NumberInput label={t('controllerDetail.listenerPort')} value={listener.port} onChange={(v) => setListener({ ...listener, port: Number(v) })} hideControls />
+            <NumberInput label={t('controllerDetail.listenerInterval')} value={listener.interval} min={0} max={255} onChange={(v) => setListener({ ...listener, interval: Number(v) })} />
           </SimpleGrid>
           <Button
             mt="sm"
@@ -311,11 +320,11 @@ function Network({ c }: { c: ControllerDto }) {
             onClick={() =>
               api
                 .post(`/controllers/${c.id}/listener`, listener)
-                .then(() => notifyOk('Listener impostato'))
+                .then(() => notifyOk(t('controllerDetail.listenerSet')))
                 .catch(notifyError)
             }
           >
-            Imposta manualmente
+            {t('controllerDetail.listenerManual')}
           </Button>
         </Card>
       </Stack>
@@ -324,6 +333,8 @@ function Network({ c }: { c: ControllerDto }) {
 }
 
 function AdvancedSettings({ id }: { id: number }) {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const { can } = useAuth()
   const settings = useQuery({ queryKey: ['settings', id], queryFn: () => api.get<ControllerSettings>(`/controllers/${id}/settings`) })
   const [s, setS] = useState<ControllerSettings | null>(null)
@@ -338,7 +349,7 @@ function AdvancedSettings({ id }: { id: number }) {
     setBusy(true)
     try {
       await api.put(`/controllers/${id}/settings`, s)
-      notifyOk('Impostazioni salvate e inviate al controller')
+      notifyOk(t('controllerDetail.settingsSaved'))
     } catch (err) {
       notifyError(err)
     } finally {
@@ -353,39 +364,29 @@ function AdvancedSettings({ id }: { id: number }) {
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <Card withBorder>
           <Title order={5} mb="sm">
-            Regole di passaggio
+            {t('controllerDetail.rulesTitle')}
           </Title>
           <Stack>
             <Select
-              label="Interblocco"
-              description="Le porte del gruppo non possono essere aperte contemporaneamente"
-              data={Object.entries(INTERLOCK_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+              label={t('controllerDetail.interlock')}
+              description={t('controllerDetail.interlockHint')}
+              data={INTERLOCK_MODES.map((m) => ({ value: String(m), label: codes.interlock(m) }))}
               value={String(s.interlock)}
               onChange={(v) => setS({ ...s, interlock: Number(v) as ControllerSettings['interlock'] })}
               readOnly={readOnly}
             />
             <Select
-              label="Anti-passback"
-              description="Impedisce di rientrare senza essere usciti (gruppi di lettori)"
-              data={Object.entries(ANTIPASSBACK_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+              label={t('controllerDetail.antipassback')}
+              description={t('controllerDetail.antipassbackHint')}
+              data={ANTIPASSBACK_MODES.map((m) => ({ value: String(m), label: codes.antipassback(m) }))}
               value={String(s.antipassback)}
               onChange={(v) => setS({ ...s, antipassback: Number(v) })}
               readOnly={readOnly}
             />
-            <Switch
-              label="Registra eventi porta e pulsante (apertura/chiusura, pulsante uscita)"
-              checked={s.recordSpecialEvents}
-              onChange={(e) => setS({ ...s, recordSpecialEvents: e.currentTarget.checked })}
-              disabled={readOnly}
-            />
-            <Switch
-              label="Controllo da PC (la scheda delega le decisioni al server; sconsigliato)"
-              checked={s.pcControl}
-              onChange={(e) => setS({ ...s, pcControl: e.currentTarget.checked })}
-              disabled={readOnly}
-            />
+            <Switch label={t('controllerDetail.specialEvents')} checked={s.recordSpecialEvents} onChange={(e) => setS({ ...s, recordSpecialEvents: e.currentTarget.checked })} disabled={readOnly} />
+            <Switch label={t('controllerDetail.pcControl')} checked={s.pcControl} onChange={(e) => setS({ ...s, pcControl: e.currentTarget.checked })} disabled={readOnly} />
             <NumberInput
-              label="Auto-invio stato al listener (secondi, 0 = solo eventi)"
+              label={t('controllerDetail.autosend')}
               min={0}
               max={255}
               value={s.listenerInterval}
@@ -396,14 +397,14 @@ function AdvancedSettings({ id }: { id: number }) {
         </Card>
         <Card withBorder>
           <Title order={5} mb="sm">
-            Tastiere e codici porta
+            {t('controllerDetail.keypadsTitle')}
           </Title>
           <Stack>
             <Group>
               {[0, 1, 2, 3].map((i) => (
                 <Checkbox
                   key={i}
-                  label={`Tastiera lettore ${i + 1}`}
+                  label={t('controllerDetail.keypadN', { n: i + 1 })}
                   checked={s.keypads[i]}
                   disabled={readOnly}
                   onChange={(e) => {
@@ -417,7 +418,7 @@ function AdvancedSettings({ id }: { id: number }) {
             {[0, 1, 2, 3].map((i) => (
               <TagsInput
                 key={i}
-                label={`Codici porta ${i + 1} (max 4, fino a 6 cifre)`}
+                label={t('controllerDetail.passcodesN', { n: i + 1 })}
                 maxTags={4}
                 value={s.passcodes[i].map(String)}
                 disabled={readOnly}
@@ -433,7 +434,7 @@ function AdvancedSettings({ id }: { id: number }) {
       </SimpleGrid>
       <Card withBorder>
         <Title order={5} mb="sm">
-          First card (la porta si sblocca solo dopo il primo passaggio autorizzato)
+          {t('controllerDetail.firstCardTitle')}
         </Title>
         <SimpleGrid cols={{ base: 1, md: 2 }}>
           {[0, 1, 2, 3].map((i) => {
@@ -445,24 +446,29 @@ function AdvancedSettings({ id }: { id: number }) {
             }
             return (
               <Card key={i} withBorder padding="sm">
-                <Switch label={`Porta ${i + 1}`} checked={!!fc?.enabled} disabled={readOnly} onChange={(e) => setFc(e.currentTarget.checked ? { ...fcDefault, ...(fc ?? {}), enabled: true } : fc ? { ...fc, enabled: false } : null)} />
+                <Switch
+                  label={t('common.doorN', { n: i + 1 })}
+                  checked={!!fc?.enabled}
+                  disabled={readOnly}
+                  onChange={(e) => setFc(e.currentTarget.checked ? { ...fcDefault, ...(fc ?? {}), enabled: true } : fc ? { ...fc, enabled: false } : null)}
+                />
                 {fc?.enabled && (
                   <Stack mt="xs" gap="xs">
                     <Group grow>
-                      <TextInput label="Dalle" value={fc.start} onChange={(e) => setFc({ ...fc, start: e.currentTarget.value })} readOnly={readOnly} />
-                      <TextInput label="Alle" value={fc.end} onChange={(e) => setFc({ ...fc, end: e.currentTarget.value })} readOnly={readOnly} />
+                      <TextInput label={t('controllerDetail.fcFrom')} value={fc.start} onChange={(e) => setFc({ ...fc, start: e.currentTarget.value })} readOnly={readOnly} />
+                      <TextInput label={t('controllerDetail.fcTo')} value={fc.end} onChange={(e) => setFc({ ...fc, end: e.currentTarget.value })} readOnly={readOnly} />
                     </Group>
                     <Group grow>
                       <Select
-                        label="Dopo la prima tessera"
-                        data={[0, 1, 2].map((m) => ({ value: String(m), label: FIRST_CARD_MODE_LABELS[m]! }))}
+                        label={t('controllerDetail.fcActive')}
+                        data={FIRST_CARD_MODES.filter((m) => m !== 3).map((m) => ({ value: String(m), label: codes.firstCardMode(m) }))}
                         value={String(fc.activeMode)}
                         onChange={(v) => setFc({ ...fc, activeMode: Number(v) })}
                         readOnly={readOnly}
                       />
                       <Select
-                        label="Fuori orario"
-                        data={[0, 1, 2, 3].map((m) => ({ value: String(m), label: FIRST_CARD_MODE_LABELS[m]! }))}
+                        label={t('controllerDetail.fcInactive')}
+                        data={FIRST_CARD_MODES.map((m) => ({ value: String(m), label: codes.firstCardMode(m) }))}
                         value={String(fc.inactiveMode)}
                         onChange={(v) => setFc({ ...fc, inactiveMode: Number(v) })}
                         readOnly={readOnly}
@@ -478,7 +484,7 @@ function AdvancedSettings({ id }: { id: number }) {
       </Card>
       {!readOnly && (
         <Button onClick={() => void save()} loading={busy}>
-          Salva e invia al controller
+          {t('controllerDetail.saveAndSend')}
         </Button>
       )}
     </Stack>
@@ -486,6 +492,8 @@ function AdvancedSettings({ id }: { id: number }) {
 }
 
 function Maintenance({ c }: { c: ControllerDto }) {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const [confirm, setConfirm] = useState('')
   const history = useQuery({
     queryKey: ['sync-history', c.id],
@@ -495,16 +503,16 @@ function Maintenance({ c }: { c: ControllerDto }) {
     <Stack>
       <Card withBorder>
         <Title order={5} mb="xs">
-          Storico sincronizzazioni
+          {t('controllerDetail.syncHistory')}
         </Title>
         <Table>
           <Table.Tbody>
             {(history.data ?? []).map((h) => (
               <Table.Tr key={h.id}>
                 <Table.Td>{fmtDateTime(h.startedAt)}</Table.Td>
-                <Table.Td>{h.operator ?? 'sistema'}</Table.Td>
+                <Table.Td>{h.operator ?? t('common.system')}</Table.Td>
                 <Table.Td>
-                  <Badge color={h.status === 'ok' ? 'green' : h.status === 'error' ? 'red' : 'blue'}>{h.status}</Badge>
+                  <Badge color={h.status === 'ok' ? 'green' : h.status === 'error' ? 'red' : 'blue'}>{codes.syncStatus(h.status)}</Badge>
                 </Table.Td>
                 <Table.Td>
                   <Code>{h.summary}</Code>
@@ -516,25 +524,24 @@ function Maintenance({ c }: { c: ControllerDto }) {
       </Card>
       <Card withBorder style={{ borderColor: 'var(--mantine-color-red-6)' }}>
         <Title order={5} c="red" mb="xs">
-          Ripristino parametri di fabbrica
+          {t('controllerDetail.resetTitle')}
         </Title>
         <Text size="sm" mb="sm">
-          Azzera rete, listener, tessere ed eventi della scheda. Le tessere presenti vengono salvate prima dell'operazione e possono essere reinviate con una
-          sincronizzazione. Digitare il numero di serie <b>{c.serial}</b> per confermare.
+          {t('controllerDetail.resetInfo', { serial: c.serial })}
         </Text>
         <Group>
-          <TextInput value={confirm} onChange={(e) => setConfirm(e.currentTarget.value)} placeholder="Numero di serie" />
+          <TextInput value={confirm} onChange={(e) => setConfirm(e.currentTarget.value)} placeholder={t('controllerDetail.resetPlaceholder')} />
           <Button
             color="red"
             disabled={confirm !== String(c.serial)}
             onClick={() =>
               api
                 .post<{ cardsBackup: unknown[]; backupFile: string }>(`/controllers/${c.id}/restore-defaults`, { confirm })
-                .then((r) => notifyOk(`Parametri ripristinati: ${r.cardsBackup.length} tessere salvate in ${r.backupFile} (cartella backup del server)`))
+                .then((r) => notifyOk(t('controllerDetail.resetDone', { n: r.cardsBackup.length, file: r.backupFile })))
                 .catch(notifyError)
             }
           >
-            Ripristina
+            {t('controllerDetail.resetButton')}
           </Button>
         </Group>
       </Card>
@@ -543,6 +550,7 @@ function Maintenance({ c }: { c: ControllerDto }) {
 }
 
 export function ControllerDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const cid = Number(id)
   const { can } = useAuth()
@@ -557,27 +565,27 @@ export function ControllerDetailPage() {
         title={c.name}
         description={
           <>
-            S/N {c.serial} · {c.host ?? 'broadcast'} · <Badge color={online ? 'green' : 'red'}>{online ? 'Online' : 'Offline'}</Badge>
+            S/N {c.serial} · {c.host ?? t('controllers.broadcast')} · <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
           </>
         }
       />
-      <Tabs defaultValue="diagnostica" keepMounted={false}>
+      <Tabs defaultValue="diagnostics" keepMounted={false}>
         <Tabs.List mb="md">
-          <Tabs.Tab value="diagnostica">Diagnostica</Tabs.Tab>
-          {can('admin') && <Tabs.Tab value="rete">Rete e configurazione</Tabs.Tab>}
-          <Tabs.Tab value="avanzate">Impostazioni avanzate</Tabs.Tab>
-          {can('admin') && <Tabs.Tab value="manutenzione">Manutenzione</Tabs.Tab>}
+          <Tabs.Tab value="diagnostics">{t('controllerDetail.tabDiagnostics')}</Tabs.Tab>
+          {can('admin') && <Tabs.Tab value="network">{t('controllerDetail.tabNetwork')}</Tabs.Tab>}
+          <Tabs.Tab value="advanced">{t('controllerDetail.tabAdvanced')}</Tabs.Tab>
+          {can('admin') && <Tabs.Tab value="maintenance">{t('controllerDetail.tabMaintenance')}</Tabs.Tab>}
         </Tabs.List>
-        <Tabs.Panel value="diagnostica">
+        <Tabs.Panel value="diagnostics">
           <Diagnostics id={cid} />
         </Tabs.Panel>
-        <Tabs.Panel value="rete">
+        <Tabs.Panel value="network">
           <Network c={c} />
         </Tabs.Panel>
-        <Tabs.Panel value="avanzate">
+        <Tabs.Panel value="advanced">
           <AdvancedSettings id={cid} />
         </Tabs.Panel>
-        <Tabs.Panel value="manutenzione">
+        <Tabs.Panel value="maintenance">
           <Maintenance c={c} />
         </Tabs.Panel>
       </Tabs>

@@ -80,8 +80,9 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
     this.emit('message', { type: 'event', event })
   }
 
-  publishSync(controllerId: number, status: string, message: string): void {
-    this.emit('message', { type: 'sync', controllerId, status, message })
+  /** Synchronisation progress; `code` is a key under `sync.progress.*` (or `errors.*` for errors). */
+  publishSync(controllerId: number, status: 'running' | 'ok' | 'error', code: string, params: Record<string, string | number> = {}): void {
+    this.emit('message', { type: 'sync', controllerId, status, code, params })
   }
 }
 
@@ -113,7 +114,7 @@ export class ControllerGateway {
 
   controller(id: number): ControllerRecord {
     const c = this.controllers.get(id)
-    if (!c) throw new HttpError(404, 'Controller non trovato')
+    if (!c) throw new HttpError(404, 'controllerNotFound')
     return c
   }
 

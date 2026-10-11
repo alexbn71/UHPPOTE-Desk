@@ -1,12 +1,12 @@
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
-// Primitive
+// Primitives
 // ---------------------------------------------------------------------------
 
-export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data non valida (AAAA-MM-GG)')
-export const hhmmSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/, 'Ora non valida (HH:mm)')
-export const ipv4Schema = z.ipv4({ message: 'Indirizzo IPv4 non valido' })
+export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date (YYYY-MM-DD)')
+export const hhmmSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/, 'Invalid time (HH:mm)')
+export const ipv4Schema = z.ipv4({ message: 'Invalid IPv4 address' })
 export const weekdaysSchema = z.array(z.boolean()).length(7)
 export const doorNumberSchema = z.number().int().min(1).max(4)
 export const pinSchema = z.number().int().min(0).max(999999)
@@ -20,7 +20,7 @@ export type Role = z.infer<typeof roleSchema>
 export const idParam = z.object({ id: z.coerce.number().int().positive() })
 
 // ---------------------------------------------------------------------------
-// Autenticazione e operatori
+// Authentication and operators
 // ---------------------------------------------------------------------------
 
 export const loginSchema = z.object({
@@ -30,7 +30,7 @@ export const loginSchema = z.object({
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(8, 'La password deve avere almeno 8 caratteri'),
+  newPassword: z.string().min(8, 'The password must be at least 8 characters long'),
 })
 
 export const operatorInputSchema = z.object({
@@ -38,7 +38,7 @@ export const operatorInputSchema = z.object({
     .string()
     .min(3)
     .max(50)
-    .regex(/^[a-zA-Z0-9._-]+$/, 'Solo lettere, numeri, punto, trattino e underscore'),
+    .regex(/^[a-zA-Z0-9._-]+$/, 'Only letters, digits, dot, dash and underscore'),
   displayName: z.string().min(1).max(100),
   role: roleSchema,
   active: z.boolean().default(true),
@@ -47,7 +47,7 @@ export const operatorInputSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// Struttura
+// Structure
 // ---------------------------------------------------------------------------
 
 export const zoneInputSchema = z.object({
@@ -82,7 +82,7 @@ export const setIpSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// Persone, tessere, permessi
+// People, cards, permissions
 // ---------------------------------------------------------------------------
 
 export const personInputSchema = z
@@ -100,7 +100,7 @@ export const personInputSchema = z
     active: z.boolean().default(true),
     shiftId: z.number().int().nullable().default(null),
   })
-  .refine((p) => p.validFrom <= p.validTo, { message: 'La data di inizio deve precedere la data di fine', path: ['validTo'] })
+  .refine((p) => p.validFrom <= p.validTo, { message: 'The start date must precede the end date', path: ['validTo'] })
 
 export const cardInputSchema = z.object({
   number: cardNumberSchema,
@@ -112,7 +112,7 @@ export const replaceCardSchema = z.object({
   newNumber: cardNumberSchema,
 })
 
-/** Permesso: profileId null = sempre; firstCard opzionale. */
+/** Permission: profileId null = always; firstCard optional. */
 export const permissionSchema = z.object({
   doorId: z.number().int(),
   profileId: z.number().int().min(2).max(254).nullable(),
@@ -131,7 +131,7 @@ export const bulkPermissionsSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// Fasce orarie e task
+// Time profiles and tasks
 // ---------------------------------------------------------------------------
 
 export const segmentSchema = z.object({ start: hhmmSchema, end: hhmmSchema })
@@ -159,7 +159,7 @@ export const taskInputSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// Impostazioni avanzate del controller
+// Advanced controller settings
 // ---------------------------------------------------------------------------
 
 export const firstCardDoorSchema = z.object({
@@ -184,7 +184,7 @@ export const controllerSettingsSchema = z.object({
 export type ControllerSettings = z.infer<typeof controllerSettingsSchema>
 
 // ---------------------------------------------------------------------------
-// Eventi e presenze
+// Events and attendance
 // ---------------------------------------------------------------------------
 
 export const eventQuerySchema = z.object({
@@ -219,7 +219,7 @@ export const leaveInputSchema = z
     type: z.enum(['ferie', 'permesso', 'malattia', 'trasferta', 'altro']),
     notes: z.string().max(500).default(''),
   })
-  .refine((l) => l.fromDate <= l.toDate, { message: 'Intervallo non valido', path: ['toDate'] })
+  .refine((l) => l.fromDate <= l.toDate, { message: 'Invalid range', path: ['toDate'] })
 
 export const manualPunchInputSchema = z.object({
   personId: z.number().int(),
@@ -236,7 +236,7 @@ export const attendanceQuerySchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// DTO in uscita (tipi)
+// Output DTOs (types)
 // ---------------------------------------------------------------------------
 
 export interface OperatorDto {
@@ -346,7 +346,7 @@ export interface ControllerLiveState {
 export type WsMessage =
   | { type: 'event'; event: EventDto }
   | { type: 'status'; state: ControllerLiveState }
-  | { type: 'sync'; controllerId: number; status: string; message: string }
+  | { type: 'sync'; controllerId: number; status: 'running' | 'ok' | 'error'; code: string; params?: Record<string, string | number> }
 
 export interface SyncDiffDto {
   controllerId: number
@@ -370,5 +370,6 @@ export interface AttendanceDayDto {
   lateMinutes: number
   earlyLeaveMinutes: number
   overtimeMinutes: number
-  anomalies: string[]
+  /** anomaly codes (translated under codes.anomaly) */
+  anomalies: ('singlePunch' | 'oddPunches')[]
 }

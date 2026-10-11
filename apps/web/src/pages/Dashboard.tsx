@@ -2,26 +2,28 @@ import { Alert, Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title, Tool
 import { modals } from '@mantine/modals'
 import { IconAlertTriangle, IconDoorEnter, IconLock, IconLockOpen } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import type { ControllerDto, ControllerLiveState, DoorDto, EventDto } from '@uhppote-desk/shared'
-import { DOOR_MODE_LABELS } from '@uhppote-desk/shared'
 import { EventsTable, PageHeader } from '../components/common'
+import i18n from '../i18n'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { useCodes } from '../lib/codes'
 import { fmtDateTime } from '../lib/format'
 import { useLive } from '../lib/live'
 import { useControllers } from '../lib/queries'
 
 export function openDoorWithConfirm(door: DoorDto, onDone?: () => void) {
   modals.openConfirmModal({
-    title: 'Apertura remota',
-    children: <Text size="sm">Aprire la porta «{door.name}»?</Text>,
-    labels: { confirm: 'Apri', cancel: 'Annulla' },
+    title: i18n.t('dashboard.remoteOpenTitle'),
+    children: <Text size="sm">{i18n.t('dashboard.remoteOpenConfirm', { name: door.name })}</Text>,
+    labels: { confirm: i18n.t('dashboard.openButton'), cancel: i18n.t('common.cancel') },
     onConfirm: () =>
       api
         .post(`/doors/${door.id}/open`)
         .then(() => {
-          notifyOk(`Comando di apertura inviato a «${door.name}»`)
+          notifyOk(i18n.t('dashboard.remoteOpenSent', { name: door.name }))
           onDone?.()
         })
         .catch(notifyError),
@@ -29,6 +31,8 @@ export function openDoorWithConfirm(door: DoorDto, onDone?: () => void) {
 }
 
 function DoorTile({ door, live, canOpen }: { door: DoorDto; live?: ControllerLiveState; canOpen: boolean }) {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const state = live?.doors.find((d) => d.door === door.door)
   return (
     <Card withBorder padding="sm">
@@ -39,15 +43,15 @@ function DoorTile({ door, live, canOpen }: { door: DoorDto; live?: ControllerLiv
           </Text>
           <Group gap={4}>
             <Badge size="xs" variant="light" color={door.mode === 3 ? 'gray' : door.mode === 1 ? 'yellow' : 'dark'}>
-              {DOOR_MODE_LABELS[door.mode]}
+              {codes.doorMode(door.mode)}
             </Badge>
             {state && (
               <Badge size="xs" color={state.open ? 'orange' : 'teal'} variant="light">
-                {state.open ? 'Aperta' : 'Chiusa'}
+                {state.open ? t('dashboard.doorOpen') : t('dashboard.doorClosed')}
               </Badge>
             )}
             {state?.unlocked && (
-              <Tooltip label="Relè attivo (serratura sbloccata)">
+              <Tooltip label={t('dashboard.relayActive')}>
                 <IconLockOpen size={14} color="var(--mantine-color-orange-6)" />
               </Tooltip>
             )}
@@ -56,7 +60,7 @@ function DoorTile({ door, live, canOpen }: { door: DoorDto; live?: ControllerLiv
         </Stack>
         {canOpen && (
           <Button size="xs" variant="light" style={{ flexShrink: 0 }} leftSection={<IconDoorEnter size={14} />} disabled={!live?.online} onClick={() => openDoorWithConfirm(door)}>
-            Apri
+            {t('dashboard.openButton')}
           </Button>
         )}
       </Group>
@@ -65,8 +69,10 @@ function DoorTile({ door, live, canOpen }: { door: DoorDto; live?: ControllerLiv
 }
 
 function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: ControllerLiveState; canOpen: boolean }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const online = live?.online ?? c.online
+  const drift = live?.driftSeconds
   return (
     <Card withBorder shadow="xs">
       <Group justify="space-between" mb="xs">
@@ -74,13 +80,13 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
           <Title order={4} style={{ cursor: 'pointer' }} onClick={() => navigate(`/controller/${c.id}`)}>
             {c.name}
           </Title>
-          <Badge color={online ? 'green' : 'red'}>{online ? 'Online' : 'Offline'}</Badge>
-          {live?.fireAlarm && <Badge color="red">Allarme incendio</Badge>}
-          {live?.forceLock && <Badge color="orange">Blocco forzato</Badge>}
+          <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
+          {live?.fireAlarm && <Badge color="red">{t('dashboard.fireAlarm')}</Badge>}
+          {live?.forceLock && <Badge color="orange">{t('dashboard.forcedLock')}</Badge>}
         </Group>
         <Text size="xs" c="dimmed">
-          S/N {c.serial} · {c.host ?? 'broadcast'}
-          {live?.driftSeconds !== null && live?.driftSeconds !== undefined && Math.abs(live.driftSeconds) > 30 ? ` · deriva ora ${live.driftSeconds}s` : ''}
+          S/N {c.serial} · {c.host ?? t('controllers.broadcast')}
+          {drift !== null && drift !== undefined && Math.abs(drift) > 30 ? ` · ${t('dashboard.clockDrift', { n: drift })}` : ''}
         </Text>
       </Group>
       {!online && live?.lastError && (
@@ -96,13 +102,14 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
           ))}
       </SimpleGrid>
       <Text size="xs" c="dimmed" mt="xs">
-        Ultimo contatto: {fmtDateTime(live?.lastSeenAt ?? c.lastSeenAt)}
+        {t('dashboard.lastContact', { time: fmtDateTime(live?.lastSeenAt ?? c.lastSeenAt) })}
       </Text>
     </Card>
   )
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation()
   const controllers = useControllers()
   const live = useLive()
   const { can } = useAuth()
@@ -111,19 +118,18 @@ export function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Stato dei controller e degli ultimi passaggi" />
+      <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
       {controllers.data?.length === 0 && (
-        <Alert color="blue" mb="md" title="Nessun controller configurato">
+        <Alert color="blue" mb="md" title={t('dashboard.noControllersTitle')}>
           {can('admin') ? (
-            <>
-              Aggiungi il primo controller dalla pagina{' '}
+            <Group gap="xs">
+              <Text size="sm">{t('dashboard.noControllersAdmin')}</Text>
               <Button variant="subtle" size="compact-sm" onClick={() => navigate('/controller')}>
-                Controller
+                {t('dashboard.goToControllers')}
               </Button>
-              (ricerca automatica in rete disponibile).
-            </>
+            </Group>
           ) : (
-            'Chiedi a un amministratore di configurare i controller.'
+            t('dashboard.noControllersUser')
           )}
         </Alert>
       )}
@@ -132,9 +138,9 @@ export function DashboardPage() {
       </SimpleGrid>
       <Card withBorder>
         <Group justify="space-between" mb="sm">
-          <Title order={4}>Ultimi eventi</Title>
+          <Title order={4}>{t('dashboard.latestEvents')}</Title>
           <Button variant="subtle" size="xs" onClick={() => navigate('/monitor')}>
-            Apri monitor
+            {t('dashboard.openMonitor')}
           </Button>
         </Group>
         <EventsTable events={latest.data?.rows ?? []} />

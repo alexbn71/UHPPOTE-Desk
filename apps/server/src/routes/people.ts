@@ -9,11 +9,22 @@ import {
   personInputSchema,
   personPermissionsSchema,
   replaceCardSchema,
+  translate,
 } from '@uhppote-desk/shared'
 import { HttpError, requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
 import { parseCsv } from '../util/csv.js'
 import { addDays, localDate, localDateTime } from '../util/time.js'
+
+/** Error on one row of a CSV import; `code` is a key under `errors.*`. */
+class ImportRowError extends Error {
+  constructor(
+    readonly code: string,
+    readonly params: Record<string, string | number> = {},
+  ) {
+    super(translate('en', `errors.${code}`, params))
+  }
+}
 
 export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): void {
   const viewer = { preHandler: requireRole('viewer') }
@@ -64,7 +75,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.get('/people/:id', viewer, async (req) => {
     const { id } = idParam.parse(req.params)
     const p = ctx.people.get(id)
-    if (!p) throw new HttpError(404, 'Persona non trovata')
+    if (!p) throw new HttpError(404, 'personNotFound')
     return { ...p, permissions: ctx.people.permissions(id) }
   })
 
@@ -78,7 +89,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.put('/people/:id', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const b = personInputSchema.parse(req.body)
-    if (!ctx.people.update(id, b)) throw new HttpError(404, 'Persona non trovata')
+    if (!ctx.people.update(id, b)) throw new HttpError(404, 'personNotFound')
     ctx.audit.log(req.user, 'update-person', `person:${id}`, { code: b.code, active: b.active, validFrom: b.validFrom, validTo: b.validTo })
     return { ok: true, pushErrors: await push(req.user, id) }
   })
@@ -86,7 +97,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.delete('/people/:id', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const p = ctx.people.get(id)
-    if (!p) throw new HttpError(404, 'Persona non trovata')
+    if (!p) throw new HttpError(404, 'personNotFound')
     const cards = p.cards.map((c) => c.number)
     ctx.db.tx(() => {
       for (const c of p.cards) ctx.people.deleteCard(c.id)
@@ -99,8 +110,8 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.put('/people/:id/photo', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const file = await req.file()
-    if (!file) throw new HttpError(400, 'Nessun file ricevuto')
-    if (!/^image\/(jpeg|png|webp)$/.test(file.mimetype)) throw new HttpError(400, 'Formato immagine non supportato (JPEG, PNG, WebP)')
+    if (!file) throw new HttpError(400, 'noFile')
+    if (!/^image\/(jpeg|png|webp)$/.test(file.mimetype)) throw new HttpError(400, 'unsupportedImage')
     ctx.people.setPhoto(id, await file.toBuffer(), file.mimetype)
     return { ok: true }
   })
@@ -114,7 +125,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.get('/people/:id/photo', viewer, async (req, reply) => {
     const { id } = idParam.parse(req.params)
     const photo = ctx.people.photo(id)
-    if (!photo) throw new HttpError(404, 'Nessuna foto')
+    if (!photo) throw new HttpError(404, 'noPhoto')
     return reply.header('Cache-Control', 'private, max-age=60').type(photo.type).send(photo.data)
   })
 
@@ -125,7 +136,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.put('/people/:id/permissions', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const b = personPermissionsSchema.parse(req.body)
-    if (!ctx.people.get(id)) throw new HttpError(404, 'Persona non trovata')
+    if (!ctx.people.get(id)) throw new HttpError(404, 'personNotFound')
     ctx.people.setPermissions(id, b.permissions)
     ctx.audit.log(req.user, 'set-permissions', `person:${id}`, b.permissions)
     return { ok: true, pushErrors: await push(req.user, id) }
@@ -162,7 +173,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
 
   app.post('/cards', operator, async (req) => {
     const b = cardInputSchema.parse(req.body)
-    if (!isValidWiegand26(b.number)) throw new HttpError(400, 'Numero tessera non valido per Wiegand-26 (facility ≤ 255, numero ≤ 65535)')
+    if (!isValidWiegand26(b.number)) throw new HttpError(400, 'invalidWiegand')
     const id = ctx.people.createCard(b.number, b.personId, b.status)
     ctx.audit.log(req.user, 'create-card', `card:${b.number}`, b)
     return { id, pushErrors: b.personId ? await push(req.user, b.personId) : [] }
@@ -172,8 +183,8 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const { id } = idParam.parse(req.params)
     const b = cardInputSchema.parse(req.body)
     const old = ctx.people.card(id)
-    if (!old) throw new HttpError(404, 'Tessera non trovata')
-    if (old.number !== b.number) throw new HttpError(400, 'Il numero di una tessera non può essere modificato: usare la sostituzione')
+    if (!old) throw new HttpError(404, 'cardNotFound')
+    if (old.number !== b.number) throw new HttpError(400, 'cardNumberImmutable')
     ctx.people.updateCard(id, b.personId, b.status)
     ctx.audit.log(req.user, 'update-card', `card:${b.number}`, b)
     // tessera disattivata o non più assegnata: va rimossa; altrimenti segue i permessi del (nuovo) titolare
@@ -184,7 +195,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   app.delete('/cards/:id', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const card = ctx.people.card(id)
-    if (!card) throw new HttpError(404, 'Tessera non trovata')
+    if (!card) throw new HttpError(404, 'cardNotFound')
     ctx.people.deleteCard(id)
     ctx.audit.log(req.user, 'delete-card', `card:${card.number}`)
     return { ok: true, pushErrors: await push(req.user, null, [card.number]) }
@@ -195,8 +206,8 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const { id } = idParam.parse(req.params)
     const b = replaceCardSchema.parse(req.body)
     const old = ctx.people.card(id)
-    if (!old) throw new HttpError(404, 'Tessera non trovata')
-    if (!isValidWiegand26(b.newNumber)) throw new HttpError(400, 'Numero tessera non valido per Wiegand-26')
+    if (!old) throw new HttpError(404, 'cardNotFound')
+    if (!isValidWiegand26(b.newNumber)) throw new HttpError(400, 'invalidWiegand')
     const newId = ctx.db.tx(() => {
       ctx.people.updateCard(id, old.personId, 'lost')
       return ctx.people.createCard(b.newNumber, old.personId, 'active')
@@ -213,9 +224,9 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
    */
   app.post('/people/import', operator, async (req) => {
     const file = await req.file()
-    if (!file) throw new HttpError(400, 'Nessun file ricevuto')
+    if (!file) throw new HttpError(400, 'noFile')
     const rows = parseCsv((await file.toBuffer()).toString('utf8'))
-    if (rows.length < 2) throw new HttpError(400, 'Il file non contiene righe di dati')
+    if (rows.length < 2) throw new HttpError(400, 'emptyFile')
     const header = rows[0]!.map((h) => h.trim().toLowerCase())
     const col = (...names: string[]) => header.findIndex((h) => names.includes(h))
     const cCode = col('matricola', 'codice', 'code', 'consumer no', 'user no')
@@ -223,9 +234,9 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const cFirst = col('nome', 'firstname', 'first name')
     const cCard = col('tessera', 'card', 'card id', 'card number')
     const cDept = col('reparto', 'department', 'dipartimento')
-    if (cCode < 0 || cLast < 0) throw new HttpError(400, 'Colonne obbligatorie mancanti: matricola e cognome')
+    if (cCode < 0 || cLast < 0) throw new HttpError(400, 'missingColumns')
 
-    const report = { created: 0, updated: 0, cards: 0, errors: [] as { row: number; error: string }[] }
+    const report = { created: 0, updated: 0, cards: 0, errors: [] as { row: number; error: string; code?: string; params?: Record<string, string | number> }[] }
     const today = localDate()
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i]!
@@ -233,7 +244,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
       try {
         ctx.db.tx(() => {
           const code = get(cCode)
-          if (!code) throw new Error('matricola vuota')
+          if (!code) throw new ImportRowError('importEmptyCode')
           const departmentId = get(cDept) ? ctx.departments.ensurePath(get(cDept)) : null
           const existing = ctx.people.getByCode(code)
           const data = {
@@ -262,18 +273,22 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
           const cardRaw = get(cCard)
           if (cardRaw) {
             const number = Number(cardRaw)
-            if (!Number.isInteger(number) || !isValidWiegand26(number)) throw new Error(`tessera non valida: ${cardRaw}`)
+            if (!Number.isInteger(number) || !isValidWiegand26(number)) throw new ImportRowError('importInvalidCard', { card: cardRaw })
             const card = ctx.people.cardByNumber(number)
             if (!card) {
               ctx.people.createCard(number, personId)
               report.cards++
             } else if (card.personId !== personId) {
-              throw new Error(`tessera ${number} già assegnata a ${card.personName ?? 'altra persona'}`)
+              throw new ImportRowError('importCardTaken', { card: number, person: card.personName ?? '?' })
             }
           }
         })
       } catch (err) {
-        report.errors.push({ row: i + 1, error: (err as Error).message })
+        report.errors.push(
+          err instanceof ImportRowError
+            ? { row: i + 1, error: err.message, code: err.code, params: err.params }
+            : { row: i + 1, error: (err as Error).message },
+        )
       }
     }
     ctx.audit.log(req.user, 'import-people', null, { created: report.created, updated: report.updated, cards: report.cards, errors: report.errors.length })

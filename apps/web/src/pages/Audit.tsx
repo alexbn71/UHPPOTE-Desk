@@ -1,6 +1,7 @@
 import { Badge, Card, Code, Group, Pagination, Table, Text, TextInput, Tooltip } from '@mantine/core'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../components/common'
 import { api, qs } from '../lib/api'
 import { fmtDateTime } from '../lib/format'
@@ -19,6 +20,7 @@ interface AuditEntry {
 const PAGE = 100
 
 export function AuditPage() {
+  const { t } = useTranslation()
   const [action, setAction] = useState('')
   const [page, setPage] = useState(1)
   const audit = useQuery({
@@ -28,37 +30,46 @@ export function AuditPage() {
   })
   return (
     <>
-      <PageHeader title="Registro operazioni" description="Tutte le modifiche e i comandi inviati ai controller, con operatore ed esito" />
+      <PageHeader title={t('audit.title')} description={t('audit.description')} />
       <Card withBorder>
-        <TextInput placeholder="Filtra per azione (es. open-door, sync, login)" value={action} onChange={(e) => { setAction(e.currentTarget.value); setPage(1) }} mb="md" w={360} />
+        <TextInput
+          placeholder={t('audit.filterPlaceholder')}
+          value={action}
+          onChange={(e) => {
+            setAction(e.currentTarget.value)
+            setPage(1)
+          }}
+          mb="md"
+          w={360}
+        />
         <Table.ScrollContainer minWidth={800}>
           <Table striped>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Data/ora</Table.Th>
-                <Table.Th>Operatore</Table.Th>
-                <Table.Th>Azione</Table.Th>
-                <Table.Th>Oggetto</Table.Th>
-                <Table.Th>Esito</Table.Th>
-                <Table.Th>Dettagli</Table.Th>
+                <Table.Th>{t('audit.colTime')}</Table.Th>
+                <Table.Th>{t('audit.colOperator')}</Table.Th>
+                <Table.Th>{t('audit.colAction')}</Table.Th>
+                <Table.Th>{t('audit.colTarget')}</Table.Th>
+                <Table.Th>{t('audit.colOutcome')}</Table.Th>
+                <Table.Th>{t('audit.colDetails')}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {(audit.data?.rows ?? []).map((a) => (
                 <Table.Tr key={a.id}>
                   <Table.Td className="mono">{fmtDateTime(a.at)}</Table.Td>
-                  <Table.Td>{a.operatorName ?? 'sistema'}</Table.Td>
+                  <Table.Td>{a.operatorName ?? t('common.system')}</Table.Td>
                   <Table.Td className="mono">{a.action}</Table.Td>
                   <Table.Td className="mono">{a.target ?? ''}</Table.Td>
                   <Table.Td>
                     {a.outcome === 'ok' ? (
                       <Badge color="green" variant="light">
-                        ok
+                        {t('common.ok')}
                       </Badge>
                     ) : (
                       <Tooltip label={a.error} multiline w={300}>
                         <Badge color="red" variant="light">
-                          errore
+                          {t('common.error')}
                         </Badge>
                       </Tooltip>
                     )}
@@ -82,7 +93,7 @@ export function AuditPage() {
         </Table.ScrollContainer>
         <Group justify="space-between" mt="md">
           <Text size="sm" c="dimmed">
-            {audit.data?.total ?? 0} operazioni
+            {t('audit.count', { n: audit.data?.total ?? 0 })}
           </Text>
           <Pagination total={Math.max(1, Math.ceil((audit.data?.total ?? 0) / PAGE))} value={page} onChange={setPage} />
         </Group>

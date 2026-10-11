@@ -46,7 +46,7 @@ function env(name: string, fallback: string): string {
 
 function int(name: string, fallback: number): number {
   const v = Number.parseInt(env(name, String(fallback)), 10)
-  if (Number.isNaN(v)) throw new Error(`variabile ${name} non numerica`)
+  if (Number.isNaN(v)) throw new Error(`variable ${name} is not a number`)
   return v
 }
 

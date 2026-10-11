@@ -85,7 +85,7 @@ export class HealthService {
       const current = await client.getListener(t)
       if (current.address === host && current.port === port && current.interval === interval) return false
       await client.setListener(t, { address: host, port, interval })
-      this.opts.logger?.info?.(`listener del controller ${t.id} impostato su ${host}:${port}`)
+      this.opts.logger?.info?.(`event listener of controller ${t.id} set to ${host}:${port}`)
       return true
     })
   }

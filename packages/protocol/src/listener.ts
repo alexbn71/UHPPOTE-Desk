@@ -52,7 +52,7 @@ export class EventListener extends EventEmitter<ListenerEvents> {
       const onError = (err: Error) => {
         this.socket = null
         sock.close()
-        reject(new TransportError(`impossibile mettersi in ascolto su ${host}:${port}: ${err.message}`, { cause: err }))
+        reject(new TransportError(`cannot listen on ${host}:${port}: ${err.message}`, { cause: err }))
       }
       sock.once('error', onError)
       sock.bind({ address: host, port }, () => {

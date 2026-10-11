@@ -104,13 +104,13 @@ export function computeAttendance(input: {
       const scheduled = !!shift && shift.weekdays[weekdayIndex(date)] === true
       const expectedMinutes = scheduled && !holiday && !leave ? shiftMinutes(shift) : 0
 
-      const anomalies: string[] = []
+      const anomalies: AttendanceDayDto['anomalies'] = []
       let worked = 0
       const pairs = Math.floor(punches.length / 2)
       for (let i = 0; i < pairs; i++) {
         worked += minuteOfWorkDay(punches[2 * i + 1]!.timestamp, date) - minuteOfWorkDay(punches[2 * i]!.timestamp, date)
       }
-      if (punches.length % 2 === 1) anomalies.push(punches.length === 1 ? 'Timbratura singola' : 'Numero di timbrature dispari')
+      if (punches.length % 2 === 1) anomalies.push(punches.length === 1 ? 'singlePunch' : 'oddPunches')
       if (pairs === 1 && shift && worked > shift.breakMinutes + 240) worked -= shift.breakMinutes
 
       let late = 0

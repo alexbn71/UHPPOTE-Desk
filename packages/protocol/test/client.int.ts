@@ -315,7 +315,7 @@ describe('robustezza', () => {
   })
 
   it('TCP senza IP viene rifiutato', async () => {
-    await expect(client.getStatus({ id: ID, transport: 'tcp' })).rejects.toThrow(/TCP richiede/)
+    await expect(client.getStatus({ id: ID, transport: 'tcp' })).rejects.toThrow(/TCP requires/)
   })
 })
 

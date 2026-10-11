@@ -13,7 +13,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/alexbn71/UHPPOTE-Desk</Support>
   <Project>https://github.com/alexbn71/UHPPOTE-Desk</Project>
-  <Overview>Management of UHPPOTE UT0311-L0x access controllers. Requires "host" networking to discover the controllers and receive their UDP events. The user interface is in Italian.</Overview>
+  <Overview>Management of UHPPOTE UT0311-L0x access controllers. Requires "host" networking to discover the controllers and receive their UDP events. User interface in English, Italian, Spanish, French and German.</Overview>
   <Category>HomeAutomation: Security:</Category>
   <WebUI>http://[IP]:8080/</WebUI>
   <Icon>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/favicon.svg</Icon>

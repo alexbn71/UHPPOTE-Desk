@@ -147,17 +147,17 @@ export function validatePacket(buf: Buffer): Reader | null {
 
 function reader(buf: Buffer, expected: number): Reader {
   const r = validatePacket(buf)
-  if (!r) throw new CodecError('pacchetto non valido (dimensione o start-of-message)')
+  if (!r) throw new CodecError('invalid packet (size or start-of-message)')
   if (r.functionCode !== expected) {
     throw new CodecError(
-      `function code inatteso 0x${r.functionCode.toString(16)} (atteso 0x${expected.toString(16)})`,
+      `unexpected function code 0x${r.functionCode.toString(16)} (expected 0x${expected.toString(16)})`,
     )
   }
   return r
 }
 
 function door(v: number): number {
-  if (!Number.isInteger(v) || v < 1 || v > 4) throw new CodecError(`porta non valida: ${v} (1-4)`)
+  if (!Number.isInteger(v) || v < 1 || v > 4) throw new CodecError(`invalid door: ${v} (1-4)`)
   return v
 }
 
@@ -174,12 +174,12 @@ function quad<T>(f: (i: number) => T): Quad<T> {
 }
 
 function cardNumber(v: number): number {
-  if (!Number.isInteger(v) || v < 1 || v >= 0xffffffff) throw new CodecError(`numero tessera non valido: ${v}`)
+  if (!Number.isInteger(v) || v < 1 || v >= 0xffffffff) throw new CodecError(`invalid card number: ${v}`)
   return v
 }
 
-function profileId(v: number, field = 'profilo'): number {
-  if (!Number.isInteger(v) || v < 2 || v > 254) throw new CodecError(`${field}: ID non valido ${v} (2-254)`)
+function profileId(v: number, field = 'profile'): number {
+  if (!Number.isInteger(v) || v < 2 || v > 254) throw new CodecError(`${field}: invalid ID ${v} (2-254)`)
   return v
 }
 
@@ -194,7 +194,7 @@ export const encode = {
 
   setIPv4(controller: number, address: string, netmask: string, gateway: string): Buffer {
     return new Writer(F.SetIPv4, controller)
-      .ipv4(8, address, 'indirizzo')
+      .ipv4(8, address, 'address')
       .ipv4(12, netmask, 'netmask')
       .ipv4(16, gateway, 'gateway')
       .u32(20, MAGIC).buf
@@ -215,8 +215,8 @@ export const encode = {
   setListener(controller: number, listener: ListenerConfig): Buffer {
     return new Writer(F.SetListener, controller)
       .ipv4(8, listener.address, 'listener')
-      .u16(12, listener.port, 'porta listener')
-      .u8(14, listener.interval, 'intervallo auto-send').buf
+      .u16(12, listener.port, 'listener port')
+      .u8(14, listener.interval, 'auto-send interval').buf
   },
 
   getDoorControl(controller: number, d: number): Buffer {
@@ -224,15 +224,15 @@ export const encode = {
   },
 
   setDoorControl(controller: number, control: DoorControl): Buffer {
-    if (![1, 2, 3].includes(control.mode)) throw new CodecError(`modalità porta non valida: ${control.mode}`)
+    if (![1, 2, 3].includes(control.mode)) throw new CodecError(`invalid door mode: ${control.mode}`)
     return new Writer(F.SetDoorControl, controller)
       .u8(8, door(control.door))
       .u8(9, control.mode)
-      .u8(10, control.delay, 'ritardo porta').buf
+      .u8(10, control.delay, 'door delay').buf
   },
 
   setDoorPasscodes(controller: number, d: number, passcodes: number[]): Buffer {
-    if (passcodes.length > 4) throw new CodecError('al massimo 4 passcode per porta')
+    if (passcodes.length > 4) throw new CodecError('at most 4 passcodes per door')
     const w = new Writer(F.SetDoorPasscodes, controller).u8(8, door(d))
     for (let i = 0; i < 4; i++) w.pin32(12 + 4 * i, passcodes[i] ?? 0, `passcode ${i + 1}`)
     return w.buf
@@ -255,18 +255,18 @@ export const encode = {
   },
 
   getCardAtIndex(controller: number, index: number): Buffer {
-    if (!Number.isInteger(index) || index < 1) throw new CodecError(`indice tessera non valido: ${index}`)
+    if (!Number.isInteger(index) || index < 1) throw new CodecError(`invalid card index: ${index}`)
     return new Writer(F.GetCardAtIndex, controller).u32(8, index).buf
   },
 
   putCard(controller: number, card: Card): Buffer {
-    if (card.from === null || card.to === null) throw new CodecError('put card: date di validità obbligatorie')
+    if (card.from === null || card.to === null) throw new CodecError('put card: validity dates are required')
     const w = new Writer(F.PutCard, controller)
       .u32(8, cardNumber(card.card))
-      .date(12, card.from, 'valida dal')
-      .date(16, card.to, 'valida al')
+      .date(12, card.from, 'valid from')
+      .date(16, card.to, 'valid until')
     card.doors.forEach((p, i) => {
-      if (!Number.isInteger(p) || p < 0 || p > 254) throw new CodecError(`permesso porta ${i + 1} non valido: ${p}`)
+      if (!Number.isInteger(p) || p < 0 || p > 254) throw new CodecError(`invalid permission for door ${i + 1}: ${p}`)
       w.u8(20 + i, p)
     })
     w.pin24(24, card.pin)
@@ -283,7 +283,7 @@ export const encode = {
   },
 
   getEvent(controller: number, index: number): Buffer {
-    return new Writer(F.GetEvent, controller).u32(8, index, 'indice evento').buf
+    return new Writer(F.GetEvent, controller).u32(8, index, 'event index').buf
   },
 
   getEventIndex(controller: number): Buffer {
@@ -291,7 +291,7 @@ export const encode = {
   },
 
   setEventIndex(controller: number, index: number): Buffer {
-    return new Writer(F.SetEventIndex, controller).u32(8, index, 'indice evento').u32(12, MAGIC).buf
+    return new Writer(F.SetEventIndex, controller).u32(8, index, 'event index').u32(12, MAGIC).buf
   },
 
   recordSpecialEvents(controller: number, enabled: boolean): Buffer {
@@ -303,18 +303,18 @@ export const encode = {
   },
 
   setTimeProfile(controller: number, p: TimeProfile): Buffer {
-    if (p.from === null || p.to === null) throw new CodecError('profilo orario: date di validità obbligatorie')
-    if (p.segments.length > 3) throw new CodecError('profilo orario: al massimo 3 segmenti')
+    if (p.from === null || p.to === null) throw new CodecError('time profile: validity dates are required')
+    if (p.segments.length > 3) throw new CodecError('time profile: at most 3 segments')
     const w = new Writer(F.SetTimeProfile, controller)
       .u8(8, profileId(p.id))
-      .date(9, p.from, 'valido dal')
-      .date(13, p.to, 'valido al')
+      .date(9, p.from, 'valid from')
+      .date(13, p.to, 'valid until')
     weekdays(w, 17, p.weekdays)
     p.segments.forEach((s, i) => {
-      w.hhmm(24 + 4 * i, s.start, `segmento ${i + 1} inizio`)
-      w.hhmm(26 + 4 * i, s.end, `segmento ${i + 1} fine`)
+      w.hhmm(24 + 4 * i, s.start, `segment ${i + 1} start`)
+      w.hhmm(26 + 4 * i, s.end, `segment ${i + 1} end`)
     })
-    w.u8(36, p.linkedTo === 0 ? 0 : profileId(p.linkedTo, 'profilo collegato'))
+    w.u8(36, p.linkedTo === 0 ? 0 : profileId(p.linkedTo, 'linked profile'))
     return w.buf
   },
 
@@ -323,11 +323,11 @@ export const encode = {
   },
 
   addTask(controller: number, t: Task): Buffer {
-    if (!Number.isInteger(t.task) || t.task < 0 || t.task > 12) throw new CodecError(`tipo task non valido: ${t.task}`)
-    const w = new Writer(F.AddTask, controller).date(8, t.from, 'valido dal').date(12, t.to, 'valido al')
+    if (!Number.isInteger(t.task) || t.task < 0 || t.task > 12) throw new CodecError(`invalid task type: ${t.task}`)
+    const w = new Writer(F.AddTask, controller).date(8, t.from, 'valid from').date(12, t.to, 'valid until')
     weekdays(w, 16, t.weekdays)
     return w
-      .hhmm(23, t.start, 'ora inizio')
+      .hhmm(23, t.start, 'start time')
       .u8(25, door(t.door))
       .u8(26, t.task)
       .u8(27, t.moreCards, 'more cards').buf
@@ -346,7 +346,7 @@ export const encode = {
   },
 
   setInterlock(controller: number, interlock: Interlock | number): Buffer {
-    if (!INTERLOCK_VALUES.includes(interlock)) throw new CodecError(`modalità interblocco non valida: ${interlock}`)
+    if (!INTERLOCK_VALUES.includes(interlock)) throw new CodecError(`invalid interlock mode: ${interlock}`)
     return new Writer(F.SetInterlock, controller).u8(8, interlock).buf
   },
 
@@ -361,20 +361,20 @@ export const encode = {
   },
 
   setAntiPassback(controller: number, mode: AntiPassback | number): Buffer {
-    if (!Number.isInteger(mode) || mode < 0 || mode > 4) throw new CodecError(`modalità anti-passback non valida: ${mode}`)
+    if (!Number.isInteger(mode) || mode < 0 || mode > 4) throw new CodecError(`invalid anti-passback mode: ${mode}`)
     return new Writer(F.SetAntiPassback, controller).u8(8, mode).buf
   },
 
   setFirstCard(controller: number, fc: FirstCardConfig): Buffer {
-    if (![0, 1, 2].includes(fc.activeMode)) throw new CodecError(`modalità first-card attiva non valida: ${fc.activeMode}`)
+    if (![0, 1, 2].includes(fc.activeMode)) throw new CodecError(`invalid first-card active mode: ${fc.activeMode}`)
     if (![0, 1, 2, 3].includes(fc.inactiveMode)) {
-      throw new CodecError(`modalità first-card inattiva non valida: ${fc.inactiveMode}`)
+      throw new CodecError(`invalid first-card inactive mode: ${fc.inactiveMode}`)
     }
     const w = new Writer(F.SetFirstCard, controller)
       .u8(8, door(fc.door))
-      .hhmm(9, fc.start, 'ora inizio')
+      .hhmm(9, fc.start, 'start time')
       .u8(11, fc.activeMode)
-      .hhmm(12, fc.end, 'ora fine')
+      .hhmm(12, fc.end, 'end time')
       .u8(14, fc.inactiveMode)
     weekdays(w, 15, fc.weekdays)
     return w.buf

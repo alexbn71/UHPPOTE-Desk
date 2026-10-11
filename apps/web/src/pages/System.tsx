@@ -1,6 +1,8 @@
-import { Alert, Button, Card, Code, SimpleGrid, Table, Text, Title } from '@mantine/core'
+import { Alert, Button, Card, SimpleGrid, Table, Text, Title } from '@mantine/core'
+import type { ReactNode } from 'react'
 import { IconDatabaseExport } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -17,55 +19,64 @@ interface SystemInfo {
 }
 
 export function SystemPage() {
+  const { t } = useTranslation()
   const { can } = useAuth()
   const info = useQuery({ queryKey: ['system'], queryFn: () => api.get<SystemInfo>('/system/info') })
   const backups = useQuery({ queryKey: ['backups'], queryFn: () => api.get<{ name: string; size: number; createdAt: string }[]>('/system/backups'), enabled: can('admin') })
   const d = info.data
+
+  const row = (label: string, value: ReactNode, mono = false) => (
+    <Table.Tr>
+      <Table.Td c="dimmed">{label}</Table.Td>
+      <Table.Td className={mono ? 'mono' : undefined}>{value}</Table.Td>
+    </Table.Tr>
+  )
+
   return (
     <>
-      <PageHeader title="Sistema" description="Informazioni sul server, configurazione di rete e backup" />
+      <PageHeader title={t('system.title')} description={t('system.description')} />
       {d && (
         <SimpleGrid cols={{ base: 1, md: 2 }}>
           <Card withBorder>
             <Title order={5} mb="xs">
-              Server
+              {t('system.server')}
             </Title>
             <Table>
               <Table.Tbody>
-                <Table.Tr><Table.Td c="dimmed">Versione</Table.Td><Table.Td>{d.version}</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Host</Table.Td><Table.Td>{d.hostname} (Node {d.node})</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Attivo da</Table.Td><Table.Td>{Math.floor(d.uptimeSec / 3600)} h {Math.floor((d.uptimeSec % 3600) / 60)} min</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Interfacce</Table.Td><Table.Td className="mono">{d.interfaces.map((i) => `${i.name}: ${i.address}/${i.netmask}`).join('\n')}</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Dati</Table.Td><Table.Td>{d.counts.controllers} controller · {d.counts.people} persone · {d.counts.cards} tessere · {d.counts.events} eventi</Table.Td></Table.Tr>
+                {row(t('system.version'), d.version)}
+                {row(t('system.host'), `${d.hostname} (Node ${d.node})`)}
+                {row(t('system.uptime'), t('system.uptimeValue', { h: Math.floor(d.uptimeSec / 3600), m: Math.floor((d.uptimeSec % 3600) / 60) }))}
+                {row(t('system.interfaces'), d.interfaces.map((i) => `${i.name}: ${i.address}/${i.netmask}`).join('\n'), true)}
+                {row(t('system.data'), t('system.dataValue', d.counts))}
               </Table.Tbody>
             </Table>
           </Card>
           <Card withBorder>
             <Title order={5} mb="xs">
-              Comunicazione con i controller
+              {t('system.communication')}
             </Title>
             <Table>
               <Table.Tbody>
-                <Table.Tr><Table.Td c="dimmed">Bind locale</Table.Td><Table.Td className="mono">{d.uhppote.bindAddress}</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Broadcast ricerca</Table.Td><Table.Td className="mono">{d.uhppote.broadcast}</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Ascolto eventi</Table.Td><Table.Td className="mono">{d.uhppote.listen}</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Listener programmato</Table.Td><Table.Td className="mono">{d.uhppote.listenerPublic ?? <Text span c="orange">non impostato</Text>}</Table.Td></Table.Tr>
-                <Table.Tr><Table.Td c="dimmed">Timeout</Table.Td><Table.Td>{d.uhppote.timeoutMs} ms</Table.Td></Table.Tr>
+                {row(t('system.bind'), d.uhppote.bindAddress, true)}
+                {row(t('system.broadcast'), d.uhppote.broadcast, true)}
+                {row(t('system.listen'), d.uhppote.listen, true)}
+                {row(t('system.listenerPublic'), d.uhppote.listenerPublic ?? <Text span c="orange">{t('system.notSet')}</Text>, true)}
+                {row(t('system.timeout'), `${d.uhppote.timeoutMs} ms`)}
               </Table.Tbody>
             </Table>
             {!d.uhppote.listenerPublic && (
               <Alert color="orange" mt="sm">
-                Imposta <Code>UHPPOTE_LISTENER_PUBLIC</Code> con l'IP del server raggiungibile dalle schede (es. 192.168.1.10:60001) per ricevere gli eventi in tempo reale.
+                {t('system.listenerWarning')}
               </Alert>
             )}
           </Card>
           {can('admin') && (
             <Card withBorder>
               <Title order={5} mb="xs">
-                Backup database
+                {t('system.backups')}
               </Title>
               <Text size="sm" c="dimmed" mb="sm">
-                Backup automatico giornaliero nella cartella dati del server (sottocartella backups).
+                {t('system.backupsInfo')}
               </Text>
               <Button
                 leftSection={<IconDatabaseExport size={16} />}
@@ -75,13 +86,13 @@ export function SystemPage() {
                   void api
                     .post('/system/backups')
                     .then(() => {
-                      notifyOk('Backup creato')
+                      notifyOk(t('system.backupCreated'))
                       void backups.refetch()
                     })
                     .catch(notifyError)
                 }
               >
-                Crea backup ora
+                {t('system.backupNow')}
               </Button>
               <Table>
                 <Table.Tbody>

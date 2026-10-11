@@ -1,10 +1,12 @@
 import { Alert, Button, Center, Paper, PasswordInput, Stack, Title } from '@mantine/core'
 import { useState, type FormEvent } from 'react'
-import { api, notifyOk } from '../lib/api'
+import { useTranslation } from 'react-i18next'
+import { api, errorMessage, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
 export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
   const { refresh, logout } = useAuth()
+  const { t } = useTranslation()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -13,19 +15,19 @@ export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (next !== confirm) return setError('Le due password non coincidono')
-    if (next.length < 8) return setError('La password deve avere almeno 8 caratteri')
+    if (next !== confirm) return setError(t('password.mismatch'))
+    if (next.length < 8) return setError(t('password.tooShort'))
     setBusy(true)
     setError(null)
     try {
       await api.post('/auth/password', { currentPassword: current, newPassword: next })
-      notifyOk('Password aggiornata')
+      notifyOk(t('password.updated'))
       setCurrent('')
       setNext('')
       setConfirm('')
       await refresh()
     } catch (err) {
-      setError((err as Error).message)
+      setError(errorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -36,18 +38,18 @@ export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
       <Paper withBorder shadow="sm" p="xl" w={400}>
         <form onSubmit={submit}>
           <Stack>
-            <Title order={3}>Cambio password</Title>
-            {forced && <Alert color="blue">Al primo accesso è necessario impostare una nuova password personale.</Alert>}
+            <Title order={3}>{t('password.title')}</Title>
+            {forced && <Alert color="blue">{t('password.forcedInfo')}</Alert>}
             {error && <Alert color="red">{error}</Alert>}
-            <PasswordInput label="Password attuale" value={current} onChange={(e) => setCurrent(e.currentTarget.value)} required autoComplete="current-password" />
-            <PasswordInput label="Nuova password" description="Almeno 8 caratteri" value={next} onChange={(e) => setNext(e.currentTarget.value)} required autoComplete="new-password" />
-            <PasswordInput label="Conferma nuova password" value={confirm} onChange={(e) => setConfirm(e.currentTarget.value)} required autoComplete="new-password" />
+            <PasswordInput label={t('password.current')} value={current} onChange={(e) => setCurrent(e.currentTarget.value)} required autoComplete="current-password" />
+            <PasswordInput label={t('password.new')} description={t('password.newHint')} value={next} onChange={(e) => setNext(e.currentTarget.value)} required autoComplete="new-password" />
+            <PasswordInput label={t('password.repeat')} value={confirm} onChange={(e) => setConfirm(e.currentTarget.value)} required autoComplete="new-password" />
             <Button type="submit" loading={busy}>
-              Salva
+              {t('common.save')}
             </Button>
             {forced && (
               <Button variant="subtle" onClick={() => void logout()}>
-                Esci
+                {t('password.logout')}
               </Button>
             )}
           </Stack>

@@ -44,7 +44,7 @@ export async function tcpExchange(
     const timer = setTimeout(() => finish(new TimeoutError(controller, fc, opts.timeoutMs)), opts.timeoutMs)
 
     sock.on('error', (err) =>
-      finish(new TransportError(`errore TCP verso ${dest.host}:${dest.port}: ${err.message}`, { cause: err })),
+      finish(new TransportError(`TCP error towards ${dest.host}:${dest.port}: ${err.message}`, { cause: err })),
     )
 
     sock.on('data', (chunk: Buffer) => {
@@ -66,7 +66,7 @@ export async function tcpExchange(
     sock.connect(connectOpts, () => {
       log?.debug?.(`TCP → ${dest.host}:${dest.port}\n${hexdump(packet)}`)
       sock.write(packet, (err) => {
-        if (err) finish(new TransportError(`scrittura TCP fallita: ${err.message}`, { cause: err }))
+        if (err) finish(new TransportError(`TCP write failed: ${err.message}`, { cause: err }))
         else if (!expectReply) finish(null, null)
       })
     })

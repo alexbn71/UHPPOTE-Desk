@@ -3,12 +3,14 @@ import { modals } from '@mantine/modals'
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IconButton, PageHeader } from '../components/common'
 import { api, notifyError } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { treeOptions, treePath, useDepartments, useZones, type TreeNode } from '../lib/queries'
 
 function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: { title: string; description: string; endpoint: string; queryKey: string; nodes: TreeNode[]; canEdit: boolean }) {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const [edit, setEdit] = useState<{ id: number | null; name: string; parentId: string | null } | null>(null)
 
@@ -27,9 +29,9 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
 
   const remove = (n: TreeNode) =>
     modals.openConfirmModal({
-      title: `Elimina «${n.name}»`,
-      children: <Text size="sm">Verranno eliminati anche gli eventuali sotto-elementi.</Text>,
-      labels: { confirm: 'Elimina', cancel: 'Annulla' },
+      title: t('structure.deleteTitle', { name: n.name }),
+      children: <Text size="sm">{t('structure.deleteInfo')}</Text>,
+      labels: { confirm: t('common.delete'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
@@ -51,7 +53,7 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
         </div>
         {canEdit && (
           <Button size="xs" leftSection={<IconPlus size={14} />} onClick={() => setEdit({ id: null, name: '', parentId: null })}>
-            Aggiungi
+            {t('common.add')}
           </Button>
         )}
       </Group>
@@ -63,10 +65,10 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
               <Table.Td w={80}>
                 {canEdit && (
                   <Group gap={0} justify="flex-end">
-                    <IconButton label="Modifica" onClick={() => setEdit({ id: n.id, name: n.name, parentId: n.parentId ? String(n.parentId) : null })}>
+                    <IconButton label={t('common.edit')} onClick={() => setEdit({ id: n.id, name: n.name, parentId: n.parentId ? String(n.parentId) : null })}>
                       <IconEdit size={16} />
                     </IconButton>
-                    <IconButton label="Elimina" color="red" onClick={() => remove(n)}>
+                    <IconButton label={t('common.delete')} color="red" onClick={() => remove(n)}>
                       <IconTrash size={16} />
                     </IconButton>
                   </Group>
@@ -78,22 +80,22 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
       </Table>
       {nodes.length === 0 && (
         <Text c="dimmed" size="sm" ta="center" py="md">
-          Nessun elemento
+          {t('structure.none')}
         </Text>
       )}
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.id ? 'Modifica' : 'Nuovo'}>
+      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.id ? t('structure.editItem') : t('structure.newItem')}>
         {edit && (
           <Stack>
-            <TextInput label="Nome" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} autoFocus />
+            <TextInput label={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} autoFocus />
             <Select
-              label="Appartiene a"
+              label={t('structure.parent')}
               clearable
               data={treeOptions(nodes).filter((o) => o.value !== String(edit.id))}
               value={edit.parentId}
               onChange={(v) => setEdit({ ...edit, parentId: v })}
             />
             <Button onClick={() => void save()} disabled={!edit.name.trim()}>
-              Salva
+              {t('common.save')}
             </Button>
           </Stack>
         )}
@@ -103,24 +105,25 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
 }
 
 export function StructurePage() {
+  const { t } = useTranslation()
   const { can } = useAuth()
   const departments = useDepartments()
   const zones = useZones()
   return (
     <>
-      <PageHeader title="Reparti e zone" />
+      <PageHeader title={t('structure.title')} />
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TreeEditor
-          title="Reparti"
-          description="Organizzazione del personale (usata per filtri e report presenze)"
+          title={t('structure.departments')}
+          description={t('structure.departmentsHint')}
           endpoint="/departments"
           queryKey="departments"
           nodes={departments.data ?? []}
           canEdit={can('operator')}
         />
         <TreeEditor
-          title="Zone"
-          description="Raggruppamento dei controller; gli operatori possono essere limitati a specifiche zone"
+          title={t('structure.zones')}
+          description={t('structure.zonesHint')}
           endpoint="/zones"
           queryKey="zones"
           nodes={zones.data ?? []}

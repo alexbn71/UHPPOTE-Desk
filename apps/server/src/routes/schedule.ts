@@ -28,11 +28,11 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
   app.put('/time-profiles/:id', admin, async (req) => {
     const { id } = idParam.parse(req.params)
     const b = timeProfileInputSchema.parse({ ...(req.body as object), id })
-    if (b.validFrom > b.validTo) throw new HttpError(400, 'La data di inizio deve precedere la data di fine')
-    for (const s of b.segments) if (s.start >= s.end) throw new HttpError(400, `Segmento non valido: ${s.start}-${s.end}`)
+    if (b.validFrom > b.validTo) throw new HttpError(400, 'dateOrder')
+    for (const s of b.segments) if (s.start >= s.end) throw new HttpError(400, 'invalidSegment', { start: s.start, end: s.end })
     if (b.linkedTo !== null) {
-      if (b.linkedTo === id) throw new HttpError(400, 'Un profilo non può essere collegato a sé stesso')
-      if (!ctx.schedule.profile(b.linkedTo)) throw new HttpError(400, `Il profilo collegato ${b.linkedTo} non esiste`)
+      if (b.linkedTo === id) throw new HttpError(400, 'selfLink')
+      if (!ctx.schedule.profile(b.linkedTo)) throw new HttpError(400, 'linkedMissing', { id: b.linkedTo })
     }
     ctx.schedule.saveProfile(b)
     ctx.audit.log(req.user, 'save-time-profile', `profile:${id}`, b)
@@ -42,9 +42,9 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
   app.delete('/time-profiles/:id', admin, async (req) => {
     const { id } = idParam.parse(req.params)
     const used = ctx.db.get<{ n: number }>('SELECT COUNT(*) n FROM permissions WHERE profile_id = ?', [id])!.n
-    if (used > 0) throw new HttpError(409, `Fascia oraria usata in ${used} permessi: rimuoverli prima di eliminarla`)
+    if (used > 0) throw new HttpError(409, 'profileInUse', { n: used })
     const linked = ctx.schedule.profiles().filter((p) => p.linkedTo === id)
-    if (linked.length) throw new HttpError(409, `Fascia oraria collegata da: ${linked.map((p) => p.id).join(', ')}`)
+    if (linked.length) throw new HttpError(409, 'profileLinked', { ids: linked.map((p) => p.id).join(', ') })
     ctx.schedule.deleteProfile(id)
     ctx.audit.log(req.user, 'delete-time-profile', `profile:${id}`)
     return { ok: true, pushErrors: await pushProfilesEverywhere(req.user) }
@@ -80,7 +80,7 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     const { id } = idParam.parse(req.params)
     const b = taskInputSchema.parse(req.body)
     const old = ctx.schedule.tasks().find((t) => t.id === id)
-    if (!old) throw new HttpError(404, 'Task non trovato')
+    if (!old) throw new HttpError(404, 'taskNotFound')
     ctx.schedule.saveTask(b, id)
     ctx.audit.log(req.user, 'update-task', `task:${id}`, b)
     const errors = [await pushTasks(req.user, b.controllerId)]
@@ -91,7 +91,7 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
   app.delete('/tasks/:id', admin, async (req) => {
     const { id } = idParam.parse(req.params)
     const old = ctx.schedule.tasks().find((t) => t.id === id)
-    if (!old) throw new HttpError(404, 'Task non trovato')
+    if (!old) throw new HttpError(404, 'taskNotFound')
     ctx.schedule.deleteTask(id)
     ctx.audit.log(req.user, 'delete-task', `task:${id}`)
     return { ok: true, pushError: await pushTasks(req.user, old.controllerId) }

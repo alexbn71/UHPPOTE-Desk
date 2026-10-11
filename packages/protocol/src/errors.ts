@@ -17,7 +17,7 @@ export class TimeoutError extends UhppoteError {
     readonly timeoutMs: number,
   ) {
     super(
-      `nessuna risposta dal controller ${controller} (funzione 0x${functionCode.toString(16).padStart(2, '0')}) entro ${timeoutMs} ms`,
+      `no reply from controller ${controller} (function 0x${functionCode.toString(16).padStart(2, '0')}) within ${timeoutMs} ms`,
     )
   }
 }
@@ -28,7 +28,7 @@ export class OperationFailedError extends UhppoteError {
     readonly controller: number,
     readonly operation: string,
   ) {
-    super(`il controller ${controller} non ha eseguito l'operazione '${operation}'`)
+    super(`controller ${controller} did not perform the operation '${operation}'`)
   }
 }
 
@@ -41,7 +41,7 @@ export class EventOverwrittenError extends UhppoteError {
     readonly controller: number,
     readonly index: number,
   ) {
-    super(`evento ${index} del controller ${controller} sovrascritto`)
+    super(`event ${index} of controller ${controller} has been overwritten`)
   }
 }
 

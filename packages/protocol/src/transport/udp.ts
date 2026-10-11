@@ -32,7 +32,7 @@ async function openSocket(bindAddress: string, broadcast: boolean): Promise<dgra
       })
     } catch (err) {
       sock.close()
-      throw new TransportError(`impossibile aprire un socket UDP su ${bindAddress}: ${(err as Error).message}`, {
+      throw new TransportError(`cannot open a UDP socket on ${bindAddress}: ${(err as Error).message}`, {
         cause: err,
       })
     }
@@ -44,7 +44,7 @@ async function openSocket(bindAddress: string, broadcast: boolean): Promise<dgra
     if (broadcast) sock.setBroadcast(true)
     return sock
   }
-  throw new TransportError('il sistema operativo continua ad assegnare la porta 60000 al socket client')
+  throw new TransportError('the operating system keeps assigning port 60000 to the client socket')
 }
 
 function closeQuietly(sock: dgram.Socket): void {
@@ -85,14 +85,14 @@ export async function udpExchange(
       })
       sock.on('error', (err) => {
         if (timer) clearTimeout(timer)
-        reject(new TransportError(`errore socket UDP: ${err.message}`, { cause: err }))
+        reject(new TransportError(`UDP socket error: ${err.message}`, { cause: err }))
       })
 
       log?.debug?.(`UDP → ${dest.host}:${dest.port}\n${hexdump(packet)}`)
       sock.send(packet, dest.port, dest.host, (err) => {
         if (err) {
           if (timer) clearTimeout(timer)
-          reject(new TransportError(`invio UDP a ${dest.host}:${dest.port} fallito: ${err.message}`, { cause: err }))
+          reject(new TransportError(`UDP send to ${dest.host}:${dest.port} failed: ${err.message}`, { cause: err }))
         } else if (!expectReply) {
           resolve(null)
         }
@@ -120,10 +120,10 @@ export async function udpBroadcast(
         log?.debug?.(`UDP ← ${rinfo.address}:${rinfo.port}\n${hexdump(msg)}`)
         if (validatePacket(msg) && accept(msg)) replies.push(msg)
       })
-      sock.on('error', (err) => reject(new TransportError(`errore socket UDP: ${err.message}`, { cause: err })))
+      sock.on('error', (err) => reject(new TransportError(`UDP socket error: ${err.message}`, { cause: err })))
       log?.debug?.(`UDP ⇉ ${dest.host}:${dest.port}\n${hexdump(packet)}`)
       sock.send(packet, dest.port, dest.host, (err) => {
-        if (err) reject(new TransportError(`broadcast a ${dest.host}:${dest.port} fallito: ${err.message}`, { cause: err }))
+        if (err) reject(new TransportError(`broadcast to ${dest.host}:${dest.port} failed: ${err.message}`, { cause: err }))
         else setTimeout(resolve, opts.timeoutMs)
       })
     })

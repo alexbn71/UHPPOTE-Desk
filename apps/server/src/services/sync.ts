@@ -111,26 +111,26 @@ export class SyncService {
     const run = this.db.run("INSERT INTO sync_runs (controller_id, kind, operator_id) VALUES (?, 'cards', ?)", [controllerId, actor?.id ?? null]).lastInsertRowid
     const hub = this.gateway.hub
     try {
-      hub.publishSync(controllerId, 'running', 'Lettura tessere dal controller…')
+      hub.publishSync(controllerId, 'running', 'sync.progress.readingCards')
       const { _cards, ...summary } = await this.diff(actor, controllerId)
       const total = _cards.toAdd.length + _cards.toUpdate.length + _cards.toDelete.length
       let done = 0
       await this.gateway.run(actor, controllerId, 'sync-cards', { add: summary.toAdd.length, update: summary.toUpdate.length, delete: summary.toDelete.length }, async (client, t) => {
         for (const c of [..._cards.toAdd, ..._cards.toUpdate]) {
           await client.putCard(t, c)
-          if (++done % 25 === 0) hub.publishSync(controllerId, 'running', `Aggiornamento tessere ${done}/${total}`)
+          if (++done % 25 === 0) hub.publishSync(controllerId, 'running', 'sync.progress.writingCards', { done, total })
         }
         for (const n of _cards.toDelete) {
           await client.deleteCard(t, n)
-          if (++done % 25 === 0) hub.publishSync(controllerId, 'running', `Aggiornamento tessere ${done}/${total}`)
+          if (++done % 25 === 0) hub.publishSync(controllerId, 'running', 'sync.progress.writingCards', { done, total })
         }
       })
       this.db.run("UPDATE sync_runs SET status = 'ok', finished_at = datetime('now','localtime'), summary = ? WHERE id = ?", [JSON.stringify(summary), run])
-      hub.publishSync(controllerId, 'ok', `Sincronizzazione completata: ${summary.toAdd.length} aggiunte, ${summary.toUpdate.length} aggiornate, ${summary.toDelete.length} rimosse`)
+      hub.publishSync(controllerId, 'ok', 'sync.progress.cardsDone', { added: summary.toAdd.length, updated: summary.toUpdate.length, deleted: summary.toDelete.length })
       return summary
     } catch (err) {
       this.db.run("UPDATE sync_runs SET status = 'error', finished_at = datetime('now','localtime'), summary = ? WHERE id = ?", [(err as Error).message, run])
-      hub.publishSync(controllerId, 'error', (err as Error).message)
+      hub.publishSync(controllerId, 'error', 'errors.controllerError', { detail: (err as Error).message })
       throw err
     }
   }
@@ -165,7 +165,7 @@ export class SyncService {
 
   async pushDoor(actor: Actor, doorId: number): Promise<void> {
     const d = this.controllers.door(doorId)
-    if (!d) throw new Error('Porta non trovata')
+    if (!d) throw new Error('Door not found')
     await this.gateway.run(actor, d.controllerId, 'set-door-control', { door: d.door, mode: d.mode, delay: d.delay }, (client, t) =>
       client.setDoorControl(t, { door: d.door, mode: d.mode, delay: d.delay }),
     )
@@ -237,13 +237,13 @@ export class SyncService {
   /** Sincronizzazione completa: porte, fasce orarie, task, impostazioni, tessere. */
   async pushAll(actor: Actor, controllerId: number): Promise<SyncDiffDto> {
     const hub = this.gateway.hub
-    hub.publishSync(controllerId, 'running', 'Invio configurazione porte…')
+    hub.publishSync(controllerId, 'running', 'sync.progress.doors')
     for (const d of this.controllers.doors(controllerId)) await this.pushDoor(actor, d.id)
-    hub.publishSync(controllerId, 'running', 'Invio fasce orarie…')
+    hub.publishSync(controllerId, 'running', 'sync.progress.profiles')
     await this.pushTimeProfiles(actor, controllerId)
-    hub.publishSync(controllerId, 'running', 'Invio task…')
+    hub.publishSync(controllerId, 'running', 'sync.progress.tasks')
     await this.pushTasks(actor, controllerId)
-    hub.publishSync(controllerId, 'running', 'Invio impostazioni avanzate…')
+    hub.publishSync(controllerId, 'running', 'sync.progress.settings')
     await this.pushSettings(actor, controllerId)
     return this.syncCards(actor, controllerId)
   }

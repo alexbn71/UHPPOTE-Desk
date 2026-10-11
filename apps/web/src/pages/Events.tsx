@@ -3,15 +3,19 @@ import { DateInput } from '@mantine/dates'
 import { IconDownload, IconRefresh } from '@tabler/icons-react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { EventDto } from '@uhppote-desk/shared'
 import { EventsTable, PageHeader } from '../components/common'
-import { api, qs } from '../lib/api'
-import { addDays, today } from '../lib/format'
+import { api, downloadQs, qs } from '../lib/api'
+import { useCodes } from '../lib/codes'
+import { DATE_INPUT_FORMAT, addDays, today } from '../lib/format'
 import { useControllers, usePeople } from '../lib/queries'
 
 const PAGE = 100
 
 export function EventsPage() {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const controllers = useControllers()
   const people = usePeople()
   const [from, setFrom] = useState<string | null>(addDays(today(), -7))
@@ -29,71 +33,68 @@ export function EventsPage() {
     queryFn: () => api.get<{ rows: EventDto[]; total: number }>(`/events${qs({ ...filter, limit: PAGE, offset: (page - 1) * PAGE })}`),
     placeholderData: keepPreviousData,
   })
+  const reset = () => setPage(1)
 
   return (
     <>
       <PageHeader
-        title="Storico eventi"
-        description="Passaggi, eventi porta e allarmi registrati (raccolti automaticamente dai controller)"
+        title={t('events.title')}
+        description={t('events.description')}
         actions={
           <>
             <Button variant="default" leftSection={<IconRefresh size={16} />} onClick={() => void query.refetch()}>
-              Aggiorna
+              {t('common.refresh')}
             </Button>
-            <Button component="a" href={`/api/events/export.csv${qs(filter)}`} leftSection={<IconDownload size={16} />}>
-              Esporta CSV
+            <Button component="a" href={`/api/events/export.csv${downloadQs(filter)}`} leftSection={<IconDownload size={16} />}>
+              {t('common.exportCsv')}
             </Button>
           </>
         }
       />
       <Card withBorder mb="md">
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-          <DateInput label="Dal" value={from} onChange={(v) => { setFrom(v); setPage(1) }} valueFormat="DD/MM/YYYY" clearable />
-          <DateInput label="Al" value={to} onChange={(v) => { setTo(v); setPage(1) }} valueFormat="DD/MM/YYYY" clearable />
+          <DateInput label={t('events.from')} value={from} onChange={(v) => { setFrom(v); reset() }} valueFormat={DATE_INPUT_FORMAT} clearable />
+          <DateInput label={t('events.to')} value={to} onChange={(v) => { setTo(v); reset() }} valueFormat={DATE_INPUT_FORMAT} clearable />
           <Select
-            label="Controller"
+            label={t('common.controller')}
             clearable
             data={(controllers.data ?? []).map((c) => ({ value: String(c.id), label: c.name }))}
             value={controllerId}
-            onChange={(v) => { setControllerId(v); setPage(1) }}
+            onChange={(v) => { setControllerId(v); reset() }}
           />
           <Select
-            label="Persona"
+            label={t('common.person')}
             clearable
             searchable
             data={(people.data ?? []).map((p) => ({ value: String(p.id), label: `${p.lastName} ${p.firstName} (${p.code})` }))}
             value={personId}
-            onChange={(v) => { setPersonId(v); setPage(1) }}
+            onChange={(v) => { setPersonId(v); reset() }}
           />
           <Select
-            label="Esito"
+            label={t('events.outcome')}
             clearable
             data={[
-              { value: 'true', label: 'Consentiti' },
-              { value: 'false', label: 'Negati' },
+              { value: 'true', label: t('events.granted') },
+              { value: 'false', label: t('events.denied') },
             ]}
             value={granted}
-            onChange={(v) => { setGranted(v); setPage(1) }}
+            onChange={(v) => { setGranted(v); reset() }}
           />
           <Select
-            label="Tipo"
+            label={t('common.type')}
             clearable
-            data={[
-              { value: '1', label: 'Tessera' },
-              { value: '2', label: 'Porta' },
-              { value: '3', label: 'Allarme' },
-            ]}
+            data={[1, 2, 3].map((n) => ({ value: String(n), label: codes.eventType(n) }))}
             value={type}
-            onChange={(v) => { setType(v); setPage(1) }}
+            onChange={(v) => { setType(v); reset() }}
           />
-          <TextInput label="Numero tessera" value={card} onChange={(e) => { setCard(e.currentTarget.value.replace(/\D/g, '')); setPage(1) }} />
+          <TextInput label={t('events.cardNumber')} value={card} onChange={(e) => { setCard(e.currentTarget.value.replace(/\D/g, '')); reset() }} />
         </SimpleGrid>
       </Card>
       <Card withBorder>
         <EventsTable events={query.data?.rows ?? []} />
         <Group justify="space-between" mt="md">
           <Text size="sm" c="dimmed">
-            {query.data?.total ?? 0} eventi
+            {t('events.count', { n: query.data?.total ?? 0 })}
           </Text>
           <Pagination total={Math.max(1, Math.ceil((query.data?.total ?? 0) / PAGE))} value={page} onChange={setPage} />
         </Group>

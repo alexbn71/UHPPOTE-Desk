@@ -35,28 +35,28 @@ function isValidDate(y: number, m: number, d: number): boolean {
 
 export function parseDate(value: DateString, field = 'date'): [number, number, number] {
   const m = DATE_RE.exec(value)
-  if (!m) throw new CodecError(`${field}: data non valida '${value}' (atteso YYYY-MM-DD)`)
+  if (!m) throw new CodecError(`${field}: invalid date '${value}' (expected YYYY-MM-DD)`)
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
-  if (!isValidDate(y, mo, d)) throw new CodecError(`${field}: data inesistente '${value}'`)
+  if (!isValidDate(y, mo, d)) throw new CodecError(`${field}: non-existent date '${value}'`)
   return [y, mo, d]
 }
 
 export function parseDateTime(value: DateTimeString, field = 'datetime'): [number, number, number, number, number, number] {
   const m = DATETIME_RE.exec(value)
-  if (!m) throw new CodecError(`${field}: data/ora non valida '${value}' (atteso YYYY-MM-DD HH:mm:ss)`)
+  if (!m) throw new CodecError(`${field}: invalid date/time '${value}' (expected YYYY-MM-DD HH:mm:ss)`)
   const v = m.slice(1).map(Number) as [number, number, number, number, number, number]
   if (!isValidDate(v[0], v[1], v[2]) || v[3] > 23 || v[4] > 59 || v[5] > 59) {
-    throw new CodecError(`${field}: data/ora inesistente '${value}'`)
+    throw new CodecError(`${field}: non-existent date/time '${value}'`)
   }
   return v
 }
 
 export function parseHHmm(value: TimeString, field = 'time'): [number, number] {
   const m = HHMM_RE.exec(value)
-  if (!m) throw new CodecError(`${field}: ora non valida '${value}' (atteso HH:mm)`)
+  if (!m) throw new CodecError(`${field}: invalid time '${value}' (expected HH:mm)`)
   const h = Number(m[1])
   const mi = Number(m[2])
-  if (h > 24 || mi > 59 || (h === 24 && mi !== 0)) throw new CodecError(`${field}: ora inesistente '${value}'`)
+  if (h > 24 || mi > 59 || (h === 24 && mi !== 0)) throw new CodecError(`${field}: non-existent time '${value}'`)
   return [h, mi]
 }
 
@@ -70,7 +70,7 @@ export class Writer {
 
   constructor(functionCode: number, controller: number) {
     if (!Number.isInteger(controller) || controller < 0 || controller > 0xffffffff) {
-      throw new CodecError(`numero di serie controller non valido: ${controller}`)
+      throw new CodecError(`invalid controller serial number: ${controller}`)
     }
     this.buf = Buffer.alloc(PACKET_SIZE)
     this.buf[0] = SOM
@@ -79,19 +79,19 @@ export class Writer {
   }
 
   u8(offset: number, v: number, field = 'uint8'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 0xff) throw new CodecError(`${field}: valore fuori range (0-255): ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 0xff) throw new CodecError(`${field}: value out of range (0-255): ${v}`)
     this.buf.writeUInt8(v, offset)
     return this
   }
 
   u16(offset: number, v: number, field = 'uint16'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 0xffff) throw new CodecError(`${field}: valore fuori range (0-65535): ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 0xffff) throw new CodecError(`${field}: value out of range (0-65535): ${v}`)
     this.buf.writeUInt16LE(v, offset)
     return this
   }
 
   u32(offset: number, v: number, field = 'uint32'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 0xffffffff) throw new CodecError(`${field}: valore fuori range: ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 0xffffffff) throw new CodecError(`${field}: value out of range: ${v}`)
     this.buf.writeUInt32LE(v, offset)
     return this
   }
@@ -103,23 +103,23 @@ export class Writer {
 
   /** PIN a 3 byte little-endian (tessere). */
   pin24(offset: number, v: number, field = 'PIN'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: PIN fuori range (0-999999): ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: PIN out of range (0-999999): ${v}`)
     this.buf.writeUIntLE(v, offset, 3)
     return this
   }
 
   /** PIN a 4 byte little-endian (passcode porta). */
   pin32(offset: number, v: number, field = 'passcode'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: passcode fuori range (0-999999): ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: passcode out of range (0-999999): ${v}`)
     this.buf.writeUInt32LE(v, offset)
     return this
   }
 
   ipv4(offset: number, v: string, field = 'IPv4'): this {
     const parts = v.split('.')
-    if (parts.length !== 4) throw new CodecError(`${field}: indirizzo non valido '${v}'`)
+    if (parts.length !== 4) throw new CodecError(`${field}: invalid address '${v}'`)
     parts.forEach((p, i) => {
-      if (!/^\d{1,3}$/.test(p) || Number(p) > 255) throw new CodecError(`${field}: indirizzo non valido '${v}'`)
+      if (!/^\d{1,3}$/.test(p) || Number(p) > 255) throw new CodecError(`${field}: invalid address '${v}'`)
       this.buf[offset + i] = Number(p)
     })
     return this

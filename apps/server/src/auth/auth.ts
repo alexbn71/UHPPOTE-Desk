@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import type { OperatorDto, Role } from '@uhppote-desk/shared'
+import { translate } from '@uhppote-desk/shared'
 import type { Db } from '../db/database.js'
 import { toBool } from '../db/database.js'
 import { hashPassword, randomPassword, verifyPassword } from './password.js'
@@ -40,12 +41,17 @@ export function hasRole(user: SessionUser | null, role: Role): boolean {
   return !!user && ROLE_RANK[user.role] >= ROLE_RANK[role]
 }
 
+/**
+ * HTTP error with a translatable code (key under `errors.*` in the shared translations).
+ * The message is the English text; the client shows it in the user's language using `code` and `params`.
+ */
 export class HttpError extends Error {
   constructor(
     readonly statusCode: number,
-    message: string,
+    readonly code: string,
+    readonly params: Record<string, string | number> = {},
   ) {
-    super(message)
+    super(translate('en', `errors.${code}`, params))
   }
 }
 
@@ -67,7 +73,7 @@ export class AuthService {
     if (count > 0) return { created: false }
     const password = initialPassword ?? randomPassword()
     this.db.run(
-      `INSERT INTO operators (username, display_name, password_hash, role, must_change_password) VALUES ('admin', 'Amministratore', ?, 'admin', 1)`,
+      `INSERT INTO operators (username, display_name, password_hash, role, must_change_password) VALUES ('admin', 'Administrator', ?, 'admin', 1)`,
       [await hashPassword(password)],
     )
     return initialPassword ? { created: true } : { created: true, password }
@@ -158,10 +164,10 @@ export class AuthService {
 /** preHandler: richiede un ruolo minimo. */
 export function requireRole(role: Role) {
   return async (req: FastifyRequest, _reply: FastifyReply) => {
-    if (!req.user) throw new HttpError(401, 'Autenticazione richiesta')
+    if (!req.user) throw new HttpError(401, 'unauthenticated')
     if (req.user.mustChangePassword && !req.url.startsWith('/api/auth/')) {
-      throw new HttpError(403, 'È necessario cambiare la password prima di continuare')
+      throw new HttpError(403, 'mustChangePassword')
     }
-    if (!hasRole(req.user, role)) throw new HttpError(403, 'Permessi insufficienti')
+    if (!hasRole(req.user, role)) throw new HttpError(403, 'forbidden')
   }
 }

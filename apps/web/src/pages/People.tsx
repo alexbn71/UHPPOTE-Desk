@@ -26,14 +26,18 @@ import { modals } from '@mantine/modals'
 import { IconFileImport, IconPhoto, IconPlus, IconSearch, IconTrash, IconUser } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { PersonDto } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
+import i18n from '../i18n'
 import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { addDays, cardLabel, fmtDate, today } from '../lib/format'
+import { useCodes } from '../lib/codes'
+import { DATE_INPUT_FORMAT, addDays, cardLabel, fmtDate, today } from '../lib/format'
 import { treeOptions, useControllers, useDepartments, useShifts, useTimeProfiles, type Permission } from '../lib/queries'
 
 type PersonForm = Omit<PersonDto, 'id' | 'departmentName' | 'hasPhoto' | 'cards'>
+type PushResult = { pushErrors: { controllerId: number; error: string }[] }
 
 const emptyPerson = (): PersonForm => ({
   code: '',
@@ -51,6 +55,7 @@ const emptyPerson = (): PersonForm => ({
 })
 
 function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly: boolean }) {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const controllers = useControllers()
   const profiles = useTimeProfiles()
@@ -63,15 +68,15 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
     if (person.data) setPerms(new Map(person.data.permissions.map((p) => [p.doorId, p])))
   }, [person.data])
 
-  const profileOptions = [{ value: 'always', label: 'Sempre' }, ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))]
+  const profileOptions = [{ value: 'always', label: t('people.permAlways') }, ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))]
 
   const save = async () => {
     setBusy(true)
     try {
-      const r = await api.put<{ pushErrors: { controllerId: number; error: string }[] }>(`/people/${personId}/permissions`, {
+      const r = await api.put<PushResult>(`/people/${personId}/permissions`, {
         permissions: [...perms.values()].map((p) => ({ doorId: p.doorId, profileId: p.profileId, firstCard: p.firstCard })),
       })
-      notifyOk('Permessi salvati e inviati ai controller')
+      notifyOk(t('people.permissionsSaved'))
       notifyPush(r, controllerName)
       void qc.invalidateQueries({ queryKey: ['person', personId] })
       void qc.invalidateQueries({ queryKey: ['permissions'] })
@@ -119,11 +124,11 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
                         />
                       )}
                     </Table.Td>
-                    <Table.Td w={120}>
+                    <Table.Td w={140}>
                       {p && (
                         <Checkbox
                           size="xs"
-                          label="First card"
+                          label={t('people.firstCard')}
                           checked={p.firstCard}
                           disabled={readOnly}
                           onChange={(e) => setPerms(new Map(perms).set(d.id, { ...p, firstCard: e.currentTarget.checked }))}
@@ -139,7 +144,7 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
       ))}
       {!readOnly && (
         <Button onClick={save} loading={busy}>
-          Salva permessi
+          {t('people.savePermissions')}
         </Button>
       )}
     </Stack>
@@ -147,6 +152,8 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
 }
 
 function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOnly: boolean; onChange: () => void }) {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const [number, setNumber] = useState<number | string>('')
   const unknown = useQuery({
     queryKey: ['cards-unknown'],
@@ -157,8 +164,8 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
 
   const add = async (n: number) => {
     try {
-      const r = await api.post<{ pushErrors: { controllerId: number; error: string }[] }>('/cards', { number: n, personId: person.id })
-      notifyOk(`Tessera ${n} assegnata`)
+      const r = await api.post<PushResult>('/cards', { number: n, personId: person.id })
+      notifyOk(t('people.cardAssigned', { n }))
       notifyPush(r)
       setNumber('')
       onChange()
@@ -170,19 +177,19 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
   const replace = (cardId: number, old: number) => {
     let value = ''
     modals.openConfirmModal({
-      title: `Tessera smarrita ${old}`,
+      title: i18n.t('people.replaceTitle', { n: old }),
       children: (
         <Stack>
-          <Text size="sm">La tessera verrà disattivata e rimossa dai controller; la nuova tessera riceverà gli stessi permessi.</Text>
-          <TextInput label="Numero nuova tessera" onChange={(e) => (value = e.currentTarget.value)} />
+          <Text size="sm">{i18n.t('people.replaceInfo')}</Text>
+          <TextInput label={i18n.t('people.replaceNewNumber')} onChange={(e) => (value = e.currentTarget.value)} />
         </Stack>
       ),
-      labels: { confirm: 'Sostituisci', cancel: 'Annulla' },
+      labels: { confirm: i18n.t('people.replaceConfirm'), cancel: i18n.t('common.cancel') },
       onConfirm: () =>
         api
-          .post<{ pushErrors: { controllerId: number; error: string }[] }>(`/cards/${cardId}/replace`, { newNumber: Number(value) })
+          .post<PushResult>(`/cards/${cardId}/replace`, { newNumber: Number(value) })
           .then((r) => {
-            notifyOk('Tessera sostituita')
+            notifyOk(i18n.t('people.replaced'))
             notifyPush(r)
             onChange()
           })
@@ -192,13 +199,13 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
 
   const remove = (cardId: number, n: number) =>
     modals.openConfirmModal({
-      title: 'Elimina tessera',
-      children: <Text size="sm">Eliminare la tessera {n}? Verrà rimossa da tutti i controller.</Text>,
-      labels: { confirm: 'Elimina', cancel: 'Annulla' },
+      title: i18n.t('people.deleteCardTitle'),
+      children: <Text size="sm">{i18n.t('people.deleteCardConfirm', { n })}</Text>,
+      labels: { confirm: i18n.t('common.delete'), cancel: i18n.t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
-          .del<{ pushErrors: { controllerId: number; error: string }[] }>(`/cards/${cardId}`)
+          .del<PushResult>(`/cards/${cardId}`)
           .then((r) => {
             notifyPush(r)
             onChange()
@@ -211,9 +218,9 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
       <Table>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Numero (facility, codice)</Table.Th>
-            <Table.Th>Stato</Table.Th>
-            <Table.Th>Dal</Table.Th>
+            <Table.Th>{t('people.cardNumberCol')}</Table.Th>
+            <Table.Th>{t('people.cardStatusCol')}</Table.Th>
+            <Table.Th>{t('people.cardSinceCol')}</Table.Th>
             <Table.Th />
           </Table.Tr>
         </Table.Thead>
@@ -223,7 +230,7 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
               <Table.Td className="mono">{cardLabel(c.number)}</Table.Td>
               <Table.Td>
                 <Badge color={c.status === 'active' ? 'green' : c.status === 'lost' ? 'red' : 'gray'} variant="light">
-                  {c.status === 'active' ? 'Attiva' : c.status === 'lost' ? 'Smarrita' : 'Disattivata'}
+                  {codes.cardStatus(c.status)}
                 </Badge>
               </Table.Td>
               <Table.Td>{fmtDate(c.createdAt)}</Table.Td>
@@ -232,10 +239,10 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
                   <Group gap={4} justify="flex-end">
                     {c.status === 'active' && (
                       <Button size="compact-xs" variant="light" color="orange" onClick={() => replace(c.id, c.number)}>
-                        Smarrita
+                        {t('people.lostButton')}
                       </Button>
                     )}
-                    <IconButton label="Elimina" color="red" onClick={() => remove(c.id, c.number)}>
+                    <IconButton label={t('common.delete')} color="red" onClick={() => remove(c.id, c.number)}>
                       <IconTrash size={16} />
                     </IconButton>
                   </Group>
@@ -248,20 +255,20 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
       {!readOnly && (
         <>
           <Group align="flex-end">
-            <NumberInput label="Aggiungi tessera" description="Numero a 8 cifre (facility × 100000 + codice)" value={number} onChange={setNumber} hideControls allowDecimal={false} w={260} />
+            <NumberInput label={t('people.addCard')} description={t('people.addCardHint')} value={number} onChange={setNumber} hideControls allowDecimal={false} w={260} />
             <Button disabled={!number} onClick={() => void add(Number(number))}>
-              Aggiungi
+              {t('common.add')}
             </Button>
           </Group>
-          <Alert variant="light" title="Acquisizione da lettore">
-            Passa la tessera su un lettore qualsiasi: le tessere non registrate lette negli ultimi 10 minuti compaiono qui.
+          <Alert variant="light" title={t('people.readerTitle')}>
+            {t('people.readerHint')}
             <Group gap="xs" mt="xs">
               {(unknown.data ?? []).map((u) => (
                 <Button key={u.card} size="compact-sm" variant="outline" onClick={() => void add(u.card)}>
                   {cardLabel(u.card)}
                 </Button>
               ))}
-              {unknown.data?.length === 0 && <Text size="sm" c="dimmed">Nessuna tessera sconosciuta letta di recente.</Text>}
+              {unknown.data?.length === 0 && <Text size="sm" c="dimmed">{t('people.readerNone')}</Text>}
             </Group>
           </Alert>
         </>
@@ -271,6 +278,7 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
 }
 
 function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; opened: boolean; onClose: () => void }) {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const { can } = useAuth()
   const readOnly = !can('operator')
@@ -303,12 +311,12 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
     setBusy(true)
     try {
       if (person) {
-        const r = await api.put<{ pushErrors: { controllerId: number; error: string }[] }>(`/people/${person.id}`, form)
+        const r = await api.put<PushResult>(`/people/${person.id}`, form)
         notifyPush(r)
-        notifyOk('Persona aggiornata')
+        notifyOk(t('people.updated'))
       } else {
         await api.post('/people', form)
-        notifyOk('Persona creata: ora puoi assegnare tessere e permessi')
+        notifyOk(t('people.created'))
       }
       refresh()
       if (!person) onClose()
@@ -332,18 +340,18 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
 
   const p = current.data ?? person
   return (
-    <Drawer opened={opened} onClose={onClose} position="right" size="xl" title={person ? `${person.lastName} ${person.firstName}` : 'Nuova persona'}>
-      <Tabs defaultValue="anagrafica">
+    <Drawer opened={opened} onClose={onClose} position="right" size="xl" title={person ? `${person.lastName} ${person.firstName}` : t('people.new')}>
+      <Tabs defaultValue="details">
         <Tabs.List mb="md">
-          <Tabs.Tab value="anagrafica">Anagrafica</Tabs.Tab>
-          <Tabs.Tab value="tessere" disabled={!person}>
-            Tessere {p ? `(${p.cards.length})` : ''}
+          <Tabs.Tab value="details">{t('people.tabDetails')}</Tabs.Tab>
+          <Tabs.Tab value="cards" disabled={!person}>
+            {p ? t('people.tabCardsN', { n: p.cards.length }) : t('people.tabCards')}
           </Tabs.Tab>
-          <Tabs.Tab value="permessi" disabled={!person}>
-            Permessi
+          <Tabs.Tab value="permissions" disabled={!person}>
+            {t('people.tabPermissions')}
           </Tabs.Tab>
         </Tabs.List>
-        <Tabs.Panel value="anagrafica">
+        <Tabs.Panel value="details">
           <Stack>
             {person && (
               <Group>
@@ -354,7 +362,7 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
                   <FileButton onChange={(f) => void uploadPhoto(f)} accept="image/jpeg,image/png,image/webp">
                     {(props) => (
                       <Button {...props} variant="light" leftSection={<IconPhoto size={16} />}>
-                        Carica foto
+                        {t('people.uploadPhoto')}
                       </Button>
                     )}
                   </FileButton>
@@ -362,9 +370,9 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
               </Group>
             )}
             <SimpleGrid cols={2}>
-              <TextInput label="Matricola" required value={form.code} onChange={(e) => set('code', e.currentTarget.value)} readOnly={readOnly} />
+              <TextInput label={t('people.code')} required value={form.code} onChange={(e) => set('code', e.currentTarget.value)} readOnly={readOnly} />
               <Select
-                label="Reparto"
+                label={t('people.department')}
                 clearable
                 searchable
                 data={treeOptions(departments.data)}
@@ -372,15 +380,15 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
                 onChange={(v) => set('departmentId', v ? Number(v) : null)}
                 readOnly={readOnly}
               />
-              <TextInput label="Cognome" required value={form.lastName} onChange={(e) => set('lastName', e.currentTarget.value)} readOnly={readOnly} />
-              <TextInput label="Nome" value={form.firstName} onChange={(e) => set('firstName', e.currentTarget.value)} readOnly={readOnly} />
-              <TextInput label="Email" value={form.email} onChange={(e) => set('email', e.currentTarget.value)} readOnly={readOnly} />
-              <TextInput label="Telefono" value={form.phone} onChange={(e) => set('phone', e.currentTarget.value)} readOnly={readOnly} />
-              <DateInput label="Accesso valido dal" valueFormat="DD/MM/YYYY" value={form.validFrom} onChange={(v) => v && set('validFrom', v)} readOnly={readOnly} />
-              <DateInput label="Accesso valido al" valueFormat="DD/MM/YYYY" value={form.validTo} onChange={(v) => v && set('validTo', v)} readOnly={readOnly} />
+              <TextInput label={t('people.lastName')} required value={form.lastName} onChange={(e) => set('lastName', e.currentTarget.value)} readOnly={readOnly} />
+              <TextInput label={t('people.firstName')} value={form.firstName} onChange={(e) => set('firstName', e.currentTarget.value)} readOnly={readOnly} />
+              <TextInput label={t('people.email')} value={form.email} onChange={(e) => set('email', e.currentTarget.value)} readOnly={readOnly} />
+              <TextInput label={t('people.phone')} value={form.phone} onChange={(e) => set('phone', e.currentTarget.value)} readOnly={readOnly} />
+              <DateInput label={t('people.validFrom')} valueFormat={DATE_INPUT_FORMAT} value={form.validFrom} onChange={(v) => v && set('validFrom', v)} readOnly={readOnly} />
+              <DateInput label={t('people.validTo')} valueFormat={DATE_INPUT_FORMAT} value={form.validTo} onChange={(v) => v && set('validTo', v)} readOnly={readOnly} />
               <NumberInput
-                label="PIN tastiera"
-                description="0 = nessun PIN (max 6 cifre)"
+                label={t('people.pin')}
+                description={t('people.pinHint')}
                 min={0}
                 max={999999}
                 value={form.pin}
@@ -389,7 +397,7 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
                 hideControls
               />
               <Select
-                label="Turno (presenze)"
+                label={t('people.shift')}
                 clearable
                 data={(shifts.data ?? []).map((s) => ({ value: String(s.id), label: `${s.name} (${s.startTime}-${s.endTime})` }))}
                 value={form.shiftId ? String(form.shiftId) : null}
@@ -397,23 +405,24 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
                 readOnly={readOnly}
               />
             </SimpleGrid>
-            <Textarea label="Note" value={form.notes} onChange={(e) => set('notes', e.currentTarget.value)} readOnly={readOnly} autosize minRows={2} />
-            <Switch label="Attivo (se disattivato le tessere vengono rimosse dai controller)" checked={form.active} onChange={(e) => set('active', e.currentTarget.checked)} disabled={readOnly} />
+            <Textarea label={t('people.notes')} value={form.notes} onChange={(e) => set('notes', e.currentTarget.value)} readOnly={readOnly} autosize minRows={2} />
+            <Switch label={t('people.activeSwitch')} checked={form.active} onChange={(e) => set('active', e.currentTarget.checked)} disabled={readOnly} />
             {!readOnly && (
               <Button onClick={save} loading={busy}>
-                {person ? 'Salva modifiche' : 'Crea persona'}
+                {person ? t('people.saveChanges') : t('people.create')}
               </Button>
             )}
           </Stack>
         </Tabs.Panel>
-        <Tabs.Panel value="tessere">{p && <CardsEditor person={p} readOnly={readOnly} onChange={refresh} />}</Tabs.Panel>
-        <Tabs.Panel value="permessi">{person && <PermissionsEditor personId={person.id} readOnly={readOnly} />}</Tabs.Panel>
+        <Tabs.Panel value="cards">{p && <CardsEditor person={p} readOnly={readOnly} onChange={refresh} />}</Tabs.Panel>
+        <Tabs.Panel value="permissions">{person && <PermissionsEditor personId={person.id} readOnly={readOnly} />}</Tabs.Panel>
       </Tabs>
     </Drawer>
   )
 }
 
 export function PeoplePage() {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const { can } = useAuth()
   const [search, setSearch] = useState('')
@@ -425,25 +434,31 @@ export function PeoplePage() {
   const importCsv = async (file: File | null) => {
     if (!file) return
     try {
-      const r = await api.upload<{ created: number; updated: number; cards: number; errors: { row: number; error: string }[] }>('/people/import', file)
+      const r = await api.upload<{
+        created: number
+        updated: number
+        cards: number
+        errors: { row: number; error: string; code?: string; params?: Record<string, string | number> }[]
+      }>('/people/import', file)
       modals.open({
-        title: 'Risultato importazione',
+        title: t('people.importResult'),
         children: (
           <Stack>
-            <Text>
-              Create: {r.created} · Aggiornate: {r.updated} · Tessere: {r.cards}
-            </Text>
+            <Text>{t('people.importSummary', { created: r.created, updated: r.updated, cards: r.cards })}</Text>
             {r.errors.length > 0 && (
-              <Alert color="orange" title={`${r.errors.length} righe con errori`}>
+              <Alert color="orange" title={t('people.importErrors', { n: r.errors.length })}>
                 {r.errors.slice(0, 20).map((e) => (
                   <Text size="sm" key={e.row}>
-                    Riga {e.row}: {e.error}
+                    {t('people.importRow', {
+                      row: e.row,
+                      error: e.code ? t(`errors.${e.code}` as 'errors.generic', { ...e.params, defaultValue: e.error }) : e.error,
+                    })}
                   </Text>
                 ))}
               </Alert>
             )}
             <Text size="sm" c="dimmed">
-              Ricorda di assegnare i permessi alle persone importate.
+              {t('people.importHint')}
             </Text>
           </Stack>
         ),
@@ -456,13 +471,13 @@ export function PeoplePage() {
 
   const remove = (p: PersonDto) =>
     modals.openConfirmModal({
-      title: 'Elimina persona',
-      children: <Text size="sm">Eliminare {p.lastName} {p.firstName}? Le sue tessere verranno eliminate e rimosse dai controller.</Text>,
-      labels: { confirm: 'Elimina', cancel: 'Annulla' },
+      title: t('people.deleteTitle'),
+      children: <Text size="sm">{t('people.deleteConfirm', { name: `${p.lastName} ${p.firstName}`.trim() })}</Text>,
+      labels: { confirm: t('common.delete'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
-          .del<{ pushErrors: { controllerId: number; error: string }[] }>(`/people/${p.id}`)
+          .del<PushResult>(`/people/${p.id}`)
           .then((r) => {
             notifyPush(r)
             void qc.invalidateQueries({ queryKey: ['people'] })
@@ -473,15 +488,15 @@ export function PeoplePage() {
   return (
     <>
       <PageHeader
-        title="Persone"
-        description="Anagrafica utenti, tessere e permessi di accesso"
+        title={t('people.title')}
+        description={t('people.description')}
         actions={
           can('operator') && (
             <>
               <FileButton onChange={(f) => void importCsv(f)} accept=".csv,text/csv">
                 {(props) => (
                   <Button {...props} variant="default" leftSection={<IconFileImport size={16} />}>
-                    Importa CSV
+                    {t('people.importCsv')}
                   </Button>
                 )}
               </FileButton>
@@ -492,30 +507,24 @@ export function PeoplePage() {
                   setOpened(true)
                 }}
               >
-                Nuova persona
+                {t('people.new')}
               </Button>
             </>
           )
         }
       />
       <Card withBorder>
-        <TextInput
-          leftSection={<IconSearch size={16} />}
-          placeholder="Cerca per nome, matricola o numero tessera"
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          mb="md"
-        />
+        <TextInput leftSection={<IconSearch size={16} />} placeholder={t('people.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.currentTarget.value)} mb="md" />
         <Table.ScrollContainer minWidth={700}>
           <Table highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Matricola</Table.Th>
-                <Table.Th>Nome</Table.Th>
-                <Table.Th>Reparto</Table.Th>
-                <Table.Th>Tessere</Table.Th>
-                <Table.Th>Validità</Table.Th>
-                <Table.Th>Stato</Table.Th>
+                <Table.Th>{t('people.colCode')}</Table.Th>
+                <Table.Th>{t('people.colName')}</Table.Th>
+                <Table.Th>{t('people.colDepartment')}</Table.Th>
+                <Table.Th>{t('people.colCards')}</Table.Th>
+                <Table.Th>{t('people.colValidity')}</Table.Th>
+                <Table.Th>{t('people.colStatus')}</Table.Th>
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
@@ -548,12 +557,12 @@ export function PeoplePage() {
                   </Table.Td>
                   <Table.Td>
                     <Badge color={p.active ? 'green' : 'gray'} variant="light">
-                      {p.active ? 'Attivo' : 'Disattivato'}
+                      {p.active ? t('people.active') : t('people.inactive')}
                     </Badge>
                   </Table.Td>
                   <Table.Td onClick={(e) => e.stopPropagation()}>
                     {can('operator') && (
-                      <ActionIcon variant="subtle" color="red" onClick={() => remove(p)} aria-label="Elimina">
+                      <ActionIcon variant="subtle" color="red" onClick={() => remove(p)} aria-label={t('common.delete')}>
                         <IconTrash size={16} />
                       </ActionIcon>
                     )}
@@ -565,7 +574,7 @@ export function PeoplePage() {
         </Table.ScrollContainer>
         {people.data?.length === 0 && (
           <Text c="dimmed" ta="center" py="lg">
-            Nessuna persona trovata
+            {t('people.none')}
           </Text>
         )}
       </Card>

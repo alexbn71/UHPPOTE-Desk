@@ -4,13 +4,19 @@ import { modals } from '@mantine/modals'
 import { IconEdit, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { IconButton, PageHeader, WeekdaysInput, weekdaysText } from '../components/common'
+import { useTranslation } from 'react-i18next'
+import { IconButton, PageHeader, WeekdaysInput } from '../components/common'
 import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { fmtDate, today } from '../lib/format'
+import { useCodes } from '../lib/codes'
+import { DATE_INPUT_FORMAT, fmtDate, today } from '../lib/format'
 import { useTimeProfiles, type TimeProfile } from '../lib/queries'
 
+type PushResult = { pushErrors: { controllerId: number; error: string }[] }
+
 export function TimeProfilesPage() {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const qc = useQueryClient()
   const { can } = useAuth()
   const profiles = useTimeProfiles()
@@ -26,8 +32,8 @@ export function TimeProfilesPage() {
     if (!edit) return
     try {
       const { isNew: _n, id, ...body } = edit
-      const r = await api.put<{ pushErrors: { controllerId: number; error: string }[] }>(`/time-profiles/${id}`, body)
-      notifyOk('Fascia oraria salvata e inviata ai controller')
+      const r = await api.put<PushResult>(`/time-profiles/${id}`, body)
+      notifyOk(t('timeProfiles.saved'))
       notifyPush(r)
       setEdit(null)
       void qc.invalidateQueries({ queryKey: ['time-profiles'] })
@@ -38,13 +44,13 @@ export function TimeProfilesPage() {
 
   const remove = (p: TimeProfile) =>
     modals.openConfirmModal({
-      title: `Elimina fascia ${p.id}`,
-      children: <Text size="sm">Eliminare «{p.name}»?</Text>,
-      labels: { confirm: 'Elimina', cancel: 'Annulla' },
+      title: t('timeProfiles.deleteTitle', { id: p.id }),
+      children: <Text size="sm">{t('timeProfiles.deleteConfirm', { name: p.name })}</Text>,
+      labels: { confirm: t('common.delete'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
         api
-          .del<{ pushErrors: { controllerId: number; error: string }[] }>(`/time-profiles/${p.id}`)
+          .del<PushResult>(`/time-profiles/${p.id}`)
           .then((r) => {
             notifyPush(r)
             void qc.invalidateQueries({ queryKey: ['time-profiles'] })
@@ -55,8 +61,8 @@ export function TimeProfilesPage() {
   return (
     <>
       <PageHeader
-        title="Fasce orarie"
-        description="Intervalli di tempo (ID 2-254) in cui un permesso è valido. Una fascia può concatenarne un'altra per aggiungere giorni/orari."
+        title={t('timeProfiles.title')}
+        description={t('timeProfiles.description')}
         actions={
           can('admin') && (
             <Button
@@ -74,7 +80,7 @@ export function TimeProfilesPage() {
                 })
               }
             >
-              Nuova fascia
+              {t('timeProfiles.new')}
             </Button>
           )
         }
@@ -83,12 +89,12 @@ export function TimeProfilesPage() {
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>ID</Table.Th>
-              <Table.Th>Nome</Table.Th>
-              <Table.Th>Giorni</Table.Th>
-              <Table.Th>Orari</Table.Th>
-              <Table.Th>Validità</Table.Th>
-              <Table.Th>Collegata a</Table.Th>
+              <Table.Th>{t('timeProfiles.colId')}</Table.Th>
+              <Table.Th>{t('timeProfiles.colName')}</Table.Th>
+              <Table.Th>{t('timeProfiles.colDays')}</Table.Th>
+              <Table.Th>{t('timeProfiles.colHours')}</Table.Th>
+              <Table.Th>{t('timeProfiles.colValidity')}</Table.Th>
+              <Table.Th>{t('timeProfiles.colLinked')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -97,7 +103,7 @@ export function TimeProfilesPage() {
               <Table.Tr key={p.id}>
                 <Table.Td>{p.id}</Table.Td>
                 <Table.Td>{p.name}</Table.Td>
-                <Table.Td>{weekdaysText(p.weekdays)}</Table.Td>
+                <Table.Td>{codes.weekdaysText(p.weekdays)}</Table.Td>
                 <Table.Td>{p.segments.map((s) => `${s.start}-${s.end}`).join(', ')}</Table.Td>
                 <Table.Td>
                   {fmtDate(p.validFrom)} – {fmtDate(p.validTo)}
@@ -106,10 +112,10 @@ export function TimeProfilesPage() {
                 <Table.Td>
                   {can('admin') && (
                     <Group gap={0} justify="flex-end">
-                      <IconButton label="Modifica" onClick={() => setEdit({ ...p, isNew: false })}>
+                      <IconButton label={t('common.edit')} onClick={() => setEdit({ ...p, isNew: false })}>
                         <IconEdit size={16} />
                       </IconButton>
-                      <IconButton label="Elimina" color="red" onClick={() => remove(p)}>
+                      <IconButton label={t('common.delete')} color="red" onClick={() => remove(p)}>
                         <IconTrash size={16} />
                       </IconButton>
                     </Group>
@@ -121,49 +127,49 @@ export function TimeProfilesPage() {
         </Table>
         {profiles.data?.length === 0 && (
           <Text c="dimmed" ta="center" py="md">
-            Nessuna fascia oraria: i permessi «Sempre» non ne hanno bisogno.
+            {t('timeProfiles.none')}
           </Text>
         )}
       </Card>
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.isNew ? 'Nuova fascia oraria' : `Fascia oraria ${edit?.id}`} size="lg">
+      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.isNew ? t('timeProfiles.newTitle') : t('timeProfiles.editTitle', { id: edit?.id })} size="lg">
         {edit && (
           <Stack>
             <SimpleGrid cols={2}>
-              <NumberInput label="ID (2-254)" min={2} max={254} value={edit.id} onChange={(v) => setEdit({ ...edit, id: Number(v) })} disabled={!edit.isNew} />
-              <TextInput label="Nome" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} />
-              <DateInput label="Valida dal" valueFormat="DD/MM/YYYY" value={edit.validFrom} onChange={(v) => v && setEdit({ ...edit, validFrom: v })} />
-              <DateInput label="Valida al" valueFormat="DD/MM/YYYY" value={edit.validTo} onChange={(v) => v && setEdit({ ...edit, validTo: v })} />
+              <NumberInput label={t('timeProfiles.id')} min={2} max={254} value={edit.id} onChange={(v) => setEdit({ ...edit, id: Number(v) })} disabled={!edit.isNew} />
+              <TextInput label={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} />
+              <DateInput label={t('timeProfiles.validFrom')} valueFormat={DATE_INPUT_FORMAT} value={edit.validFrom} onChange={(v) => v && setEdit({ ...edit, validFrom: v })} />
+              <DateInput label={t('timeProfiles.validTo')} valueFormat={DATE_INPUT_FORMAT} value={edit.validTo} onChange={(v) => v && setEdit({ ...edit, validTo: v })} />
             </SimpleGrid>
-            <WeekdaysInput label="Giorni" value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
+            <WeekdaysInput label={t('common.days')} value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
             <Text size="sm" fw={500}>
-              Orari (massimo 3 intervalli)
+              {t('timeProfiles.segments')}
             </Text>
             {edit.segments.map((s, i) => (
               <Group key={i}>
                 <TextInput placeholder="08:00" value={s.start} onChange={(e) => setEdit({ ...edit, segments: edit.segments.map((x, j) => (j === i ? { ...x, start: e.currentTarget.value } : x)) })} w={100} />
                 <Text>–</Text>
                 <TextInput placeholder="12:00" value={s.end} onChange={(e) => setEdit({ ...edit, segments: edit.segments.map((x, j) => (j === i ? { ...x, end: e.currentTarget.value } : x)) })} w={100} />
-                <ActionIcon variant="subtle" color="red" onClick={() => setEdit({ ...edit, segments: edit.segments.filter((_, j) => j !== i) })}>
+                <ActionIcon variant="subtle" color="red" onClick={() => setEdit({ ...edit, segments: edit.segments.filter((_, j) => j !== i) })} aria-label={t('common.remove')}>
                   <IconX size={16} />
                 </ActionIcon>
               </Group>
             ))}
             {edit.segments.length < 3 && (
               <Button variant="subtle" size="xs" w="fit-content" onClick={() => setEdit({ ...edit, segments: [...edit.segments, { start: '13:00', end: '17:00' }] })}>
-                + Aggiungi intervallo
+                {t('timeProfiles.addSegment')}
               </Button>
             )}
             <Select
-              label="Concatena la fascia"
-              description="Se il passaggio non rientra in questa fascia viene verificata la fascia collegata"
+              label={t('timeProfiles.linkTo')}
+              description={t('timeProfiles.linkHint')}
               clearable
               data={(profiles.data ?? []).filter((p) => p.id !== edit.id).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))}
               value={edit.linkedTo ? String(edit.linkedTo) : null}
               onChange={(v) => setEdit({ ...edit, linkedTo: v ? Number(v) : null })}
             />
-            <Alert variant="light">Al salvataggio tutte le fasce orarie vengono reinviate a tutti i controller.</Alert>
+            <Alert variant="light">{t('timeProfiles.pushInfo')}</Alert>
             <Button onClick={() => void save()} disabled={!edit.name}>
-              Salva
+              {t('common.save')}
             </Button>
           </Stack>
         )}

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import type { Logger } from '@uhppote-desk/protocol'
 import { buildApp } from './app.js'
 
-// configurazione opzionale da file .env (sviluppo); le variabili già impostate hanno la precedenza
+// optional configuration from a .env file (development); variables already set take precedence
 const envFile = process.env.ENV_FILE ?? '.env'
 if (fs.existsSync(envFile)) process.loadEnvFile(envFile)
 import { loadConfig } from './config.js'
@@ -28,8 +28,8 @@ async function main(): Promise<void> {
   if (admin.created) {
     logger.warn!(
       admin.password
-        ? `Creato l'utente 'admin' con password temporanea: ${admin.password} (da cambiare al primo accesso)`
-        : `Creato l'utente 'admin' con la password indicata in INITIAL_ADMIN_PASSWORD (da cambiare al primo accesso)`,
+        ? `Created user 'admin' with temporary password: ${admin.password} (must be changed at first login)`
+        : `Created user 'admin' with the password from INITIAL_ADMIN_PASSWORD (must be changed at first login)`,
     )
   }
 
@@ -37,28 +37,28 @@ async function main(): Promise<void> {
 
   try {
     const addr = await ctx.eventService.startListener()
-    logger.info!(`listener eventi UHPPOTE in ascolto su ${addr.address}:${addr.port}`)
+    logger.info!(`UHPPOTE event listener listening on ${addr.address}:${addr.port}`)
   } catch (err) {
-    logger.error!(`impossibile avviare il listener eventi: ${(err as Error).message} — gli eventi verranno raccolti solo via polling`)
+    logger.error!(`cannot start the event listener: ${(err as Error).message} — events will be collected by polling only`)
   }
   if (!config.uhppote.listenerPublic) {
-    logger.warn!('UHPPOTE_LISTENER_PUBLIC non impostato: il listener dei controller non verrà configurato automaticamente')
+    logger.warn!('UHPPOTE_LISTENER_PUBLIC not set: the controllers\' event listener will not be configured automatically')
   }
 
   ctx.health.start()
   ctx.backup.start()
   const collectTimer = setInterval(() => {
     for (const c of ctx.controllers.list().filter((x) => x.enabled && ctx.hub.state(x.id).online)) {
-      ctx.eventService.collect(c.id).catch((err) => logger.warn!(`raccolta eventi ${c.serial}: ${(err as Error).message}`))
+      ctx.eventService.collect(c.id).catch((err) => logger.warn!(`event collection ${c.serial}: ${(err as Error).message}`))
     }
     ctx.auth.purgeExpired()
   }, config.collectIntervalSec * 1000)
 
   await app.listen({ port: config.httpPort, host: config.httpHost })
-  logger.info!(`UHPPOTE-Desk in ascolto su http://${config.httpHost}:${config.httpPort} (dati: ${config.dataDir})`)
+  logger.info!(`UHPPOTE Desk listening on http://${config.httpHost}:${config.httpPort} (data: ${config.dataDir})`)
 
   const shutdown = async (signal: string) => {
-    logger.info!(`ricevuto ${signal}, arresto in corso…`)
+    logger.info!(`received ${signal}, shutting down…`)
     clearInterval(collectTimer)
     ctx.health.stop()
     ctx.backup.stop()
@@ -72,6 +72,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  logger.error!(`avvio fallito: ${(err as Error).stack ?? err}`)
+  logger.error!(`startup failed: ${(err as Error).stack ?? err}`)
   process.exit(1)
 })

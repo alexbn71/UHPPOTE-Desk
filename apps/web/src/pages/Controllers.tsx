@@ -2,6 +2,7 @@ import { Alert, Badge, Button, Card, Group, Modal, NumberInput, Select, SimpleGr
 import { IconPlus, IconRadar } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
@@ -32,28 +33,29 @@ export interface ControllerForm {
 }
 
 export function ControllerFormFields({ form, setForm }: { form: ControllerForm; setForm: (f: ControllerForm) => void }) {
+  const { t } = useTranslation()
   const zones = useZones()
   return (
     <Stack>
-      <NumberInput label="Numero di serie" description="9 cifre riportate sull'etichetta S/N della scheda" value={form.serial} onChange={(v) => setForm({ ...form, serial: v })} hideControls allowDecimal={false} required />
-      <TextInput label="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} required />
+      <NumberInput label={t('controllers.serial')} description={t('controllers.serialHint')} value={form.serial} onChange={(v) => setForm({ ...form, serial: v })} hideControls allowDecimal={false} required />
+      <TextInput label={t('controllers.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} required />
       <SimpleGrid cols={2}>
-        <TextInput label="Indirizzo IP" description="Vuoto = comunicazione in broadcast" value={form.host} onChange={(e) => setForm({ ...form, host: e.currentTarget.value.trim() })} />
-        <NumberInput label="Porta" value={form.port} onChange={(v) => setForm({ ...form, port: v })} min={1} max={65535} hideControls />
+        <TextInput label={t('controllers.ip')} description={t('controllers.ipHint')} value={form.host} onChange={(e) => setForm({ ...form, host: e.currentTarget.value.trim() })} />
+        <NumberInput label={t('controllers.port')} value={form.port} onChange={(v) => setForm({ ...form, port: v })} min={1} max={65535} hideControls />
       </SimpleGrid>
       <SimpleGrid cols={2}>
         <Select
-          label="Trasporto"
+          label={t('controllers.transport')}
           data={[
-            { value: 'udp', label: 'UDP (standard)' },
-            { value: 'tcp', label: 'TCP (firmware recenti)' },
+            { value: 'udp', label: t('controllers.transportUdp') },
+            { value: 'tcp', label: t('controllers.transportTcp') },
           ]}
           value={form.transport}
           onChange={(v) => setForm({ ...form, transport: (v as 'udp' | 'tcp') ?? 'udp' })}
         />
-        <Select label="Zona" clearable data={treeOptions(zones.data)} value={form.zoneId} onChange={(v) => setForm({ ...form, zoneId: v })} />
+        <Select label={t('controllers.zone')} clearable data={treeOptions(zones.data)} value={form.zoneId} onChange={(v) => setForm({ ...form, zoneId: v })} />
       </SimpleGrid>
-      <Switch label="Abilitato (monitoraggio e sincronizzazione)" checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })} />
+      <Switch label={t('controllers.enabledSwitch')} checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })} />
     </Stack>
   )
 }
@@ -71,6 +73,7 @@ export function controllerBody(f: ControllerForm) {
 }
 
 export function ControllersPage() {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const navigate = useNavigate()
   const { can } = useAuth()
@@ -96,7 +99,7 @@ export function ControllersPage() {
     if (!form) return
     try {
       const r = await api.post<{ id: number }>('/controllers', controllerBody(form))
-      notifyOk('Controller aggiunto')
+      notifyOk(t('controllers.added'))
       setForm(null)
       setFound(null)
       await qc.invalidateQueries({ queryKey: ['controllers'] })
@@ -110,16 +113,16 @@ export function ControllersPage() {
   return (
     <>
       <PageHeader
-        title="Controller"
-        description="Schede di controllo accessi UHPPOTE in rete"
+        title={t('controllers.title')}
+        description={t('controllers.description')}
         actions={
           can('admin') && (
             <>
               <Button variant="default" leftSection={<IconRadar size={16} />} onClick={() => setFound([])}>
-                Cerca in rete
+                {t('controllers.search')}
               </Button>
               <Button leftSection={<IconPlus size={16} />} onClick={() => setForm({ serial: '', name: '', host: '', port: 60000, transport: 'udp', zoneId: null, enabled: true })}>
-                Aggiungi
+                {t('controllers.add')}
               </Button>
             </>
           )
@@ -130,12 +133,12 @@ export function ControllersPage() {
           <Table highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Nome</Table.Th>
-                <Table.Th>S/N</Table.Th>
-                <Table.Th>Indirizzo</Table.Th>
-                <Table.Th>Firmware</Table.Th>
-                <Table.Th>Stato</Table.Th>
-                <Table.Th>Ultimo contatto</Table.Th>
+                <Table.Th>{t('controllers.colName')}</Table.Th>
+                <Table.Th>{t('controllers.colSerial')}</Table.Th>
+                <Table.Th>{t('controllers.colAddress')}</Table.Th>
+                <Table.Th>{t('controllers.colFirmware')}</Table.Th>
+                <Table.Th>{t('controllers.colStatus')}</Table.Th>
+                <Table.Th>{t('controllers.colLastContact')}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -147,11 +150,15 @@ export function ControllersPage() {
                     <Table.Td fw={600}>{c.name}</Table.Td>
                     <Table.Td className="mono">{c.serial}</Table.Td>
                     <Table.Td className="mono">
-                      {c.host ? `${c.host}:${c.port}` : 'broadcast'} {c.transport === 'tcp' && <Badge size="xs">TCP</Badge>}
+                      {c.host ? `${c.host}:${c.port}` : t('controllers.broadcast')} {c.transport === 'tcp' && <Badge size="xs">TCP</Badge>}
                     </Table.Td>
                     <Table.Td>{c.firmware ?? '—'}</Table.Td>
                     <Table.Td>
-                      {!c.enabled ? <Badge color="gray">Disabilitato</Badge> : <Badge color={online ? 'green' : 'red'}>{online ? 'Online' : 'Offline'}</Badge>}
+                      {!c.enabled ? (
+                        <Badge color="gray">{t('controllers.disabled')}</Badge>
+                      ) : (
+                        <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
+                      )}
                     </Table.Td>
                     <Table.Td>{fmtDateTime(state?.lastSeenAt ?? c.lastSeenAt)}</Table.Td>
                   </Table.Tr>
@@ -162,31 +169,30 @@ export function ControllersPage() {
         </Table.ScrollContainer>
         {controllers.data?.length === 0 && (
           <Text c="dimmed" ta="center" py="lg">
-            Nessun controller. Usa «Cerca in rete» per trovarli automaticamente.
+            {t('controllers.none')}
           </Text>
         )}
       </Card>
 
-      <Modal opened={found !== null} onClose={() => setFound(null)} title="Ricerca controller in rete" size="xl">
+      <Modal opened={found !== null} onClose={() => setFound(null)} title={t('controllers.discoveryTitle')} size="xl">
         <Stack>
           <Text size="sm" c="dimmed">
-            La ricerca invia un broadcast UDP sulla porta 60000 e attende le risposte per qualche secondo. Funziona solo se il server è nella stessa rete
-            (stesso segmento) della scheda.
+            {t('controllers.discoveryInfo')}
           </Text>
           <Group align="flex-end">
-            <TextInput label="Indirizzo di broadcast (opzionale)" placeholder="es. 192.168.1.255:60000" value={broadcast} onChange={(e) => setBroadcast(e.currentTarget.value)} />
+            <TextInput label={t('controllers.broadcastAddress')} placeholder="192.168.1.255:60000" value={broadcast} onChange={(e) => setBroadcast(e.currentTarget.value)} />
             <Button onClick={() => void discover()} loading={discovering} leftSection={<IconRadar size={16} />}>
-              Avvia ricerca
+              {t('controllers.startSearch')}
             </Button>
           </Group>
           {found && found.length > 0 && (
             <Table>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>S/N</Table.Th>
-                  <Table.Th>IP</Table.Th>
-                  <Table.Th>MAC</Table.Th>
-                  <Table.Th>Firmware</Table.Th>
+                  <Table.Th>{t('controllers.colSerial')}</Table.Th>
+                  <Table.Th>{t('controllers.colIp')}</Table.Th>
+                  <Table.Th>{t('controllers.colMac')}</Table.Th>
+                  <Table.Th>{t('controllers.colFirmware')}</Table.Th>
                   <Table.Th />
                 </Table.Tr>
               </Table.Thead>
@@ -203,15 +209,23 @@ export function ControllersPage() {
                     </Table.Td>
                     <Table.Td>
                       {f.configured ? (
-                        <Badge>Già configurato</Badge>
+                        <Badge>{t('controllers.alreadyConfigured')}</Badge>
                       ) : (
                         <Button
                           size="xs"
-                          onClick={() => {
-                            setForm({ serial: f.controller, name: `Controller ${f.controller}`, host: f.address, port: 60000, transport: 'udp', zoneId: null, enabled: true })
-                          }}
+                          onClick={() =>
+                            setForm({
+                              serial: f.controller,
+                              name: t('controllers.defaultName', { serial: f.controller }),
+                              host: f.address,
+                              port: 60000,
+                              transport: 'udp',
+                              zoneId: null,
+                              enabled: true,
+                            })
+                          }
                         >
-                          Aggiungi
+                          {t('controllers.add')}
                         </Button>
                       )}
                     </Table.Td>
@@ -220,18 +234,16 @@ export function ControllersPage() {
               </Table.Tbody>
             </Table>
           )}
-          {found && found.length === 0 && !discovering && (
-            <Alert color="gray">Nessun risultato (avvia la ricerca). Se la scheda non risponde verifica cavo, subnet, firewall (UDP 60000) e, in Docker, la modalità di rete «host».</Alert>
-          )}
+          {found && found.length === 0 && !discovering && <Alert color="gray">{t('controllers.noneFound')}</Alert>}
         </Stack>
       </Modal>
 
-      <Modal opened={!!form} onClose={() => setForm(null)} title="Nuovo controller">
+      <Modal opened={!!form} onClose={() => setForm(null)} title={t('controllers.newTitle')}>
         {form && (
           <Stack>
             <ControllerFormFields form={form} setForm={setForm} />
             <Button onClick={() => void save()} disabled={!form.serial || !form.name}>
-              Salva
+              {t('common.save')}
             </Button>
           </Stack>
         )}

@@ -21,10 +21,12 @@ import {
   IconUserShield,
 } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import type { Role } from '@uhppote-desk/shared'
-import { ROLE_LABELS } from '@uhppote-desk/shared'
+import { LanguageSelect } from './components/LanguageSelect'
 import { useAuth } from './lib/auth'
+import { useCodes } from './lib/codes'
 import { LiveProvider, useLive } from './lib/live'
 import { AttendancePage } from './pages/Attendance'
 import { AuditPage } from './pages/Audit'
@@ -46,48 +48,66 @@ import { SystemPage } from './pages/System'
 import { TasksPage } from './pages/Tasks'
 import { TimeProfilesPage } from './pages/TimeProfiles'
 
+type NavKey =
+  | 'dashboard'
+  | 'monitor'
+  | 'events'
+  | 'attendance'
+  | 'people'
+  | 'cards'
+  | 'permissions'
+  | 'structure'
+  | 'controllers'
+  | 'doors'
+  | 'timeProfiles'
+  | 'tasks'
+  | 'sync'
+  | 'operators'
+  | 'audit'
+  | 'systemInfo'
+
 interface NavItem {
   to: string
-  label: string
+  label: NavKey
   icon: ReactNode
   role: Role
 }
 
-const NAV: { section: string; items: NavItem[] }[] = [
+const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administration'; items: NavItem[] }[] = [
   {
-    section: 'Operatività',
+    section: 'operations',
     items: [
-      { to: '/', label: 'Dashboard', icon: <IconDashboard size={18} />, role: 'viewer' },
-      { to: '/monitor', label: 'Monitor', icon: <IconActivity size={18} />, role: 'viewer' },
-      { to: '/eventi', label: 'Storico eventi', icon: <IconHistory size={18} />, role: 'viewer' },
-      { to: '/presenze', label: 'Presenze', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
+      { to: '/', label: 'dashboard', icon: <IconDashboard size={18} />, role: 'viewer' },
+      { to: '/monitor', label: 'monitor', icon: <IconActivity size={18} />, role: 'viewer' },
+      { to: '/eventi', label: 'events', icon: <IconHistory size={18} />, role: 'viewer' },
+      { to: '/presenze', label: 'attendance', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
     ],
   },
   {
-    section: 'Anagrafica',
+    section: 'registry',
     items: [
-      { to: '/persone', label: 'Persone', icon: <IconUsers size={18} />, role: 'viewer' },
-      { to: '/tessere', label: 'Tessere', icon: <IconId size={18} />, role: 'viewer' },
-      { to: '/permessi', label: 'Permessi', icon: <IconKey size={18} />, role: 'viewer' },
-      { to: '/struttura', label: 'Reparti e zone', icon: <IconSitemap size={18} />, role: 'viewer' },
+      { to: '/persone', label: 'people', icon: <IconUsers size={18} />, role: 'viewer' },
+      { to: '/tessere', label: 'cards', icon: <IconId size={18} />, role: 'viewer' },
+      { to: '/permessi', label: 'permissions', icon: <IconKey size={18} />, role: 'viewer' },
+      { to: '/struttura', label: 'structure', icon: <IconSitemap size={18} />, role: 'viewer' },
     ],
   },
   {
-    section: 'Configurazione',
+    section: 'configuration',
     items: [
-      { to: '/controller', label: 'Controller', icon: <IconCpu size={18} />, role: 'viewer' },
-      { to: '/porte', label: 'Porte', icon: <IconDoor size={18} />, role: 'viewer' },
-      { to: '/fasce-orarie', label: 'Fasce orarie', icon: <IconClockHour4 size={18} />, role: 'viewer' },
-      { to: '/task', label: 'Task programmati', icon: <IconCalendarTime size={18} />, role: 'viewer' },
-      { to: '/sincronizzazione', label: 'Sincronizzazione', icon: <IconRefresh size={18} />, role: 'operator' },
+      { to: '/controller', label: 'controllers', icon: <IconCpu size={18} />, role: 'viewer' },
+      { to: '/porte', label: 'doors', icon: <IconDoor size={18} />, role: 'viewer' },
+      { to: '/fasce-orarie', label: 'timeProfiles', icon: <IconClockHour4 size={18} />, role: 'viewer' },
+      { to: '/task', label: 'tasks', icon: <IconCalendarTime size={18} />, role: 'viewer' },
+      { to: '/sincronizzazione', label: 'sync', icon: <IconRefresh size={18} />, role: 'operator' },
     ],
   },
   {
-    section: 'Amministrazione',
+    section: 'administration',
     items: [
-      { to: '/operatori', label: 'Operatori', icon: <IconUserShield size={18} />, role: 'admin' },
-      { to: '/audit', label: 'Registro operazioni', icon: <IconChecklist size={18} />, role: 'admin' },
-      { to: '/sistema', label: 'Sistema', icon: <IconSettings size={18} />, role: 'viewer' },
+      { to: '/operatori', label: 'operators', icon: <IconUserShield size={18} />, role: 'admin' },
+      { to: '/audit', label: 'audit', icon: <IconChecklist size={18} />, role: 'admin' },
+      { to: '/sistema', label: 'systemInfo', icon: <IconSettings size={18} />, role: 'viewer' },
     ],
   },
 ]
@@ -95,6 +115,8 @@ const NAV: { section: string; items: NavItem[] }[] = [
 function Shell({ children }: { children: ReactNode }) {
   const [opened, { toggle, close }] = useDisclosure()
   const { user, logout, can } = useAuth()
+  const { t } = useTranslation()
+  const codes = useCodes()
   const live = useLive()
   const location = useLocation()
   const navigate = useNavigate()
@@ -106,23 +128,24 @@ function Shell({ children }: { children: ReactNode }) {
           <Group gap="sm">
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <IconShieldLock size={24} color="var(--mantine-color-blue-6)" />
-            <Title order={4}>UHPPOTE Desk</Title>
-            <Tooltip label={live.connected ? 'Aggiornamenti in tempo reale attivi' : 'Connessione in tempo reale assente'}>
+            <Title order={4}>{t('app.name')}</Title>
+            <Tooltip label={live.connected ? t('nav.liveOn') : t('nav.liveOff')}>
               <Badge color={live.connected ? 'green' : 'red'} variant="dot">
-                {live.connected ? 'Live' : 'Offline'}
+                {live.connected ? t('common.live') : t('common.offline')}
               </Badge>
             </Tooltip>
           </Group>
           <Group gap="sm">
             <Text size="sm" visibleFrom="xs">
-              {user?.displayName} · {user ? ROLE_LABELS[user.role] : ''}
+              {user?.displayName} · {user ? codes.role(user.role) : ''}
             </Text>
-            <Tooltip label="Cambia password">
+            <LanguageSelect />
+            <Tooltip label={t('nav.changePassword')}>
               <UnstyledButton onClick={() => navigate('/password')}>
                 <IconKey size={20} />
               </UnstyledButton>
             </Tooltip>
-            <Tooltip label="Esci">
+            <Tooltip label={t('nav.logout')}>
               <UnstyledButton onClick={() => void logout()}>
                 <IconLogout size={20} />
               </UnstyledButton>
@@ -138,12 +161,12 @@ function Shell({ children }: { children: ReactNode }) {
             return (
               <div key={section.section}>
                 <Text size="xs" c="dimmed" fw={600} tt="uppercase" px="sm" pt="sm" pb={4}>
-                  {section.section}
+                  {t(`nav.${section.section}`)}
                 </Text>
                 {items.map((item) => (
                   <NavLink
                     key={item.to}
-                    label={item.label}
+                    label={t(`nav.${item.label}`)}
                     leftSection={item.icon}
                     active={item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)}
                     onClick={() => {

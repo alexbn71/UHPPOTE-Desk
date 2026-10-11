@@ -24,7 +24,7 @@ export function assertZoneAccess(ctx: AppContext, user: SessionUser, c: Controll
       }
     }
   }
-  if (c.zoneId === null || !allowed.has(c.zoneId)) throw new HttpError(403, 'Non sei autorizzato a operare su questo controller')
+  if (c.zoneId === null || !allowed.has(c.zoneId)) throw new HttpError(403, 'zoneForbidden')
 }
 
 export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext): void {
@@ -160,7 +160,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     const { id } = idParam.parse(req.params)
     const { confirm } = z.object({ confirm: z.string() }).parse(req.body)
     const c = ctx.gateway.controller(id)
-    if (confirm !== String(c.serial)) throw new HttpError(400, 'Per confermare digitare il numero di serie del controller')
+    if (confirm !== String(c.serial)) throw new HttpError(400, 'confirmSerial')
     const backupCards = await ctx.gateway.run(req.user, id, 'backup-cards', null, (client, t) => client.listCards(t), { audit: false })
     const backupFile = path.join(ctx.config.dataDir, 'backups', `cards-${c.serial}-${localDateTime().replace(/[ :]/g, '-')}.json`)
     fs.mkdirSync(path.dirname(backupFile), { recursive: true })
@@ -201,7 +201,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     const { id } = idParam.parse(req.params)
     const b = doorInputSchema.parse(req.body)
     const door = ctx.controllers.door(id)
-    if (!door) throw new HttpError(404, 'Porta non trovata')
+    if (!door) throw new HttpError(404, 'doorNotFound')
     ctx.controllers.updateDoor(id, b)
     ctx.audit.log(req.user, 'update-door', `door:${id}`, b)
     let pushError: string | null = null
@@ -218,7 +218,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
   app.post('/doors/:id/open', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const door = ctx.controllers.door(id)
-    if (!door) throw new HttpError(404, 'Porta non trovata')
+    if (!door) throw new HttpError(404, 'doorNotFound')
     assertZoneAccess(ctx, req.user!, ctx.gateway.controller(door.controllerId))
     await ctx.gateway.run(req.user, door.controllerId, 'open-door', { door: door.door, name: door.name }, (client, t) => client.openDoor(t, door.door))
     return { ok: true }

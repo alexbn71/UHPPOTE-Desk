@@ -2,16 +2,20 @@ import { Badge, Button, Card, Group, Modal, NumberInput, Select, Stack, Switch, 
 import { IconDoorEnter, IconEdit } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DoorDto } from '@uhppote-desk/shared'
-import { DOOR_MODE_LABELS } from '@uhppote-desk/shared'
+import { DOOR_MODES } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { useCodes } from '../lib/codes'
 import { useLive } from '../lib/live'
 import { useControllers } from '../lib/queries'
 import { openDoorWithConfirm } from './Dashboard'
 
 export function DoorsPage() {
+  const { t } = useTranslation()
+  const codes = useCodes()
   const qc = useQueryClient()
   const { can } = useAuth()
   const live = useLive()
@@ -28,8 +32,8 @@ export function DoorsPage() {
         mode: edit.mode,
         delay: edit.delay,
       })
-      if (r.pushError) notifyError(new Error(`Salvato, ma non inviato al controller: ${r.pushError}`))
-      else notifyOk('Porta aggiornata')
+      if (r.pushError) notifyError(new Error(t('doors.savedNotSent', { error: r.pushError })))
+      else notifyOk(t('doors.saved'))
       setEdit(null)
       void qc.invalidateQueries({ queryKey: ['controllers'] })
       void qc.invalidateQueries({ queryKey: ['doors'] })
@@ -40,7 +44,7 @@ export function DoorsPage() {
 
   return (
     <>
-      <PageHeader title="Porte" description="Nome, modalità di funzionamento, tempo di apertura e lettori validi per le presenze" />
+      <PageHeader title={t('doors.title')} description={t('doors.description')} />
       {(controllers.data ?? []).map((c) => (
         <Card withBorder key={c.id} mb="md">
           <Text fw={700} mb="xs">
@@ -49,12 +53,12 @@ export function DoorsPage() {
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>#</Table.Th>
-                <Table.Th>Nome</Table.Th>
-                <Table.Th>Modalità</Table.Th>
-                <Table.Th>Apertura</Table.Th>
-                <Table.Th>Stato</Table.Th>
-                <Table.Th>Presenze</Table.Th>
+                <Table.Th>{t('doors.colNumber')}</Table.Th>
+                <Table.Th>{t('doors.colName')}</Table.Th>
+                <Table.Th>{t('doors.colMode')}</Table.Th>
+                <Table.Th>{t('doors.colOpening')}</Table.Th>
+                <Table.Th>{t('doors.colState')}</Table.Th>
+                <Table.Th>{t('doors.colAttendance')}</Table.Th>
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
@@ -65,19 +69,27 @@ export function DoorsPage() {
                   <Table.Tr key={d.id} opacity={d.active ? 1 : 0.5}>
                     <Table.Td>{d.door}</Table.Td>
                     <Table.Td>{d.name}</Table.Td>
-                    <Table.Td>{DOOR_MODE_LABELS[d.mode]}</Table.Td>
-                    <Table.Td>{d.delay}s</Table.Td>
-                    <Table.Td>{st ? <Badge color={st.open ? 'orange' : 'teal'} variant="light">{st.open ? 'Aperta' : 'Chiusa'}</Badge> : '—'}</Table.Td>
-                    <Table.Td>{d.attendance ? <Badge variant="light">Sì</Badge> : '—'}</Table.Td>
+                    <Table.Td>{codes.doorMode(d.mode)}</Table.Td>
+                    <Table.Td>{t('common.seconds', { n: d.delay })}</Table.Td>
+                    <Table.Td>
+                      {st ? (
+                        <Badge color={st.open ? 'orange' : 'teal'} variant="light">
+                          {st.open ? t('dashboard.doorOpen') : t('dashboard.doorClosed')}
+                        </Badge>
+                      ) : (
+                        '—'
+                      )}
+                    </Table.Td>
+                    <Table.Td>{d.attendance ? <Badge variant="light">{t('common.yes')}</Badge> : '—'}</Table.Td>
                     <Table.Td>
                       <Group gap={4} justify="flex-end">
                         {can('operator') && d.active && (
                           <Button size="compact-xs" variant="light" leftSection={<IconDoorEnter size={14} />} onClick={() => openDoorWithConfirm(d)}>
-                            Apri
+                            {t('doors.open')}
                           </Button>
                         )}
                         {can('admin') && (
-                          <IconButton label="Modifica" onClick={() => setEdit(d)}>
+                          <IconButton label={t('common.edit')} onClick={() => setEdit(d)}>
                             <IconEdit size={16} />
                           </IconButton>
                         )}
@@ -90,20 +102,20 @@ export function DoorsPage() {
           </Table>
         </Card>
       ))}
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title="Modifica porta">
+      <Modal opened={!!edit} onClose={() => setEdit(null)} title={t('doors.editTitle')}>
         {edit && (
           <Stack>
-            <TextInput label="Nome" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} />
+            <TextInput label={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} />
             <Select
-              label="Modalità"
-              data={Object.entries(DOOR_MODE_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+              label={t('doors.mode')}
+              data={DOOR_MODES.map((m) => ({ value: String(m), label: codes.doorMode(m) }))}
               value={String(edit.mode)}
               onChange={(v) => setEdit({ ...edit, mode: Number(v) })}
             />
-            <NumberInput label="Tempo di apertura (secondi)" min={0} max={255} value={edit.delay} onChange={(v) => setEdit({ ...edit, delay: Number(v) || 0 })} />
-            <Switch label="Attiva (visibile in dashboard e permessi)" checked={edit.active} onChange={(e) => setEdit({ ...edit, active: e.currentTarget.checked })} />
-            <Switch label="Lettore valido per le presenze" checked={edit.attendance} onChange={(e) => setEdit({ ...edit, attendance: e.currentTarget.checked })} />
-            <Button onClick={() => void save()}>Salva e invia al controller</Button>
+            <NumberInput label={t('doors.delay')} min={0} max={255} value={edit.delay} onChange={(v) => setEdit({ ...edit, delay: Number(v) || 0 })} />
+            <Switch label={t('doors.activeSwitch')} checked={edit.active} onChange={(e) => setEdit({ ...edit, active: e.currentTarget.checked })} />
+            <Switch label={t('doors.attendanceSwitch')} checked={edit.attendance} onChange={(e) => setEdit({ ...edit, attendance: e.currentTarget.checked })} />
+            <Button onClick={() => void save()}>{t('controllerDetail.saveAndSend')}</Button>
           </Stack>
         )}
       </Modal>

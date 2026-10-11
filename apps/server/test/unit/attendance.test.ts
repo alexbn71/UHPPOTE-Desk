@@ -92,7 +92,7 @@ describe('computeAttendance', () => {
       leaves: [],
     })
     expect(d!.status).toBe('anomalia')
-    expect(d!.anomalies).toContain('Timbratura singola')
+    expect(d!.anomalies).toContain('singlePunch')
     expect(d!.workedMinutes).toBe(0)
   })
 
@@ -153,9 +153,9 @@ describe('computeAttendance', () => {
 describe('festività italiane', () => {
   it('Pasqua e Pasquetta calcolate correttamente', () => {
     const h2026 = italianHolidays(2026)
-    expect(h2026.find((h) => h.name === 'Pasqua')!.date).toBe('2026-04-05')
-    expect(h2026.find((h) => h.name === "Lunedì dell'Angelo")!.date).toBe('2026-04-06')
-    expect(italianHolidays(2027).find((h) => h.name === 'Pasqua')!.date).toBe('2027-03-28')
+    expect(h2026.find((h) => h.key === 'easter')!.date).toBe('2026-04-05')
+    expect(h2026.find((h) => h.key === 'easterMonday')!.date).toBe('2026-04-06')
+    expect(italianHolidays(2027).find((h) => h.key === 'easter')!.date).toBe('2027-03-28')
     expect(h2026).toHaveLength(12)
   })
 })

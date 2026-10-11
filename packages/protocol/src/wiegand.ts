@@ -20,8 +20,8 @@ export function splitWiegand26(card: number): Wiegand26 {
 }
 
 export function joinWiegand26(facility: number, number: number): number {
-  if (!Number.isInteger(facility) || facility < 0 || facility > 255) throw new RangeError(`facility code non valido: ${facility}`)
-  if (!Number.isInteger(number) || number < 0 || number > 65535) throw new RangeError(`numero tessera non valido: ${number}`)
+  if (!Number.isInteger(facility) || facility < 0 || facility > 255) throw new RangeError(`invalid facility code: ${facility}`)
+  if (!Number.isInteger(number) || number < 0 || number > 65535) throw new RangeError(`invalid card number: ${number}`)
   return facility * 100000 + number
 }
 
@@ -30,7 +30,7 @@ export function joinWiegand26(facility: number, number: number): number {
  * Utile per tessere che riportano stampato il codice decimale a 10 cifre (valore a 24 bit).
  */
 export function fromRaw24(raw: number): number {
-  if (!Number.isInteger(raw) || raw < 0 || raw > 0xffffff) throw new RangeError(`valore a 24 bit non valido: ${raw}`)
+  if (!Number.isInteger(raw) || raw < 0 || raw > 0xffffff) throw new RangeError(`invalid 24-bit value: ${raw}`)
   return joinWiegand26((raw >>> 16) & 0xff, raw & 0xffff)
 }
 

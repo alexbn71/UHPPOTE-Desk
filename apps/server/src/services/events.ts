@@ -36,8 +36,8 @@ export class EventService {
   async startListener(): Promise<{ address: string; port: number }> {
     this.listener = new EventListener(this.opts.listen, this.opts.logger)
     this.listener.on('status', (s, from) => this.onStatus(s, from.address))
-    this.listener.on('error', (err) => this.opts.logger?.error?.(`listener eventi: ${err.message}`))
-    this.listener.on('invalid', (_pkt, from) => this.opts.logger?.warn?.(`pacchetto non riconosciuto da ${from.address}:${from.port}`))
+    this.listener.on('error', (err) => this.opts.logger?.error?.(`event listener: ${err.message}`))
+    this.listener.on('invalid', (_pkt, from) => this.opts.logger?.warn?.(`unrecognised packet from ${from.address}:${from.port}`))
     return this.listener.start()
   }
 
@@ -50,7 +50,7 @@ export class EventService {
   onStatus(s: ControllerStatus, fromAddress?: string): void {
     const c = this.controllers.getBySerial(s.controller)
     if (!c) {
-      this.opts.logger?.warn?.(`evento da controller sconosciuto ${s.controller} (${fromAddress ?? '?'})`)
+      this.opts.logger?.warn?.(`event from unknown controller ${s.controller} (${fromAddress ?? '?'})`)
       return
     }
     const now = localDateTime()
@@ -60,7 +60,7 @@ export class EventService {
     const ev = s.event
     const last = c.lastCollectedIndex
     const pull = () =>
-      void this.collect(c.id).catch((err) => this.opts.logger?.warn?.(`recupero eventi ${c.serial}: ${(err as Error).message}`))
+      void this.collect(c.id).catch((err) => this.opts.logger?.warn?.(`event recovery ${c.serial}: ${(err as Error).message}`))
 
     if (last > 0 && ev.index <= last) {
       // indice già raccolto: se non lo conosciamo il controller ha ricominciato la numerazione
@@ -103,7 +103,7 @@ export class EventService {
         let start = c.lastCollectedIndex + 1
         if (last < c.lastCollectedIndex) {
           // il controller ha ricominciato la numerazione (restore default / sostituzione): nuova epoca
-          this.opts.logger?.warn?.(`controller ${c.serial}: indice eventi ${last} < ultimo raccolto ${c.lastCollectedIndex}, nuova epoca`)
+          this.opts.logger?.warn?.(`controller ${c.serial}: event index ${last} < last collected ${c.lastCollectedIndex}, starting a new epoch`)
           epoch = this.controllers.startNewEventEpoch(c.id)
           start = 1
         } else if (c.lastCollectedIndex === 0) {

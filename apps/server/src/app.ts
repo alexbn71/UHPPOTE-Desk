@@ -6,6 +6,7 @@ import fastifyStatic from '@fastify/static'
 import websocket from '@fastify/websocket'
 import { ZodError } from 'zod'
 import { CodecError, NotFoundError, TimeoutError, UhppoteError } from '@uhppote-desk/protocol'
+import { translate } from '@uhppote-desk/shared'
 import { HttpError, SESSION_COOKIE } from './auth/auth.js'
 import type { AppContext } from './context.js'
 import { registerAttendanceRoutes } from './routes/attendance.js'
@@ -32,26 +33,31 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     req.user = ctx.auth.resolve(req.cookies[SESSION_COOKIE])
   })
 
+  /** Error body: English `error` text plus a translatable `code` (errors.*) and its `params`. */
+  const fail = (status: number, code: string, params: Record<string, string | number> = {}, extra: object = {}) => ({
+    status,
+    body: { error: translate('en', `errors.${code}`, params), code, params, ...extra },
+  })
+
   app.setErrorHandler((err, req, reply) => {
+    const send = (r: ReturnType<typeof fail>) => reply.status(r.status).send(r.body)
     if (err instanceof ZodError) {
-      return reply.status(400).send({ error: 'Dati non validi', issues: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) })
+      return send(fail(400, 'invalidData', {}, { issues: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) }))
     }
-    if (err instanceof HttpError) return reply.status(err.statusCode).send({ error: err.message })
-    if (err instanceof TimeoutError) return reply.status(504).send({ error: `Controller non raggiungibile: ${err.message}` })
-    if (err instanceof CodecError) return reply.status(400).send({ error: err.message })
-    if (err instanceof NotFoundError) return reply.status(404).send({ error: err.message })
-    if (err instanceof UhppoteError) return reply.status(502).send({ error: err.message })
+    if (err instanceof HttpError) return send(fail(err.statusCode, err.code, err.params))
+    if (err instanceof TimeoutError) return send(fail(504, 'controllerUnreachable', { detail: err.message }))
+    if (err instanceof CodecError) return send(fail(400, 'controllerError', { detail: err.message }))
+    if (err instanceof NotFoundError) return send(fail(404, 'controllerError', { detail: err.message }))
+    if (err instanceof UhppoteError) return send(fail(502, 'controllerError', { detail: err.message }))
     const e = err as Error & { statusCode?: number; code?: string }
-    if (e.code === 'ERR_SQLITE_ERROR' && /UNIQUE constraint failed/.test(e.message)) {
-      return reply.status(409).send({ error: 'Elemento già esistente (valore duplicato)' })
+    if (e.code === 'ERR_SQLITE_ERROR' && /UNIQUE constraint failed/.test(e.message)) return send(fail(409, 'duplicate'))
+    if (e.code === 'ERR_SQLITE_ERROR' && /FOREIGN KEY constraint failed/.test(e.message)) return send(fail(409, 'inUse'))
+    if (e.statusCode && e.statusCode < 500) {
+      return reply.status(e.statusCode).send({ error: e.message, code: e.statusCode === 404 ? 'notFound' : 'generic', params: { status: e.statusCode } })
     }
-    if (e.code === 'ERR_SQLITE_ERROR' && /FOREIGN KEY constraint failed/.test(e.message)) {
-      return reply.status(409).send({ error: "Impossibile completare l'operazione: l'elemento è in uso" })
-    }
-    if (e.statusCode && e.statusCode < 500) return reply.status(e.statusCode).send({ error: e.message })
     req.log.error(err)
-    ctx.logger.error?.(`errore non gestito su ${req.method} ${req.url}: ${e.stack ?? e.message}`)
-    return reply.status(500).send({ error: 'Errore interno del server' })
+    ctx.logger.error?.(`unhandled error on ${req.method} ${req.url}: ${e.stack ?? e.message}`)
+    return send(fail(500, 'internal'))
   })
 
   await app.register(
@@ -67,12 +73,12 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     { prefix: '/api' },
   )
 
-  // Frontend (build Vite) servito dallo stesso processo in produzione
+  // Frontend (Vite build) served by the same process in production
   const webDir = ctx.config.webDir
   if (webDir && fs.existsSync(webDir)) {
     await app.register(fastifyStatic, { root: webDir })
     app.setNotFoundHandler((req, reply) => {
-      if (req.url.startsWith('/api/')) return reply.status(404).send({ error: 'Risorsa non trovata' })
+      if (req.url.startsWith('/api/')) return reply.status(404).send({ error: translate('en', 'errors.notFound'), code: 'notFound', params: {} })
       return reply.sendFile('index.html')
     })
   }

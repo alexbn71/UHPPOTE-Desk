@@ -6,6 +6,7 @@ import type {
   EventDto,
   PersonDto,
 } from '@uhppote-desk/shared'
+import { HttpError } from '../auth/auth.js'
 import type { Db } from './database.js'
 import { fromBool, toBool, weekdaysFromString, weekdaysToString } from './database.js'
 
@@ -36,7 +37,7 @@ export class TreeRepo {
   }
 
   update(id: number, name: string, parentId: number | null): boolean {
-    if (parentId === id) throw new Error('Un elemento non può essere padre di sé stesso')
+    if (parentId === id) throw new HttpError(400, 'selfParent')
     return this.db.run(`UPDATE ${this.table} SET name = ?, parent_id = ? WHERE id = ?`, [name, parentId, id]).changes > 0
   }
 
@@ -161,7 +162,7 @@ export class ControllerRepo {
         [c.serial, c.name, c.host, c.port, c.transport, c.zoneId, fromBool(c.enabled)],
       ).lastInsertRowid
       for (let d = 1; d <= 4; d++) {
-        this.db.run('INSERT INTO doors (controller_id, door, name) VALUES (?, ?, ?)', [id, d, `${c.name} - Porta ${d}`])
+        this.db.run('INSERT INTO doors (controller_id, door, name) VALUES (?, ?, ?)', [id, d, `${c.name} - Door ${d}`])
       }
       this.db.run('INSERT INTO controller_settings (controller_id, settings) VALUES (?, ?)', [id, JSON.stringify(DEFAULT_SETTINGS)])
       return id

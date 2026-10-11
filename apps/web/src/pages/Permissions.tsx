@@ -2,13 +2,15 @@ import { Badge, Button, Card, Checkbox, Group, MultiSelect, Select, Stack, Table
 import { IconSearch } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../components/common'
 import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useDoors, usePeople, usePermissions, useTimeProfiles } from '../lib/queries'
 
-/** Matrice persone × porte e assegnazione massiva (equivalente a "Access Privilege" del software originale). */
+/** People × doors matrix and bulk assignment (equivalent to "Access Privilege" in the original software). */
 export function PermissionsPage() {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const { can } = useAuth()
   const people = usePeople()
@@ -24,7 +26,8 @@ export function PermissionsPage() {
   const map = useMemo(() => new Map((perms.data ?? []).map((p) => [`${p.personId}:${p.doorId}`, p])), [perms.data])
   const activeDoors = (doors.data ?? []).filter((d) => d.active)
   const filtered = (people.data ?? []).filter((p) => `${p.lastName} ${p.firstName} ${p.code}`.toLowerCase().includes(search.toLowerCase()))
-  const profileName = (id: number | null) => (id === null ? 'Sempre' : (profiles.data?.find((p) => p.id === id)?.name ?? `Fascia ${id}`))
+  const profileName = (id: number | null) =>
+    id === null ? t('people.permAlways') : (profiles.data?.find((p) => p.id === id)?.name ?? t('permissions.profileN', { n: id }))
 
   const apply = async (action: 'grant' | 'revoke') => {
     setBusy(true)
@@ -35,7 +38,7 @@ export function PermissionsPage() {
         action,
         profileId: profile && profile !== 'always' ? Number(profile) : null,
       })
-      notifyOk(action === 'grant' ? 'Permessi assegnati e inviati ai controller' : 'Permessi revocati')
+      notifyOk(action === 'grant' ? t('permissions.granted') : t('permissions.revoked'))
       notifyPush(r)
       void qc.invalidateQueries({ queryKey: ['permissions'] })
     } catch (err) {
@@ -47,46 +50,46 @@ export function PermissionsPage() {
 
   return (
     <>
-      <PageHeader title="Permessi di accesso" description="Chi può passare da quali porte, sempre o in una fascia oraria" />
+      <PageHeader title={t('permissions.title')} description={t('permissions.description')} />
       {can('operator') && (
         <Card withBorder mb="md">
           <Title order={5} mb="sm">
-            Assegnazione multipla
+            {t('permissions.bulkTitle')}
           </Title>
           <Stack>
             <MultiSelect
-              label="Persone"
+              label={t('permissions.people')}
               searchable
               data={(people.data ?? []).map((p) => ({ value: String(p.id), label: `${p.lastName} ${p.firstName} (${p.code})` }))}
               value={selPeople}
               onChange={setSelPeople}
             />
-            <MultiSelect label="Porte" data={activeDoors.map((d) => ({ value: String(d.id), label: d.name }))} value={selDoors} onChange={setSelDoors} />
+            <MultiSelect label={t('permissions.doors')} data={activeDoors.map((d) => ({ value: String(d.id), label: d.name }))} value={selDoors} onChange={setSelDoors} />
             <Group align="flex-end">
               <Select
-                label="Fascia oraria"
-                data={[{ value: 'always', label: 'Sempre' }, ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))]}
+                label={t('permissions.profile')}
+                data={[{ value: 'always', label: t('people.permAlways') }, ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))]}
                 value={profile}
                 onChange={setProfile}
                 w={260}
               />
               <Button disabled={!selPeople.length || !selDoors.length} loading={busy} onClick={() => void apply('grant')}>
-                Concedi
+                {t('permissions.grant')}
               </Button>
               <Button color="red" variant="light" disabled={!selPeople.length || !selDoors.length} loading={busy} onClick={() => void apply('revoke')}>
-                Revoca
+                {t('permissions.revoke')}
               </Button>
             </Group>
           </Stack>
         </Card>
       )}
       <Card withBorder>
-        <TextInput leftSection={<IconSearch size={16} />} placeholder="Filtra persone" value={search} onChange={(e) => setSearch(e.currentTarget.value)} mb="md" />
+        <TextInput leftSection={<IconSearch size={16} />} placeholder={t('permissions.filterPlaceholder')} value={search} onChange={(e) => setSearch(e.currentTarget.value)} mb="md" />
         <Table.ScrollContainer minWidth={400}>
           <Table className="matrix-table" withColumnBorders>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Persona</Table.Th>
+                <Table.Th>{t('permissions.colPerson')}</Table.Th>
                 {activeDoors.map((d) => (
                   <Table.Th key={d.id}>
                     <Text size="xs" fw={600}>
@@ -104,9 +107,7 @@ export function PermissionsPage() {
                       size="xs"
                       label={`${p.lastName} ${p.firstName}`}
                       checked={selPeople.includes(String(p.id))}
-                      onChange={(e) =>
-                        setSelPeople(e.currentTarget.checked ? [...selPeople, String(p.id)] : selPeople.filter((x) => x !== String(p.id)))
-                      }
+                      onChange={(e) => setSelPeople(e.currentTarget.checked ? [...selPeople, String(p.id)] : selPeople.filter((x) => x !== String(p.id)))}
                       disabled={!can('operator')}
                     />
                   </Table.Td>
@@ -134,7 +135,7 @@ export function PermissionsPage() {
           </Table>
         </Table.ScrollContainer>
         <Text size="xs" c="dimmed" mt="sm">
-          ✓ = accesso sempre consentito · numero = accesso nella fascia oraria indicata
+          {t('permissions.legend')}
         </Text>
       </Card>
     </>

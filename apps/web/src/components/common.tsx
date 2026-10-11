@@ -1,8 +1,10 @@
 import { ActionIcon, Badge, Chip, Group, Stack, Table, Text, Title, Tooltip } from '@mantine/core'
 import { IconArrowDownRight, IconArrowUpRight, IconCheck, IconX } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { EventDto } from '@uhppote-desk/shared'
-import { ALARM_REASONS, EVENT_TYPE_LABELS, WEEKDAY_LABELS, reasonLabel } from '@uhppote-desk/shared'
+import { ALARM_REASONS } from '@uhppote-desk/shared'
+import { useCodes } from '../lib/codes'
 import { fmtDateTime } from '../lib/format'
 
 export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
@@ -21,7 +23,10 @@ export function PageHeader({ title, description, actions }: { title: string; des
   )
 }
 
+const WEEK = [0, 1, 2, 3, 4, 5, 6]
+
 export function WeekdaysInput({ value, onChange, label }: { value: boolean[]; onChange: (v: boolean[]) => void; label?: string }) {
+  const codes = useCodes()
   return (
     <Stack gap={4}>
       {label && (
@@ -31,13 +36,13 @@ export function WeekdaysInput({ value, onChange, label }: { value: boolean[]; on
       )}
       <Chip.Group
         multiple
-        value={WEEKDAY_LABELS.map((_, i) => String(i)).filter((i) => value[Number(i)])}
-        onChange={(v) => onChange(WEEKDAY_LABELS.map((_, i) => v.includes(String(i))))}
+        value={WEEK.map(String).filter((i) => value[Number(i)])}
+        onChange={(v) => onChange(WEEK.map((i) => v.includes(String(i))))}
       >
         <Group gap={4}>
-          {WEEKDAY_LABELS.map((d, i) => (
-            <Chip key={d} value={String(i)} size="xs">
-              {d}
+          {WEEK.map((i) => (
+            <Chip key={i} value={String(i)} size="xs">
+              {codes.weekday(i)}
             </Chip>
           ))}
         </Group>
@@ -46,34 +51,30 @@ export function WeekdaysInput({ value, onChange, label }: { value: boolean[]; on
   )
 }
 
-export function weekdaysText(w: boolean[]): string {
-  if (w.every(Boolean)) return 'Tutti i giorni'
-  if (w.slice(0, 5).every(Boolean) && !w[5] && !w[6]) return 'Lun-Ven'
-  return WEEKDAY_LABELS.filter((_, i) => w[i]).join(', ') || 'Nessun giorno'
-}
-
 export function GrantedBadge({ granted }: { granted: boolean }) {
+  const { t } = useTranslation()
   return granted ? (
     <Badge color="green" leftSection={<IconCheck size={12} />} variant="light">
-      Consentito
+      {t('csv.events.granted')}
     </Badge>
   ) : (
     <Badge color="red" leftSection={<IconX size={12} />} variant="light">
-      Negato
+      {t('csv.events.denied')}
     </Badge>
   )
 }
 
 export function DirectionIcon({ direction }: { direction: number }) {
+  const codes = useCodes()
   if (direction === 1)
     return (
-      <Tooltip label="Ingresso">
+      <Tooltip label={codes.direction(1)}>
         <IconArrowDownRight size={16} color="var(--mantine-color-teal-6)" />
       </Tooltip>
     )
   if (direction === 2)
     return (
-      <Tooltip label="Uscita">
+      <Tooltip label={codes.direction(2)}>
         <IconArrowUpRight size={16} color="var(--mantine-color-grape-6)" />
       </Tooltip>
     )
@@ -81,10 +82,12 @@ export function DirectionIcon({ direction }: { direction: number }) {
 }
 
 export function EventsTable({ events, showController = true }: { events: EventDto[]; showController?: boolean }) {
+  const { t } = useTranslation()
+  const codes = useCodes()
   if (!events.length) {
     return (
       <Text c="dimmed" ta="center" py="lg">
-        Nessun evento
+        {t('events.none')}
       </Text>
     )
   }
@@ -93,13 +96,13 @@ export function EventsTable({ events, showController = true }: { events: EventDt
       <Table striped highlightOnHover verticalSpacing={6}>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Data/ora</Table.Th>
-            {showController && <Table.Th>Controller</Table.Th>}
-            <Table.Th>Porta</Table.Th>
-            <Table.Th>Tipo</Table.Th>
-            <Table.Th>Persona / tessera</Table.Th>
-            <Table.Th>Esito</Table.Th>
-            <Table.Th>Motivo</Table.Th>
+            <Table.Th>{t('events.colTime')}</Table.Th>
+            {showController && <Table.Th>{t('events.colController')}</Table.Th>}
+            <Table.Th>{t('events.colDoor')}</Table.Th>
+            <Table.Th>{t('events.colType')}</Table.Th>
+            <Table.Th>{t('events.colPerson')}</Table.Th>
+            <Table.Th>{t('events.colOutcome')}</Table.Th>
+            <Table.Th>{t('events.colReason')}</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -110,15 +113,15 @@ export function EventsTable({ events, showController = true }: { events: EventDt
               <Table.Td>
                 <Group gap={4} wrap="nowrap">
                   {e.door !== 0 && <DirectionIcon direction={e.direction} />}
-                  {e.door === 0 ? '—' : (e.doorName ?? `Porta ${e.door}`)}
+                  {e.door === 0 ? '—' : (e.doorName ?? t('common.doorN', { n: e.door }))}
                 </Group>
               </Table.Td>
-              <Table.Td>{EVENT_TYPE_LABELS[e.type] ?? e.type}</Table.Td>
+              <Table.Td>{codes.eventType(e.type)}</Table.Td>
               <Table.Td>
-                {e.personName ?? (e.card ? <Text span c="dimmed">Tessera {e.card}</Text> : '—')}
+                {e.personName ?? (e.card ? <Text span c="dimmed">{t('events.cardOnly', { n: e.card })}</Text> : '—')}
               </Table.Td>
               <Table.Td>{e.type === 1 || e.reason === 44 ? <GrantedBadge granted={e.granted} /> : null}</Table.Td>
-              <Table.Td>{reasonLabel(e.reason)}</Table.Td>
+              <Table.Td>{codes.reason(e.reason)}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>
