@@ -9,6 +9,7 @@ export interface CurrentUser {
   displayName: string
   role: Role
   mustChangePassword: boolean
+  passwordManaged: boolean
   zoneIds: number[]
 }
 

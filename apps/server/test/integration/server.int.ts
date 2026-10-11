@@ -22,6 +22,7 @@ let fake: FakeController
 let ctx: AppContext
 let app: FastifyInstance
 let adminCookie = ''
+let generatedPassword = ''
 let controllerId = 0
 let dataDir = ''
 
@@ -32,7 +33,8 @@ function config(dir: string): AppConfig {
     dataDir: dir,
     secureCookies: false,
     sessionHours: 1,
-    initialAdminPassword: 'password-iniziale',
+    adminPassword: null,
+    adminPasswordFromLegacyVariable: false,
     webDir: null,
     uhppote: {
       bindAddress: '127.0.0.1',
@@ -78,7 +80,9 @@ beforeAll(async () => {
   fake = new FakeController({ id: SERIAL })
   await fake.start()
   ctx = createContext(config(dataDir), quiet, ':memory:')
-  await ctx.auth.bootstrap('password-iniziale')
+  const admin = await ctx.auth.ensureAdmin(null)
+  expect(admin.action).toBe('created-generated')
+  generatedPassword = admin.password!
   await ctx.eventService.startListener()
   app = await buildApp(ctx)
 })
@@ -98,9 +102,9 @@ describe('autenticazione', () => {
   })
 
   it('obbliga al cambio password al primo accesso', async () => {
-    const cookie = await login('admin', 'password-iniziale')
+    const cookie = await login('admin', generatedPassword)
     expect((await api('GET', '/controllers', undefined, cookie)).statusCode).toBe(403)
-    expect((await api('POST', '/auth/password', { currentPassword: 'password-iniziale', newPassword: 'nuova-password-1' }, cookie)).statusCode).toBe(200)
+    expect((await api('POST', '/auth/password', { currentPassword: generatedPassword, newPassword: 'nuova-password-1' }, cookie)).statusCode).toBe(200)
     adminCookie = await login('admin', 'nuova-password-1')
     expect((await api('GET', '/controllers')).statusCode).toBe(200)
   })

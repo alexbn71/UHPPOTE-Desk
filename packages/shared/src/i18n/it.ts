@@ -91,6 +91,7 @@ export const it: Messages = {
     tooShort: 'La password deve avere almeno 8 caratteri',
     updated: 'Password aggiornata',
     logout: 'Esci',
+    managedInfo: "La password di questo utente è impostata dalla variabile d'ambiente ADMIN_PASSWORD del server: modificala lì e riavvia il server.",
   },
   dashboard: {
     title: 'Dashboard',
@@ -825,6 +826,7 @@ export const it: Messages = {
     controllerUnreachable: 'Controller non raggiungibile: {{detail}}',
     controllerError: 'Errore del controller: {{detail}}',
     internal: 'Errore interno del server',
+    passwordManagedByEnv: "La password di questo utente è impostata dalla variabile ADMIN_PASSWORD e non può essere modificata qui",
     importEmptyCode: 'matricola vuota',
     importInvalidCard: 'tessera non valida: {{card}}',
     importCardTaken: 'tessera {{card}} già assegnata a {{person}}',

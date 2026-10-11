@@ -41,7 +41,7 @@ In the examples the server has IP `192.168.1.10` and the controllers are on the 
 | Variable | Default | Description | Example |
 |---|---|---|---|
 | `UHPPOTE_BROADCAST` | `255.255.255.255:60000` | Broadcast address used to discover controllers. Use the broadcast address of the controllers' subnet: on servers with several network interfaces (NAS, Unraid, hosts running Docker or VMs) the generic address may leave through the wrong interface. | `192.168.1.255:60000` |
-| `INITIAL_ADMIN_PASSWORD` | generated | Password of the `admin` user, used only on first start. You are asked to change it at first login. If empty, a password is generated and written to the container log. | — |
+| `ADMIN_PASSWORD` | generated | Password of the `admin` user. **Set**: it is applied at every start (the user is recreated/re-enabled if needed, and changing the variable changes the password); it cannot be changed from the application. **Not set**: a password is generated on the first start, written to the container log, and must be changed at first login. | — |
 | `TZ` | system time | Time zone. Determines the time set on the controllers and the times shown in reports. | `Europe/Rome` |
 | `HTTP_PORT` | `8080` | Port of the web interface. With `host` networking it must not already be used by another service. | `8080` |
 
@@ -90,7 +90,7 @@ cd UHPPOTE-Desk/docker
 cp .env.example .env
 # edit .env: at least UHPPOTE_LISTENER_PUBLIC and UHPPOTE_BROADCAST
 docker compose up -d
-docker logs uhppote-desk          # admin password, if generated
+docker logs uhppote-desk          # admin password, if ADMIN_PASSWORD is not set
 ```
 
 Minimal `docker-compose.yml`, if you don't clone the repository:
@@ -159,7 +159,7 @@ On both, make sure the data folder is writable by the container user (see the no
 
 ## First start
 
-1. Open `http://<server-IP>:<HTTP_PORT>` and log in as `admin` with the initial password. You are asked for a new password immediately.
+1. Open `http://<server-IP>:<HTTP_PORT>` and log in as `admin`: with `ADMIN_PASSWORD` set use that password; otherwise use the one printed in the container log (`Created user 'admin' with temporary password: …`), and you are asked for a new password immediately.
 2. **Controllers → Search network**: the controllers reachable by broadcast are listed with serial number, IP and firmware. **Add** registers them in the app. The interface language can be changed from the language menu in the header.
 3. As soon as a controller is online, the app sends it the event destination (`UHPPOTE_LISTENER_PUBLIC`) and synchronises its clock. You can check this in **Controllers → (controller) → Diagnostics**, "Event listener" entry.
 
@@ -192,3 +192,5 @@ Reports are saved in `/data/reports`. The test levels are described in the [READ
 | `startup failed: the data directory /data is not writable by the process …` (or `cannot open the database`) | The container was started with `--user`/`user:` and the host folder belongs to someone else | Remove `--user` and set `PUID`/`PGID` instead (the container then fixes the folder owner), or `chown -R <uid>:<gid>` the host folder |
 | The web interface does not open | Port in use or blocked by the firewall | Change `HTTP_PORT` |
 | Wrong time on the controllers or in reports | `TZ` not set | Set `TZ`, e.g. `Europe/Rome` |
+| Forgotten `admin` password | — | Set `ADMIN_PASSWORD` and restart the container: the new password is applied |
+| Log warning "INITIAL_ADMIN_PASSWORD is deprecated" | Old variable name | Rename it to `ADMIN_PASSWORD` (the old name still works as a fallback) |

@@ -91,6 +91,7 @@ export const fr: Messages = {
     tooShort: 'Le mot de passe doit comporter au moins 8 caractères',
     updated: 'Mot de passe mis à jour',
     logout: 'Se déconnecter',
+    managedInfo: "Le mot de passe de cet utilisateur est défini par la variable d'environnement ADMIN_PASSWORD du serveur : modifiez-la à cet endroit puis redémarrez le serveur.",
   },
   dashboard: {
     title: 'Tableau de bord',
@@ -825,6 +826,7 @@ export const fr: Messages = {
     controllerUnreachable: 'Contrôleur injoignable : {{detail}}',
     controllerError: 'Erreur du contrôleur : {{detail}}',
     internal: 'Erreur interne du serveur',
+    passwordManagedByEnv: "Le mot de passe de cet utilisateur est défini par la variable ADMIN_PASSWORD et ne peut pas être modifié ici",
     importEmptyCode: 'matricule vide',
     importInvalidCard: 'badge non valide : {{card}}',
     importCardTaken: 'badge {{card}} déjà attribué à {{person}}',

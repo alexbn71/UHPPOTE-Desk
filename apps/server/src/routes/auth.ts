@@ -48,6 +48,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
   app.post('/auth/password', async (req) => {
     if (!req.user) throw new HttpError(401, 'unauthenticated')
     const body = changePasswordSchema.parse(req.body)
+    ctx.auth.assertPasswordChangeable(req.user.id)
     const ok = await ctx.auth.changePassword(req.user.id, body.currentPassword, body.newPassword)
     if (!ok) throw new HttpError(400, 'wrongPassword')
     ctx.auth.revokeSessions(req.user.id, req.cookies[SESSION_COOKIE])
@@ -94,7 +95,10 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
       ctx.db.run('DELETE FROM operator_zones WHERE operator_id = ?', [id])
       for (const z of body.zoneIds) ctx.db.run('INSERT INTO operator_zones (operator_id, zone_id) VALUES (?, ?)', [id, z])
     })
-    if (body.password) await ctx.auth.setPassword(id, body.password, true)
+    if (body.password) {
+      ctx.auth.assertPasswordChangeable(id)
+      await ctx.auth.setPassword(id, body.password, true)
+    }
     if (!body.active) ctx.auth.revokeSessions(id)
     ctx.audit.log(req.user, 'update-operator', `operator:${body.username}`, { role: body.role, active: body.active })
     return { ok: true }
@@ -102,6 +106,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
 
   app.post('/operators/:id/reset-password', admin, async (req) => {
     const { id } = idParam.parse(req.params)
+    ctx.auth.assertPasswordChangeable(id)
     const password = randomPassword(12)
     await ctx.auth.setPassword(id, password, true)
     ctx.auth.revokeSessions(id)

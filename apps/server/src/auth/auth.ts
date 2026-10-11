@@ -25,7 +25,9 @@ export interface SessionUser {
   displayName: string
   role: Role
   mustChangePassword: boolean
-  /** Zone consentite; vuoto = tutte. */
+  /** The password is set by the ADMIN_PASSWORD variable and cannot be changed from the application. */
+  passwordManaged: boolean
+  /** Allowed zones; empty = all. */
   zoneIds: number[]
 }
 
@@ -68,15 +70,58 @@ export class AuthService {
   ) {}
 
   /** Crea l'utente admin se non esiste alcun operatore. Restituisce la password generata (se generata). */
-  async bootstrap(initialPassword: string | null): Promise<{ created: boolean; password?: string }> {
+  /** Username of the built-in administrator. */
+  static readonly ADMIN = 'admin'
+
+  /** True when the administrator password is set by the ADMIN_PASSWORD variable. */
+  private adminPasswordManaged = false
+
+  /**
+   * Makes sure the administrator exists, at every start.
+   * - With `adminPassword` (ADMIN_PASSWORD): the `admin` user is created if missing, its password is set to that
+   *   value (also when the variable changes), no password change is requested, and it cannot be changed from the app.
+   * - Without it: on the very first start (no operators) `admin` is created with a generated password that must be
+   *   changed at first login; afterwards nothing happens.
+   */
+  async ensureAdmin(adminPassword: string | null): Promise<{ action: 'created-generated' | 'created-env' | 'updated-env' | 'unchanged'; password?: string }> {
+    this.adminPasswordManaged = !!adminPassword
+    const row = this.db.get<OperatorRow>('SELECT * FROM operators WHERE username = ?', [AuthService.ADMIN])
+    if (adminPassword) {
+      if (!row) {
+        this.db.run(
+          `INSERT INTO operators (username, display_name, password_hash, role, must_change_password) VALUES (?, 'Administrator', ?, 'admin', 0)`,
+          [AuthService.ADMIN, await hashPassword(adminPassword)],
+        )
+        return { action: 'created-env' }
+      }
+      const samePassword = await verifyPassword(adminPassword, row.password_hash)
+      if (samePassword && !toBool(row.must_change_password) && toBool(row.active) && row.role === 'admin') return { action: 'unchanged' }
+      this.db.run("UPDATE operators SET password_hash = ?, must_change_password = 0, active = 1, role = 'admin' WHERE id = ?", [
+        samePassword ? row.password_hash : await hashPassword(adminPassword),
+        row.id,
+      ])
+      if (!samePassword) this.revokeSessions(row.id)
+      return { action: 'updated-env' }
+    }
     const count = this.db.get<{ n: number }>('SELECT COUNT(*) AS n FROM operators')!.n
-    if (count > 0) return { created: false }
-    const password = initialPassword ?? randomPassword()
+    if (count > 0) return { action: 'unchanged' }
+    const password = randomPassword()
     this.db.run(
-      `INSERT INTO operators (username, display_name, password_hash, role, must_change_password) VALUES ('admin', 'Administrator', ?, 'admin', 1)`,
-      [await hashPassword(password)],
+      `INSERT INTO operators (username, display_name, password_hash, role, must_change_password) VALUES (?, 'Administrator', ?, 'admin', 1)`,
+      [AuthService.ADMIN, await hashPassword(password)],
     )
-    return initialPassword ? { created: true } : { created: true, password }
+    return { action: 'created-generated', password }
+  }
+
+  /** Whether the password of the given operator is managed by ADMIN_PASSWORD. */
+  isPasswordManaged(username: string): boolean {
+    return this.adminPasswordManaged && username.toLowerCase() === AuthService.ADMIN
+  }
+
+  /** Throws if the password of the operator cannot be changed from the application. */
+  assertPasswordChangeable(operatorId: number): void {
+    const row = this.db.get<{ username: string }>('SELECT username FROM operators WHERE id = ?', [operatorId])
+    if (row && this.isPasswordManaged(row.username)) throw new HttpError(400, 'passwordManagedByEnv')
   }
 
   async login(username: string, password: string, ip: string, userAgent: string): Promise<{ sessionId: string; user: SessionUser } | null> {
@@ -143,6 +188,7 @@ export class AuthService {
       displayName: row.display_name,
       role: row.role,
       mustChangePassword: toBool(row.must_change_password),
+      passwordManaged: this.isPasswordManaged(row.username),
       zoneIds: zones.map((z) => z.zone_id),
     }
   }

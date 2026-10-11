@@ -29,13 +29,19 @@ async function main(): Promise<void> {
   logger.info!(created ? `no database found in ${config.dataDir}: creating a new one (${dbFile})` : `using database ${dbFile}`)
   const ctx = createContext(config, logger, dbFile)
 
-  const admin = await ctx.auth.bootstrap(config.initialAdminPassword)
-  if (admin.created) {
-    logger.warn!(
-      admin.password
-        ? `Created user 'admin' with temporary password: ${admin.password} (must be changed at first login)`
-        : `Created user 'admin' with the password from INITIAL_ADMIN_PASSWORD (must be changed at first login)`,
-    )
+  if (config.adminPasswordFromLegacyVariable) {
+    logger.warn!('INITIAL_ADMIN_PASSWORD is deprecated: rename it to ADMIN_PASSWORD')
+  }
+  if (config.adminPassword && config.adminPassword.length < 8) {
+    logger.warn!('ADMIN_PASSWORD is shorter than 8 characters: choose a stronger password')
+  }
+  const admin = await ctx.auth.ensureAdmin(config.adminPassword)
+  if (admin.action === 'created-generated') {
+    logger.warn!(`Created user 'admin' with temporary password: ${admin.password} (must be changed at first login)`)
+  } else if (admin.action === 'created-env') {
+    logger.info!("Created user 'admin' with the password from ADMIN_PASSWORD")
+  } else if (admin.action === 'updated-env') {
+    logger.info!("Password of user 'admin' set from ADMIN_PASSWORD")
   }
 
   const app = await buildApp(ctx, { logger: level === 'debug' })

@@ -5,7 +5,7 @@ import { api, errorMessage, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
 export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
-  const { refresh, logout } = useAuth()
+  const { user, refresh, logout } = useAuth()
   const { t } = useTranslation()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -31,6 +31,19 @@ export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
     } finally {
       setBusy(false)
     }
+  }
+
+  if (user?.passwordManaged) {
+    return (
+      <Center mt="xl">
+        <Paper withBorder shadow="sm" p="xl" w={400}>
+          <Stack>
+            <Title order={3}>{t('password.title')}</Title>
+            <Alert color="blue">{t('password.managedInfo')}</Alert>
+          </Stack>
+        </Paper>
+      </Center>
+    )
   }
 
   return (

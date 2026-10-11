@@ -9,8 +9,10 @@ export interface AppConfig {
   /** Cookie di sessione con flag Secure (abilitare dietro HTTPS). */
   secureCookies: boolean
   sessionHours: number
-  /** Password iniziale dell'utente admin (solo al primo avvio). */
-  initialAdminPassword: string | null
+  /** Password of the `admin` user (ADMIN_PASSWORD); null = generated on first start. */
+  adminPassword: string | null
+  /** The deprecated INITIAL_ADMIN_PASSWORD variable was used instead of ADMIN_PASSWORD. */
+  adminPasswordFromLegacyVariable: boolean
   /** Directory con la build del frontend da servire (opzionale). */
   webDir: string | null
   uhppote: {
@@ -62,7 +64,8 @@ export function loadConfig(): AppConfig {
     dataDir,
     secureCookies: bool('SECURE_COOKIES', false),
     sessionHours: int('SESSION_HOURS', 12),
-    initialAdminPassword: process.env.INITIAL_ADMIN_PASSWORD || null,
+    adminPassword: process.env.ADMIN_PASSWORD || process.env.INITIAL_ADMIN_PASSWORD || null,
+    adminPasswordFromLegacyVariable: !process.env.ADMIN_PASSWORD && !!process.env.INITIAL_ADMIN_PASSWORD,
     webDir: process.env.WEB_DIR ? path.resolve(process.env.WEB_DIR) : null,
     uhppote: {
       bindAddress: env('UHPPOTE_BIND_ADDR', '0.0.0.0'),

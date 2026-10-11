@@ -20,7 +20,8 @@ const ctx = createContext(
     dataDir,
     secureCookies: false,
     sessionHours: 1,
-    initialAdminPassword: 'admin-e2e-iniziale',
+    adminPassword: null,
+    adminPasswordFromLegacyVariable: false,
     webDir: path.resolve('apps/web/dist'),
     uhppote: {
       bindAddress: '127.0.0.1',
@@ -40,7 +41,10 @@ const ctx = createContext(
   },
   { info: () => undefined, warn: () => undefined, error: (m) => console.error(m) },
 )
-await ctx.auth.bootstrap('admin-e2e-iniziale')
+// first start without ADMIN_PASSWORD: generated password (replaced with a known one for the tests), change required
+await ctx.auth.ensureAdmin(null)
+const adminId = ctx.db.get<{ id: number }>("SELECT id FROM operators WHERE username = 'admin'")!.id
+await ctx.auth.setPassword(adminId, 'admin-e2e-iniziale', true)
 await ctx.eventService.startListener()
 ctx.health.start()
 

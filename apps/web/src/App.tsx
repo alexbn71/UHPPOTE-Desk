@@ -139,11 +139,13 @@ function Shell({ children }: { children: ReactNode }) {
               {user?.displayName} · {user ? codes.role(user.role) : ''}
             </Text>
             <LanguageSelect />
-            <Tooltip label={t('nav.changePassword')}>
-              <UnstyledButton onClick={() => navigate('/password')}>
-                <IconKey size={20} />
-              </UnstyledButton>
-            </Tooltip>
+            {!user?.passwordManaged && (
+              <Tooltip label={t('nav.changePassword')}>
+                <UnstyledButton onClick={() => navigate('/password')}>
+                  <IconKey size={20} />
+                </UnstyledButton>
+              </Tooltip>
+            )}
             <Tooltip label={t('nav.logout')}>
               <UnstyledButton onClick={() => void logout()}>
                 <IconLogout size={20} />

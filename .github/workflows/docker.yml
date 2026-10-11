@@ -51,7 +51,7 @@ jobs:
       - name: Container smoke test (named volume)
         run: |
           docker run -d --name smoke --network host \
-            -e HTTP_PORT=8080 -e INITIAL_ADMIN_PASSWORD=smoke-test-pass uhppote-desk:ci
+            -e HTTP_PORT=8080 -e ADMIN_PASSWORD=smoke-test-pass uhppote-desk:ci
           for i in $(seq 1 30); do
             curl -sf http://127.0.0.1:8080/api/health && break
             sleep 1
@@ -60,6 +60,10 @@ jobs:
           curl -sf http://127.0.0.1:8080/ | grep -q '<div id="root">'
           docker exec smoke node hwtest/cli.js --help > /dev/null
           docker logs smoke 2>&1 | grep -q 'creating a new one'
+          # ADMIN_PASSWORD set: login works and no password change is required
+          docker logs smoke 2>&1 | grep -q "Created user 'admin' with the password from ADMIN_PASSWORD"
+          curl -sf -H 'Content-Type: application/json' -d '{"username":"admin","password":"smoke-test-pass"}' \
+            http://127.0.0.1:8080/api/auth/login | grep -q '"mustChangePassword":false'
           docker rm -f smoke
 
       - name: Host bind mounts (missing folder, folder owned by another user, non-writable)
@@ -76,6 +80,15 @@ jobs:
           wait_health 8081 || { docker logs bindA; exit 1; }
           test -f "$RUNNER_TEMP/bind-a/uhppote-desk.sqlite"
           docker logs bindA 2>&1 | grep -q 'creating a new one'
+          # ADMIN_PASSWORD not set: a temporary password is generated and printed
+          docker logs bindA 2>&1 | grep -q "Created user 'admin' with temporary password"
+          # restart with ADMIN_PASSWORD on the existing database: the password is applied
+          docker rm -f bindA
+          docker run -d --name bindA --network host -e HTTP_PORT=8081 -e UHPPOTE_LISTEN=0.0.0.0:60051 -e ADMIN_PASSWORD=set-later-pass \
+            -v "$RUNNER_TEMP/bind-a:/data" uhppote-desk:ci
+          wait_health 8081 || { docker logs bindA; exit 1; }
+          docker logs bindA 2>&1 | grep -q "Password of user 'admin' set from ADMIN_PASSWORD"
+          curl -sf -H 'Content-Type: application/json' -d '{"username":"admin","password":"set-later-pass"}' http://127.0.0.1:8081/api/auth/login > /dev/null
           # restart: the existing database is reused
           docker restart bindA && wait_health 8081 && docker logs bindA 2>&1 | grep -q 'using database'
           docker rm -f bindA

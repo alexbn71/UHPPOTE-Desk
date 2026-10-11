@@ -93,6 +93,7 @@ export const en = {
     tooShort: 'The password must be at least 8 characters long',
     updated: 'Password updated',
     logout: 'Log out',
+    managedInfo: "The password of this user is set by the ADMIN_PASSWORD environment variable of the server: change it there and restart the server.",
   },
   dashboard: {
     title: 'Dashboard',
@@ -827,6 +828,7 @@ export const en = {
     controllerUnreachable: 'Controller unreachable: {{detail}}',
     controllerError: 'Controller error: {{detail}}',
     internal: 'Internal server error',
+    passwordManagedByEnv: "The password of this user is set by the ADMIN_PASSWORD variable and cannot be changed here",
     importEmptyCode: 'empty employee code',
     importInvalidCard: 'invalid card: {{card}}',
     importCardTaken: 'card {{card}} already assigned to {{person}}',

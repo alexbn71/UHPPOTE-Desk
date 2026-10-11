@@ -37,7 +37,7 @@ npm run sim                     # terminal 1: simulated controller on 0.0.0.0:60
 npm run dev                     # terminal 2: server (http://localhost:8080) + web with hot reload (http://localhost:5173)
 ```
 
-On first start the user `admin` is created with the password from `INITIAL_ADMIN_PASSWORD` (it must be changed at first login). Under *Controllers → Search network* the simulator is found just like a real controller.
+The user `admin` gets the password from `ADMIN_PASSWORD` (applied at every start); if the variable is not set, a password is generated on the first start, printed in the log and must be changed at first login. Under *Controllers → Search network* the simulator is found just like a real controller.
 
 ## Tests
 
