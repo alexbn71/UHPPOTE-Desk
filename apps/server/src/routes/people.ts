@@ -30,13 +30,13 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   const viewer = { preHandler: requireRole('viewer') }
   const operator = { preHandler: requireRole('operator') }
 
-  /** Propaga ai controller le modifiche di una persona; gli errori non bloccano il salvataggio. */
+  /** Propagates the changes of a person to the controllers; errors do not block saving. */
   const push = async (actor: Parameters<typeof ctx.sync.pushPerson>[0], personId: number | null, removed: number[] = []) => {
     const results = await ctx.sync.pushPerson(actor, personId, removed)
     return results.filter((r) => r.error).map((r) => ({ controllerId: r.controllerId, error: r.error! }))
   }
 
-  // --- reparti ---------------------------------------------------------------
+  // --- departments -----------------------------------------------------------
 
   app.get('/departments', viewer, async () => ctx.departments.list())
   app.post('/departments', operator, async (req) => {
@@ -59,7 +59,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     return { ok: true }
   })
 
-  // --- persone ---------------------------------------------------------------
+  // --- people ----------------------------------------------------------------
 
   app.get('/people', viewer, async (req) => {
     const q = z
@@ -129,7 +129,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     return reply.header('Cache-Control', 'private, max-age=60').type(photo.type).send(photo.data)
   })
 
-  // --- permessi --------------------------------------------------------------
+  // --- permissions -----------------------------------------------------------
 
   app.get('/permissions', viewer, async () => ctx.people.permissions())
 
@@ -158,14 +158,14 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     return { ok: true, pushErrors: errors }
   })
 
-  // --- tessere ---------------------------------------------------------------
+  // --- cards -----------------------------------------------------------------
 
   app.get('/cards', viewer, async (req) => {
     const q = z.object({ unassigned: z.enum(['true', 'false']).optional(), search: z.string().optional() }).parse(req.query)
     return ctx.people.cards({ unassigned: q.unassigned === 'true', ...(q.search ? { search: q.search } : {}) })
   })
 
-  /** Tessere passate di recente e non registrate (per l'acquisizione da lettore). */
+  /** Recently swiped, unregistered cards (for capture from a reader). */
   app.get('/cards/unknown', operator, async (req) => {
     const q = z.object({ minutes: z.coerce.number().int().min(1).max(1440).default(10) }).parse(req.query)
     return ctx.events.latestUnknownCards(localDateTime(new Date(Date.now() - q.minutes * 60_000)))
@@ -187,7 +187,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     if (old.number !== b.number) throw new HttpError(400, 'cardNumberImmutable')
     ctx.people.updateCard(id, b.personId, b.status)
     ctx.audit.log(req.user, 'update-card', `card:${b.number}`, b)
-    // tessera disattivata o non più assegnata: va rimossa; altrimenti segue i permessi del (nuovo) titolare
+    // card disabled or no longer assigned: remove it; otherwise it follows the permissions of its (new) holder
     const removed = b.status !== 'active' || b.personId === null ? [b.number] : []
     return { ok: true, pushErrors: await push(req.user, b.personId, removed) }
   })
@@ -201,7 +201,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     return { ok: true, pushErrors: await push(req.user, null, [card.number]) }
   })
 
-  /** Tessera smarrita: la vecchia viene marcata "lost" e rimossa dai controller, la nuova assegnata alla stessa persona. */
+  /** Lost card: the old one is marked "lost" and removed from the controllers, the new one is assigned to the same person. */
   app.post('/cards/:id/replace', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const b = replaceCardSchema.parse(req.body)
@@ -219,8 +219,8 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   // --- import CSV --------------------------------------------------------------
 
   /**
-   * Import anagrafica: colonne (con intestazione) matricola; cognome; nome; tessera; reparto.
-   * Il reparto può essere un percorso separato da "\" (es. "Vendite\Estero"), come nel software originale.
+   * People import: columns (with a header row) employee number; last name; first name; card; department.
+   * The department can be a path separated by "\" (e.g. "Sales\Export"), as in the original software.
    */
   app.post('/people/import', operator, async (req) => {
     const file = await req.file()

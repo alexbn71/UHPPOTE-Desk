@@ -2,7 +2,7 @@
   "name": "@uhppote-desk/hwtest",
   "version": "0.1.0",
   "private": true,
-  "description": "Suite di test su hardware reale per controller UHPPOTE (livelli L0-L5)",
+  "description": "Test suite on real hardware for UHPPOTE controllers (levels L0-L5)",
   "type": "module",
   "dependencies": {
     "@uhppote-desk/protocol": "*"

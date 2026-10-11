@@ -173,7 +173,7 @@ docker exec -it uhppote-desk node hwtest/cli.js --serial <S/N> --ip <controller 
 docker exec -it uhppote-desk node hwtest/cli.js --serial <S/N> --ip <controller IP> --level 5   # full deployment check
 ```
 
-Reports are saved in `/data/reports`. The test levels are described in the [README](../README.md#commissioning-with-a-real-controller). The tool's prompts are currently in Italian.
+Reports are saved in `/data/reports`. The test levels are described in the [README](../README.md#commissioning-with-a-real-controller).
 
 ## Trying the app without a controller (simulator)
 
@@ -186,7 +186,7 @@ docker exec -d  uhppote-desk node hwtest/devsim.js --auto 10    # background: a 
 
 - Then use **Controllers → Search network** and add controller `405419896`. If the search finds nothing, add it manually with the server's LAN IP.
 - The simulated controller reports the server's IP on the `UHPPOTE_BROADCAST` subnet (or the first LAN address). Use `--address <IP>` to force it, and `--serial <n>` to change the serial number.
-- Interactive commands: `s <card> [door]` swipe, `o <door>` / `c <door>` door sensor open/closed, `b <door>` exit button, `l` cards, `e` last events, `off` / `on` simulate a cable unplugged, `q` quit. The messages are in Italian.
+- Interactive commands: `s <card> [door]` swipe, `o <door>` / `c <door>` door sensor open/closed, `b <door>` exit button, `l` cards, `e` last events, `off` / `on` simulate a cable unplugged, `q` quit.
 - It listens on UDP/TCP port 60000 of the host: stop it before connecting a real controller on the same host, and do not run it twice. Its memory (cards, events) is lost when it stops; the app's database keeps everything, and **Synchronisation** reloads the cards.
 - To stop a background simulator: `docker restart uhppote-desk`.
 

@@ -46,7 +46,7 @@ export const useTimeProfiles = () => useQuery({ queryKey: ['time-profiles'], que
 export const useShifts = () => useQuery({ queryKey: ['shifts'], queryFn: () => api.get<Shift[]>('/shifts') })
 export const usePermissions = () => useQuery({ queryKey: ['permissions'], queryFn: () => api.get<Permission[]>('/permissions') })
 
-/** Percorso completo "Padre › Figlio" di un nodo. */
+/** Full "Parent › Child" path of a node. */
 export function treePath(nodes: TreeNode[] | undefined, id: number | null): string {
   if (!nodes || id === null) return ''
   const byId = new Map(nodes.map((n) => [n.id, n]))

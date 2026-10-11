@@ -11,7 +11,7 @@ import type { Db } from './database.js'
 import { fromBool, toBool, weekdaysFromString, weekdaysToString } from './database.js'
 
 // ===========================================================================
-// Zone e reparti (strutture ad albero identiche)
+// Zones and departments (identical tree structures)
 // ===========================================================================
 
 export interface TreeNode {
@@ -45,7 +45,7 @@ export class TreeRepo {
     return this.db.run(`DELETE FROM ${this.table} WHERE id = ?`, [id]).changes > 0
   }
 
-  /** Trova o crea un percorso "A\B\C" restituendo l'ID della foglia. */
+  /** Finds or creates an "A\B\C" path and returns the ID of the leaf. */
   ensurePath(path: string): number | null {
     const parts = path
       .split('\\')
@@ -64,7 +64,7 @@ export class TreeRepo {
 }
 
 // ===========================================================================
-// Controller e porte
+// Controllers and doors
 // ===========================================================================
 
 interface ControllerRow {
@@ -201,7 +201,7 @@ export class ControllerRepo {
     this.db.run('UPDATE controllers SET last_collected_index = ? WHERE id = ? AND last_collected_index < ?', [index, id, index])
   }
 
-  /** Il controller ha ricominciato la numerazione eventi: nuova epoca, indice azzerato. */
+  /** The controller restarted its event numbering: new epoch, index reset. */
   startNewEventEpoch(id: number): number {
     this.db.run('UPDATE controllers SET last_collected_index = 0, event_epoch = event_epoch + 1 WHERE id = ?', [id])
     return this.get(id)!.eventEpoch
@@ -252,7 +252,7 @@ export class ControllerRepo {
 }
 
 // ===========================================================================
-// Persone, tessere, permessi
+// People, cards, permissions
 // ===========================================================================
 
 interface PersonRow {
@@ -392,7 +392,7 @@ export class PeopleRepo {
     return r?.photo ? { data: Buffer.from(r.photo), type: r.photo_type ?? 'image/jpeg' } : undefined
   }
 
-  // --- tessere ---------------------------------------------------------------
+  // --- cards -----------------------------------------------------------------
 
   cards(opts: { personId?: number; unassigned?: boolean; search?: string } = {}): CardDto[] {
     const where: string[] = []
@@ -431,7 +431,7 @@ export class PeopleRepo {
     return this.db.run('DELETE FROM cards WHERE id = ?', [id]).changes > 0
   }
 
-  // --- permessi --------------------------------------------------------------
+  // --- permissions -----------------------------------------------------------
 
   permissions(personId?: number): PermissionRow[] {
     const rows =
@@ -472,7 +472,7 @@ export class PeopleRepo {
 }
 
 // ===========================================================================
-// Profili orari e task
+// Time profiles and tasks
 // ===========================================================================
 
 export interface TimeProfileRecord {
@@ -585,7 +585,7 @@ export class ScheduleRepo {
 }
 
 // ===========================================================================
-// Eventi
+// Events
 // ===========================================================================
 
 export interface NewEvent {
@@ -663,7 +663,7 @@ export interface EventFilter {
 export class EventRepo {
   constructor(private readonly db: Db) {}
 
-  /** Inserisce l'evento se non già presente. Restituisce l'evento completo se inserito, altrimenti null. */
+  /** Inserts the event if not already present. Returns the full event if inserted, otherwise null. */
   insert(e: NewEvent): EventDto | null {
     const person = e.card > 0 ? this.db.get<{ person_id: number | null }>('SELECT person_id FROM cards WHERE number = ?', [e.card]) : undefined
     const r = this.db.run(
@@ -721,7 +721,7 @@ export class EventRepo {
     return { rows, total }
   }
 
-  /** Ultimo swipe negato di tessera sconosciuta (per l'enrollment "passa la tessera"). */
+  /** Last denied swipe of an unknown card (for "swipe the card" enrolment). */
   latestUnknownCards(sinceIso: string): { card: number; timestamp: string | null; controllerId: number; door: number }[] {
     return this.db.all(
       `SELECT card, MAX(timestamp) AS timestamp, controller_id AS controllerId, door FROM events
@@ -731,7 +731,7 @@ export class EventRepo {
     )
   }
 
-  /** Swipe concessi sui lettori marcati "presenze" nell'intervallo. */
+  /** Granted swipes on the readers marked for attendance in the period. */
   attendancePunches(from: string, to: string): { personId: number; timestamp: string; direction: number }[] {
     return this.db.all(
       `SELECT e.person_id AS personId, e.timestamp, e.direction FROM events e

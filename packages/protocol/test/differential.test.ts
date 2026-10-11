@@ -1,6 +1,6 @@
 /**
- * Test differenziali: per input casuali validi il nostro encoder deve produrre gli stessi byte
- * dell'encoder della libreria di riferimento npm `uhppoted` (implementazione indipendente).
+ * Differential tests: for valid random inputs our encoder must produce the same bytes
+ * as the encoder of the npm `uhppoted` reference library (an independent implementation).
  */
 import { createRequire } from 'node:module'
 import fc from 'fast-check'
@@ -33,7 +33,7 @@ const toRefPermission = (p: number) => (p === 0 ? false : p === 1 ? true : p)
 const hex = (b: Buffer) => b.toString('hex')
 const runs = { numRuns: 200 }
 
-describe('encoder vs libreria uhppoted', () => {
+describe('encoder vs uhppoted library', () => {
   it('set listener', () =>
     fc.assert(
       fc.property(controller, ip, fc.integer({ min: 0, max: 65535 }), fc.integer({ min: 0, max: 255 }), (id, a, port, interval) => {
@@ -118,7 +118,7 @@ describe('encoder vs libreria uhppoted', () => {
     fc.assert(
       fc.property(controller, fc.integer({ min: 0, max: 12 }), date, date, weekdays, hhmm, door, fc.integer({ min: 0, max: 255 }), (id, task, from, to, days, start, d, more) => {
         const ours = encode.addTask(id, { task, from, to, weekdays: days, start, door: d, moreCards: more })
-        // la libreria usa una numerazione 1-based per i task numerici
+        // the library uses 1-based numbering for numeric tasks
         const theirs = ref.AddTask!(id, { task: { task: task + 1, valid: { from, to }, weekdays: dayNames(days), start, door: d, cards: more } })
         expect(hex(ours)).toBe(hex(theirs))
       }),
@@ -128,7 +128,7 @@ describe('encoder vs libreria uhppoted', () => {
   it('set first-card', () =>
     fc.assert(
       fc.property(controller, door, hhmm, hhmm, fc.constantFrom(0, 1, 2), fc.constantFrom(0, 1, 2, 3), weekdays, (id, d, start, end, active, inactive, days) => {
-        // nella libreria le modalità sono espresse con gli opcodes porta (3=controlled,1=NO,2=NC,4=first-card)
+        // in the library the modes are expressed with the door opcodes (3=controlled,1=NO,2=NC,4=first-card)
         const toLib = [3, 1, 2, 4]
         const ours = encode.setFirstCard(id, { door: d, start, end, activeMode: active, inactiveMode: inactive, weekdays: days })
         const theirs = ref.SetFirstCard!(id, {
@@ -158,7 +158,7 @@ describe('encoder vs libreria uhppoted', () => {
       runs,
     ))
 
-  it('comandi semplici con magic word', () =>
+  it('simple commands with magic word', () =>
     fc.assert(
       fc.property(controller, (id) => {
         expect(hex(encode.deleteAllCards(id))).toBe(hex(ref.DeleteCards!(id)))
@@ -173,8 +173,8 @@ describe('encoder vs libreria uhppoted', () => {
     ))
 })
 
-describe('decoder vs libreria uhppoted', () => {
-  it('get card: stesso risultato su pacchetti casuali validi', () =>
+describe('decoder vs uhppoted library', () => {
+  it('get card: same result on valid random packets', () =>
     fc.assert(
       fc.property(controller, fc.integer({ min: 1, max: 0xfffffffe }), date, date, fc.tuple(permission, permission, permission, permission), fc.integer({ min: 0, max: 999999 }), (id, card, from, to, doors, pin) => {
         const pkt = encode.putCard(id, { card, from, to, doors, pin, firstCard: [true, false, true, false] })

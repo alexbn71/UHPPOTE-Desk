@@ -14,7 +14,7 @@ const card = (n: number, doors: [number, number, number, number] = [1, 0, 0, 0],
 })
 
 describe('diffCards', () => {
-  it('individua aggiunte, modifiche, rimozioni e invariati', () => {
+  it('finds additions, changes, removals and unchanged', () => {
     const desired = new Map([
       [1, card(1)],
       [2, card(2, [1, 1, 0, 0])],
@@ -28,14 +28,14 @@ describe('diffCards', () => {
     expect(d.unchanged).toBe(1)
   })
 
-  it('PIN e date contano come differenze', () => {
+  it('PIN and dates count as differences', () => {
     expect(diffCards(new Map([[1, card(1, [1, 0, 0, 0], 1234)]]), [card(1)]).toUpdate).toHaveLength(1)
     expect(diffCards(new Map([[1, { ...card(1), to: '2027-01-01' }]]), [card(1)]).toUpdate).toHaveLength(1)
   })
 })
 
 describe('CSV', () => {
-  it('parsing con separatore ; e virgolette', () => {
+  it('parsing with ; separator and quotes', () => {
     const rows = parseCsv('﻿matricola;cognome;reparto\r\n001;"Rossi; Mario";Vendite\\Estero\r\n\r\n002;"Bianchi ""Gigi""";\n')
     expect(rows).toEqual([
       ['matricola', 'cognome', 'reparto'],
@@ -44,7 +44,7 @@ describe('CSV', () => {
     ])
   })
 
-  it('rileva la virgola come separatore', () => {
+  it('detects the comma as separator', () => {
     expect(parseCsv('a,b\n1,2')).toEqual([
       ['a', 'b'],
       ['1', '2'],
@@ -59,7 +59,7 @@ describe('CSV', () => {
 })
 
 describe('password', () => {
-  it('hash e verifica', async () => {
+  it('hash and verify', async () => {
     const h = await hashPassword('segreta-123')
     expect(h.startsWith('scrypt$')).toBe(true)
     expect(await verifyPassword('segreta-123', h)).toBe(true)

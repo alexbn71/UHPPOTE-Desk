@@ -2,7 +2,7 @@
   "name": "uhppote-desk",
   "version": "0.1.0",
   "private": true,
-  "description": "Web app di gestione per controller di accesso UHPPOTE UT0311-L0x",
+  "description": "Web app to manage UHPPOTE UT0311-L0x access controllers",
   "type": "module",
   "workspaces": [
     "packages/*",

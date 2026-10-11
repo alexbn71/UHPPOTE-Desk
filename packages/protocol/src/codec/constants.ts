@@ -1,19 +1,19 @@
-/** Dimensione fissa di ogni pacchetto (request, response, evento). */
+/** Fixed size of every packet (request, response, event). */
 export const PACKET_SIZE = 64
 
 /** Start-of-message standard. */
 export const SOM = 0x17
 
-/** Start-of-message usato dal firmware v6.62 per gli eventi del listener (solo con function code 0x20). */
+/** Start-of-message used by firmware v6.62 for listener events (only with function code 0x20). */
 export const SOM_V662_EVENT = 0x19
 
-/** Magic word richiesta dai comandi distruttivi/di configurazione. */
+/** Magic word required by destructive/configuration commands. */
 export const MAGIC = 0x55aaaa55
 
-/** Porta UDP/TCP del controller. */
+/** UDP/TCP port of the controller. */
 export const CONTROLLER_PORT = 60000
 
-/** Porta convenzionale dell'host per la ricezione degli eventi. */
+/** Conventional host port for receiving events. */
 export const DEFAULT_LISTENER_PORT = 60001
 
 export const FunctionCode = {
@@ -55,7 +55,7 @@ export const FunctionCode = {
 
 export type FunctionCode = (typeof FunctionCode)[keyof typeof FunctionCode]
 
-/** Modalità porta per 0x80/0x82. */
+/** Door mode for 0x80/0x82. */
 export const DoorMode = {
   NormallyOpen: 1,
   NormallyClosed: 2,
@@ -63,7 +63,7 @@ export const DoorMode = {
 } as const
 export type DoorMode = (typeof DoorMode)[keyof typeof DoorMode]
 
-/** Modalità first-card per 0xAA (codifica diversa da DoorMode!). */
+/** First-card mode for 0xAA (encoded differently from DoorMode!). */
 export const FirstCardMode = {
   Controlled: 0,
   NormallyOpen: 1,
@@ -122,7 +122,7 @@ export const Direction = {
   Out: 2,
 } as const
 
-/** Codici motivo noti (byte 27 di eventi/status). */
+/** Known reason codes (byte 27 of events/status). */
 export const Reason = {
   Swipe: 1,
   SwipeOpen: 2,

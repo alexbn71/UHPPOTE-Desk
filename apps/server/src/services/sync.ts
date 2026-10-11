@@ -4,7 +4,7 @@ import type { Db } from '../db/database.js'
 import type { ControllerRepo, PeopleRepo, ScheduleRepo } from '../db/repos.js'
 import type { Actor, ControllerGateway } from '../gateway/gateway.js'
 
-/** Calcola le differenze tra tessere desiderate (DB) e presenti sul controller. */
+/** Computes the differences between the desired cards (DB) and those on the controller. */
 export function diffCards(desired: Map<number, Card>, actual: Card[]): { toAdd: Card[]; toUpdate: Card[]; toDelete: number[]; unchanged: number } {
   const actualMap = new Map(actual.map((c) => [c.card, c]))
   const toAdd: Card[] = []
@@ -32,8 +32,8 @@ export function sameCard(a: Card, b: Card): boolean {
 }
 
 /**
- * Sincronizzazione DB → controller.
- * Il DB è la fonte di verità per tessere, permessi, fasce orarie, task, porte e impostazioni.
+ * Synchronisation DB → controller.
+ * The DB is the source of truth for cards, permissions, time profiles, tasks, doors and settings.
  */
 export class SyncService {
   constructor(
@@ -45,10 +45,10 @@ export class SyncService {
   ) {}
 
   // -------------------------------------------------------------------------
-  // Tessere
+  // Cards
   // -------------------------------------------------------------------------
 
-  /** Tessere che devono essere presenti sul controller, con i relativi permessi. */
+  /** Cards that must be on the controller, with their permissions. */
   desiredCards(controllerId: number, onlyPersonId?: number): Map<number, Card> {
     const doors = this.controllers.doors(controllerId)
     const doorNumber = new Map(doors.map((d) => [d.id, d.door]))
@@ -91,7 +91,7 @@ export class SyncService {
     return result
   }
 
-  /** Confronto completo DB ↔ controller (legge tutte le tessere dal controller). */
+  /** Full comparison DB ↔ controller (reads all the cards from the controller). */
   async diff(actor: Actor, controllerId: number): Promise<SyncDiffDto & { _cards: ReturnType<typeof diffCards> }> {
     const actual = await this.gateway.run(actor, controllerId, 'read-cards', null, (client, t) => client.listCards(t), { audit: false })
     const d = diffCards(this.desiredCards(controllerId), actual)
@@ -106,7 +106,7 @@ export class SyncService {
     }
   }
 
-  /** Allinea le tessere del controller al DB. */
+  /** Aligns the controller's cards with the DB. */
   async syncCards(actor: Actor, controllerId: number): Promise<SyncDiffDto> {
     const run = this.db.run("INSERT INTO sync_runs (controller_id, kind, operator_id) VALUES (?, 'cards', ?)", [controllerId, actor?.id ?? null]).lastInsertRowid
     const hub = this.gateway.hub
@@ -136,9 +136,9 @@ export class SyncService {
   }
 
   /**
-   * Aggiornamento immediato delle tessere di una persona su tutti i controller (dopo una modifica).
-   * `removedCards`: numeri di tessera da eliminare (es. tessera smarrita o rimossa).
-   * Gli errori per controller sono raccolti e restituiti (i controller offline verranno allineati con la sync completa).
+   * Immediate update of a person's cards on all controllers (after a change).
+   * `removedCards`: card numbers to delete (e.g. a lost or removed card).
+   * Errors are collected and returned per controller (offline controllers are aligned by the full sync).
    */
   async pushPerson(actor: Actor, personId: number | null, removedCards: number[] = []): Promise<{ controllerId: number; error?: string }[]> {
     const results: { controllerId: number; error?: string }[] = []
@@ -160,7 +160,7 @@ export class SyncService {
   }
 
   // -------------------------------------------------------------------------
-  // Configurazione
+  // Configuration
   // -------------------------------------------------------------------------
 
   async pushDoor(actor: Actor, doorId: number): Promise<void> {
@@ -234,7 +234,7 @@ export class SyncService {
     })
   }
 
-  /** Sincronizzazione completa: porte, fasce orarie, task, impostazioni, tessere. */
+  /** Full synchronisation: doors, time profiles, tasks, settings, cards. */
   async pushAll(actor: Actor, controllerId: number): Promise<SyncDiffDto> {
     const hub = this.gateway.hub
     hub.publishSync(controllerId, 'running', 'sync.progress.doors')

@@ -104,7 +104,7 @@ export function ControllersPage() {
       setFound(null)
       await qc.invalidateQueries({ queryKey: ['controllers'] })
       void qc.invalidateQueries({ queryKey: ['doors'] })
-      navigate(`/controller/${r.id}`)
+      navigate(`/controllers/${r.id}`)
     } catch (err) {
       notifyError(err)
     }
@@ -146,7 +146,7 @@ export function ControllersPage() {
                 const state = live.states[c.id]
                 const online = state?.online ?? c.online
                 return (
-                  <Table.Tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/controller/${c.id}`)}>
+                  <Table.Tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/controllers/${c.id}`)}>
                     <Table.Td fw={600}>{c.name}</Table.Td>
                     <Table.Td className="mono">{c.serial}</Table.Td>
                     <Table.Td className="mono">

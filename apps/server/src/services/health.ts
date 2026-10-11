@@ -6,10 +6,10 @@ import { localDateTime, parseLocal } from '../util/time.js'
 import type { EventService } from './events.js'
 
 /**
- * Monitoraggio periodico dei controller:
- * - polling dello status (online/offline, stato porte);
- * - al passaggio offline→online: lettura firmware, verifica listener, raccolta eventi;
- * - controllo e correzione della deriva oraria.
+ * Periodic monitoring of the controllers:
+ * - status polling (online/offline, door state);
+ * - on offline→online: firmware read, listener check, event collection;
+ * - clock drift check and correction.
  */
 export class HealthService {
   private timer: NodeJS.Timeout | null = null
@@ -76,7 +76,7 @@ export class HealthService {
     await this.events.collect(controllerId)
   }
 
-  /** Programma il listener del controller verso questo server, se configurato e diverso. */
+  /** Points the controller's listener at this server, if configured and different. */
   async ensureListener(controllerId: number): Promise<boolean> {
     if (!this.opts.listenerPublic) return false
     const { host, port } = parseEndpoint(this.opts.listenerPublic, 60001)
@@ -90,7 +90,7 @@ export class HealthService {
     })
   }
 
-  /** Verifica la deriva oraria (al massimo una volta all'ora) e la corregge oltre la soglia. */
+  /** Checks the clock drift (at most once an hour) and corrects it beyond the threshold. */
   private async checkTime(controllerId: number): Promise<void> {
     const last = this.lastTimeCheck.get(controllerId) ?? 0
     if (Date.now() - last < 3600_000) return

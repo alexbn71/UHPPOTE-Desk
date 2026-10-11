@@ -9,7 +9,7 @@ import type { AppContext } from '../context.js'
 import type { ControllerRecord } from '../db/repos.js'
 import { localDateTime } from '../util/time.js'
 
-/** Verifica che l'operatore possa comandare il controller (restrizione per zone, incluse le sotto-zone). */
+/** Checks that the operator may command the controller (zone restriction, sub-zones included). */
 export function assertZoneAccess(ctx: AppContext, user: SessionUser, c: ControllerRecord): void {
   if (user.role === 'admin' || user.zoneIds.length === 0) return
   const zones = ctx.zones.list()
@@ -37,7 +37,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { ...rest, online: ctx.hub.state(c.id).online, doors: ctx.controllers.doors(c.id) }
   }
 
-  // --- zone ------------------------------------------------------------------
+  // --- zones -----------------------------------------------------------------
 
   app.get('/zones', viewer, async () => ctx.zones.list())
   app.post('/zones', admin, async (req) => {
@@ -97,20 +97,20 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true }
   })
 
-  /** Ricerca controller in rete (broadcast). */
+  /** Searches the network for controllers (broadcast). */
   app.get('/discover', admin, async (req) => {
     const q = z.object({ broadcast: z.string().optional() }).parse(req.query)
     const found = await ctx.audit.track(req.user, 'discover', null, q, () => ctx.gateway.client.discover(q.broadcast))
     return found.map((f) => ({ ...f, configured: ctx.controllers.getBySerial(f.controller)?.id ?? null }))
   })
 
-  /** Imposta l'IP del controller (il controller non risponde: verifica successiva via discovery). */
+  /** Sets the controller IP (the controller does not reply: check afterwards via discovery). */
   app.post('/controllers/:id/set-ip', admin, async (req) => {
     const { id } = idParam.parse(req.params)
     const b = setIpSchema.parse(req.body)
     const c = ctx.gateway.controller(id)
     await ctx.gateway.run(req.user, id, 'set-ip', b, async (client) => {
-      // inviato in broadcast: il controller potrebbe non essere raggiungibile in unicast con l'IP attuale
+      // sent by broadcast: the controller may not be reachable by unicast with its current IP
       await client.setIPv4({ id: c.serial, transport: 'udp' }, b.address, b.netmask, b.gateway)
     })
     await new Promise((r) => setTimeout(r, 1500))
@@ -119,7 +119,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { verified: !!info, info }
   })
 
-  /** Diagnostica completa (solo letture). */
+  /** Full diagnostics (reads only). */
   app.get('/controllers/:id/info', viewer, async (req) => {
     const { id } = idParam.parse(req.params)
     return ctx.gateway.run(req.user, id, 'read-info', null, async (client, t) => {
@@ -171,7 +171,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true, cardsBackup: backupCards, backupFile: path.basename(backupFile) }
   })
 
-  // --- impostazioni avanzate -------------------------------------------------
+  // --- advanced settings -----------------------------------------------------
 
   app.get('/controllers/:id/settings', viewer, async (req) => {
     const { id } = idParam.parse(req.params)
@@ -193,7 +193,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true, pushed: push }
   })
 
-  // --- porte -----------------------------------------------------------------
+  // --- doors -----------------------------------------------------------------
 
   app.get('/doors', viewer, async () => ctx.controllers.doors())
 
@@ -224,7 +224,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true }
   })
 
-  // --- sincronizzazione ------------------------------------------------------
+  // --- synchronisation -------------------------------------------------------
 
   app.get('/controllers/:id/sync/diff', operator, async (req) => {
     const { id } = idParam.parse(req.params)

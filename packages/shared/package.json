@@ -2,7 +2,7 @@
   "name": "@uhppote-desk/shared",
   "version": "0.1.0",
   "private": true,
-  "description": "Schemi API, DTO ed etichette condivise tra server e web",
+  "description": "API schemas, DTOs and translations shared by server and web",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

@@ -6,17 +6,17 @@ import { hexdump, type Logger } from './logger.js'
 import { parseEndpoint } from './client.js'
 
 export interface ListenerEvents {
-  /** Evento/status ricevuto da un controller. */
+  /** Event/status received from a controller. */
   status: [status: ControllerStatus, from: { address: string; port: number }]
-  /** Pacchetto ricevuto ma non riconosciuto. */
+  /** Packet received but not recognised. */
   invalid: [packet: Buffer, from: { address: string; port: number }]
   error: [err: Error]
   listening: [address: { address: string; port: number }]
 }
 
 /**
- * Server UDP che riceve gli eventi inviati dai controller (configurati con setListener).
- * Accetta anche i pacchetti con SOM 0x19 del firmware v6.62.
+ * UDP server receiving the events sent by the controllers (configured with setListener).
+ * Also accepts the SOM 0x19 packets of firmware v6.62.
  */
 export class EventListener extends EventEmitter<ListenerEvents> {
   private socket: dgram.Socket | null = null

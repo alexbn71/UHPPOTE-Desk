@@ -41,7 +41,7 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
       weekdays: weekdaysFromString(s.weekdays),
     }))
 
-  // --- turni -----------------------------------------------------------------
+  // --- shifts ----------------------------------------------------------------
 
   app.get('/shifts', viewer, async () => shifts())
   app.post('/shifts', operator, async (req) => {
@@ -75,7 +75,7 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true }
   })
 
-  // --- festività -------------------------------------------------------------
+  // --- holidays --------------------------------------------------------------
 
   app.get('/holidays', viewer, async () => ctx.db.all('SELECT date, name FROM holidays ORDER BY date'))
   app.post('/holidays', operator, async (req) => {
@@ -100,7 +100,7 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     return { added: list.length }
   })
 
-  // --- assenze ---------------------------------------------------------------
+  // --- absences --------------------------------------------------------------
 
   app.get('/leaves', viewer, async (req) => {
     const q = z.object({ personId: z.coerce.number().int().optional() }).parse(req.query)
@@ -130,7 +130,7 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true }
   })
 
-  // --- timbrature manuali ----------------------------------------------------
+  // --- manual punches --------------------------------------------------------
 
   app.get('/punches', viewer, async (req) => {
     const q = z.object({ from: z.string().optional(), to: z.string().optional() }).parse(req.query)
@@ -174,7 +174,7 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
       .filter((p) => !q.personId || p.id === q.personId)
       .map((p) => ({ id: p.id, name: `${p.lastName} ${p.firstName}`.trim(), shift: p.shiftId ? (shiftMap.get(p.shiftId) ?? null) : null }))
     const ids = new Set(people.map((p) => p.id))
-    // finestra estesa di un giorno per i turni notturni
+    // window extended by one day for night shifts
     const from = `${q.from} 00:00:00`
     const to = `${addDays(q.to, 1)} 23:59:59`
     const punches: Punch[] = [

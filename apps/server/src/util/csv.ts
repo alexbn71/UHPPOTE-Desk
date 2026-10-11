@@ -1,4 +1,4 @@
-/** Parser CSV minimale (RFC 4180) con rilevamento automatico del separatore (; , tab). */
+/** Minimal CSV parser (RFC 4180) with automatic detection of the separator (; , tab). */
 export function parseCsv(text: string): string[][] {
   const clean = text.replace(/^﻿/, '')
   const firstLine = clean.split(/\r?\n/, 1)[0] ?? ''
@@ -33,7 +33,7 @@ export function parseCsv(text: string): string[][] {
   return rows
 }
 
-/** Serializza righe in CSV (separatore ';' per compatibilità con Excel in italiano). */
+/** Serialises rows to CSV (';' separator, which Excel expects in many European locales). */
 export function toCsv(rows: (string | number | boolean | null | undefined)[][]): string {
   const esc = (v: string | number | boolean | null | undefined) => {
     const s = v === null || v === undefined ? '' : String(v)

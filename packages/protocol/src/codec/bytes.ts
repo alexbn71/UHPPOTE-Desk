@@ -3,7 +3,7 @@ import { PACKET_SIZE, SOM } from './constants.js'
 
 /** 'YYYY-MM-DD' */
 export type DateString = string
-/** 'YYYY-MM-DD HH:mm:ss' (ora locale del controller, senza fuso) */
+/** 'YYYY-MM-DD HH:mm:ss' (controller local time, no time zone) */
 export type DateTimeString = string
 /** 'HH:mm' */
 export type TimeString = string
@@ -64,7 +64,7 @@ function pad(n: number, w = 2): string {
   return String(n).padStart(w, '0')
 }
 
-/** Costruisce un pacchetto da 64 byte con header standard. */
+/** Builds a 64-byte packet with the standard header. */
 export class Writer {
   readonly buf: Buffer
 
@@ -101,14 +101,14 @@ export class Writer {
     return this
   }
 
-  /** PIN a 3 byte little-endian (tessere). */
+  /** 3-byte little-endian PIN (cards). */
   pin24(offset: number, v: number, field = 'PIN'): this {
     if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: PIN out of range (0-999999): ${v}`)
     this.buf.writeUIntLE(v, offset, 3)
     return this
   }
 
-  /** PIN a 4 byte little-endian (passcode porta). */
+  /** 4-byte little-endian PIN (door passcodes). */
   pin32(offset: number, v: number, field = 'passcode'): this {
     if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: passcode out of range (0-999999): ${v}`)
     this.buf.writeUInt32LE(v, offset)
@@ -125,7 +125,7 @@ export class Writer {
     return this
   }
 
-  /** Data BCD YYYYMMDD; null = assente (zeri). */
+  /** BCD date YYYYMMDD; null = absent (zeros). */
   date(offset: number, v: DateString | null, field = 'date'): this {
     if (v === null) return this
     const [y, m, d] = parseDate(v, field)
@@ -151,7 +151,7 @@ export class Writer {
   }
 }
 
-/** Lettura tipizzata di un pacchetto da 64 byte. */
+/** Typed reader of a 64-byte packet. */
 export class Reader {
   constructor(readonly buf: Buffer) {}
 
@@ -175,7 +175,7 @@ export class Reader {
     return this.buf.readUInt32LE(offset)
   }
 
-  /** Tollerante: qualsiasi valore diverso da 0 è true. */
+  /** Lenient: any value other than 0 is true. */
   bool(offset: number): boolean {
     return this.buf[offset] !== 0
   }
@@ -192,14 +192,14 @@ export class Reader {
     return [...this.buf.subarray(offset, offset + 6)].map((b) => b.toString(16).padStart(2, '0')).join(':')
   }
 
-  /** Versione firmware: 2 byte BCD → 'v8.92'. */
+  /** Firmware version: 2 BCD bytes → 'v8.92'. */
   version(offset: number): string {
     const hi = this.buf[offset]!
     const lo = this.buf[offset + 1]!
     return `v${hi.toString(16)}.${lo.toString(16).padStart(2, '0')}`
   }
 
-  /** Data BCD YYYYMMDD; null se zero o non valida. */
+  /** BCD date YYYYMMDD; null if zero or invalid. */
   date(offset: number): DateString | null {
     const s = bcdDigits(this.buf, offset, 4)
     if (s === null || s === '00000000') return null
@@ -208,7 +208,7 @@ export class Reader {
     return `${pad(y, 4)}-${pad(m)}-${pad(d)}`
   }
 
-  /** Data/ora BCD YYYYMMDDHHmmss; null se zero o non valida. */
+  /** BCD date/time YYYYMMDDHHmmss; null if zero or invalid. */
   datetime(offset: number): DateTimeString | null {
     const s = bcdDigits(this.buf, offset, 7)
     if (s === null || /^0+$/.test(s)) return null
@@ -224,7 +224,7 @@ export class Reader {
     return `${pad(y, 4)}-${pad(mo)}-${pad(d)} ${pad(h)}:${pad(mi)}:${pad(se)}`
   }
 
-  /** Data breve BCD YYMMDD (secolo 20). */
+  /** Short BCD date YYMMDD (century 20). */
   shortdate(offset: number): DateString | null {
     const s = bcdDigits(this.buf, offset, 3)
     if (s === null || s === '000000') return null
@@ -233,7 +233,7 @@ export class Reader {
     return `${y}-${pad(m)}-${pad(d)}`
   }
 
-  /** Ora BCD HHmmss. */
+  /** BCD time HHmmss. */
   time(offset: number): string | null {
     const s = bcdDigits(this.buf, offset, 3)
     if (s === null) return null

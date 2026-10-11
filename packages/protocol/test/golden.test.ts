@@ -1,5 +1,5 @@
 /**
- * Golden test: il codec deve produrre/decodificare esattamente i pacchetti dei vettori ufficiali di uhppoted-codegen.
+ * Golden tests: the codec must encode/decode exactly the packets of the official uhppoted-codegen vectors.
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
@@ -25,7 +25,7 @@ const vectors = data.testdata.tests
 function getter(values: Value[]) {
   const map = new Map(values.map((v) => [v.name, v.value]))
   const raw = (name: string) => {
-    if (!map.has(name)) throw new Error(`campo '${name}' assente nel vettore`)
+    if (!map.has(name)) throw new Error(`field '${name}' missing in the vector`)
     return map.get(name)!
   }
   return {
@@ -296,8 +296,8 @@ const specs: Record<string, Spec> = {
 }
 specs['get status no event'] = specs['get status']!
 
-describe('vettori ufficiali uhppoted-codegen', () => {
-  it('copre tutti i vettori del fixture', () => {
+describe('official uhppoted-codegen vectors', () => {
+  it('covers all the vectors of the fixture', () => {
     const missing = vectors.map((v) => v.name).filter((n) => !specs[n])
     expect(missing).toEqual([])
   })

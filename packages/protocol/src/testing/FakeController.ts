@@ -13,23 +13,23 @@ import { DELETED_CARD, validatePacket, type Card, type ControllerEvent, type Qua
 
 export interface FakeControllerOptions {
   id: number
-  /** Indirizzo di bind (default 127.0.0.1). */
+  /** Bind address (default 127.0.0.1). */
   host?: string
-  /** Porta UDP/TCP (default 0 = casuale; usare 60000 per emulare un controller reale). */
+  /** UDP/TCP port (default 0 = random; use 60000 to emulate a real controller). */
   port?: number
-  /** Abilita anche il server TCP sulla stessa porta. */
+  /** Also enables the TCP server on the same port. */
   tcp?: boolean
-  /** Capacità del buffer eventi (default 100000). */
+  /** Event buffer capacity (default 100000). */
   eventCapacity?: number
-  /** Quanti eventi scartare quando il buffer è pieno (default 2048, come il firmware). */
+  /** How many events to discard when the buffer is full (default 2048, like the firmware). */
   eventDiscard?: number
   address?: string
   netmask?: string
   gateway?: string
   mac?: string
-  /** Versione firmware BCD, es. 0x0892 → v8.92 */
+  /** BCD firmware version, e.g. 0x0892 → v8.92 */
   version?: number
-  /** Usa SOM 0x19 per gli eventi del listener (firmware v6.62). */
+  /** Use SOM 0x19 for listener events (firmware v6.62). */
   v662Events?: boolean
 }
 
@@ -45,10 +45,10 @@ function fmtDateTime(d: Date): string {
 }
 
 /**
- * Emulatore in-process di un controller UT0311-L04.
- * Implementa tutti i comandi del protocollo con uno stato in memoria, la logica di base delle autorizzazioni
- * (tessera, validità, permesso porta, profilo orario, modalità porta) e l'invio degli eventi al listener.
- * Offre inoltre "manopole" per i test: latenza, perdita pacchetti, silenzio totale.
+ * In-process emulator of a UT0311-L04 controller.
+ * Implements all protocol commands with in-memory state, the basic authorisation logic
+ * (card, validity, door permission, time profile, door mode) and sending events to the listener.
+ * Also offers "knobs" for tests: latency, packet loss, total silence.
  */
 export class FakeController {
   readonly id: number
@@ -56,14 +56,14 @@ export class FakeController {
   private tcpServer: net.Server | null = null
   private autosendTimer: NodeJS.Timeout | null = null
 
-  // --- stato del controller ---------------------------------------------------
+  // --- controller state -------------------------------------------------------
   address: string
   netmask: string
   gateway: string
   mac: string
   version: number
   readonly releaseDate = '2018-11-05'
-  /** Offset dell'orologio del controller rispetto a quello dell'host (ms). */
+  /** Offset of the controller clock from the host clock (ms). */
   clockOffsetMs = 0
   listener = { address: '0.0.0.0', port: 0, interval: 0 }
   doors: Quad<{ mode: number; delay: number }> = [
@@ -80,13 +80,13 @@ export class FakeController {
   systemError = 0
   specialInfo = 0
   sequenceNo = 0
-  /** Slot tessere: null = record cancellato (tombstone). */
+  /** Card slots: null = deleted record (tombstone). */
   cardSlots: (Card | null)[] = []
   profiles = new Map<number, TimeProfile>()
   tasks: Task[] = []
   tasksActive: Task[] = []
   events: StoredEvent[] = []
-  /** Indice del primo evento ancora memorizzato. */
+  /** Index of the first event still stored. */
   private firstEventIndex = 1
   private nextEventIndex = 1
   eventIndexBookmark = 0
@@ -97,18 +97,18 @@ export class FakeController {
   antipassback = 0
   firstCard = new Map<number, { start: string; end: string; activeMode: number; inactiveMode: number; weekdays: Weekdays }>()
 
-  // --- manopole per i test ----------------------------------------------------
-  /** Latenza di risposta (ms). */
+  // --- knobs for tests --------------------------------------------------------
+  /** Reply latency (ms). */
   latencyMs = 0
-  /** Probabilità [0..1] di ignorare una richiesta. */
+  /** Probability [0..1] of ignoring a request. */
   dropRate = 0
-  /** Numero di prossime richieste da ignorare (perdita deterministica). */
+  /** Number of upcoming requests to ignore (deterministic loss). */
   dropNext = 0
-  /** Se true non risponde a nulla (simula controller spento/scollegato). */
+  /** If true it answers nothing (simulates a controller that is off/unplugged). */
   offline = false
-  /** Function code per cui il controller risponde ok = false (simula un rifiuto). */
+  /** Function codes for which the controller answers ok = false (simulates a refusal). */
   readonly failOps = new Set<number>()
-  /** Contatore richieste ricevute per function code. */
+  /** Count of requests received per function code. */
   readonly requestCount = new Map<number, number>()
 
   private readonly host: string
@@ -134,7 +134,7 @@ export class FakeController {
   }
 
   // ---------------------------------------------------------------------------
-  // Ciclo di vita
+  // Lifecycle
   // ---------------------------------------------------------------------------
 
   async start(): Promise<{ host: string; port: number }> {
@@ -194,7 +194,7 @@ export class FakeController {
   }
 
   // ---------------------------------------------------------------------------
-  // Stato derivato
+  // Derived state
   // ---------------------------------------------------------------------------
 
   now(): Date {
@@ -214,10 +214,10 @@ export class FakeController {
   }
 
   // ---------------------------------------------------------------------------
-  // Azioni fisiche simulate
+  // Simulated physical actions
   // ---------------------------------------------------------------------------
 
-  /** Simula il passaggio di una tessera sul lettore della porta. Restituisce l'evento generato. */
+  /** Simulates a card swipe on the door reader. Returns the generated event. */
   swipe(card: number, door: number, direction: number = Direction.In, pin?: number): ControllerEvent {
     const reason = this.authorise(card, door, pin)
     const granted = reason === Reason.Swipe
@@ -225,7 +225,7 @@ export class FakeController {
     return this.event(EventType.Swipe, granted, door, direction, card, reason)
   }
 
-  /** Simula apertura/chiusura del sensore porta. */
+  /** Simulates the door sensor opening/closing. */
   setDoorSensor(door: number, open: boolean): void {
     this.doorOpen[door - 1] = open
     if (this.recordSpecialEvents) {
@@ -235,7 +235,7 @@ export class FakeController {
     }
   }
 
-  /** Simula la pressione del pulsante di uscita. */
+  /** Simulates pressing the exit button. */
   pressButton(door: number): void {
     const mode = this.doors[door - 1]!.mode
     const ok = mode !== 2
@@ -276,13 +276,13 @@ export class FakeController {
     if (!p) return false
     const day = fmtDate(at)
     const hhmm = `${pad(at.getHours())}:${pad(at.getMinutes())}`
-    const weekday = (at.getDay() + 6) % 7 // lun = 0
+    const weekday = (at.getDay() + 6) % 7 // Mon = 0
     const validDate = (!p.from || day >= p.from) && (!p.to || day <= p.to)
     if (validDate && p.weekdays[weekday] && p.segments.some((s) => hhmm >= s.start && hhmm <= s.end)) return true
     return p.linkedTo ? this.inProfile(p.linkedTo, at, seen) : false
   }
 
-  /** Registra un evento e lo invia al listener. */
+  /** Records an event and sends it to the listener. */
   event(type: number, granted: boolean, door: number, direction: number, card: number, reason: number, push = true): ControllerEvent {
     const ev: StoredEvent = {
       index: this.nextEventIndex++,
@@ -304,7 +304,7 @@ export class FakeController {
     return ev
   }
 
-  /** Invia lo status corrente al listener configurato (se presente). */
+  /** Sends the current status to the configured listener (if any). */
   pushStatus(): void {
     if (!this.udp || this.offline) return
     const { address, port } = this.listener
@@ -426,7 +426,7 @@ export class FakeController {
           this.netmask = r.ipv4(12)
           this.gateway = r.ipv4(16)
         }
-        return null // il controller reale non risponde
+        return null // the real controller does not reply
       case F.GetTime:
         return this.reply(fc).datetime(8, fmtDateTime(this.now())).buf
       case F.SetTime: {

@@ -24,9 +24,9 @@ async function login(page: Page, username: string, password: string) {
 test.describe.serial('UHPPOTE Desk', () => {
   test('first login: mandatory password change', async ({ page }) => {
     const errors = trackErrors(page)
-    await login(page, 'admin', 'admin-e2e-iniziale')
+    await login(page, 'admin', 'admin-e2e-initial')
     await expect(page.getByRole('heading', { name: 'Change password' })).toBeVisible()
-    await page.getByRole('textbox', { name: 'Current password', exact: true }).fill('admin-e2e-iniziale')
+    await page.getByRole('textbox', { name: 'Current password', exact: true }).fill('admin-e2e-initial')
     await page.getByRole('textbox', { name: 'New password', exact: true }).fill(ADMIN_PASSWORD)
     await page.getByRole('textbox', { name: 'Confirm new password', exact: true }).fill(ADMIN_PASSWORD)
     await page.getByRole('button', { name: 'Save' }).click()
@@ -37,7 +37,7 @@ test.describe.serial('UHPPOTE Desk', () => {
   test('network search and adding the controller', async ({ page }) => {
     const errors = trackErrors(page)
     await login(page, 'admin', ADMIN_PASSWORD)
-    await page.goto('/controller')
+    await page.goto('/controllers')
     await page.getByRole('button', { name: 'Search network' }).click()
     await page.getByRole('button', { name: 'Start search' }).click()
     await expect(page.getByRole('cell', { name: '405419896' })).toBeVisible({ timeout: 10_000 })
@@ -55,7 +55,7 @@ test.describe.serial('UHPPOTE Desk', () => {
   test('person, card and permission: the card reaches the controller', async ({ page, request }) => {
     const errors = trackErrors(page)
     await login(page, 'admin', ADMIN_PASSWORD)
-    await page.goto('/persone')
+    await page.goto('/people')
     await page.getByRole('button', { name: 'New person' }).click()
     await page.getByRole('textbox', { name: 'Employee code', exact: true }).fill('E100')
     await page.getByRole('textbox', { name: 'Last name', exact: true }).fill('Rossi')
@@ -95,21 +95,21 @@ test.describe.serial('UHPPOTE Desk', () => {
     const pages: [string, string][] = [
       ['/', 'Dashboard'],
       ['/monitor', 'Monitor'],
-      ['/eventi', 'Event history'],
-      ['/presenze', 'Attendance'],
-      ['/persone', 'People'],
-      ['/tessere', 'Cards'],
-      ['/permessi', 'Access permissions'],
-      ['/struttura', 'Departments and zones'],
-      ['/controller', 'Controllers'],
-      ['/controller/1', 'Entrance'],
-      ['/porte', 'Doors'],
-      ['/fasce-orarie', 'Time profiles'],
-      ['/task', 'Scheduled tasks'],
-      ['/sincronizzazione', 'Synchronisation'],
-      ['/operatori', 'Operators'],
+      ['/events', 'Event history'],
+      ['/attendance', 'Attendance'],
+      ['/people', 'People'],
+      ['/cards', 'Cards'],
+      ['/permissions', 'Access permissions'],
+      ['/structure', 'Departments and zones'],
+      ['/controllers', 'Controllers'],
+      ['/controllers/1', 'Entrance'],
+      ['/doors', 'Doors'],
+      ['/time-profiles', 'Time profiles'],
+      ['/tasks', 'Scheduled tasks'],
+      ['/sync', 'Synchronisation'],
+      ['/operators', 'Operators'],
       ['/audit', 'Audit log'],
-      ['/sistema', 'System'],
+      ['/system', 'System'],
       ['/password', 'Change password'],
     ]
     for (const [url, heading] of pages) {
@@ -117,12 +117,12 @@ test.describe.serial('UHPPOTE Desk', () => {
       await expect(page.getByRole('heading', { name: heading, exact: true }), `page ${url}`).toBeVisible()
     }
     // tabs of the controller detail and attendance pages
-    await page.goto('/controller/1')
+    await page.goto('/controllers/1')
     for (const tab of ['Network and configuration', 'Advanced settings', 'Maintenance', 'Diagnostics']) {
       await page.getByRole('tab', { name: tab }).click()
     }
     await expect(page.getByText('Serial number')).toBeVisible({ timeout: 10_000 })
-    await page.goto('/presenze')
+    await page.goto('/attendance')
     for (const tab of ['Shifts', 'Holidays', 'Leave and absences', 'Manual punches', 'Report']) {
       await page.getByRole('tab', { name: tab }).click()
     }
@@ -131,7 +131,7 @@ test.describe.serial('UHPPOTE Desk', () => {
 
   test('synchronisation: comparison without differences', async ({ page }) => {
     await login(page, 'admin', ADMIN_PASSWORD)
-    await page.goto('/sincronizzazione')
+    await page.goto('/sync')
     await page.getByRole('button', { name: 'Compare' }).click()
     await expect(page.getByText('To add: 0')).toBeVisible({ timeout: 10_000 })
   })
@@ -149,7 +149,7 @@ test.describe.serial('UHPPOTE Desk', () => {
       await page.getByRole('button', { name: /^(Language|Lingua|Idioma|Langue|Sprache)$/ }).click()
       await page.getByRole('menuitem', { name: language }).click()
       await expect(page.getByText(people, { exact: true }).first()).toBeVisible()
-      await page.goto('/eventi')
+      await page.goto('/events')
       await expect(page.getByRole('heading', { name: events, exact: true })).toBeVisible()
       await page.goto('/')
     }
@@ -157,7 +157,7 @@ test.describe.serial('UHPPOTE Desk', () => {
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Übersicht' })).toBeVisible()
     // server errors are translated too
-    await page.goto('/fasce-orarie')
+    await page.goto('/time-profiles')
     await page.getByRole('button', { name: 'Neues Profil' }).click()
     await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Test')
     await page.getByPlaceholder('08:00').fill('10:00')
@@ -185,7 +185,7 @@ test.describe.serial('UHPPOTE Desk', () => {
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0)
     await expect(page.getByText('Operators', { exact: true })).toHaveCount(0)
-    await page.goto('/operatori')
+    await page.goto('/operators')
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
   })
 })

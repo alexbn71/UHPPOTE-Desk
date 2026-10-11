@@ -11,7 +11,7 @@ import { EventService } from './services/events.js'
 import { HealthService } from './services/health.js'
 import { SyncService } from './services/sync.js'
 
-/** Tutte le dipendenze dell'applicazione (iniettabili nei test). */
+/** All the application dependencies (injectable in tests). */
 export interface AppContext {
   config: AppConfig
   db: Db

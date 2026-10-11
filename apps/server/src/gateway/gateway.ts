@@ -8,13 +8,13 @@ import { HttpError } from '../auth/auth.js'
 
 export type Actor = Pick<SessionUser, 'id' | 'username'> | null
 
-/** Bus interno degli aggiornamenti in tempo reale (inoltrati ai client WebSocket). */
+/** Internal bus of real-time updates (forwarded to the WebSocket clients). */
 export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
   private readonly states = new Map<number, ControllerLiveState>()
 
   constructor() {
     super()
-    this.setMaxListeners(0) // un listener per ogni client WebSocket
+    this.setMaxListeners(0) // one listener per WebSocket client
   }
 
   state(controllerId: number): ControllerLiveState {
@@ -87,8 +87,8 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
 }
 
 /**
- * Punto unico di accesso ai controller: risolve l'indirizzamento dal DB,
- * registra le operazioni nell'audit log e aggiorna lo stato online/offline.
+ * Single access point to the controllers: resolves addressing from the DB,
+ * records operations in the audit log and updates the online/offline state.
  */
 export class ControllerGateway {
   readonly client: UhppoteClient
@@ -118,7 +118,7 @@ export class ControllerGateway {
     return c
   }
 
-  /** Esegue un comando su un controller con audit e gestione dello stato. */
+  /** Runs a command on a controller with auditing and state handling. */
   async run<T>(
     actor: Actor,
     controllerId: number,

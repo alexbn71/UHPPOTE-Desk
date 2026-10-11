@@ -13,8 +13,8 @@ export interface TcpOptions {
 }
 
 /**
- * Connessione TCP singola: invia un pacchetto da 64 byte e attende una risposta da 64 byte.
- * Supportato dai firmware recenti sulla stessa porta 60000.
+ * Single TCP connection: sends a 64-byte packet and waits for a 64-byte reply.
+ * Supported by recent firmware on the same port 60000.
  */
 export async function tcpExchange(
   opts: TcpOptions,

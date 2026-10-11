@@ -3,7 +3,7 @@ import path from 'node:path'
 import type { Logger } from '@uhppote-desk/protocol'
 import type { Db } from '../db/database.js'
 
-/** Backup giornaliero del database SQLite con rotazione. */
+/** Daily backup of the SQLite database with rotation. */
 export class BackupService {
   private timer: NodeJS.Timeout | null = null
   private lastDay = ''

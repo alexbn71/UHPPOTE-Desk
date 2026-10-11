@@ -56,7 +56,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     return { ok: true }
   })
 
-  // --- gestione operatori (solo admin) ---------------------------------------
+  // --- operator management (admin only) --------------------------------------
 
   const admin = { preHandler: requireRole('admin') }
 

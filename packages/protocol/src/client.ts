@@ -23,7 +23,7 @@ import { udpBroadcast, udpExchange, type Endpoint } from './transport/udp.js'
 
 export type Transport = 'udp' | 'tcp'
 
-/** Indirizzamento di un controller. Senza `host` la richiesta va in broadcast. */
+/** Addressing of a controller. Without `host` the request is broadcast. */
 export interface ControllerTarget {
   id: number
   host?: string | null | undefined
@@ -32,16 +32,16 @@ export interface ControllerTarget {
 }
 
 export interface ClientOptions {
-  /** IP locale per i socket (default 0.0.0.0). */
+  /** Local IP for the sockets (default 0.0.0.0). */
   bindAddress?: string
-  /** Indirizzo di broadcast 'ip[:porta]' (default 255.255.255.255:60000). Preferire il broadcast di subnet. */
+  /** Broadcast address 'ip[:port]' (default 255.255.255.255:60000). Prefer the subnet broadcast. */
   broadcast?: string
-  /** Timeout per richiesta in ms (default 2500). */
+  /** Timeout per request in ms (default 2500). */
   timeoutMs?: number
-  /** Tentativi aggiuntivi sulle operazioni idempotenti in caso di timeout (default 1). */
+  /** Extra attempts for idempotent operations on timeout (default 1). */
   retries?: number
   logger?: Logger
-  /** Hook invocato dopo ogni richiesta (per metriche/audit). */
+  /** Hook called after every request (for metrics/audit). */
   onRequest?: (info: RequestInfo) => void
 }
 
@@ -57,7 +57,7 @@ export interface RequestInfo {
 export type CardSlot =
   | { state: 'card'; card: Card }
   | { state: 'deleted' }
-  /** nessun record a quell'indice (oltre la fine della tabella) */
+  /** no record at that index (past the end of the table) */
   | { state: 'empty' }
 
 export function parseEndpoint(s: string, defaultPort = CONTROLLER_PORT): Endpoint {
@@ -68,11 +68,11 @@ export function parseEndpoint(s: string, defaultPort = CONTROLLER_PORT): Endpoin
 }
 
 /**
- * Client ad alto livello per i controller UHPPOTE.
- * - una richiesta alla volta per controller (coda seriale);
- * - unicast se il target ha `host`, altrimenti broadcast;
- * - UDP (default) o TCP;
- * - retry solo per operazioni idempotenti.
+ * High-level client for UHPPOTE controllers.
+ * - one request at a time per controller (serial queue);
+ * - unicast if the target has `host`, otherwise broadcast;
+ * - UDP (default) or TCP;
+ * - retries only for idempotent operations.
  */
 export class UhppoteClient {
   readonly bindAddress: string
@@ -93,7 +93,7 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Infrastruttura
+  // Infrastructure
   // -------------------------------------------------------------------------
 
   private enqueue<T>(controller: number, job: () => Promise<T>): Promise<T> {
@@ -187,10 +187,10 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Dispositivo e rete
+  // Device and network
   // -------------------------------------------------------------------------
 
-  /** Ricerca tutti i controller raggiungibili via broadcast (attende l'intero timeout). */
+  /** Finds all controllers reachable by broadcast (waits for the whole timeout). */
   async discover(broadcast?: string): Promise<ControllerInfo[]> {
     const dest = broadcast ? parseEndpoint(broadcast) : this.broadcast
     const replies = await udpBroadcast(
@@ -211,7 +211,7 @@ export class UhppoteClient {
     return this.call(t, 'get-controller', encode.getController(t.id), decode.getController, true)
   }
 
-  /** Il controller NON risponde a questo comando: verificare poi con getController sul nuovo IP. */
+  /** The controller does NOT reply to this command: check afterwards with getController on the new IP. */
   async setIPv4(t: ControllerTarget, address: string, netmask: string, gateway: string): Promise<void> {
     await this.exchange(t, 'set-ipv4', encode.setIPv4(t.id, address, netmask, gateway), {
       idempotent: false,
@@ -237,7 +237,7 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Porte
+  // Doors
   // -------------------------------------------------------------------------
 
   async getDoorControl(t: ControllerTarget, door: number): Promise<DoorControl> {
@@ -254,7 +254,7 @@ export class UhppoteClient {
     return this.callOk(t, 'set-door-passcodes', encode.setDoorPasscodes(t.id, door, passcodes), decode.setDoorPasscodes, true)
   }
 
-  /** Non idempotente: nessun retry automatico. */
+  /** Not idempotent: no automatic retry. */
   openDoor(t: ControllerTarget, door: number): Promise<void> {
     return this.callOk(t, 'open-door', encode.openDoor(t.id, door), decode.openDoor, false)
   }
@@ -264,14 +264,14 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Tessere
+  // Cards
   // -------------------------------------------------------------------------
 
   async getCards(t: ControllerTarget): Promise<number> {
     return (await this.call(t, 'get-cards', encode.getCards(t.id), decode.getCards, true)).cards
   }
 
-  /** null se la tessera non è presente sul controller. */
+  /** null if the card is not on the controller. */
   async getCard(t: ControllerTarget, card: number): Promise<Card | null> {
     const r = await this.call(t, 'get-card', encode.getCard(t.id, card), decode.getCard, true)
     return r.card.card === 0 || r.card.card === DELETED_CARD ? null : r.card
@@ -285,13 +285,13 @@ export class UhppoteClient {
   }
 
   /**
-   * Legge tutte le tessere memorizzate scorrendo gli indici (salta i record cancellati).
-   * Si ferma quando ha trovato `getCards()` tessere o al primo slot vuoto.
+   * Reads all stored cards by walking the indexes (skips deleted records).
+   * Stops when it has found `getCards()` cards or at the first empty slot.
    */
   async listCards(t: ControllerTarget, onProgress?: (found: number, total: number, index: number) => void): Promise<Card[]> {
     const total = await this.getCards(t)
     const cards: Card[] = []
-    // limite di sicurezza: tabella tessere + record cancellati
+    // safety limit: card table + deleted records
     const maxIndex = Math.max(total, 1) + 100_000
     for (let index = 1; cards.length < total && index <= maxIndex; index++) {
       const slot = await this.getCardAtIndex(t, index)
@@ -302,12 +302,12 @@ export class UhppoteClient {
     return cards
   }
 
-  /** Inserisce o sostituisce una tessera. */
+  /** Inserts or replaces a card. */
   putCard(t: ControllerTarget, card: Card): Promise<void> {
     return this.callOk(t, 'put-card', encode.putCard(t.id, card), decode.putCard, true)
   }
 
-  /** Restituisce false se la tessera non era presente. */
+  /** Returns false if the card was not present. */
   async deleteCard(t: ControllerTarget, card: number): Promise<boolean> {
     return (await this.call(t, 'delete-card', encode.deleteCard(t.id, card), decode.deleteCard, true)).ok
   }
@@ -317,10 +317,10 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Eventi
+  // Events
   // -------------------------------------------------------------------------
 
-  /** Legge l'evento all'indice dato. Lancia NotFoundError / EventOverwrittenError. */
+  /** Reads the event at the given index. Throws NotFoundError / EventOverwrittenError. */
   async getEvent(t: ControllerTarget, index: number): Promise<ControllerEvent> {
     const { event } = await this.call(t, 'get-event', encode.getEvent(t.id, index), decode.getEvent, true)
     if (event.type === EventType.Overwritten) throw new EventOverwrittenError(t.id, index)
@@ -328,13 +328,13 @@ export class UhppoteClient {
     return event
   }
 
-  /** Indice dell'ultimo evento disponibile (dallo status). 0 se nessun evento. */
+  /** Index of the last available event (from the status). 0 if there are no events. */
   async getLastEventIndex(t: ControllerTarget): Promise<number> {
     const s = await this.getStatus(t)
     return s.event?.index ?? 0
   }
 
-  /** Segnalibro "ultimo evento scaricato" memorizzato nel controller. */
+  /** "Last downloaded event" bookmark stored in the controller. */
   async getEventIndex(t: ControllerTarget): Promise<number> {
     return (await this.call(t, 'get-event-index', encode.getEventIndex(t.id), decode.getEventIndex, true)).index
   }
@@ -348,7 +348,7 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Profili orari e task
+  // Time profiles and tasks
   // -------------------------------------------------------------------------
 
   async getTimeProfile(t: ControllerTarget, id: number): Promise<TimeProfile | null> {
@@ -363,7 +363,7 @@ export class UhppoteClient {
     return this.callOk(t, 'clear-time-profiles', encode.clearTimeProfiles(t.id), decode.clearTimeProfiles, true)
   }
 
-  /** Non idempotente (aggiunge un task ogni volta). Dopo l'inserimento chiamare refreshTaskList. */
+  /** Not idempotent (adds a task every time). Call refreshTaskList after adding. */
   addTask(t: ControllerTarget, task: Task): Promise<void> {
     return this.callOk(t, 'add-task', encode.addTask(t.id, task), decode.addTask, false)
   }
@@ -377,7 +377,7 @@ export class UhppoteClient {
   }
 
   // -------------------------------------------------------------------------
-  // Funzioni avanzate
+  // Advanced functions
   // -------------------------------------------------------------------------
 
   setPCControl(t: ControllerTarget, enabled: boolean): Promise<void> {
@@ -404,7 +404,7 @@ export class UhppoteClient {
     return this.callOk(t, 'set-first-card', encode.setFirstCard(t.id, fc), decode.setFirstCard, true)
   }
 
-  /** ATTENZIONE: azzera la configurazione del controller. */
+  /** WARNING: resets the controller configuration. */
   restoreDefaultParameters(t: ControllerTarget): Promise<void> {
     return this.callOk(t, 'restore-default-parameters', encode.restoreDefaultParameters(t.id), decode.restoreDefaultParameters, false)
   }

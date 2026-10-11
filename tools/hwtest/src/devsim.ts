@@ -1,6 +1,6 @@
 /**
- * Simulatore di sviluppo: avvia uno o più controller UT0311-L04 emulati (FakeController) su UDP+TCP,
- * per usare l'app senza hardware. Comandi da tastiera per simulare passaggi e porte.
+ * Development simulator: starts an emulated UT0311-L04 controller (FakeController) on UDP+TCP,
+ * to use the app without hardware. Keyboard commands simulate swipes and doors.
  *
  *   npm run sim -- [--host 0.0.0.0] [--port 60000] [--serial 405419896] [--address 192.168.1.50] [--auto 10]
  *
@@ -49,9 +49,9 @@ const fake = new FakeController({
   ...(lan && { address: lan.address, netmask: lan.netmask, gateway }),
 })
 const ep = await fake.start()
-console.log(`Controller simulato ${fake.id} in ascolto su ${ep.host}:${ep.port} (UDP+TCP), IP dichiarato ${fake.address}`)
-console.log(`Comandi: s <tessera> [porta]  = swipe   |  o <porta> / c <porta> = apri/chiudi sensore  |  b <porta> = pulsante`)
-console.log(`         l = elenco tessere   |  e = ultimi eventi   |  off / on = scollega/ricollega   |  q = esci`)
+console.log(`Simulated controller ${fake.id} listening on ${ep.host}:${ep.port} (UDP+TCP), reported IP ${fake.address}`)
+console.log(`Commands: s <card> [door] = swipe   |  o <door> / c <door> = door sensor open/closed  |  b <door> = exit button`)
+console.log(`          l = list cards   |  e = last events   |  off / on = unplug/replug network   |  q = quit`)
 
 const auto = Number(values.auto)
 if (auto > 0) {
@@ -59,7 +59,7 @@ if (auto > 0) {
     const cards = fake.cards
     const card = cards.length && Math.random() < 0.8 ? cards[Math.floor(Math.random() * cards.length)]!.card : 10099999
     const e = fake.swipe(card, 1 + Math.floor(Math.random() * 4), Math.random() < 0.5 ? 1 : 2)
-    console.log(`[auto] swipe ${card} porta ${e.door}: ${e.granted ? 'consentito' : 'negato'} (motivo ${e.reason})`)
+    console.log(`[auto] swipe ${card} door ${e.door}: ${e.granted ? 'granted' : 'denied'} (reason ${e.reason})`)
   }, auto * 1000)
 }
 
@@ -70,7 +70,7 @@ rl.on('line', (line) => {
     switch (cmd) {
       case 's': {
         const e = fake.swipe(Number(a), Number(b ?? 1))
-        console.log(`evento #${e.index}: ${e.granted ? 'CONSENTITO' : 'NEGATO'} (motivo ${e.reason})`)
+        console.log(`event #${e.index}: ${e.granted ? 'GRANTED' : 'DENIED'} (reason ${e.reason})`)
         break
       }
       case 'o':
@@ -88,19 +88,19 @@ rl.on('line', (line) => {
         break
       case 'off':
         fake.offline = true
-        console.log('controller scollegato dalla rete (continua a registrare eventi)')
+        console.log('controller unplugged from the network (it keeps recording events)')
         break
       case 'on':
         fake.offline = false
-        console.log('controller ricollegato')
+        console.log('controller plugged back in')
         break
       case 'q':
         void fake.stop().then(() => process.exit(0))
         break
       default:
-        if (cmd) console.log('comando sconosciuto')
+        if (cmd) console.log('unknown command')
     }
   } catch (err) {
-    console.log(`errore: ${(err as Error).message}`)
+    console.log(`error: ${(err as Error).message}`)
   }
 })

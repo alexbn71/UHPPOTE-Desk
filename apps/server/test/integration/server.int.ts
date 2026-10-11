@@ -1,6 +1,6 @@
 /**
- * Integrazione end-to-end lato server: API HTTP → servizi → protocollo UDP → FakeController,
- * e ritorno degli eventi tramite listener → DB → API/WebSocket.
+ * Server-side end-to-end integration: HTTP API → services → UDP protocol → FakeController,
+ * and events coming back through listener → DB → API/WebSocket.
  */
 import os from 'node:os'
 import path from 'node:path'
@@ -70,7 +70,7 @@ async function login(username: string, password: string): Promise<string> {
 async function waitFor(cond: () => boolean | Promise<boolean>, timeoutMs = 3000): Promise<void> {
   const start = Date.now()
   while (!(await cond())) {
-    if (Date.now() - start > timeoutMs) throw new Error('condizione non soddisfatta entro il timeout')
+    if (Date.now() - start > timeoutMs) throw new Error('condition not met within the timeout')
     await new Promise((r) => setTimeout(r, 25))
   }
 }
@@ -95,13 +95,13 @@ afterAll(async () => {
   fs.rmSync(dataDir, { recursive: true, force: true })
 })
 
-describe('autenticazione', () => {
-  it('rifiuta richieste non autenticate e credenziali errate', async () => {
+describe('authentication', () => {
+  it('rejects unauthenticated requests and wrong credentials', async () => {
     expect((await api('GET', '/controllers', undefined, '')).statusCode).toBe(401)
     expect((await api('POST', '/auth/login', { username: 'admin', password: 'x' }, '')).statusCode).toBe(401)
   })
 
-  it('obbliga al cambio password al primo accesso', async () => {
+  it('forces a password change at first login', async () => {
     const cookie = await login('admin', generatedPassword)
     expect((await api('GET', '/controllers', undefined, cookie)).statusCode).toBe(403)
     expect((await api('POST', '/auth/password', { currentPassword: generatedPassword, newPassword: 'nuova-password-1' }, cookie)).statusCode).toBe(200)
@@ -111,7 +111,7 @@ describe('autenticazione', () => {
 })
 
 describe('controller', () => {
-  it('registra il controller, lo porta online e configura il listener', async () => {
+  it('registers the controller, brings it online and configures the listener', async () => {
     const r = await api('POST', '/controllers', { serial: SERIAL, name: 'Ingresso', host: fake.endpoint.host, port: fake.endpoint.port })
     expect(r.statusCode).toBe(200)
     controllerId = r.json().id
@@ -123,21 +123,21 @@ describe('controller', () => {
     expect(list[0].doors).toHaveLength(4)
   })
 
-  it('diagnostica completa', async () => {
+  it('full diagnostics', async () => {
     const r = await api('GET', `/controllers/${controllerId}/info`)
     expect(r.statusCode).toBe(200)
     expect(r.json()).toMatchObject({ device: { controller: SERIAL }, listener: { port: LISTEN_PORT } })
     expect(r.json().doors).toHaveLength(4)
   })
 
-  it('sincronizzazione ora', async () => {
+  it('time synchronisation', async () => {
     fake.clockOffsetMs = -3600_000
     const r = await api('POST', `/controllers/${controllerId}/time-sync`)
     expect(r.statusCode).toBe(200)
     expect(Math.abs(fake.clockOffsetMs)).toBeLessThan(5000)
   })
 
-  it('modifica porta inviata al controller', async () => {
+  it('door change sent to the controller', async () => {
     const door = (await api('GET', '/doors')).json().find((d: { door: number }) => d.door === 2)
     const r = await api('PUT', `/doors/${door.id}`, { name: 'Magazzino', active: true, attendance: false, mode: 2, delay: 7 })
     expect(r.json()).toMatchObject({ ok: true, pushError: null })
@@ -145,7 +145,7 @@ describe('controller', () => {
     await api('PUT', `/doors/${door.id}`, { name: 'Magazzino', active: true, attendance: false, mode: 3, delay: 5 })
   })
 
-  it('controller offline: errore 504 e stato offline', async () => {
+  it('offline controller: error 504 and offline state', async () => {
     fake.offline = true
     try {
       expect((await api('GET', `/controllers/${controllerId}/info`)).statusCode).toBe(504)
@@ -162,8 +162,8 @@ describe('controller', () => {
 let personId = 0
 const CARD = 10058400
 
-describe('persone, tessere e permessi', () => {
-  it('fascia oraria inviata a tutti i controller', async () => {
+describe('people, cards and permissions', () => {
+  it('time profile sent to all controllers', async () => {
     const r = await api('PUT', '/time-profiles/10', {
       name: 'Ufficio',
       validFrom: '2020-01-01',
@@ -176,7 +176,7 @@ describe('persone, tessere e permessi', () => {
     expect(fake.profiles.get(10)).toMatchObject({ id: 10, segments: [{ start: '08:00', end: '18:00' }] })
   })
 
-  it('persona + tessera + permessi → tessera sul controller', async () => {
+  it('person + card + permissions → card on the controller', async () => {
     const p = await api('POST', '/people', { code: 'E001', lastName: 'Rossi', firstName: 'Mario', validFrom: '2020-01-01', validTo: '2099-12-31', pin: 1234 })
     expect(p.statusCode).toBe(200)
     personId = p.json().id
@@ -194,11 +194,11 @@ describe('persone, tessere e permessi', () => {
     ])
   })
 
-  it('tessera non Wiegand-26 rifiutata', async () => {
+  it('non Wiegand-26 card rejected', async () => {
     expect((await api('POST', '/cards', { number: 25665536, personId })).statusCode).toBe(400)
   })
 
-  it('persona disattivata → tessera rimossa dal controller', async () => {
+  it('disabled person → card removed from the controller', async () => {
     const person = (await api('GET', `/people/${personId}`)).json()
     const body = { ...person, active: false }
     expect((await api('PUT', `/people/${personId}`, body)).json().pushErrors).toEqual([])
@@ -208,8 +208,8 @@ describe('persone, tessere e permessi', () => {
   })
 })
 
-describe('eventi', () => {
-  it('swipe → listener → DB → API e WebSocket', async () => {
+describe('events', () => {
+  it('swipe → listener → DB → API and WebSocket', async () => {
     const ws = await app.injectWS('/api/ws', { headers: { cookie: adminCookie } })
     const messages: WsMessage[] = []
     ws.on('message', (data: Buffer) => messages.push(JSON.parse(data.toString()) as WsMessage))
@@ -226,12 +226,12 @@ describe('eventi', () => {
     }
   })
 
-  it('eventi persi (listener irraggiungibile) recuperati dal collector', async () => {
+  it('lost events (listener unreachable) recovered by the collector', async () => {
     const saved = { ...fake.listener }
     fake.listener = { address: '0.0.0.0', port: 0, interval: 0 }
     const missed = [fake.swipe(CARD, 1), fake.swipe(CARD, 3), fake.swipe(99999, 1)]
     fake.listener = saved
-    // il prossimo push rivela il buco negli indici e innesca il recupero
+    // the next push reveals the gap in the indexes and triggers the recovery
     const next = fake.swipe(CARD, 1)
     await waitFor(async () => {
       const rows = (await api('GET', '/events?limit=50')).json().rows as { index: number }[]
@@ -241,7 +241,7 @@ describe('eventi', () => {
     expect(denied.find((e) => e.index === missed[1]!.index)?.reason).toBe(Reason.NoAccessRights)
   })
 
-  it('tessera sconosciuta proposta per la registrazione', async () => {
+  it('unknown card offered for registration', async () => {
     fake.swipe(10077777, 1)
     await waitFor(async () => (await api('GET', '/cards/unknown')).json().some((c: { card: number }) => c.card === 10077777))
   })
@@ -271,8 +271,8 @@ describe('eventi', () => {
   })
 })
 
-describe('sincronizzazione', () => {
-  it('rileva e rimuove tessere estranee sul controller', async () => {
+describe('synchronisation', () => {
+  it('detects and removes foreign cards on the controller', async () => {
     fake.cardSlots.push({ card: 10011111, from: '2020-01-01', to: '2099-12-31', doors: [1, 1, 1, 1], pin: 0, firstCard: [false, false, false, false] })
     const diff = (await api('GET', `/controllers/${controllerId}/sync/diff`)).json()
     expect(diff).toMatchObject({ toAdd: [], toUpdate: [], toDelete: [10011111], unchanged: 1 })
@@ -281,7 +281,7 @@ describe('sincronizzazione', () => {
     expect(fake.cards.map((c) => c.card)).toEqual([CARD])
   })
 
-  it('sincronizzazione completa: impostazioni e task', async () => {
+  it('full synchronisation: settings and tasks', async () => {
     const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
     const r1 = await api('PUT', `/controllers/${controllerId}/settings?push=false`, { ...settings, interlock: 3, antipassback: 2, keypads: [true, false, false, false] })
     expect(r1.statusCode).toBe(200)
@@ -308,8 +308,8 @@ describe('sincronizzazione', () => {
   })
 })
 
-describe('ruoli e audit', () => {
-  it('un utente in sola lettura non può aprire le porte', async () => {
+describe('roles and audit', () => {
+  it('a read-only user cannot open doors', async () => {
     const created = (await api('POST', '/operators', { username: 'lettore', displayName: 'Lettore', role: 'viewer', password: 'password-lettore' })).json()
     expect(created.id).toBeGreaterThan(0)
     let cookie = await login('lettore', 'password-lettore')
@@ -320,7 +320,7 @@ describe('ruoli e audit', () => {
     expect((await api('GET', '/operators', undefined, cookie)).statusCode).toBe(403)
   })
 
-  it("l'apertura remota è eseguita e registrata nell'audit log", async () => {
+  it('remote opening is performed and recorded in the audit log', async () => {
     const door = (await api('GET', '/doors')).json()[0]
     const before = fake.lastEventIndex
     expect((await api('POST', `/doors/${door.id}/open`)).statusCode).toBe(200)
@@ -331,8 +331,8 @@ describe('ruoli e audit', () => {
   })
 })
 
-describe('tessera smarrita e cancellazione persona', () => {
-  it('sostituzione: vecchia rimossa, nuova attiva', async () => {
+describe('lost card and person deletion', () => {
+  it('replacement: old one removed, new one active', async () => {
     const card = (await api('GET', '/cards')).json().find((c: { number: number }) => c.number === CARD)
     const r = await api('POST', `/cards/${card.id}/replace`, { newNumber: 10058401 })
     expect(r.json().pushErrors).toEqual([])
@@ -341,14 +341,14 @@ describe('tessera smarrita e cancellazione persona', () => {
     expect(fake.events.at(-1)).toMatchObject({ granted: false, reason: Reason.NoAccessRights })
   })
 
-  it('cancellazione persona: tessere rimosse dal controller', async () => {
+  it('person deletion: cards removed from the controller', async () => {
     expect((await api('DELETE', `/people/${personId}`)).json().pushErrors).toEqual([])
     expect(fake.cards).toHaveLength(0)
   })
 })
 
-describe('presenze', () => {
-  it('report da timbrature sul lettore presenze', async () => {
+describe('attendance', () => {
+  it('report from punches on the attendance reader', async () => {
     const doors = (await api('GET', '/doors')).json() as { id: number; door: number; name: string }[]
     const d1 = doors.find((d) => d.door === 1)!
     await api('PUT', `/doors/${d1.id}`, { name: d1.name, active: true, attendance: true, mode: 3, delay: 5 })

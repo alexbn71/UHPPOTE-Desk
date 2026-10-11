@@ -251,7 +251,7 @@ function Network({ c }: { c: ControllerDto }) {
           .del(`/controllers/${c.id}`)
           .then(() => {
             void qc.invalidateQueries({ queryKey: ['controllers'] })
-            navigate('/controller')
+            navigate('/controllers')
           })
           .catch(notifyError),
     })

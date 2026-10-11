@@ -1,6 +1,6 @@
 /**
- * Utility per numeri tessera Wiegand-26.
- * Il controller memorizza il numero come facility × 100000 + numero (es. 10058400 = facility 100, numero 58400).
+ * Utilities for Wiegand-26 card numbers.
+ * The controller stores the number as facility × 100000 + number (e.g. 10058400 = facility 100, number 58400).
  */
 
 export interface Wiegand26 {
@@ -26,8 +26,8 @@ export function joinWiegand26(facility: number, number: number): number {
 }
 
 /**
- * Converte il valore grezzo a 24 bit (senza parità) letto da un lettore Wiegand-26 nel formato del controller.
- * Utile per tessere che riportano stampato il codice decimale a 10 cifre (valore a 24 bit).
+ * Converts the raw 24-bit value (without parity) read by a Wiegand-26 reader to the controller format.
+ * Useful for cards printed with the 10-digit decimal code (24-bit value).
  */
 export function fromRaw24(raw: number): number {
   if (!Number.isInteger(raw) || raw < 0 || raw > 0xffffff) throw new RangeError(`invalid 24-bit value: ${raw}`)

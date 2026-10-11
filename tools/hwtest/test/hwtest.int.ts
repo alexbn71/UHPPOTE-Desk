@@ -1,6 +1,6 @@
 /**
- * Collaudo della suite hardware stessa: tutti i livelli (anche quelli fisici) eseguiti contro il FakeController,
- * con un driver che esegue le "azioni fisiche" sul simulatore.
+ * Test of the hardware suite itself: all levels (physical ones included) run against the FakeController,
+ * with a driver that performs the "physical actions" on the simulator.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { FakeController } from '@uhppote-desk/protocol/testing'
@@ -72,7 +72,7 @@ beforeAll(async () => {
     userCard: USER_CARD,
     cliPath: null,
   }
-  // qualche tessera e stato iniziale "di produzione" da preservare
+  // some cards and an initial "production" state to preserve
   fake.cardSlots.push({ card: 10000001, from: '2020-01-01', to: '2099-12-31', doors: [1, 1, 1, 1], pin: 0, firstCard: [false, false, false, false] })
   fake.listener = { address: '10.0.0.5', port: 60001, interval: 0 }
 })
@@ -81,8 +81,8 @@ afterAll(async () => {
   await fake.stop()
 })
 
-describe('suite hardware contro FakeController', () => {
-  it('livelli 0-4 superati e stato del controller ripristinato', async () => {
+describe('hardware suite against FakeController', () => {
+  it('levels 0-4 pass and the controller state is restored', async () => {
     const driver = new FakeDriver(fake)
     const { results } = await runSuite(opts, [0, 1, 2, 3, 4], driver)
     const failed = results.filter((r) => r.status === 'fail')
@@ -99,13 +99,13 @@ describe('suite hardware contro FakeController', () => {
     expect(byId['L3.9']).toBe('pass')
     expect(byId['L4.2']).toBe('pass')
     expect(byId['L4.3']).toBe('pass')
-    // stato originale preservato
+    // original state preserved
     expect(fake.listener).toEqual({ address: '10.0.0.5', port: 60001, interval: 0 })
     expect(fake.cards.map((c) => c.card)).toEqual([10000001])
     expect(fake.doors[0]).toEqual({ mode: 3, delay: 5 })
   }, 120_000)
 
-  it('rileva un controller che non risponde', async () => {
+  it('detects a controller that does not answer', async () => {
     fake.offline = true
     try {
       const { results } = await runSuite({ ...opts, timeoutMs: 200 }, [1], new FakeDriver(fake), { only: ['L1.1'] })

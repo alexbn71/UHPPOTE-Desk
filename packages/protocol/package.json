@@ -2,7 +2,7 @@
   "name": "@uhppote-desk/protocol",
   "version": "0.1.0",
   "private": true,
-  "description": "Codec, trasporto UDP/TCP e client per i controller UHPPOTE UT0311-L0x",
+  "description": "Codec, UDP/TCP transport and client for UHPPOTE UT0311-L0x controllers",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

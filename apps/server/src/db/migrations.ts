@@ -1,6 +1,6 @@
 /**
- * Migrazioni SQL in ordine. Ogni voce viene applicata una sola volta (tabella schema_migrations).
- * Non modificare migrazioni già rilasciate: aggiungerne di nuove in coda.
+ * SQL migrations in order. Each entry is applied only once (schema_migrations table).
+ * Do not change migrations that have been released: append new ones at the end.
  */
 export const migrations: { id: number; name: string; sql: string }[] = [
   {

@@ -1,4 +1,4 @@
-/** Errore base di tutti gli errori del protocollo. */
+/** Base class of all protocol errors. */
 export class UhppoteError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options)
@@ -6,10 +6,10 @@ export class UhppoteError extends Error {
   }
 }
 
-/** Valore non codificabile o pacchetto non decodificabile. */
+/** Value that cannot be encoded or packet that cannot be decoded. */
 export class CodecError extends UhppoteError {}
 
-/** Nessuna risposta entro il timeout. */
+/** No reply within the timeout. */
 export class TimeoutError extends UhppoteError {
   constructor(
     readonly controller: number,
@@ -22,7 +22,7 @@ export class TimeoutError extends UhppoteError {
   }
 }
 
-/** Il controller ha risposto ma ha rifiutato/non eseguito l'operazione (ok = false). */
+/** The controller replied but refused/did not perform the operation (ok = false). */
 export class OperationFailedError extends UhppoteError {
   constructor(
     readonly controller: number,
@@ -32,10 +32,10 @@ export class OperationFailedError extends UhppoteError {
   }
 }
 
-/** Elemento richiesto non presente sul controller (tessera, profilo, evento). */
+/** Requested item not present on the controller (card, profile, event). */
 export class NotFoundError extends UhppoteError {}
 
-/** Evento sovrascritto nel buffer circolare del controller. */
+/** Event overwritten in the controller's ring buffer. */
 export class EventOverwrittenError extends UhppoteError {
   constructor(
     readonly controller: number,
@@ -45,5 +45,5 @@ export class EventOverwrittenError extends UhppoteError {
   }
 }
 
-/** Errore di rete (bind, invio, connessione TCP). */
+/** Network error (bind, send, TCP connection). */
 export class TransportError extends UhppoteError {}

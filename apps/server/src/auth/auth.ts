@@ -69,7 +69,7 @@ export class AuthService {
     private readonly sessionHours: number,
   ) {}
 
-  /** Crea l'utente admin se non esiste alcun operatore. Restituisce la password generata (se generata). */
+  /** Creates the admin user if no operator exists. Returns the generated password (if one was generated). */
   /** Username of the built-in administrator. */
   static readonly ADMIN = 'admin'
 
@@ -126,7 +126,7 @@ export class AuthService {
 
   async login(username: string, password: string, ip: string, userAgent: string): Promise<{ sessionId: string; user: SessionUser } | null> {
     const row = this.db.get<OperatorRow>('SELECT * FROM operators WHERE username = ? AND active = 1', [username])
-    // verifica comunque una password per non rivelare l'esistenza dell'utente tramite i tempi di risposta
+    // verify a password anyway, so that response times do not reveal whether the user exists
     const ok = await verifyPassword(password, row?.password_hash ?? 'scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=')
     if (!row || !ok) return null
     const sessionId = randomBytes(32).toString('base64url')
@@ -175,7 +175,7 @@ export class AuthService {
     ])
   }
 
-  /** Invalida tutte le sessioni di un operatore tranne quella indicata. */
+  /** Invalidates all sessions of an operator except the given one. */
   revokeSessions(operatorId: number, except?: string): void {
     this.db.run('DELETE FROM sessions WHERE operator_id = ? AND id <> ?', [operatorId, except ?? ''])
   }
@@ -207,7 +207,7 @@ export class AuthService {
   }
 }
 
-/** preHandler: richiede un ruolo minimo. */
+/** preHandler: requires a minimum role. */
 export function requireRole(role: Role) {
   return async (req: FastifyRequest, _reply: FastifyReply) => {
     if (!req.user) throw new HttpError(401, 'unauthenticated')

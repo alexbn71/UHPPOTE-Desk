@@ -108,7 +108,7 @@ Recommended procedure when the controller arrives:
 - All texts live in [packages/shared/src/i18n](packages/shared/src/i18n): `en.ts` is the reference, the other files (`it`, `es`, `fr`, `de`) must provide exactly the same keys — this is enforced by TypeScript and by a unit test that also checks that every `{{placeholder}}` is kept.
 - The server returns error **codes** (`errors.*`) that the browser translates; synchronisation progress and the CSV exports (events, attendance) also follow the selected language.
 - To add a language: copy `en.ts` to `<code>.ts`, translate it, register it in `i18n/index.ts` (`LANGUAGES` and `resources`) and import the matching `dayjs/locale/<code>` in `apps/web/src/i18n.ts`.
-- Server logs and protocol messages are in English. The hardware test tool (`npm run hw`) is currently in Italian.
+- Server logs, protocol messages, the hardware test tool (`npm run hw`) and the simulator are in English.
 
 ## Icon
 

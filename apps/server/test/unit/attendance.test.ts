@@ -21,9 +21,9 @@ const nightShift: ShiftRule = {
 const person = (shift: ShiftRule | null) => [{ id: 1, name: 'Rossi Mario', shift }]
 const punch = (timestamp: string) => ({ personId: 1, timestamp, direction: null, source: 'controller' as const })
 
-// 2026-10-12 è un lunedì
+// 2026-10-12 is a Monday
 describe('computeAttendance', () => {
-  it('giornata regolare con pausa non timbrata', () => {
+  it('regular day with an unpunched break', () => {
     const [d] = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-12',
@@ -37,14 +37,14 @@ describe('computeAttendance', () => {
       firstIn: '08:25',
       lastOut: '17:35',
       expectedMinutes: 480,
-      workedMinutes: 490, // 550 - 60 di pausa
+      workedMinutes: 490, // 550 - 60 of break
       lateMinutes: 0,
       earlyLeaveMinutes: 0,
       overtimeMinutes: 10,
     })
   })
 
-  it('pausa timbrata: nessuna detrazione automatica', () => {
+  it('punched break: no automatic deduction', () => {
     const [d] = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-12',
@@ -57,7 +57,7 @@ describe('computeAttendance', () => {
     expect(d!.punches).toHaveLength(4)
   })
 
-  it('ritardo oltre la tolleranza e uscita anticipata', () => {
+  it('late beyond the tolerance and early exit', () => {
     const [d] = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-12',
@@ -70,7 +70,7 @@ describe('computeAttendance', () => {
     expect(d!.earlyLeaveMinutes).toBe(30)
   })
 
-  it('ritardo entro la tolleranza ignorato', () => {
+  it('lateness within the tolerance ignored', () => {
     const [d] = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-12',
@@ -82,7 +82,7 @@ describe('computeAttendance', () => {
     expect(d!.lateMinutes).toBe(0)
   })
 
-  it('timbratura singola = anomalia', () => {
+  it('single punch = anomaly', () => {
     const [d] = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-12',
@@ -96,7 +96,7 @@ describe('computeAttendance', () => {
     expect(d!.workedMinutes).toBe(0)
   })
 
-  it('assente, riposo, festivo, ferie', () => {
+  it('absent, rest day, holiday, leave', () => {
     const days = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-18',
@@ -109,7 +109,7 @@ describe('computeAttendance', () => {
     expect(days.find((d) => d.date === '2026-10-13')!.expectedMinutes).toBe(0)
   })
 
-  it('lavoro in giorno di riposo = tutto straordinario', () => {
+  it('work on a rest day = all overtime', () => {
     const [d] = computeAttendance({
       from: '2026-10-17',
       to: '2026-10-17',
@@ -122,7 +122,7 @@ describe('computeAttendance', () => {
     expect(d!.overtimeMinutes).toBe(180)
   })
 
-  it('turno notturno a cavallo della mezzanotte', () => {
+  it('night shift across midnight', () => {
     expect(workDayOf('2026-10-13 05:55:00', nightShift)).toBe('2026-10-12')
     expect(workDayOf('2026-10-12 21:55:00', nightShift)).toBe('2026-10-12')
     const [d] = computeAttendance({
@@ -137,7 +137,7 @@ describe('computeAttendance', () => {
     expect(d!.workedMinutes).toBe(484 - 30)
   })
 
-  it('persona senza turno: solo ore lavorate', () => {
+  it('person without a shift: worked hours only', () => {
     const [d] = computeAttendance({
       from: '2026-10-12',
       to: '2026-10-12',
@@ -150,8 +150,8 @@ describe('computeAttendance', () => {
   })
 })
 
-describe('festività italiane', () => {
-  it('Pasqua e Pasquetta calcolate correttamente', () => {
+describe('Italian public holidays', () => {
+  it('Easter and Easter Monday computed correctly', () => {
     const h2026 = italianHolidays(2026)
     expect(h2026.find((h) => h.key === 'easter')!.date).toBe('2026-04-05')
     expect(h2026.find((h) => h.key === 'easterMonday')!.date).toBe('2026-04-06')

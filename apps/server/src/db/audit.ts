@@ -37,7 +37,7 @@ export class AuditLog {
     )
   }
 
-  /** Esegue un'operazione registrandone l'esito nell'audit log. */
+  /** Runs an operation and records its outcome in the audit log. */
   async track<T>(
     user: Pick<SessionUser, 'id' | 'username'> | null,
     action: string,

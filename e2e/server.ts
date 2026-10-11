@@ -1,6 +1,6 @@
 /**
- * Server per i test E2E: FakeController + backend con database nuovo + frontend compilato.
- * Espone /__sim/* (solo qui) per simulare azioni fisiche sul controller.
+ * Server for the E2E tests: FakeController + backend with a fresh database + compiled frontend.
+ * Exposes /__sim/* (only here) to simulate physical actions on the controller.
  */
 import fs from 'node:fs'
 import os from 'node:os'
@@ -44,7 +44,7 @@ const ctx = createContext(
 // first start without ADMIN_PASSWORD: generated password (replaced with a known one for the tests), change required
 await ctx.auth.ensureAdmin(null)
 const adminId = ctx.db.get<{ id: number }>("SELECT id FROM operators WHERE username = 'admin'")!.id
-await ctx.auth.setPassword(adminId, 'admin-e2e-iniziale', true)
+await ctx.auth.setPassword(adminId, 'admin-e2e-initial', true)
 await ctx.eventService.startListener()
 ctx.health.start()
 
@@ -55,7 +55,7 @@ app.post('/__sim/swipe', async (req) => {
 })
 app.get('/__sim/cards', async () => fake.cards)
 await app.listen({ port: 8090, host: '127.0.0.1' })
-console.log('server E2E pronto su http://127.0.0.1:8090')
+console.log('E2E server ready on http://127.0.0.1:8090')
 
 const stop = async () => {
   ctx.health.stop()

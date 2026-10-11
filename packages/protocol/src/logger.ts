@@ -1,4 +1,4 @@
-/** Logger minimale compatibile con pino/console. */
+/** Minimal logger compatible with pino/console. */
 export interface Logger {
   debug?: (msg: string) => void
   info?: (msg: string) => void
@@ -6,7 +6,7 @@ export interface Logger {
   error?: (msg: string) => void
 }
 
-/** Dump esadecimale di un pacchetto in righe da 16 byte (formato simile a uhppoted-cli --debug). */
+/** Hex dump of a packet in 16-byte rows (format similar to uhppoted-cli --debug). */
 export function hexdump(buf: Buffer): string {
   const lines: string[] = []
   for (let i = 0; i < buf.length; i += 16) {

@@ -77,7 +77,7 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
     <Card withBorder shadow="xs">
       <Group justify="space-between" mb="xs">
         <Group gap="xs">
-          <Title order={4} style={{ cursor: 'pointer' }} onClick={() => navigate(`/controller/${c.id}`)}>
+          <Title order={4} style={{ cursor: 'pointer' }} onClick={() => navigate(`/controllers/${c.id}`)}>
             {c.name}
           </Title>
           <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
@@ -124,7 +124,7 @@ export function DashboardPage() {
           {can('admin') ? (
             <Group gap="xs">
               <Text size="sm">{t('dashboard.noControllersAdmin')}</Text>
-              <Button variant="subtle" size="compact-sm" onClick={() => navigate('/controller')}>
+              <Button variant="subtle" size="compact-sm" onClick={() => navigate('/controllers')}>
                 {t('dashboard.goToControllers')}
               </Button>
             </Group>

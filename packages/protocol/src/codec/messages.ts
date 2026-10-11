@@ -15,11 +15,11 @@ import {
 } from './constants.js'
 
 // ---------------------------------------------------------------------------
-// Tipi di dominio del protocollo
+// Protocol domain types
 // ---------------------------------------------------------------------------
 
 export type Door = 1 | 2 | 3 | 4
-/** Lun..Dom */
+/** Mon..Sun */
 export type Weekdays = [boolean, boolean, boolean, boolean, boolean, boolean, boolean]
 export type Quad<T> = [T, T, T, T]
 
@@ -36,14 +36,14 @@ export interface ControllerInfo {
 export interface ListenerConfig {
   address: string
   port: number
-  /** Intervallo auto-send in secondi (0 = disattivato). */
+  /** Auto-send interval in seconds (0 = disabled). */
   interval: number
 }
 
 export interface DoorControl {
   door: number
   mode: DoorMode | number
-  /** Ritardo apertura in secondi (0-255). */
+  /** Open delay in seconds (0-255). */
   delay: number
 }
 
@@ -64,22 +64,22 @@ export interface ControllerStatus {
   systemTime: string | null
   doorOpen: Quad<boolean>
   buttonPressed: Quad<boolean>
-  /** Bitmask relè grezza (bit0..3 = porta 1..4, 1 = sbloccata). */
+  /** Raw relay bitmask (bit0..3 = door 1..4, 1 = unlocked). */
   relays: number
   relayUnlocked: Quad<boolean>
-  /** Bitmask ingressi grezza. */
+  /** Raw input bitmask. */
   inputs: number
   forceLock: boolean
   fireAlarm: boolean
   systemError: number
   specialInfo: number
   sequenceNo: number
-  /** null se il controller non ha ancora eventi (indice 0). */
+  /** null if the controller has no events yet (index 0). */
   event: ControllerEvent | null
 }
 
 /**
- * Permesso per porta: 0 = nessun accesso, 1 = sempre, 2..254 = ID profilo orario.
+ * Permission per door: 0 = no access, 1 = always, 2..254 = time profile ID.
  */
 export type DoorPermission = number
 
@@ -88,7 +88,7 @@ export interface Card {
   from: DateString | null
   to: DateString | null
   doors: Quad<DoorPermission>
-  /** 0 = nessun PIN */
+  /** 0 = no PIN */
   pin: number
   firstCard: Quad<boolean>
 }
@@ -103,9 +103,9 @@ export interface TimeProfile {
   from: DateString | null
   to: DateString | null
   weekdays: Weekdays
-  /** Fino a 3 segmenti; i segmenti 00:00-00:00 vengono omessi in decodifica. */
+  /** Up to 3 segments; 00:00-00:00 segments are omitted when decoding. */
   segments: TimeSegment[]
-  /** 0 = nessun profilo collegato */
+  /** 0 = no linked profile */
   linkedTo: number
 }
 
@@ -116,7 +116,7 @@ export interface Task {
   weekdays: Weekdays
   start: TimeString
   door: number
-  /** Numero di tessere per il task "more cards". */
+  /** Number of cards for the "more cards" task. */
   moreCards: number
 }
 
@@ -129,14 +129,14 @@ export interface FirstCardConfig {
   weekdays: Weekdays
 }
 
-/** Numero tessera speciale: record cancellato. */
+/** Special card number: deleted record. */
 export const DELETED_CARD = 0xffffffff
 
 // ---------------------------------------------------------------------------
-// Validazione pacchetti
+// Packet validation
 // ---------------------------------------------------------------------------
 
-/** Verifica dimensione e SOM; restituisce null se il pacchetto non è un messaggio UHPPOTE valido. */
+/** Checks size and SOM; returns null if the packet is not a valid UHPPOTE message. */
 export function validatePacket(buf: Buffer): Reader | null {
   if (buf.length !== PACKET_SIZE) return null
   const som = buf[0]
@@ -184,7 +184,7 @@ function profileId(v: number, field = 'profile'): number {
 }
 
 // ---------------------------------------------------------------------------
-// Encoder delle richieste
+// Request encoders
 // ---------------------------------------------------------------------------
 
 export const encode = {
@@ -386,7 +386,7 @@ export const encode = {
 }
 
 // ---------------------------------------------------------------------------
-// Decoder delle risposte
+// Response decoders
 // ---------------------------------------------------------------------------
 
 export interface OkResponse {
@@ -501,13 +501,13 @@ export const decode = {
     return { controller: r.controller, cards: r.u32(8) }
   },
 
-  /** card = 0 → non trovata */
+  /** card = 0 → not found */
   getCard(buf: Buffer): { controller: number; card: Card } {
     const r = reader(buf, F.GetCard)
     return { controller: r.controller, card: decodeCard(r) }
   },
 
-  /** card = 0 → nessun record; card = DELETED_CARD → record cancellato */
+  /** card = 0 → no record; card = DELETED_CARD → deleted record */
   getCardAtIndex(buf: Buffer): { controller: number; card: Card } {
     const r = reader(buf, F.GetCardAtIndex)
     return { controller: r.controller, card: decodeCard(r) }
@@ -530,7 +530,7 @@ export const decode = {
   setEventIndex: ok(F.SetEventIndex),
   recordSpecialEvents: ok(F.RecordSpecialEvents),
 
-  /** profile = null → profilo non definito */
+  /** profile = null → profile not defined */
   getTimeProfile(buf: Buffer): { controller: number; profile: TimeProfile | null } {
     const r = reader(buf, F.GetTimeProfile)
     const id = r.u8(8)
@@ -574,8 +574,8 @@ export const decode = {
 }
 
 /**
- * Decodifica un pacchetto evento ricevuto dal listener (stesso layout di Get Status).
- * Restituisce null se il pacchetto non è un evento valido.
+ * Decodes an event packet received by the listener (same layout as Get Status).
+ * Returns null if the packet is not a valid event.
  */
 export function decodeListenerEvent(buf: Buffer): ControllerStatus | null {
   const r = validatePacket(buf)

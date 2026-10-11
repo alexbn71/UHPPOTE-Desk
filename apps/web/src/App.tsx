@@ -78,35 +78,35 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
     items: [
       { to: '/', label: 'dashboard', icon: <IconDashboard size={18} />, role: 'viewer' },
       { to: '/monitor', label: 'monitor', icon: <IconActivity size={18} />, role: 'viewer' },
-      { to: '/eventi', label: 'events', icon: <IconHistory size={18} />, role: 'viewer' },
-      { to: '/presenze', label: 'attendance', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
+      { to: '/events', label: 'events', icon: <IconHistory size={18} />, role: 'viewer' },
+      { to: '/attendance', label: 'attendance', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
     ],
   },
   {
     section: 'registry',
     items: [
-      { to: '/persone', label: 'people', icon: <IconUsers size={18} />, role: 'viewer' },
-      { to: '/tessere', label: 'cards', icon: <IconId size={18} />, role: 'viewer' },
-      { to: '/permessi', label: 'permissions', icon: <IconKey size={18} />, role: 'viewer' },
-      { to: '/struttura', label: 'structure', icon: <IconSitemap size={18} />, role: 'viewer' },
+      { to: '/people', label: 'people', icon: <IconUsers size={18} />, role: 'viewer' },
+      { to: '/cards', label: 'cards', icon: <IconId size={18} />, role: 'viewer' },
+      { to: '/permissions', label: 'permissions', icon: <IconKey size={18} />, role: 'viewer' },
+      { to: '/structure', label: 'structure', icon: <IconSitemap size={18} />, role: 'viewer' },
     ],
   },
   {
     section: 'configuration',
     items: [
-      { to: '/controller', label: 'controllers', icon: <IconCpu size={18} />, role: 'viewer' },
-      { to: '/porte', label: 'doors', icon: <IconDoor size={18} />, role: 'viewer' },
-      { to: '/fasce-orarie', label: 'timeProfiles', icon: <IconClockHour4 size={18} />, role: 'viewer' },
-      { to: '/task', label: 'tasks', icon: <IconCalendarTime size={18} />, role: 'viewer' },
-      { to: '/sincronizzazione', label: 'sync', icon: <IconRefresh size={18} />, role: 'operator' },
+      { to: '/controllers', label: 'controllers', icon: <IconCpu size={18} />, role: 'viewer' },
+      { to: '/doors', label: 'doors', icon: <IconDoor size={18} />, role: 'viewer' },
+      { to: '/time-profiles', label: 'timeProfiles', icon: <IconClockHour4 size={18} />, role: 'viewer' },
+      { to: '/tasks', label: 'tasks', icon: <IconCalendarTime size={18} />, role: 'viewer' },
+      { to: '/sync', label: 'sync', icon: <IconRefresh size={18} />, role: 'operator' },
     ],
   },
   {
     section: 'administration',
     items: [
-      { to: '/operatori', label: 'operators', icon: <IconUserShield size={18} />, role: 'admin' },
+      { to: '/operators', label: 'operators', icon: <IconUserShield size={18} />, role: 'admin' },
       { to: '/audit', label: 'audit', icon: <IconChecklist size={18} />, role: 'admin' },
-      { to: '/sistema', label: 'systemInfo', icon: <IconSettings size={18} />, role: 'viewer' },
+      { to: '/system', label: 'systemInfo', icon: <IconSettings size={18} />, role: 'viewer' },
     ],
   },
 ]
@@ -216,21 +216,21 @@ export function App() {
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/monitor" element={<MonitorPage />} />
-              <Route path="/eventi" element={<EventsPage />} />
-              <Route path="/presenze" element={<AttendancePage />} />
-              <Route path="/persone" element={<PeoplePage />} />
-              <Route path="/tessere" element={<CardsPage />} />
-              <Route path="/permessi" element={<PermissionsPage />} />
-              <Route path="/struttura" element={<StructurePage />} />
-              <Route path="/controller" element={<ControllersPage />} />
-              <Route path="/controller/:id" element={<ControllerDetailPage />} />
-              <Route path="/porte" element={<DoorsPage />} />
-              <Route path="/fasce-orarie" element={<TimeProfilesPage />} />
-              <Route path="/task" element={<TasksPage />} />
-              <Route path="/sincronizzazione" element={<Guard role="operator"><SyncPage /></Guard>} />
-              <Route path="/operatori" element={<Guard role="admin"><OperatorsPage /></Guard>} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/attendance" element={<AttendancePage />} />
+              <Route path="/people" element={<PeoplePage />} />
+              <Route path="/cards" element={<CardsPage />} />
+              <Route path="/permissions" element={<PermissionsPage />} />
+              <Route path="/structure" element={<StructurePage />} />
+              <Route path="/controllers" element={<ControllersPage />} />
+              <Route path="/controllers/:id" element={<ControllerDetailPage />} />
+              <Route path="/doors" element={<DoorsPage />} />
+              <Route path="/time-profiles" element={<TimeProfilesPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/sync" element={<Guard role="operator"><SyncPage /></Guard>} />
+              <Route path="/operators" element={<Guard role="admin"><OperatorsPage /></Guard>} />
               <Route path="/audit" element={<Guard role="admin"><AuditPage /></Guard>} />
-              <Route path="/sistema" element={<SystemPage />} />
+              <Route path="/system" element={<SystemPage />} />
               <Route path="/password" element={<ChangePasswordPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

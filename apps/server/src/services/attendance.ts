@@ -6,7 +6,7 @@ export interface ShiftRule {
   endTime: string
   breakMinutes: number
   toleranceMinutes: number
-  /** Lun..Dom */
+  /** Mon..Sun */
   weekdays: boolean[]
 }
 
@@ -31,7 +31,7 @@ export interface Leave {
   type: 'ferie' | 'permesso' | 'malattia' | 'trasferta' | 'altro'
 }
 
-/** Margine (minuti) dopo la fine di un turno notturno entro cui le timbrature appartengono al giorno precedente. */
+/** Margin (minutes) after the end of a night shift within which punches belong to the previous day. */
 const NIGHT_SHIFT_GRACE = 240
 
 function isNightShift(s: ShiftRule): boolean {
@@ -39,7 +39,7 @@ function isNightShift(s: ShiftRule): boolean {
 }
 
 function weekdayIndex(date: string): number {
-  return (parseLocal(date).getDay() + 6) % 7 // lun = 0
+  return (parseLocal(date).getDay() + 6) % 7 // Mon = 0
 }
 
 function shiftMinutes(s: ShiftRule): number {
@@ -49,7 +49,7 @@ function shiftMinutes(s: ShiftRule): number {
   return Math.max(0, end - start - s.breakMinutes)
 }
 
-/** Giorno lavorativo a cui attribuire una timbratura. */
+/** Working day a punch belongs to. */
 export function workDayOf(timestamp: string, shift: ShiftRule | null): string {
   const date = timestamp.slice(0, 10)
   if (shift && isNightShift(shift)) {
@@ -59,7 +59,7 @@ export function workDayOf(timestamp: string, shift: ShiftRule | null): string {
   return date
 }
 
-/** Minuti trascorsi dalla mezzanotte del giorno lavorativo (può superare 1440 per i turni notturni). */
+/** Minutes since midnight of the working day (can exceed 1440 for night shifts). */
 function minuteOfWorkDay(timestamp: string, workDay: string): number {
   const diff = (parseLocal(timestamp).getTime() - parseLocal(`${workDay} 00:00:00`).getTime()) / 60000
   return Math.round(diff)
@@ -68,12 +68,12 @@ function minuteOfWorkDay(timestamp: string, workDay: string): number {
 const fmtTime = (ts: string) => ts.slice(11, 16)
 
 /**
- * Calcola il riepilogo giornaliero delle presenze.
- * Regole:
- * - le timbrature vengono accoppiate in ordine cronologico (entrata, uscita, entrata, uscita…);
- * - con una sola coppia di timbrature viene detratta la pausa del turno;
- * - un numero dispari di timbrature è un'anomalia (l'ultima viene ignorata nel calcolo);
- * - ritardo/uscita anticipata considerano la tolleranza del turno.
+ * Computes the daily attendance summary.
+ * Rules:
+ * - punches are paired in chronological order (in, out, in, out…);
+ * - with a single pair of punches the shift break is deducted;
+ * - an odd number of punches is an anomaly (the last one is ignored in the calculation);
+ * - late arrival/early exit take the shift tolerance into account.
  */
 export function computeAttendance(input: {
   from: string

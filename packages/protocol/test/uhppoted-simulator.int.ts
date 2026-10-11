@@ -1,6 +1,6 @@
 /**
- * Integrazione con il simulatore ufficiale uhppoted (implementazione indipendente, scritta in Go).
- * Eseguito solo se la variabile UHPPOTED_SIM indica l'host del simulatore (es. 127.0.0.1).
+ * Integration with the official uhppoted simulator (an independent implementation, written in Go).
+ * Runs only if the UHPPOTED_SIM variable gives the simulator host (e.g. 127.0.0.1).
  *
  *   tools/bin/simulator/uhppote-simulator.exe --devices <dir>     (UDP/TCP :60000, REST :8000)
  *   UHPPOTED_SIM=127.0.0.1 npm run test:int
@@ -36,19 +36,19 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     await rest('DELETE', `/${ID}`).catch(() => undefined)
   })
 
-  it('get controller (UDP e TCP)', async () => {
+  it('get controller (UDP and TCP)', async () => {
     const a = await client.getController(udp)
     const b = await client.getController(tcp)
     expect(a.controller).toBe(ID)
     expect(b).toEqual(a)
   })
 
-  it('discovery in broadcast di loopback', async () => {
+  it('discovery via loopback broadcast', async () => {
     const found = await client.discover(`${SIM}:60000`)
     expect(found.map((c) => c.controller)).toContain(ID)
   })
 
-  it('ora', async () => {
+  it('time', async () => {
     await client.setTime(udp, '2026-10-11 12:00:00')
     expect((await client.getTime(udp))?.slice(0, 13)).toBe('2026-10-11 12')
   })
@@ -59,7 +59,7 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     await client.setDoorControl(udp, { door: 4, mode: 3, delay: 5 })
   })
 
-  it('tessere: put/get/list/delete', async () => {
+  it('cards: put/get/list/delete', async () => {
     await client.deleteAllCards(udp)
     const card = {
       card: 10058400,
@@ -78,7 +78,7 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     expect(await client.getCard(udp, 10058401)).toBeNull()
   })
 
-  it('profilo orario', async () => {
+  it('time profile', async () => {
     const profile = {
       id: 29,
       from: '2026-01-01',
@@ -91,7 +91,7 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     expect(await client.getTimeProfile(udp, 29)).toEqual(profile)
   })
 
-  it('task, interblocco, anti-passback, keypad, passcode, special events', async () => {
+  it('tasks, interlock, anti-passback, keypad, passcode, special events', async () => {
     await client.clearTaskList(udp)
     await client.addTask(udp, { task: 2, from: '2026-01-01', to: '2026-12-31', weekdays: [true, true, true, true, true, true, true], start: '22:00', door: 1, moreCards: 0 })
     await client.refreshTaskList(udp)
@@ -101,12 +101,12 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     await client.setAntiPassback(udp, 0)
     await client.activateKeypads(udp, [false, false, false, false])
     await client.setDoorPasscodes(udp, 1, [123456])
-    // set-first-card (0xAA) NON è supportato dal simulatore v0.9.0: va in panic ("unsupported message type").
-    // È coperto dai vettori ufficiali e dal FakeController.
+    // set-first-card (0xAA) is NOT supported by simulator v0.9.0: it panics ("unsupported message type").
+    // It is covered by the official vectors and by the FakeController.
     await client.recordSpecialEvents(udp, true)
   })
 
-  it('swipe simulato → evento sul listener e leggibile per indice', async () => {
+  it('simulated swipe → event on the listener and readable by index', async () => {
     const listener = new EventListener('0.0.0.0:60011')
     await listener.start()
     const received: ControllerStatus[] = []
@@ -126,13 +126,13 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     }
   })
 
-  it('apertura remota', async () => {
+  it('remote opening', async () => {
     await client.openDoor(udp, 3)
     const s = await client.getStatus(udp)
     expect(s.controller).toBe(ID)
   })
 
-  it('segnalibro eventi', async () => {
+  it('event bookmark', async () => {
     await client.setEventIndex(udp, 1)
     expect(await client.getEventIndex(udp)).toBe(1)
   })

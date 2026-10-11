@@ -8,8 +8,8 @@ export default defineConfig({
   outDir: 'dist',
   sourcemap: true,
   clean: true,
-  // node:sqlite esiste solo con il prefisso node: (tsup per default lo rimuove)
+  // node:sqlite only exists with the node: prefix (tsup removes it by default)
   removeNodeProtocol: false,
-  // i pacchetti del monorepo (sorgenti TypeScript) vengono inclusi nel bundle; le dipendenze npm restano esterne
+  // the monorepo packages (TypeScript sources) are bundled; npm dependencies stay external
   noExternal: [/^@uhppote-desk\//],
 })

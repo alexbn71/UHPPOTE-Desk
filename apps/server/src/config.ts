@@ -1,42 +1,42 @@
 import path from 'node:path'
 
 export interface AppConfig {
-  /** Porta HTTP dell'app web. */
+  /** HTTP port of the web app. */
   httpPort: number
   httpHost: string
-  /** Directory dati (database SQLite, backup, foto). */
+  /** Data directory (SQLite database, backups, photos). */
   dataDir: string
-  /** Cookie di sessione con flag Secure (abilitare dietro HTTPS). */
+  /** Session cookie with the Secure flag (enable behind HTTPS). */
   secureCookies: boolean
   sessionHours: number
   /** Password of the `admin` user (ADMIN_PASSWORD); null = generated on first start. */
   adminPassword: string | null
   /** The deprecated INITIAL_ADMIN_PASSWORD variable was used instead of ADMIN_PASSWORD. */
   adminPasswordFromLegacyVariable: boolean
-  /** Directory con la build del frontend da servire (opzionale). */
+  /** Directory with the frontend build to serve (optional). */
   webDir: string | null
   uhppote: {
-    /** IP locale per i socket verso i controller. */
+    /** Local IP for the sockets towards the controllers. */
     bindAddress: string
-    /** Broadcast 'ip:porta' per la discovery. */
+    /** Broadcast 'ip:port' for discovery. */
     broadcast: string
-    /** Indirizzo 'ip:porta' su cui ricevere gli eventi. */
+    /** 'ip:port' address on which events are received. */
     listen: string
-    /** IP:porta (raggiungibile dal controller) da programmare come listener; vuoto = non configurare automaticamente. */
+    /** IP:port (reachable by the controller) to program as listener; empty = do not configure it automatically. */
     listenerPublic: string | null
     timeoutMs: number
     retries: number
     debug: boolean
   }
-  /** Intervallo di polling dello stato controller (secondi). */
+  /** Polling interval of the controller status (seconds). */
   healthIntervalSec: number
-  /** Intervallo di raccolta eventi di sicurezza (secondi). */
+  /** Safety-net event collection interval (seconds). */
   collectIntervalSec: number
-  /** Deriva oraria oltre la quale l'ora del controller viene corretta (secondi; 0 = mai). */
+  /** Clock drift beyond which the controller time is corrected (seconds; 0 = never). */
   timeSyncThresholdSec: number
-  /** Numero massimo di eventi storici scaricati al primo collegamento di un controller. */
+  /** Maximum number of past events downloaded the first time a controller is connected. */
   initialBackfill: number
-  /** Ora del backup giornaliero (0-23; -1 = disattivato). */
+  /** Hour of the daily backup (0-23; -1 = disabled). */
   backupHour: number
   backupKeep: number
 }

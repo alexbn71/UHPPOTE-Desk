@@ -54,7 +54,7 @@ export class Db {
     return { changes: Number(r.changes), lastInsertRowid: Number(r.lastInsertRowid) }
   }
 
-  /** Esegue fn in una transazione (o savepoint se annidata). */
+  /** Runs fn in a transaction (or a savepoint when nested). */
   tx<T>(fn: () => T): T {
     const sp = `sp${this.depth}`
     this.raw.exec(this.depth === 0 ? 'BEGIN IMMEDIATE' : `SAVEPOINT ${sp}`)
@@ -71,7 +71,7 @@ export class Db {
     }
   }
 
-  /** Copia consistente del database (VACUUM INTO). */
+  /** Consistent copy of the database (VACUUM INTO). */
   backup(file: string): void {
     fs.mkdirSync(path.dirname(file), { recursive: true })
     if (fs.existsSync(file)) fs.rmSync(file)

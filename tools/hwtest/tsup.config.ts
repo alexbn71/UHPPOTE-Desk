@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsup'
 
-// Bundle autonomo della suite di test hardware (usato nell'immagine Docker: node hwtest/cli.js ...)
+// Standalone bundle of the hardware test suite (used in the Docker image: node hwtest/cli.js ...)
 export default defineConfig({
   entry: { cli: 'src/cli.ts', devsim: 'src/devsim.ts' },
   format: ['esm'],

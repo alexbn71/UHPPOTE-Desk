@@ -9,7 +9,7 @@ export function registerSystemRoutes(app: FastifyInstance, ctx: AppContext): voi
   const viewer = { preHandler: requireRole('viewer') }
   const admin = { preHandler: requireRole('admin') }
 
-  /** Health check per Docker/monitoraggio (nessuna autenticazione). */
+  /** Health check for Docker/monitoring (no authentication). */
   app.get('/health', async () => ({ status: 'ok', version: APP_VERSION }))
 
   app.get('/system/info', viewer, async () => {

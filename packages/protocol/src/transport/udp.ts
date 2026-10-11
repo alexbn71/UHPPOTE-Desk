@@ -10,13 +10,13 @@ export interface Endpoint {
 }
 
 export interface UdpOptions {
-  /** IP locale su cui legare i socket (default 0.0.0.0). Su host multi-NIC indicare l'IP verso il controller. */
+  /** Local IP to bind the sockets to (default 0.0.0.0). On multi-NIC hosts give the IP towards the controller. */
   bindAddress: string
   timeoutMs: number
   logger?: Logger | undefined
 }
 
-/** Porte che il socket client non deve mai usare (riceverebbe il proprio broadcast come risposta). */
+/** Ports the client socket must never use (it would receive its own broadcast as a reply). */
 const RESERVED_PORTS = new Set([60000])
 
 async function openSocket(bindAddress: string, broadcast: boolean): Promise<dgram.Socket> {
@@ -37,7 +37,7 @@ async function openSocket(bindAddress: string, broadcast: boolean): Promise<dgra
       })
     }
     if (RESERVED_PORTS.has(sock.address().port)) {
-      // Teniamo aperto il socket "cattivo" fino al prossimo tentativo per non farci riassegnare la stessa porta.
+      // Keep the "bad" socket open until the next attempt so the same port is not assigned again.
       setTimeout(() => sock.close(), 100)
       continue
     }
@@ -51,13 +51,13 @@ function closeQuietly(sock: dgram.Socket): void {
   try {
     sock.close()
   } catch {
-    // già chiuso
+    // already closed
   }
 }
 
 /**
- * Invia un pacchetto e attende la prima risposta valida che soddisfa `accept`.
- * Se `expectReply` è false (es. Set IP) risolve subito dopo l'invio con null.
+ * Sends a packet and waits for the first valid reply that satisfies `accept`.
+ * If `expectReply` is false (e.g. Set IP) it resolves with null right after sending.
  */
 export async function udpExchange(
   opts: UdpOptions,
@@ -103,7 +103,7 @@ export async function udpExchange(
   }
 }
 
-/** Invia in broadcast e raccoglie tutte le risposte valide entro il timeout. */
+/** Broadcasts and collects all valid replies within the timeout. */
 export async function udpBroadcast(
   opts: UdpOptions,
   dest: Endpoint,

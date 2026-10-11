@@ -8,7 +8,7 @@ const scrypt = (password: string, salt: Buffer, keylen: number, opts: ScryptOpti
 const PARAMS = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }
 const KEYLEN = 32
 
-/** Formato: scrypt$N$r$p$salt(base64)$hash(base64) */
+/** Format: scrypt$N$r$p$salt(base64)$hash(base64) */
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16)
   const key = await scrypt(password, salt, KEYLEN, PARAMS)

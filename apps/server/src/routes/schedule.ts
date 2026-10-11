@@ -8,7 +8,7 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
   const viewer = { preHandler: requireRole('viewer') }
   const admin = { preHandler: requireRole('admin') }
 
-  /** Invia le fasce orarie a tutti i controller attivi; restituisce gli errori per controller. */
+  /** Sends the time profiles to all active controllers; returns the errors per controller. */
   const pushProfilesEverywhere = async (actor: Parameters<typeof ctx.sync.pushTimeProfiles>[0]) => {
     const errors: { controllerId: number; error: string }[] = []
     for (const c of ctx.controllers.list().filter((x) => x.enabled)) {
@@ -21,7 +21,7 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     return errors
   }
 
-  // --- fasce orarie ----------------------------------------------------------
+  // --- time profiles ---------------------------------------------------------
 
   app.get('/time-profiles', viewer, async () => ctx.schedule.profiles())
 

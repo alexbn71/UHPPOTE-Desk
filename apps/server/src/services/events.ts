@@ -19,8 +19,8 @@ export interface CollectResult {
 }
 
 /**
- * Raccolta eventi: push (listener UDP) + pull (lettura per indice).
- * Il push dà la notifica immediata; il pull garantisce che nessun evento vada perso.
+ * Event collection: push (UDP listener) + pull (read by index).
+ * Push gives immediate notification; pull guarantees that no event is lost.
  */
 export class EventService {
   private listener: EventListener | null = null
@@ -46,7 +46,7 @@ export class EventService {
     this.listener = null
   }
 
-  /** Gestisce uno status/evento ricevuto (dal listener o dal polling). */
+  /** Handles a received status/event (from the listener or from polling). */
   onStatus(s: ControllerStatus, fromAddress?: string): void {
     const c = this.controllers.getBySerial(s.controller)
     if (!c) {
@@ -63,16 +63,16 @@ export class EventService {
       void this.collect(c.id).catch((err) => this.opts.logger?.warn?.(`event recovery ${c.serial}: ${(err as Error).message}`))
 
     if (last > 0 && ev.index <= last) {
-      // indice già raccolto: se non lo conosciamo il controller ha ricominciato la numerazione
+      // index already collected: if we do not know it, the controller restarted its numbering
       if (!this.events.exists(c.id, c.eventEpoch, ev.index)) pull()
       return
     }
     this.store(c.id, c.eventEpoch, ev)
     if (last > 0 && ev.index === last + 1) this.controllers.setCollectedIndex(c.id, ev.index)
-    else pull() // primo contatto (backfill) o buco negli indici
+    else pull() // first contact (backfill) or gap in the indexes
   }
 
-  /** Salva l'evento; true se era nuovo. */
+  /** Saves the event; true if it was new. */
   private store(controllerId: number, epoch: number, ev: ControllerEvent): boolean {
     const inserted = this.events.insert({ controllerId, epoch, ...ev })
     if (inserted) this.gateway.hub.publishEvent(inserted)
@@ -80,8 +80,8 @@ export class EventService {
   }
 
   /**
-   * Scarica dal controller tutti gli eventi successivi all'ultimo raccolto.
-   * Una sola raccolta alla volta per controller.
+   * Downloads from the controller all the events after the last one collected.
+   * Only one collection at a time per controller.
    */
   collect(controllerId: number): Promise<CollectResult> {
     const existing = this.running.get(controllerId)
@@ -102,7 +102,7 @@ export class EventService {
         let epoch = c.eventEpoch
         let start = c.lastCollectedIndex + 1
         if (last < c.lastCollectedIndex) {
-          // il controller ha ricominciato la numerazione (restore default / sostituzione): nuova epoca
+          // the controller restarted its numbering (factory reset / replacement): new epoch
           this.opts.logger?.warn?.(`controller ${c.serial}: event index ${last} < last collected ${c.lastCollectedIndex}, starting a new epoch`)
           epoch = this.controllers.startNewEventEpoch(c.id)
           start = 1

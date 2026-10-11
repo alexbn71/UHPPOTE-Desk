@@ -12,7 +12,7 @@ export interface TestResult {
   data?: unknown
 }
 
-/** Azioni fisiche richieste all'operatore (o eseguite da un driver simulato nei test). */
+/** Physical actions requested from the operator (or performed by a simulated driver in the tests). */
 export type PhysicalAction =
   | { kind: 'observe-relay'; door: number }
   | { kind: 'swipe'; card: number | null; door: number; pin?: number }
@@ -24,11 +24,11 @@ export type PhysicalAction =
   | { kind: 'swipe-burst'; card: number | null; door: number; count: number }
 
 export interface Driver {
-  /** Chiede all'operatore di eseguire un'azione; risolve quando l'operatore conferma di averla eseguita. */
+  /** Asks the operator to perform an action; resolves when the operator confirms it is done. */
   perform(action: PhysicalAction, message: string): Promise<void>
-  /** Domanda sì/no all'operatore (es. "hai sentito lo scatto del relè?"). */
+  /** Yes/no question to the operator (e.g. "did you hear the relay click?"). */
   confirm(question: string, action?: PhysicalAction): Promise<boolean>
-  /** Domanda con risposta libera (es. numero di tessera). */
+  /** Free-text question (e.g. a card number). */
   ask(question: string): Promise<string>
   info(message: string): void
 }
@@ -40,16 +40,16 @@ export interface Options {
   transport: 'udp' | 'tcp'
   bind: string
   broadcast: string
-  /** IP:porta locale per ricevere gli eventi (il controller verrà temporaneamente puntato qui). */
+  /** Local IP:port to receive events (the controller is temporarily pointed here). */
   listen: string
-  /** IP di questo host come visto dal controller (per set-listener). */
+  /** IP of this host as seen by the controller (for set-listener). */
   publicIp: string | null
   timeoutMs: number
   destructive: boolean
   bulk: number
-  /** Numero tessera di test (non deve esistere sul controller). */
+  /** Test card number (must not exist on the controller). */
   testCard: number
-  /** Tessera reale dell'operatore per i test fisici (null = chiesta durante il test). */
+  /** The operator's real card for the physical tests (null = asked during the test). */
   userCard: number | null
   cliPath: string | null
 }
@@ -59,13 +59,13 @@ export interface Context {
   client: UhppoteClient
   target: ControllerTarget
   driver: Driver
-  /** Eventi ricevuti dal listener temporaneo durante i test. */
+  /** Events received by the temporary listener during the tests. */
   events: ControllerStatus[]
-  /** Attende un evento che soddisfa il predicato. */
+  /** Waits for an event matching the predicate. */
   waitEvent(pred: (s: ControllerStatus) => boolean, timeoutMs: number): Promise<ControllerStatus | null>
-  /** Valori salvati per il ripristino. */
+  /** Values saved for the restore. */
   backup: Record<string, unknown>
-  /** Raccolta condivisa fra test (es. firmware). */
+  /** Facts shared between tests (e.g. firmware). */
   facts: Record<string, unknown>
 }
 
@@ -73,9 +73,9 @@ export interface TestCase {
   id: string
   level: number
   name: string
-  /** Richiede interazione fisica. */
+  /** Requires physical interaction. */
   physical?: boolean
-  /** Richiede --destructive. */
+  /** Requires --destructive. */
   destructive?: boolean
   run(ctx: Context, t: TestHelpers): Promise<void>
 }
@@ -112,7 +112,7 @@ export async function runTests(ctx: Context, tests: TestCase[], onResult?: (r: T
     const started = Date.now()
     let status: Status = 'pass'
     try {
-      if (tc.destructive && !ctx.opts.destructive) throw new SkipError('richiede --destructive')
+      if (tc.destructive && !ctx.opts.destructive) throw new SkipError('requires --destructive')
       await tc.run(ctx, helpers)
     } catch (err) {
       if (err instanceof SkipError) status = 'skip'
@@ -137,15 +137,15 @@ export function toMarkdown(results: TestResult[], opts: Options, facts: Record<s
   const s = summarize(results)
   const icon: Record<Status, string> = { pass: '✅', fail: '❌', warn: '⚠️', skip: '⏭️' }
   const lines = [
-    `# Report test hardware UHPPOTE`,
+    `# UHPPOTE hardware test report`,
     '',
-    `- Data: ${startedAt.toLocaleString('it-IT')}`,
+    `- Date: ${startedAt.toLocaleString('en-GB')}`,
     `- Controller: ${opts.serial} @ ${opts.host ?? 'broadcast'}:${opts.port} (${opts.transport})`,
-    `- Firmware: ${String(facts.firmware ?? 'n/d')}`,
+    `- Firmware: ${String(facts.firmware ?? 'n/a')}`,
     `- Host: bind ${opts.bind}, broadcast ${opts.broadcast}, listener ${opts.publicIp ?? '?'} (${opts.listen})`,
-    `- Esito: ${s.pass} superati, ${s.fail} falliti, ${s.warn} avvisi, ${s.skip} saltati`,
+    `- Result: ${s.pass} passed, ${s.fail} failed, ${s.warn} warnings, ${s.skip} skipped`,
     '',
-    '| ID | Livello | Test | Esito | Durata | Dettagli |',
+    '| ID | Level | Test | Result | Duration | Details |',
     '|---|---|---|---|---|---|',
     ...results.map(
       (r) => `| ${r.id} | L${r.level} | ${r.name} | ${icon[r.status]} ${r.status} | ${r.durationMs} ms | ${r.details.join('<br>').replaceAll('|', '\\|')} |`,
