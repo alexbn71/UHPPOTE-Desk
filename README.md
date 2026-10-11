@@ -4,7 +4,26 @@
 
 Web application (Node.js + React) to manage **UHPPOTE UT0311-L0x** access controllers (in particular the 4-door UT0311-L04), replacing the Windows "Access Control" software (N3000).
 
-Features: controller discovery and configuration, people/cards/permissions with automatic synchronisation, time profiles, scheduled tasks, interlock, anti-passback, keypads and door passcodes, first card, remote door opening, live monitor with photos, event history, attendance (shifts, holidays, leave, manual punches, reports), operators with roles and an audit log.
+## Acknowledgements
+
+This project would not exist without **[uhppoted](https://codeberg.org/uhppoted)**, the open-source project that reverse-engineered and documented the UHPPOTE controller protocol and built a complete set of tools around it. Many thanks to its author and contributors for their work and for publishing it under the MIT licence.
+
+What UHPPOTE Desk owes to uhppoted:
+
+| uhppoted component | How it was used here |
+|---|---|
+| [uhppoted-core](https://codeberg.org/uhppoted/uhppoted-core) | Reference implementation and the main source of knowledge about the protocol: packet layout, encodings, the 34 commands, event and reason codes, firmware quirks |
+| [uhppoted-codegen](https://codeberg.org/uhppoted/uhppoted-codegen) | The protocol model (`models.json`) behind our codec, and the official **test vectors** included in [packages/protocol/test/fixtures](packages/protocol/test/fixtures) (MIT, see [NOTICE](packages/protocol/test/fixtures/NOTICE.md)) |
+| [uhppoted-lib-nodejs](https://codeberg.org/uhppoted/uhppoted-lib-nodejs) (npm `uhppoted`) | Studied while designing our TypeScript implementation, and used in the differential tests as an independent reference |
+| [uhppoted-simulator](https://codeberg.org/uhppoted/uhppoted-simulator) | Integration tests against an independent controller implementation before the hardware was available |
+| [uhppoted-cli](https://codeberg.org/uhppoted/uhppoted-cli) | Cross-check of packets during hardware commissioning (`npm run hw -- --cli …`) |
+| [node-red-contrib-uhppoted](https://flows.nodered.org/node/node-red-contrib-uhppoted) / [uhppoted-lib-node-red](https://codeberg.org/uhppoted/uhppoted-lib-node-red) | The starting point that showed the protocol can be driven from Node.js |
+
+UHPPOTE Desk is an independent project and is not affiliated with uhppoted or with the controller manufacturer. It also builds on many other open-source projects, including Node.js, Fastify, React, Mantine, TanStack Query, i18next, zod, Vite, Vitest and Playwright.
+
+## Features
+
+Controller discovery and configuration, people/cards/permissions with automatic synchronisation, time profiles, scheduled tasks, interlock, anti-passback, keypads and door passcodes, first card, remote door opening, live monitor with photos, event history, attendance (shifts, holidays, leave, manual punches, reports), operators with roles and an audit log.
 
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).
 
@@ -115,6 +134,6 @@ Local development uses the same variables, in a `.env` file at the project root 
 
 ## References
 
-- Protocol and tools: the [uhppoted](https://codeberg.org/uhppoted) project (MIT). The test vectors in `packages/protocol/test/fixtures` come from `uhppoted-codegen`.
+- Protocol and tools: the [uhppoted](https://codeberg.org/uhppoted) project (MIT) — see [Acknowledgements](#acknowledgements). The test vectors in `packages/protocol/test/fixtures` come from `uhppoted-codegen` ([NOTICE](packages/protocol/test/fixtures/NOTICE.md)).
 - Original manufacturer software (not included in this repository): http://www.wiegand.com.cn/soft/soft_all_32/MJ_all_en.rar. Manufacturer files can be kept locally in `Legacy/`, which is ignored by git.
 - Project resources: [RESOURCES.md](RESOURCES.md).
