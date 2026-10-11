@@ -84,9 +84,9 @@ L'immagine viene costruita e testata da GitHub Actions a ogni push su `main` e p
 
 1. Copiare [docker/unraid/uhppote-desk.xml](docker/unraid/uhppote-desk.xml) in `/boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml` (es. dal terminale di Unraid:
    `wget -O /boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docker/unraid/uhppote-desk.xml`).
-2. *Docker → Add Container → Template: uhppote-desk*, verificare i valori (IP 192.168.178.61, broadcast 192.168.178.255, porta web libera) e applicare.
+2. *Docker → Add Container → Template: uhppote-desk*, compilare le variabili (vedi tabella *Variabili di configurazione*: almeno `UHPPOTE_LISTENER_PUBLIC` e, consigliato, `UHPPOTE_BROADCAST`), verificare che la porta web sia libera e applicare.
 3. Il container gira come `nobody:users` (99:100), i dati sono in `/mnt/user/appdata/uhppote-desk`.
-4. Interfaccia: `http://192.168.178.61:8080` — password iniziale di `admin` nel log del container se non impostata.
+4. Interfaccia: `http://<IP-del-server>:8080` — password iniziale di `admin` nel log del container se non impostata.
 
 ### Docker Compose
 
@@ -122,6 +122,8 @@ docker logs uhppote-desk                 # password admin generata (se non impos
 | `TIME_SYNC_THRESHOLD_SEC` | `30` | Deriva oltre la quale l'ora della scheda viene corretta |
 | `INITIAL_BACKFILL` | `5000` | Eventi storici scaricati al primo collegamento |
 | `BACKUP_HOUR` / `BACKUP_KEEP` | `2` / `14` | Backup giornaliero del database (−1 = disattivato) |
+| `TZ` | ora del sistema | Fuso orario (es. `Europe/Rome`): determina l'ora inviata alle schede e quella dei report |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 
 ## Riferimenti
 
