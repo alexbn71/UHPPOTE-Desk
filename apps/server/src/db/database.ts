@@ -5,14 +5,19 @@ import { migrations } from './migrations.js'
 
 export type Params = Record<string, SQLInputValue> | SQLInputValue[]
 
-/** Wrapper minimale su node:sqlite con transazioni annidabili e helper tipizzati. */
+/** Minimal node:sqlite wrapper with nestable transactions and typed helpers. */
 export class Db {
   readonly raw: DatabaseSync
   private depth = 0
 
+  /** Opens (and creates if missing) the SQLite database. */
   constructor(file: string) {
     if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true })
-    this.raw = new DatabaseSync(file)
+    try {
+      this.raw = new DatabaseSync(file)
+    } catch (err) {
+      throw new Error(`cannot open the database ${file}: ${(err as Error).message} (check that the folder is writable)`, { cause: err })
+    }
     this.raw.exec('PRAGMA journal_mode = WAL')
     this.raw.exec('PRAGMA foreign_keys = ON')
     this.raw.exec('PRAGMA busy_timeout = 5000')

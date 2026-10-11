@@ -1,6 +1,8 @@
 import fs from 'node:fs'
+import path from 'node:path'
 import type { Logger } from '@uhppote-desk/protocol'
 import { buildApp } from './app.js'
+import { DataDirError, prepareDataDir } from './db/dataDir.js'
 
 // optional configuration from a .env file (development); variables already set take precedence
 const envFile = process.env.ENV_FILE ?? '.env'
@@ -22,7 +24,10 @@ const logger: Logger = {
 
 async function main(): Promise<void> {
   const config = loadConfig()
-  const ctx = createContext(config, logger)
+  const dbFile = path.join(config.dataDir, 'uhppote-desk.sqlite')
+  const { created } = prepareDataDir(config.dataDir, dbFile)
+  logger.info!(created ? `no database found in ${config.dataDir}: creating a new one (${dbFile})` : `using database ${dbFile}`)
+  const ctx = createContext(config, logger, dbFile)
 
   const admin = await ctx.auth.bootstrap(config.initialAdminPassword)
   if (admin.created) {
@@ -72,6 +77,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  logger.error!(`startup failed: ${(err as Error).stack ?? err}`)
+  if (err instanceof DataDirError) logger.error!(`startup failed: ${err.message}`)
+  else logger.error!(`startup failed: ${(err as Error).stack ?? err}`)
   process.exit(1)
 })

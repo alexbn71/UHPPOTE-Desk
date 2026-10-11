@@ -48,7 +48,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Container smoke test
+      - name: Container smoke test (named volume)
         run: |
           docker run -d --name smoke --network host \
             -e HTTP_PORT=8080 -e INITIAL_ADMIN_PASSWORD=smoke-test-pass uhppote-desk:ci
@@ -59,11 +59,45 @@ jobs:
           curl -sf http://127.0.0.1:8080/api/health
           curl -sf http://127.0.0.1:8080/ | grep -q '<div id="root">'
           docker exec smoke node hwtest/cli.js --help > /dev/null
-          docker logs smoke
+          docker logs smoke 2>&1 | grep -q 'creating a new one'
+          docker rm -f smoke
+
+      - name: Host bind mounts (missing folder, folder owned by another user, non-writable)
+        run: |
+          set -e
+          wait_health() {
+            for i in $(seq 1 30); do curl -sf "http://127.0.0.1:$1/api/health" > /dev/null && return 0; sleep 1; done
+            return 1
+          }
+
+          # A) host folder that does not exist yet (Docker creates it as root)
+          docker run -d --name bindA --network host -e HTTP_PORT=8081 -e UHPPOTE_LISTEN=0.0.0.0:60051 \
+            -v "$RUNNER_TEMP/bind-a:/data" uhppote-desk:ci
+          wait_health 8081 || { docker logs bindA; exit 1; }
+          test -f "$RUNNER_TEMP/bind-a/uhppote-desk.sqlite"
+          docker logs bindA 2>&1 | grep -q 'creating a new one'
+          # restart: the existing database is reused
+          docker restart bindA && wait_health 8081 && docker logs bindA 2>&1 | grep -q 'using database'
+          docker rm -f bindA
+
+          # B) existing host folder owned by the runner user, custom PUID/PGID
+          mkdir -p "$RUNNER_TEMP/bind-b"
+          docker run -d --name bindB --network host -e HTTP_PORT=8082 -e UHPPOTE_LISTEN=0.0.0.0:60052 \
+            -e PUID=1234 -e PGID=1234 -v "$RUNNER_TEMP/bind-b:/data" uhppote-desk:ci
+          wait_health 8082 || { docker logs bindB; exit 1; }
+          test "$(stat -c '%u:%g' "$RUNNER_TEMP/bind-b/uhppote-desk.sqlite")" = "1234:1234"
+          docker rm -f bindB
+
+          # C) started as a non-root user on a folder it cannot write: clear error message
+          sudo mkdir -p "$RUNNER_TEMP/bind-c" && sudo chown root:root "$RUNNER_TEMP/bind-c" && sudo chmod 755 "$RUNNER_TEMP/bind-c"
+          docker run --name bindC --network host --user 1000:1000 -e HTTP_PORT=8083 -e UHPPOTE_LISTEN=0.0.0.0:60053 \
+            -v "$RUNNER_TEMP/bind-c:/data" uhppote-desk:ci || true
+          docker logs bindC 2>&1 | tee /dev/stderr | grep -q 'is not writable by the process'
+          docker rm -f bindC
 
       - name: Container log on failure
         if: failure()
-        run: docker logs smoke || true
+        run: for c in smoke bindA bindB bindC; do docker logs $c 2>/dev/null || true; done
 
       - name: Image metadata
         id: meta

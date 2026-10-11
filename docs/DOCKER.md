@@ -10,8 +10,8 @@ This guide explains how to install UHPPOTE Desk with Docker on a server or NAS a
 | Tags | `latest` (latest version of `main`), `sha-<commit>` (exact version), `<x.y.z>` (releases) |
 | Architecture | `linux/amd64` |
 | Ports | `8080/tcp` web interface (configurable) · `60001/udp` events from the controllers |
-| Volume | `/data`: database, backups, photos, test reports |
-| User | `node` (UID 1000), can be changed with `--user` |
+| Volume | `/data`: database, backups, photos, test reports — a named volume or a host folder |
+| User | the application runs as `PUID:PGID` (default `1000:1000`); see [Data folder and permissions](#data-folder-and-permissions) |
 
 The image is built and verified by GitHub Actions on every change: tests, a trial start of the container, publication.
 
@@ -63,6 +63,13 @@ In the examples the server has IP `192.168.1.10` and the controllers are on the 
 | `BACKUP_KEEP` | `14` | Number of backups to keep. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`. |
 
+### Data folder owner
+
+| Variable | Default | Description |
+|---|---|---|
+| `PUID` | `1000` | User ID the application runs as, and owner of the data folder |
+| `PGID` | `1000` | Group ID the application runs as, and group of the data folder |
+
 ### Already set in the image (do not change)
 
 | Variable | Value |
@@ -102,7 +109,16 @@ services:
       - ./data:/data
 ```
 
-> If you mount a host folder as `/data`, the container (user UID 1000) must be able to write to it: `chown -R 1000:1000 ./data`, or run the container as the folder's owner (`user: "UID:GID"`).
+> A host folder (`./data` above) can be used directly: it is created if missing and the database is initialised on first start. See [Data folder and permissions](#data-folder-and-permissions).
+
+## Data folder and permissions
+
+`/data` holds the SQLite database (`uhppote-desk.sqlite`), daily backups, photos and test reports. It can be a Docker named volume or any folder of the host (bind mount).
+
+- **First start**: if the folder or the database does not exist, they are created and the database schema is initialised (log: `no database found in /data: creating a new one`). On later starts the existing database is reused and upgraded if needed (log: `using database /data/uhppote-desk.sqlite`).
+- **Ownership**: the container starts as root only to prepare the folder: it creates it if missing and, when needed, changes its owner to `PUID:PGID`. It then runs the application as that user, never as root. Set `PUID`/`PGID` to the owner you want on the host (e.g. your user, `id -u` / `id -g`; on Unraid `99`/`100`).
+- **Starting with `--user`** (or `user:` in compose) skips that preparation: the folder must then already be writable by that user. If it is not, the container stops with a message like `the data directory /data is not writable by the process (uid 1000, gid 1000)` and the fix to apply.
+- Running the hardware test tool with `docker exec` uses root by default; the next start restores the correct owner automatically, or use `docker exec --user <PUID>:<PGID> …`.
 
 ## Installation with `docker run`
 
@@ -116,6 +132,8 @@ docker run -d --name uhppote-desk --restart unless-stopped \
   ghcr.io/alexbn71/uhppote-desk:latest
 ```
 
+With a host folder instead of a named volume: `-v /srv/uhppote-desk:/data -e PUID=$(id -u) -e PGID=$(id -g)`.
+
 ## Installation on Unraid
 
 1. From the Unraid terminal, download the template:
@@ -128,7 +146,7 @@ docker run -d --name uhppote-desk --restart unless-stopped \
 4. The template already sets:
    - **`host` networking**;
    - **data folder** `/mnt/user/appdata/uhppote-desk` mounted on `/data`;
-   - **user `99:100`** (`nobody:users`), so the container can write to `appdata`.
+   - **`PUID=99`, `PGID=100`** (`nobody:users`), the standard owner of `appdata`.
 5. **Apply**, then open the WebUI from the container icon.
 
 ## Other NAS systems
@@ -170,6 +188,6 @@ Reports are saved in `/data/reports`. The test levels are described in the [READ
 | Controller online but events delayed (only every `COLLECT_INTERVAL_SEC`) | `UHPPOTE_LISTENER_PUBLIC` missing or wrong, or UDP port 60001 blocked | Check in *Diagnostics* that "Event listener" shows the server IP; open UDP port 60001 in the firewall |
 | Log warning "UHPPOTE_LISTENER_PUBLIC not set" | Variable missing | Set it and restart the container |
 | Log error "cannot start the event listener"; the server runs but events arrive only every `COLLECT_INTERVAL_SEC` | Another service is already using UDP port 60001 | Change `UHPPOTE_LISTEN` and `UHPPOTE_LISTENER_PUBLIC` |
-| Startup error about the database / permissions on `/data` | The data folder is not writable by the container user | Fix the permissions or use `--user` (see above) |
+| `startup failed: the data directory /data is not writable by the process …` (or `cannot open the database`) | The container was started with `--user`/`user:` and the host folder belongs to someone else | Remove `--user` and set `PUID`/`PGID` instead (the container then fixes the folder owner), or `chown -R <uid>:<gid>` the host folder |
 | The web interface does not open | Port in use or blocked by the firewall | Change `HTTP_PORT` |
 | Wrong time on the controllers or in reports | `TZ` not set | Set `TZ`, e.g. `Europe/Rome` |

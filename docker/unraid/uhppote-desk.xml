@@ -17,8 +17,10 @@
   <Category>HomeAutomation: Security:</Category>
   <WebUI>http://[IP]:8080/</WebUI>
   <Icon>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/favicon.svg</Icon>
-  <ExtraParams>--user 99:100 --restart unless-stopped</ExtraParams>
+  <ExtraParams>--restart unless-stopped</ExtraParams>
   <Config Name="Data" Target="/data" Default="/mnt/user/appdata/uhppote-desk" Mode="rw" Description="Database, backups, test reports" Type="Path" Display="always" Required="true">/mnt/user/appdata/uhppote-desk</Config>
+  <Config Name="PUID" Target="PUID" Default="99" Description="User ID that will own the data folder (Unraid: 99 = nobody)" Type="Variable" Display="advanced" Required="true">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Description="Group ID that will own the data folder (Unraid: 100 = users)" Type="Variable" Display="advanced" Required="true">100</Config>
   <Config Name="Web port" Target="HTTP_PORT" Default="8080" Description="Port of the web interface (host networking: change it if already used by another container)" Type="Variable" Display="always" Required="true">8080</Config>
   <Config Name="Initial admin password" Target="INITIAL_ADMIN_PASSWORD" Default="" Description="Used on first start only; if empty a password is generated and written to the log" Type="Variable" Display="always" Required="false" Mask="true"></Config>
   <Config Name="Local IP facing the controllers" Target="UHPPOTE_BIND_ADDR" Default="0.0.0.0" Description="Server IP on the controllers' network (0.0.0.0 = all interfaces)" Type="Variable" Display="advanced" Required="false">0.0.0.0</Config>
