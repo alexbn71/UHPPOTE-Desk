@@ -1,4 +1,4 @@
-import type { Card, Quad } from '@uhppote-desk/protocol'
+import type { Card, Logger, Quad } from '@uhppote-desk/protocol'
 import type { SyncDiffDto } from '@uhppote-desk/shared'
 import type { Db } from '../db/database.js'
 import type { ControllerRepo, PeopleRepo, ScheduleRepo } from '../db/repos.js'
@@ -42,6 +42,7 @@ export class SyncService {
     private readonly controllers: ControllerRepo,
     private readonly people: PeopleRepo,
     private readonly schedule: ScheduleRepo,
+    private readonly logger?: Logger,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -103,6 +104,25 @@ export class SyncService {
       unchanged: d.unchanged,
       controllerCards: actual.length,
       _cards: d,
+    }
+  }
+
+  /**
+   * Called when a controller comes (back) online. A controller without any card while the DB expects some has
+   * lost its memory (factory reset, replacement, restarted simulator): it is fully synchronised again.
+   * Any other difference is only reported, so that cards are never deleted without the operator.
+   */
+  async restoreIfEmpty(controllerId: number): Promise<void> {
+    const expected = this.desiredCards(controllerId).size
+    if (expected === 0) return
+    const actual = await this.gateway.run(null, controllerId, 'get-cards', null, (client, t) => client.getCards(t), { audit: false })
+    const serial = this.controllers.get(controllerId)?.serial ?? controllerId
+    if (actual === 0) {
+      this.logger?.warn?.(`controller ${serial} has no cards but ${expected} are expected (reset or replaced?): full synchronisation`)
+      await this.pushAll(null, controllerId)
+      this.logger?.info?.(`controller ${serial} synchronised`)
+    } else if (actual !== expected) {
+      this.logger?.warn?.(`controller ${serial} has ${actual} cards, ${expected} expected: run a synchronisation to align it`)
     }
   }
 

@@ -7,11 +7,17 @@
  * In the Docker image: docker exec -it <container> node hwtest/devsim.js
  * --address is the IP the simulated controller reports (discovery, get-device): by default the host
  * address on the subnet of UHPPOTE_BROADCAST, otherwise the first LAN address.
+ *
+ * Like a real controller, the simulator keeps its memory (cards, time profiles, settings, events) across
+ * restarts: it is saved to --state (default <DATA_DIR>/devsim-<serial>.json, i.e. /data in the Docker image).
+ * --fresh starts with an empty memory.
  */
+import fs from 'node:fs'
 import os from 'node:os'
+import path from 'node:path'
 import readline from 'node:readline'
 import { parseArgs } from 'node:util'
-import { FakeController } from '@uhppote-desk/protocol/testing'
+import { FakeController, type FakeControllerState } from '@uhppote-desk/protocol/testing'
 
 const { values } = parseArgs({
   options: {
@@ -20,6 +26,8 @@ const { values } = parseArgs({
     serial: { type: 'string', default: '405419896' },
     auto: { type: 'string', default: '0' },
     address: { type: 'string' },
+    state: { type: 'string' },
+    fresh: { type: 'boolean', default: false },
   },
 })
 
@@ -48,10 +56,33 @@ const fake = new FakeController({
   tcp: true,
   ...(lan && { address: lan.address, netmask: lan.netmask, gateway }),
 })
+const statePath = path.resolve(values.state ?? path.join(process.env.DATA_DIR ?? 'data', `devsim-${values.serial}.json`))
+if (!values.fresh && fs.existsSync(statePath)) {
+  fake.restore(JSON.parse(fs.readFileSync(statePath, 'utf8')) as FakeControllerState)
+  console.log(`Memory restored from ${statePath}: ${fake.cards.length} cards, ${fake.lastEventIndex} events`)
+}
+
+// saved whenever it changes: the process can be killed at any time (e.g. when the container restarts)
+let saved = ''
+function save(): void {
+  const json = JSON.stringify(fake.snapshot())
+  if (json === saved) return
+  try {
+    fs.mkdirSync(path.dirname(statePath), { recursive: true })
+    fs.writeFileSync(`${statePath}.tmp`, json)
+    fs.renameSync(`${statePath}.tmp`, statePath)
+    saved = json
+  } catch (err) {
+    console.log(`cannot save the memory to ${statePath}: ${(err as Error).message}`)
+  }
+}
+setInterval(save, 1000)
+
 const ep = await fake.start()
 console.log(`Simulated controller ${fake.id} listening on ${ep.host}:${ep.port} (UDP+TCP), reported IP ${fake.address}`)
 console.log(`Commands: s <card> [door] = swipe   |  o <door> / c <door> = door sensor open/closed  |  b <door> = exit button`)
 console.log(`          l = list cards   |  e = last events   |  off / on = unplug/replug network   |  q = quit`)
+console.log(`Memory saved to ${statePath}`)
 
 const auto = Number(values.auto)
 if (auto > 0) {
@@ -96,6 +127,7 @@ rl.on('line', (line) => {
         console.log('controller plugged back in')
         break
       case 'q':
+        save()
         void fake.stop().then(() => process.exit(0))
         break
       default:

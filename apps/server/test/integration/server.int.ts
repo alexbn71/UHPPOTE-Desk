@@ -206,6 +206,30 @@ describe('people, cards and permissions', () => {
     await api('PUT', `/people/${personId}`, { ...person, active: true })
     expect(fake.cards).toHaveLength(1)
   })
+
+  it('a controller that lost its memory is synchronised again when it comes back online', async () => {
+    fake.offline = true
+    await ctx.health.check(controllerId)
+    expect(ctx.hub.state(controllerId).online).toBe(false)
+    // factory reset / replacement / restarted simulator: no cards, no time profiles
+    fake.cardSlots = []
+    fake.profiles.clear()
+    fake.offline = false
+    await ctx.health.check(controllerId)
+    expect(ctx.hub.state(controllerId).online).toBe(true)
+    expect(fake.cards.map((c) => [c.card, c.doors])).toEqual([[CARD, [1, 10, 0, 0]]])
+    expect(fake.profiles.get(10)).toBeDefined()
+  })
+
+  it('a different card count is only reported, nothing is deleted automatically', async () => {
+    fake.offline = true
+    await ctx.health.check(controllerId)
+    fake.cardSlots.push({ card: 10012345, from: '2020-01-01', to: '2099-12-31', doors: [1, 0, 0, 0], pin: 0, firstCard: [false, false, false, false] })
+    fake.offline = false
+    await ctx.health.check(controllerId)
+    expect(fake.cards.map((c) => c.card).sort()).toEqual([10012345, CARD].sort())
+    fake.cardSlots = fake.cardSlots.filter((c) => c?.card !== 10012345)
+  })
 })
 
 describe('events', () => {

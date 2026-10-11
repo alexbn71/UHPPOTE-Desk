@@ -50,6 +50,30 @@ function fmtDateTime(d: Date): string {
  * (card, validity, door permission, time profile, door mode) and sending events to the listener.
  * Also offers "knobs" for tests: latency, packet loss, total silence.
  */
+type FirstCardSetting = { start: string; end: string; activeMode: number; inactiveMode: number; weekdays: Weekdays }
+
+/** Persistable state of a FakeController (see snapshot/restore). */
+export interface FakeControllerState {
+  clockOffsetMs: number
+  listener: { address: string; port: number; interval: number }
+  doors: Quad<{ mode: number; delay: number }>
+  passcodes: Quad<number[]>
+  cardSlots: (Card | null)[]
+  profiles: TimeProfile[]
+  tasks: Task[]
+  tasksActive: Task[]
+  events: ControllerEvent[]
+  firstEventIndex: number
+  nextEventIndex: number
+  eventIndexBookmark: number
+  recordSpecialEvents: boolean
+  pcControl: boolean
+  interlock: number
+  keypads: Quad<boolean>
+  antipassback: number
+  firstCard: [number, FirstCardSetting][]
+}
+
 export class FakeController {
   readonly id: number
   private udp: dgram.Socket | null = null
@@ -95,7 +119,7 @@ export class FakeController {
   interlock = 0
   keypads: Quad<boolean> = [false, false, false, false]
   antipassback = 0
-  firstCard = new Map<number, { start: string; end: string; activeMode: number; inactiveMode: number; weekdays: Weekdays }>()
+  firstCard = new Map<number, FirstCardSetting>()
 
   // --- knobs for tests --------------------------------------------------------
   /** Reply latency (ms). */
@@ -207,6 +231,52 @@ export class FakeController {
 
   get lastEventIndex(): number {
     return this.nextEventIndex - 1
+  }
+
+  /** Non-volatile state of the controller (what a real one keeps across power cycles), as plain JSON data. */
+  snapshot(): FakeControllerState {
+    return {
+      clockOffsetMs: this.clockOffsetMs,
+      listener: this.listener,
+      doors: this.doors,
+      passcodes: this.passcodes,
+      cardSlots: this.cardSlots,
+      profiles: [...this.profiles.values()],
+      tasks: this.tasks,
+      tasksActive: this.tasksActive,
+      events: this.events,
+      firstEventIndex: this.firstEventIndex,
+      nextEventIndex: this.nextEventIndex,
+      eventIndexBookmark: this.eventIndexBookmark,
+      recordSpecialEvents: this.recordSpecialEvents,
+      pcControl: this.pcControl,
+      interlock: this.interlock,
+      keypads: this.keypads,
+      antipassback: this.antipassback,
+      firstCard: [...this.firstCard.entries()],
+    }
+  }
+
+  /** Restores a state saved with snapshot(). */
+  restore(s: FakeControllerState): void {
+    this.clockOffsetMs = s.clockOffsetMs
+    this.listener = s.listener
+    this.doors = s.doors
+    this.passcodes = s.passcodes
+    this.cardSlots = s.cardSlots
+    this.profiles = new Map(s.profiles.map((p) => [p.id, p]))
+    this.tasks = s.tasks
+    this.tasksActive = s.tasksActive
+    this.events = s.events
+    this.firstEventIndex = s.firstEventIndex
+    this.nextEventIndex = s.nextEventIndex
+    this.eventIndexBookmark = s.eventIndexBookmark
+    this.recordSpecialEvents = s.recordSpecialEvents
+    this.pcControl = s.pcControl
+    this.interlock = s.interlock
+    this.keypads = s.keypads
+    this.antipassback = s.antipassback
+    this.firstCard = new Map(s.firstCard)
   }
 
   private findCardSlot(card: number): number {

@@ -25,6 +25,8 @@ export class HealthService {
       timeSyncThresholdSec: number
       listenerPublic: string | null
       listenerInterval: (controllerId: number) => number
+      /** Called after the offline→online checks (e.g. to restore a controller that lost its memory). */
+      afterBackOnline?: ((controllerId: number) => Promise<void>) | undefined
       logger?: Logger | undefined
     },
   ) {}
@@ -74,6 +76,7 @@ export class HealthService {
     }, { audit: false })
     this.lastTimeCheck.delete(controllerId)
     await this.events.collect(controllerId)
+    await this.opts.afterBackOnline?.(controllerId)
   }
 
   /** Points the controller's listener at this server, if configured and different. */

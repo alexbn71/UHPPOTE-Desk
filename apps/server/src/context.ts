@@ -48,11 +48,13 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     initialBackfill: config.initialBackfill,
     logger,
   })
+  const sync = new SyncService(db, gateway, controllers, people, schedule, logger)
   const health = new HealthService(gateway, controllers, eventService, {
     intervalSec: config.healthIntervalSec,
     timeSyncThresholdSec: config.timeSyncThresholdSec,
     listenerPublic: config.uhppote.listenerPublic,
     listenerInterval: (id) => controllers.settings(id).listenerInterval,
+    afterBackOnline: (id) => sync.restoreIfEmpty(id),
     logger,
   })
   return {
@@ -70,7 +72,7 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     gateway,
     eventService,
     health,
-    sync: new SyncService(db, gateway, controllers, people, schedule),
+    sync,
     backup: new BackupService(db, path.join(config.dataDir, 'backups'), { hour: config.backupHour, keep: config.backupKeep, logger }),
     logger,
   }

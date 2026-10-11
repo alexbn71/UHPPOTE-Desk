@@ -161,7 +161,7 @@ On both, make sure the data folder is writable by the container user (see the no
 
 1. Open `http://<server-IP>:<HTTP_PORT>` and log in as `admin`: with `ADMIN_PASSWORD` set use that password; otherwise use the one printed in the container log (`Created user 'admin' with temporary password: …`), and you are asked for a new password immediately.
 2. **Controllers → Search network**: the controllers reachable by broadcast are listed with serial number, IP and firmware. **Add** registers them in the app. The interface language can be changed from the language menu in the header.
-3. As soon as a controller is online, the app sends it the event destination (`UHPPOTE_LISTENER_PUBLIC`) and synchronises its clock. You can check this in **Controllers → (controller) → Diagnostics**, "Event listener" entry.
+3. As soon as a controller is online, the app sends it the event destination (`UHPPOTE_LISTENER_PUBLIC`) and synchronises its clock. If a controller comes online **without any card** while the database expects some (factory reset, replaced controller), the app synchronises it completely by itself; any other difference is only reported in the log, and **Synchronisation** aligns it. You can check this in **Controllers → (controller) → Diagnostics**, "Event listener" entry.
 
 ## Commissioning from the container
 
@@ -187,7 +187,9 @@ docker exec -d  uhppote-desk node hwtest/devsim.js --auto 10    # background: a 
 - Then use **Controllers → Search network** and add controller `405419896`. If the search finds nothing, add it manually with the server's LAN IP.
 - The simulated controller reports the server's IP on the `UHPPOTE_BROADCAST` subnet (or the first LAN address). Use `--address <IP>` to force it, and `--serial <n>` to change the serial number.
 - Interactive commands: `s <card> [door]` swipe, `o <door>` / `c <door>` door sensor open/closed, `b <door>` exit button, `l` cards, `e` last events, `off` / `on` simulate a cable unplugged, `q` quit.
-- It listens on UDP/TCP port 60000 of the host: stop it before connecting a real controller on the same host, and do not run it twice. Its memory (cards, events) is lost when it stops; the app's database keeps everything, and **Synchronisation** reloads the cards.
+- It listens on UDP/TCP port 60000 of the host: stop it before connecting a real controller on the same host, and do not run it twice.
+- Like a real controller it keeps its memory (cards, time profiles, settings, events) when it stops or the container restarts: it is saved in `/data/devsim-<serial>.json`. Run it with `--fresh` to start with an empty memory (as after a factory reset).
+- Restarting the container also stops the simulator: start it again with the same command.
 - To stop a background simulator: `docker restart uhppote-desk`.
 
 ## Updates and backups

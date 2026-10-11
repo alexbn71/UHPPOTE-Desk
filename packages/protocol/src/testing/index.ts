@@ -1,1 +1,1 @@
-export { FakeController, type FakeControllerOptions } from './FakeController.js'
+export { FakeController, type FakeControllerOptions, type FakeControllerState } from './FakeController.js'
