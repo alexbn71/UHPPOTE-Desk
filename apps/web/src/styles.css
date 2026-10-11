@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+}
+
+.event-row-denied {
+  background-color: var(--mantine-color-red-light);
+}
+
+.event-row-alarm {
+  background-color: var(--mantine-color-orange-light);
+}
+
+.matrix-table td,
+.matrix-table th {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.matrix-table td:first-child,
+.matrix-table th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--mantine-color-body);
+  z-index: 1;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}

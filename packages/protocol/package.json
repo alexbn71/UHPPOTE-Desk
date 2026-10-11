@@ -1,0 +1,14 @@
+{
+  "name": "@uhppote-desk/protocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Codec, trasporto UDP/TCP e client per i controller UHPPOTE UT0311-L0x",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

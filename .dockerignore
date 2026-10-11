@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+Legacy
+reports
+data
+test-results
+playwright-report
+tools/bin
+.git
+**/*.tsbuildinfo

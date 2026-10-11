@@ -1,0 +1,9 @@
+# Simulatore ufficiale uhppoted per test di integrazione su Linux/CI
+#   docker compose -f docker/docker-compose.test.yml up -d
+#   UHPPOTED_SIM=127.0.0.1 npm run test:int
+services:
+  uhppoted-simulator:
+    image: uhppoted/simulator:latest
+    container_name: uhppoted-simulator
+    network_mode: host
+    restart: "no"

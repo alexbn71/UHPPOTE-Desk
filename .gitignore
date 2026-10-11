@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.env
+.env.*
+!.env.example
+data/
+reports/*
+!reports/.gitkeep
+tools/bin/
+playwright-report/
+test-results/
+
+# materiale del produttore (non ridistribuibile): vedi README
+Legacy/
