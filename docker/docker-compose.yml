@@ -3,14 +3,13 @@
 # e per ricevere gli eventi UDP che le schede inviano a questo host.
 #
 #   cp docker/.env.example docker/.env   (e modificare i valori)
-#   docker compose -f docker/docker-compose.yml up -d --build
+#   docker compose -f docker/docker-compose.yml up -d
 
 services:
   uhppote-desk:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    image: uhppote-desk:latest
+    # immagine pubblicata da GitHub Actions; per costruirla localmente: aggiungere
+    #   build: { context: .., dockerfile: docker/Dockerfile }
+    image: ghcr.io/alexbn71/uhppote-desk:latest
     container_name: uhppote-desk
     restart: unless-stopped
     network_mode: host

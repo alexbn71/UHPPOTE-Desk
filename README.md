@@ -78,9 +78,21 @@ Procedura consigliata all'arrivo della scheda:
 
 ## Deploy su NAS (Docker)
 
+L'immagine viene costruita e testata da GitHub Actions a ogni push su `main` e pubblicata come `ghcr.io/alexbn71/uhppote-desk:latest` (linux/amd64).
+
+### Unraid
+
+1. Copiare [docker/unraid/uhppote-desk.xml](docker/unraid/uhppote-desk.xml) in `/boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml` (es. dal terminale di Unraid:
+   `wget -O /boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docker/unraid/uhppote-desk.xml`).
+2. *Docker → Add Container → Template: uhppote-desk*, verificare i valori (IP 192.168.178.61, broadcast 192.168.178.255, porta web libera) e applicare.
+3. Il container gira come `nobody:users` (99:100), i dati sono in `/mnt/user/appdata/uhppote-desk`.
+4. Interfaccia: `http://192.168.178.61:8080` — password iniziale di `admin` nel log del container se non impostata.
+
+### Docker Compose
+
 ```bash
 cp docker/.env.example docker/.env       # impostare UHPPOTE_LISTENER_PUBLIC con l'IP del NAS, broadcast di subnet, password admin
-docker compose -f docker/docker-compose.yml up -d --build
+docker compose -f docker/docker-compose.yml up -d
 docker logs uhppote-desk                 # password admin generata (se non impostata)
 ```
 

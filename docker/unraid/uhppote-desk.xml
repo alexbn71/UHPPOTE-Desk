@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+  Template Unraid per UHPPOTE Desk.
+  Copiare in /boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml,
+  poi Docker → Add Container → Template: uhppote-desk.
+-->
+<Container version="2">
+  <Name>uhppote-desk</Name>
+  <Repository>ghcr.io/alexbn71/uhppote-desk:latest</Repository>
+  <Registry>https://github.com/alexbn71/UHPPOTE-Desk/pkgs/container/uhppote-desk</Registry>
+  <Network>host</Network>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/alexbn71/UHPPOTE-Desk</Support>
+  <Project>https://github.com/alexbn71/UHPPOTE-Desk</Project>
+  <Overview>Gestione dei controller di accesso UHPPOTE UT0311-L0x. Richiede la rete "host" per la ricerca delle schede e la ricezione degli eventi UDP.</Overview>
+  <Category>HomeAutomation: Security:</Category>
+  <WebUI>http://[IP]:8080/</WebUI>
+  <Icon>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/favicon.svg</Icon>
+  <ExtraParams>--user 99:100 --restart unless-stopped</ExtraParams>
+  <Config Name="Dati" Target="/data" Default="/mnt/user/appdata/uhppote-desk" Mode="rw" Description="Database, backup, report dei test" Type="Path" Display="always" Required="true">/mnt/user/appdata/uhppote-desk</Config>
+  <Config Name="Porta web" Target="HTTP_PORT" Default="8080" Description="Porta dell'interfaccia web (rete host: cambiarla se già usata da un altro container)" Type="Variable" Display="always" Required="true">8080</Config>
+  <Config Name="Password iniziale admin" Target="INITIAL_ADMIN_PASSWORD" Default="" Description="Solo al primo avvio; se vuota viene generata e scritta nel log" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="IP locale verso le schede" Target="UHPPOTE_BIND_ADDR" Default="192.168.178.61" Description="IP del NAS nella rete delle schede" Type="Variable" Display="always" Required="true">192.168.178.61</Config>
+  <Config Name="Broadcast ricerca" Target="UHPPOTE_BROADCAST" Default="192.168.178.255:60000" Description="Broadcast della subnet delle schede" Type="Variable" Display="always" Required="true">192.168.178.255:60000</Config>
+  <Config Name="Ascolto eventi" Target="UHPPOTE_LISTEN" Default="0.0.0.0:60001" Description="Porta UDP su cui ricevere gli eventi" Type="Variable" Display="advanced" Required="true">0.0.0.0:60001</Config>
+  <Config Name="Destinazione eventi programmata nelle schede" Target="UHPPOTE_LISTENER_PUBLIC" Default="192.168.178.61:60001" Description="IP:porta del NAS raggiungibile dalle schede" Type="Variable" Display="always" Required="true">192.168.178.61:60001</Config>
+  <Config Name="Cookie solo HTTPS" Target="SECURE_COOKIES" Default="false" Description="true se pubblicato dietro reverse proxy HTTPS" Type="Variable" Display="advanced" Required="false">false</Config>
+  <Config Name="Debug pacchetti" Target="UHPPOTE_DEBUG" Default="false" Description="Log esadecimale di tutti i pacchetti" Type="Variable" Display="advanced" Required="false">false</Config>
+  <Config Name="Fuso orario" Target="TZ" Default="Europe/Rome" Description="Usato per l'ora inviata alle schede e per i report" Type="Variable" Display="advanced" Required="true">Europe/Rome</Config>
+</Container>
