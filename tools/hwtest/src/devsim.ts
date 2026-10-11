@@ -57,7 +57,8 @@ const auto = Number(values.auto)
 if (auto > 0) {
   setInterval(() => {
     const cards = fake.cards
-    const card = cards.length && Math.random() < 0.8 ? cards[Math.floor(Math.random() * cards.length)]!.card : 10099999
+    // 80% a registered card; otherwise one of five unregistered (but valid Wiegand-26) cards, 10065001-10065005
+    const card = cards.length && Math.random() < 0.8 ? cards[Math.floor(Math.random() * cards.length)]!.card : 10065001 + Math.floor(Math.random() * 5)
     const e = fake.swipe(card, 1 + Math.floor(Math.random() * 4), Math.random() < 0.5 ? 1 : 2)
     console.log(`[auto] swipe ${card} door ${e.door}: ${e.granted ? 'granted' : 'denied'} (reason ${e.reason})`)
   }, auto * 1000)

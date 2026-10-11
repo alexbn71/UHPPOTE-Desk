@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Group, NumberInput, SegmentedControl, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core'
+import { Badge, Button, Card, Group, NumberInput, SegmentedControl, Select, Stack, Table, Text, TextInput, Title, Tooltip } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { IconSearch } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,7 +9,7 @@ import { PageHeader } from '../components/common'
 import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
-import { cardLabel, fmtDate, fmtDateTime } from '../lib/format'
+import { cardLabel, fmtDate, fmtDateTime, isValidCard } from '../lib/format'
 import { usePeople } from '../lib/queries'
 
 const STATUS_COLOR = { active: 'green', lost: 'red', disabled: 'gray' } as const
@@ -99,11 +99,19 @@ export function CardsPage() {
               {t('cards.unknownHint')}
             </Text>
             <Group gap="xs">
-              {(unknown.data ?? []).map((u) => (
-                <Button key={u.card} variant="outline" size="xs" onClick={() => register(u.card)}>
-                  {cardLabel(u.card)} · {fmtDateTime(u.timestamp)}
-                </Button>
-              ))}
+              {(unknown.data ?? []).map((u) =>
+                isValidCard(u.card) ? (
+                  <Button key={u.card} variant="outline" size="xs" onClick={() => register(u.card)}>
+                    {cardLabel(u.card)} · {fmtDateTime(u.timestamp)}
+                  </Button>
+                ) : (
+                  <Tooltip key={u.card} label={t('errors.invalidWiegand')} multiline w={260}>
+                    <Button variant="outline" color="gray" size="xs" data-disabled onClick={(e) => e.preventDefault()}>
+                      {cardLabel(u.card)} · {fmtDateTime(u.timestamp)}
+                    </Button>
+                  </Tooltip>
+                ),
+              )}
               {unknown.data?.length === 0 && <Text size="sm" c="dimmed">{t('common.none')}</Text>}
             </Group>
           </Card>

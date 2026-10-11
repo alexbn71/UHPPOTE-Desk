@@ -19,6 +19,7 @@ import {
   Text,
   TextInput,
   Textarea,
+  Tooltip,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useDebouncedValue } from '@mantine/hooks'
@@ -33,7 +34,7 @@ import i18n from '../i18n'
 import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
-import { DATE_INPUT_FORMAT, addDays, cardLabel, fmtDate, today } from '../lib/format'
+import { DATE_INPUT_FORMAT, addDays, cardLabel, fmtDate, isValidCard, today } from '../lib/format'
 import { treeOptions, useControllers, useDepartments, useShifts, useTimeProfiles, type Permission } from '../lib/queries'
 
 type PersonForm = Omit<PersonDto, 'id' | 'departmentName' | 'hasPhoto' | 'cards'>
@@ -263,11 +264,19 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
           <Alert variant="light" title={t('people.readerTitle')}>
             {t('people.readerHint')}
             <Group gap="xs" mt="xs">
-              {(unknown.data ?? []).map((u) => (
-                <Button key={u.card} size="compact-sm" variant="outline" onClick={() => void add(u.card)}>
-                  {cardLabel(u.card)}
-                </Button>
-              ))}
+              {(unknown.data ?? []).map((u) =>
+                isValidCard(u.card) ? (
+                  <Button key={u.card} size="compact-sm" variant="outline" onClick={() => void add(u.card)}>
+                    {cardLabel(u.card)}
+                  </Button>
+                ) : (
+                  <Tooltip key={u.card} label={t('errors.invalidWiegand')} multiline w={260}>
+                    <Button size="compact-sm" variant="outline" color="gray" data-disabled onClick={(e) => e.preventDefault()}>
+                      {cardLabel(u.card)}
+                    </Button>
+                  </Tooltip>
+                ),
+              )}
               {unknown.data?.length === 0 && <Text size="sm" c="dimmed">{t('people.readerNone')}</Text>}
             </Group>
           </Alert>

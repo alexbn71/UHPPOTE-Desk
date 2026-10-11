@@ -46,5 +46,10 @@ export function cardLabel(n: number): string {
   return `${n} (${facility},${num})`
 }
 
+/** Whether a card number fits Wiegand-26 (facility ≤ 255, number ≤ 65535), the only format the controller accepts. */
+export function isValidCard(n: number): boolean {
+  return Number.isInteger(n) && n > 0 && Math.floor(n / 100000) <= 255 && n % 100000 <= 65535
+}
+
 /** Mantine DateInput display format for the current language (dayjs localized format). */
 export const DATE_INPUT_FORMAT = 'L'
