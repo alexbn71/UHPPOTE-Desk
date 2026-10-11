@@ -1,13 +1,13 @@
-# UHPPOTE-Desk su server/NAS.
-# IMPORTANTE: network_mode "host" è necessario per la ricerca in broadcast dei controller
-# e per ricevere gli eventi UDP che le schede inviano a questo host.
+# UHPPOTE Desk on a server/NAS. Full guide: docs/DOCKER.md
+# IMPORTANT: network_mode "host" is required for broadcast discovery of the controllers
+# and to receive the UDP events the controllers send to this host.
 #
-#   cp docker/.env.example docker/.env   (e modificare i valori)
+#   cp docker/.env.example docker/.env   (and edit the values)
 #   docker compose -f docker/docker-compose.yml up -d
 
 services:
   uhppote-desk:
-    # immagine pubblicata da GitHub Actions; per costruirla localmente: aggiungere
+    # image published by GitHub Actions; to build it locally add:
     #   build: { context: .., dockerfile: docker/Dockerfile }
     image: ghcr.io/alexbn71/uhppote-desk:latest
     container_name: uhppote-desk

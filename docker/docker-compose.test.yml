@@ -1,4 +1,4 @@
-# Simulatore ufficiale uhppoted per test di integrazione su Linux/CI
+# Official uhppoted simulator for integration tests on Linux/CI
 #   docker compose -f docker/docker-compose.test.yml up -d
 #   UHPPOTED_SIM=127.0.0.1 npm run test:int
 services:

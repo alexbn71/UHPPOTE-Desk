@@ -1,90 +1,96 @@
 # UHPPOTE Desk
 
-Web app (Node.js + React) per gestire le schede di controllo accessi **UHPPOTE UT0311-L0x** (in particolare la UT0311-L04 a 4 porte), in sostituzione del software Windows "Access Control" (N3000).
+Web application (Node.js + React) to manage **UHPPOTE UT0311-L0x** access controllers (in particular the 4-door UT0311-L04), replacing the Windows "Access Control" software (N3000).
 
-Funzioni: rilevamento e configurazione delle schede, persone/tessere/permessi con sincronizzazione automatica, fasce orarie, task programmati, interblocco, anti-passback, tastiere e codici porta, first card, apertura remota, monitor in tempo reale con foto, storico eventi, presenze (turni, festività, ferie, timbrature manuali, report), operatori con ruoli e registro delle operazioni.
+Features: controller discovery and configuration, people/cards/permissions with automatic synchronisation, time profiles, scheduled tasks, interlock, anti-passback, keypads and door passcodes, first card, remote door opening, live monitor with photos, event history, attendance (shifts, holidays, leave, manual punches, reports), operators with roles and an audit log.
 
-L'analisi tecnica completa (protocollo, scelte, rischi) è in [ANALISI.md](ANALISI.md).
+> The user interface is in **Italian**. Where this documentation refers to menu items, the Italian label is shown with its English meaning.
 
-## Struttura
+The full technical analysis (protocol, design decisions, risks) is in [ANALYSIS.md](ANALYSIS.md).
 
-| Percorso | Contenuto |
+## Repository layout
+
+| Path | Content |
 |---|---|
-| [packages/protocol](packages/protocol) | Codec TypeScript dei 34 comandi, trasporto UDP/TCP, client con coda per controller, listener eventi, **FakeController** (emulatore per test) |
-| [packages/shared](packages/shared) | Schemi zod delle API, DTO, etichette italiane dei codici |
-| [apps/server](apps/server) | Backend Fastify: SQLite (`node:sqlite`), autenticazione e ruoli, servizi di sincronizzazione, raccolta eventi, monitoraggio, presenze, WebSocket |
-| [apps/web](apps/web) | Frontend React + Mantine |
-| [tools/hwtest](tools/hwtest) | Suite di test sulla scheda reale (livelli L0-L5) e simulatore di sviluppo |
-| [e2e](e2e) | Test end-to-end Playwright |
-| [docker](docker) | Immagine e compose per il NAS |
+| [packages/protocol](packages/protocol) | TypeScript codec for the 34 commands, UDP/TCP transport, client with a per-controller queue, event listener, **FakeController** (emulator for tests) |
+| [packages/shared](packages/shared) | zod API schemas, DTOs, Italian labels for protocol codes |
+| [apps/server](apps/server) | Fastify backend: SQLite (`node:sqlite`), authentication and roles, synchronisation, event collection, monitoring, attendance, WebSocket |
+| [apps/web](apps/web) | React + Mantine frontend |
+| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L5) and a development simulator |
+| [e2e](e2e) | Playwright end-to-end tests |
+| [docker](docker) | Docker image, compose files, Unraid template |
+| [docs](docs) | Installation guides |
 
-## Requisiti
+## Requirements
 
-- Node.js ≥ 22 (sviluppato con Node 24)
-- Per il deploy: Docker con supporto `network_mode: host` (Linux/NAS)
+- Node.js ≥ 22 (developed with Node 24)
+- For deployment: Docker with `network_mode: host` support (Linux/NAS)
 
-## Sviluppo
+## Development
 
 ```bash
 npm install
-cp .env.example .env            # configurazione locale
-npm run sim                     # terminale 1: controller simulato su 127.0.0.1:60000 (comandi da tastiera: s <tessera> <porta>, o/c <porta>, b <porta>…)
-npm run dev                     # terminale 2: server (http://localhost:8080) + web con hot reload (http://localhost:5173)
+cp .env.example .env            # local configuration
+npm run sim                     # terminal 1: simulated controller on 0.0.0.0:60000 (keyboard commands: s <card> <door>, o/c <door>, b <door>…)
+npm run dev                     # terminal 2: server (http://localhost:8080) + web with hot reload (http://localhost:5173)
 ```
 
-Al primo avvio viene creato l'utente `admin` con la password di `INITIAL_ADMIN_PASSWORD` (va cambiata al primo accesso). In *Controller → Cerca in rete* il simulatore viene trovato come una scheda reale.
+On first start the user `admin` is created with the password from `INITIAL_ADMIN_PASSWORD` (it must be changed at first login). Under *Controller → Cerca in rete* (Search network) the simulator is found just like a real controller.
 
-## Test
+## Tests
 
-| Comando | Cosa verifica |
+| Command | What it checks |
 |---|---|
-| `npm test` | Unit: codec contro i **vettori ufficiali** uhppoted (35 messaggi), test differenziali contro la libreria npm `uhppoted`, codifiche BCD/Wiegand, motore presenze, sync, CSV |
-| `npm run test:int` | Integrazione su socket reali: client ↔ FakeController (UDP/TCP, listener, timeout, retry), server end-to-end (API → UDP → eventi → DB → WebSocket), suite hardware contro il simulatore |
-| `UHPPOTED_SIM=127.0.0.1 npm run test:int` | In più: test contro il **simulatore ufficiale uhppoted** (implementazione indipendente in Go). Avviarlo prima: `docker compose -f docker/docker-compose.test.yml up -d` oppure, su Windows, `uhppote-simulator.exe --devices <dir>` (release v0.9.0 su codeberg.org/uhppoted/uhppoted-simulator) |
-| `npm run e2e` | Playwright: login e cambio password, ricerca e aggiunta controller, persona+tessera+permesso → tessera sulla scheda, monitor live, tutte le pagine senza errori, ruoli |
-| `npm run typecheck` | Controllo dei tipi di tutti i pacchetti |
+| `npm test` | Unit: codec against the **official uhppoted vectors** (35 messages), differential tests against the npm `uhppoted` library, BCD/Wiegand encodings, attendance engine, sync, CSV |
+| `npm run test:int` | Integration on real sockets: client ↔ FakeController (UDP/TCP, listener, timeouts, retries), end-to-end server (API → UDP → events → DB → WebSocket), hardware suite against the simulator |
+| `UHPPOTED_SIM=127.0.0.1 npm run test:int` | Additionally: tests against the **official uhppoted simulator** (an independent Go implementation). Start it first: `docker compose -f docker/docker-compose.test.yml up -d` or, on Windows, `uhppote-simulator.exe --devices <dir>` (release v0.9.0 on codeberg.org/uhppoted/uhppoted-simulator) |
+| `npm run e2e` | Playwright: login and password change, discovery and adding a controller, person + card + permission → card on the controller, live monitor, every page without errors, roles |
+| `npm run typecheck` | Type checking of all packages |
 
-## Collaudo con la scheda reale
+The same checks (typecheck, unit and integration tests) run on every push in GitHub Actions, followed by the Docker image build.
 
-La suite `npm run hw` esegue test a livelli, non distruttivi di default (ogni modifica viene ripristinata), e salva un report Markdown + JSON in `reports/`.
+## Commissioning with a real controller
+
+`npm run hw` runs tests in levels. They are non-destructive by default (every change is restored) and save a Markdown + JSON report in `reports/`.
 
 ```bash
 npm run hw -- --help
 ```
 
-Procedura consigliata all'arrivo della scheda:
+Recommended procedure when the controller arrives:
 
-1. **Collegamento**: scheda e PC nella stessa rete (stesso switch). Annotare il numero di serie (etichetta S/N, 9 cifre).
-2. **Rete e firewall**: consentire su Windows l'UDP in ingresso sulla porta 60001 per Node.js.
-3. **Ricerca e IP**: avviare l'app (`npm run dev`), *Controller → Cerca in rete*. Se l'IP di fabbrica non è nella subnet, impostarlo da *Controller → dettaglio → Rete e configurazione → Invia nuovo IP*.
-4. **Rete e sola lettura** (L0, L1):
+1. **Connection**: controller and PC on the same network (same switch). Note the serial number (S/N label, 9 digits).
+2. **Network and firewall**: on Windows allow inbound UDP on port 60001 for Node.js.
+3. **Discovery and IP**: start the app (`npm run dev`), *Controller → Cerca in rete* (Search network). If the factory IP is not in your subnet, change it from *Controller → detail → Rete e configurazione → Invia nuovo IP* (Network and configuration → Send new IP).
+4. **Network and read-only checks** (L0, L1):
    ```bash
    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 0,1
    ```
-   Il firmware rilevato determina alcune varianti (es. v6.62). Facoltativo: confronto con lo strumento ufficiale `--cli <percorso>/uhppoted-cli.exe`.
-5. **Scritture sicure** (L2): ora, listener con ricezione eventi, tessera di test, fascia 254, ritardo porta, segnalibro eventi.
+   The detected firmware determines some variations (e.g. v6.62). Optional: comparison with the official tool via `--cli <path>/uhppoted-cli.exe`.
+5. **Safe writes** (L2): time, listener with event reception, test card, time profile 254, door delay, event bookmark.
    ```bash
    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 2
    ```
-6. **Prove fisiche guidate** (L3): relè delle 4 porte, tessera autorizzata/non autorizzata, fascia oraria, sensore porta, pulsante uscita, PIN. Servono una tessera (`--user-card`, oppure viene rilevata con uno swipe) e accesso fisico alla scheda.
+6. **Guided physical tests** (L3): relays of the 4 doors, authorised/unauthorised card, time profile, door sensor, exit button, PIN. You need a card (`--user-card`, or it is detected with a swipe) and physical access to the controller.
    ```bash
    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 3 --user-card 10058400
    ```
-7. **Robustezza** (L4): 100 richieste, caricamento massivo (`--bulk 1000`), scollegamento del cavo con swipe offline e recupero, riavvio, raffica di swipe.
-8. **Deploy** (L5): sul NAS, dentro il container:
+7. **Robustness** (L4): 100 requests, bulk card load (`--bulk 1000`), cable unplugged with offline swipes and recovery, power cycle, burst of swipes.
+8. **Deployment** (L5): on the server, inside the container:
    ```bash
    docker exec -it uhppote-desk node hwtest/cli.js --serial 423187757 --ip 192.168.1.100 --level 5
    ```
 
-## Installazione con Docker
+## Installation with Docker
 
-L'immagine pronta è `ghcr.io/alexbn71/uhppote-desk:latest`. La guida completa è in **[docs/DOCKER.md](docs/DOCKER.md)**: requisiti di rete (rete `host` obbligatoria), elenco delle variabili d'ambiente, esempi per Docker Compose, `docker run`, Unraid, Synology e QNAP, primo avvio, aggiornamenti e problemi frequenti.
+The ready-made image is `ghcr.io/alexbn71/uhppote-desk:latest`. The complete guide is **[docs/DOCKER.md](docs/DOCKER.md)**: network requirements (`host` networking is mandatory), the list of environment variables, examples for Docker Compose, `docker run`, Unraid, Synology and QNAP, first start, updates and troubleshooting.
 
-In breve, l'unica variabile obbligatoria è `UHPPOTE_LISTENER_PUBLIC` (IP:porta del server come lo vedono le schede, es. `192.168.1.10:60001`); è consigliato impostare anche `UHPPOTE_BROADCAST` (broadcast della subnet delle schede, es. `192.168.1.255:60000`) e `TZ`.
+In short, the only required variable is `UHPPOTE_LISTENER_PUBLIC` (IP:port of the server as seen by the controllers, e.g. `192.168.1.10:60001`); setting `UHPPOTE_BROADCAST` (broadcast address of the controllers' subnet, e.g. `192.168.1.255:60000`) and `TZ` is also recommended.
 
-Per lo sviluppo locale si usano le stesse variabili, in un file `.env` nella root del progetto (vedi `.env.example`).
+Local development uses the same variables, in a `.env` file at the project root (see `.env.example`).
 
-## Riferimenti
+## References
 
-- Protocollo e strumenti: progetto [uhppoted](https://codeberg.org/uhppoted) (MIT). I vettori di test in `packages/protocol/test/fixtures` provengono da `uhppoted-codegen`.
-- Manuale e software originale (non inclusi nel repository): software http://www.wiegand.com.cn/soft/soft_all_32/MJ_all_en.rar, da collocare localmente in `Legacy/` (ignorata da git).
+- Protocol and tools: the [uhppoted](https://codeberg.org/uhppoted) project (MIT). The test vectors in `packages/protocol/test/fixtures` come from `uhppoted-codegen`.
+- Original manufacturer software (not included in this repository): http://www.wiegand.com.cn/soft/soft_all_32/MJ_all_en.rar. Manufacturer files can be kept locally in `Legacy/`, which is ignored by git.
+- Project resources: [RESOURCES.md](RESOURCES.md).

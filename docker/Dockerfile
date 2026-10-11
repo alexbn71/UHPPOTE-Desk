@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-# Immagine di produzione UHPPOTE-Desk (server Node.js + frontend React compilato).
-# Build dalla root del progetto:  docker build -f docker/Dockerfile -t uhppote-desk .
+# UHPPOTE Desk production image (Node.js server + compiled React frontend).
+# Build from the project root:  docker build -f docker/Dockerfile -t uhppote-desk .
 
 # --- build ---------------------------------------------------------------------
 FROM node:24-bookworm-slim AS build
@@ -20,7 +20,7 @@ RUN npm run build --workspace @uhppote-desk/web \
  && npm run build --workspace @uhppote-desk/server \
  && npm run build --workspace @uhppote-desk/hwtest
 
-# --- dipendenze di runtime ------------------------------------------------------
+# --- runtime dependencies ------------------------------------------------------
 FROM node:24-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./

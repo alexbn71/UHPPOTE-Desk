@@ -1,7 +1,7 @@
-# Provenienza dei fixture
+# Fixture provenance
 
-`uhppoted-codegen-test-data.json` proviene da
+`uhppoted-codegen-test-data.json` comes from
 https://codeberg.org/uhppoted/uhppoted-codegen/src/branch/main/bindings/.models/test-data.json
 
-Copyright (c) 2022 uhppoted — distribuito con licenza MIT.
-Contiene i vettori di test ufficiali (pacchetti request/response da 64 byte) del protocollo UHPPOTE.
+Copyright (c) 2022 uhppoted — distributed under the MIT licence.
+It contains the official test vectors (64-byte request/response packets) of the UHPPOTE protocol.
