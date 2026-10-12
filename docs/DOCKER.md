@@ -55,6 +55,7 @@ In the examples the server has IP `192.168.1.10` and the controllers are on the 
 | `UHPPOTE_RETRIES` | `1` | Additional attempts after a timeout. Applied only to operations that can be repeated safely; opening a door is never retried. |
 | `UHPPOTE_DEBUG` | `false` | `true` writes every packet exchanged with the controllers to the log, in hexadecimal (for diagnostics). |
 | `SECURE_COOKIES` | `false` | `true` if the interface is published over HTTPS through a reverse proxy. |
+| `PUBLIC_URL` | — | Public HTTPS address behind the reverse proxy (e.g. `https://doors.example.com`), used by the [mobile app](MOBILE.md) for fingerprint/Face ID and push notifications. |
 | `SESSION_HOURS` | `12` | Operator session duration. |
 | `HEALTH_INTERVAL_SEC` | `15` | Interval for checking controller status (online/offline, doors). |
 | `COLLECT_INTERVAL_SEC` | `300` | Interval at which events are also downloaded from the controller, as a safety net in case a pushed event is lost. |

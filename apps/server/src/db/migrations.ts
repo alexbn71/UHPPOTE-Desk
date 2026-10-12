@@ -329,4 +329,43 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       CREATE INDEX rule_runs_rule ON rule_runs(rule_id, id);
     `,
   },
+  {
+    id: 6,
+    name: 'mobile app: devices, fingerprint/Face ID, push',
+    sql: /* sql */ `
+      CREATE TABLE devices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        operator_id INTEGER NOT NULL REFERENCES operators(id) ON DELETE CASCADE,
+        token_hash TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        last_used_at TEXT,
+        last_ip TEXT
+      );
+
+      CREATE TABLE webauthn_credentials (
+        id TEXT PRIMARY KEY,
+        device_id INTEGER NOT NULL UNIQUE REFERENCES devices(id) ON DELETE CASCADE,
+        public_key BLOB NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 0,
+        transports TEXT NOT NULL DEFAULT '[]',
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      );
+
+      CREATE TABLE push_subscriptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id INTEGER NOT NULL UNIQUE REFERENCES devices(id) ON DELETE CASCADE,
+        endpoint TEXT NOT NULL,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        events TEXT NOT NULL DEFAULT '[]',
+        door_ids TEXT NOT NULL DEFAULT '[]',
+        rules INTEGER NOT NULL DEFAULT 1,
+        language TEXT NOT NULL DEFAULT 'en',
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        last_sent_at TEXT,
+        last_error TEXT
+      );
+    `,
+  },
 ]

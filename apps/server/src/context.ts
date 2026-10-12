@@ -1,6 +1,7 @@
 import path from 'node:path'
 import type { Logger } from '@uhppote-desk/protocol'
 import { AuthService } from './auth/auth.js'
+import { DeviceService } from './auth/devices.js'
 import { ApiTokenService } from './auth/tokens.js'
 import type { AppConfig } from './config.js'
 import { AuditLog } from './db/audit.js'
@@ -18,6 +19,8 @@ import { SyncService } from './services/sync.js'
 import { AnomalyService } from './services/anomalies.js'
 import { IntegrationEvents } from './services/integrationEvents.js'
 import { NotificationService } from './services/notify/notifications.js'
+import { MobileService } from './services/mobile.js'
+import { PushService } from './services/push.js'
 import { RuleEngine } from './services/rules.js'
 import { WebhookService } from './services/webhooks.js'
 import { APP_VERSION } from './routes/system.js'
@@ -29,6 +32,9 @@ export interface AppContext {
   audit: AuditLog
   auth: AuthService
   tokens: ApiTokenService
+  devices: DeviceService
+  mobile: MobileService
+  push: PushService
   zones: TreeRepo
   departments: TreeRepo
   controllers: ControllerRepo
@@ -68,6 +74,9 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
   const integrationEvents = new IntegrationEvents(controllers, hub, logger, anomalies)
   const notifications = new NotificationRepo(db)
   const rules = new RuleRepo(db)
+  const mobile = new MobileService(db)
+  const auth = new AuthService(db, config.sessionHours)
+  const zones = new TreeRepo(db, 'zones')
   const protoLogger: Logger = config.uhppote.debug
     ? logger
     : { warn: logger.warn, error: logger.error, info: logger.info }
@@ -90,9 +99,18 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     config,
     db,
     audit,
-    auth: new AuthService(db, config.sessionHours),
+    auth,
+    devices: new DeviceService(db, () => mobile.settings()),
+    mobile,
+    push: new PushService(
+      db,
+      integrationEvents,
+      hub,
+      { mobile, auth, controllers, zones, publicUrl: config.publicUrl },
+      logger,
+    ),
     tokens: new ApiTokenService(db),
-    zones: new TreeRepo(db, 'zones'),
+    zones,
     departments: new TreeRepo(db, 'departments'),
     controllers,
     people,

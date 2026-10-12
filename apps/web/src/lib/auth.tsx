@@ -11,6 +11,9 @@ export interface CurrentUser {
   mustChangePassword: boolean
   passwordManaged: boolean
   zoneIds: number[]
+  /** Remembered device (mobile app); null for a normal session. */
+  deviceId: number | null
+  canOpenDoors: boolean
 }
 
 interface AuthState {

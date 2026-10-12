@@ -29,6 +29,7 @@
   <Config Name="Event destination" Target="UHPPOTE_LISTENER_PUBLIC" Default="" Description="IP:port of this server as reached by the controllers, e.g. 192.168.1.10:60001 (without it events arrive only through periodic polling)" Type="Variable" Display="always" Required="true"></Config>
   <Config Name="HTTPS-only cookies" Target="SECURE_COOKIES" Default="false" Description="true if published behind an HTTPS reverse proxy" Type="Variable" Display="advanced" Required="false">false</Config>
   <Config Name="Packet debug" Target="UHPPOTE_DEBUG" Default="false" Description="Log every packet in hexadecimal" Type="Variable" Display="advanced" Required="false">false</Config>
+  <Config Name="Public address" Target="PUBLIC_URL" Default="" Description="Public HTTPS address behind a reverse proxy, e.g. https://doors.example.com (mobile app: fingerprint/Face ID, push). See docs/MOBILE.md" Type="Variable" Display="always" Required="false"></Config>
   <Config Name="MQTT broker" Target="MQTT_URL" Default="" Description="Home Assistant integration: MQTT broker URL, e.g. mqtt://192.168.1.10:1883 (empty = disabled). See docs/HOME-ASSISTANT.md" Type="Variable" Display="always" Required="false"></Config>
   <Config Name="MQTT username" Target="MQTT_USERNAME" Default="" Description="MQTT broker user" Type="Variable" Display="always" Required="false"></Config>
   <Config Name="MQTT password" Target="MQTT_PASSWORD" Default="" Description="MQTT broker password" Type="Variable" Display="always" Required="false" Mask="true"></Config>

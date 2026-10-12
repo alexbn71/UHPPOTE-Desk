@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- monochrome silhouette of the app icon for the Android notification badge (white on transparent) -->
+  <defs>
+    <mask id="holes">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="238" cy="272" r="18" fill="#000"/>
+      <circle cx="374" cy="306" r="12" fill="#000"/>
+    </mask>
+  </defs>
+  <g fill="#fff" mask="url(#holes)">
+    <rect x="88" y="72" width="232" height="368" rx="30" fill="none" stroke="#fff" stroke-width="34"/>
+    <path d="M118 102 L272 136 L272 410 L118 406 Z"/>
+    <rect x="336" y="220" width="92" height="124" rx="20"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round">
+    <path d="M356 186 a36 36 0 0 1 52 0"/>
+    <path d="M332 148 a70 70 0 0 1 100 0"/>
+  </g>
+</svg>

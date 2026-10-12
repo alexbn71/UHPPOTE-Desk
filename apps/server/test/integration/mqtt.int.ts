@@ -65,6 +65,7 @@ function config(dir: string): AppConfig {
       doorControl: true,
       language: 'it',
     },
+    publicUrl: null,
   }
 }
 

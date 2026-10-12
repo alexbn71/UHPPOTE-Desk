@@ -3,28 +3,26 @@ import path from 'node:path'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import type { ControllerDto } from '@uhppote-desk/shared'
-import { controllerInputSchema, controllerSettingsSchema, doorInputSchema, idParam, ipv4Schema, setIpSchema, zoneInputSchema } from '@uhppote-desk/shared'
+import {
+  controllerInputSchema,
+  controllerSettingsSchema,
+  doorInputSchema,
+  idParam,
+  ipv4Schema,
+  setIpSchema,
+  zoneInputSchema,
+} from '@uhppote-desk/shared'
 import { HttpError, requireRole, type SessionUser } from '../auth/auth.js'
+import type { AuthenticationResponseJSON } from '@simplewebauthn/server'
+import { canOperateController } from '../auth/zones.js'
+import { relyingParty } from './mobile.js'
 import type { AppContext } from '../context.js'
 import type { ControllerRecord } from '../db/repos.js'
 import { localDateTime } from '../util/time.js'
 
 /** Checks that the operator may command the controller (zone restriction, sub-zones included). */
 export function assertZoneAccess(ctx: AppContext, user: SessionUser, c: ControllerRecord): void {
-  if (user.role === 'admin' || user.zoneIds.length === 0) return
-  const zones = ctx.zones.list()
-  const allowed = new Set(user.zoneIds)
-  let changed = true
-  while (changed) {
-    changed = false
-    for (const z of zones) {
-      if (z.parentId !== null && allowed.has(z.parentId) && !allowed.has(z.id)) {
-        allowed.add(z.id)
-        changed = true
-      }
-    }
-  }
-  if (c.zoneId === null || !allowed.has(c.zoneId)) throw new HttpError(403, 'zoneForbidden')
+  if (!canOperateController(ctx.zones.list(), user, c)) throw new HttpError(403, 'zoneForbidden')
 }
 
 export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext): void {
@@ -117,7 +115,9 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
       await client.setIPv4({ id: c.serial, transport: 'udp' }, b.address, b.netmask, b.gateway)
     })
     await new Promise((r) => setTimeout(r, 1500))
-    const info = await ctx.gateway.client.getController({ id: c.serial, host: b.address, port: c.port }).catch(() => null)
+    const info = await ctx.gateway.client
+      .getController({ id: c.serial, host: b.address, port: c.port })
+      .catch(() => null)
     if (info) ctx.controllers.setHost(id, b.address)
     return { verified: !!info, info }
   })
@@ -125,19 +125,26 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
   /** Full diagnostics (reads only). */
   app.get('/controllers/:id/info', viewer, async (req) => {
     const { id } = idParam.parse(req.params)
-    return ctx.gateway.run(req.user, id, 'read-info', null, async (client, t) => {
-      const device = await client.getController(t)
-      const time = await client.getTime(t)
-      const status = await client.getStatus(t)
-      const listener = await client.getListener(t)
-      const cards = await client.getCards(t)
-      const eventIndex = await client.getEventIndex(t)
-      const antipassback = await client.getAntiPassback(t)
-      const doors = []
-      for (let d = 1; d <= 4; d++) doors.push(await client.getDoorControl(t, d))
-      ctx.controllers.markSeen(id, localDateTime(), device.version)
-      return { device, time, status, listener, cards, eventIndex, antipassback, doors }
-    }, { audit: false })
+    return ctx.gateway.run(
+      req.user,
+      id,
+      'read-info',
+      null,
+      async (client, t) => {
+        const device = await client.getController(t)
+        const time = await client.getTime(t)
+        const status = await client.getStatus(t)
+        const listener = await client.getListener(t)
+        const cards = await client.getCards(t)
+        const eventIndex = await client.getEventIndex(t)
+        const antipassback = await client.getAntiPassback(t)
+        const doors = []
+        for (let d = 1; d <= 4; d++) doors.push(await client.getDoorControl(t, d))
+        ctx.controllers.markSeen(id, localDateTime(), device.version)
+        return { device, time, status, listener, cards, eventIndex, antipassback, doors }
+      },
+      { audit: false },
+    )
   })
 
   app.post('/controllers/:id/time-sync', operator, async (req) => {
@@ -148,7 +155,14 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
 
   app.post('/controllers/:id/listener', admin, async (req) => {
     const { id } = idParam.parse(req.params)
-    const b = z.object({ address: ipv4Schema, port: z.number().int().min(1).max(65535), interval: z.number().int().min(0).max(255) }).nullable().parse(req.body ?? null)
+    const b = z
+      .object({
+        address: ipv4Schema,
+        port: z.number().int().min(1).max(65535),
+        interval: z.number().int().min(0).max(255),
+      })
+      .nullable()
+      .parse(req.body ?? null)
     if (!b) return { changed: await ctx.health.ensureListener(id) }
     await ctx.gateway.run(req.user, id, 'set-listener', b, (client, t) => client.setListener(t, b))
     return { changed: true }
@@ -164,12 +178,25 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     const { confirm } = z.object({ confirm: z.string() }).parse(req.body)
     const c = ctx.gateway.controller(id)
     if (confirm !== String(c.serial)) throw new HttpError(400, 'confirmSerial')
-    const backupCards = await ctx.gateway.run(req.user, id, 'backup-cards', null, (client, t) => client.listCards(t), { audit: false })
-    const backupFile = path.join(ctx.config.dataDir, 'backups', `cards-${c.serial}-${localDateTime().replace(/[ :]/g, '-')}.json`)
+    const backupCards = await ctx.gateway.run(req.user, id, 'backup-cards', null, (client, t) => client.listCards(t), {
+      audit: false,
+    })
+    const backupFile = path.join(
+      ctx.config.dataDir,
+      'backups',
+      `cards-${c.serial}-${localDateTime().replace(/[ :]/g, '-')}.json`,
+    )
     fs.mkdirSync(path.dirname(backupFile), { recursive: true })
-    fs.writeFileSync(backupFile, JSON.stringify({ controller: c.serial, savedAt: localDateTime(), cards: backupCards }, null, 2))
-    await ctx.gateway.run(req.user, id, 'restore-default-parameters', { cardsBackedUp: backupCards.length, backupFile }, (client, t) =>
-      client.restoreDefaultParameters(t),
+    fs.writeFileSync(
+      backupFile,
+      JSON.stringify({ controller: c.serial, savedAt: localDateTime(), cards: backupCards }, null, 2),
+    )
+    await ctx.gateway.run(
+      req.user,
+      id,
+      'restore-default-parameters',
+      { cardsBackedUp: backupCards.length, backupFile },
+      (client, t) => client.restoreDefaultParameters(t),
     )
     return { ok: true, cardsBackup: backupCards, backupFile: path.basename(backupFile) }
   })
@@ -228,7 +255,23 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     if (!door) throw new HttpError(404, 'doorNotFound')
     if (user.doorIds.length > 0 && !user.doorIds.includes(door.id)) throw new HttpError(403, 'doorForbidden')
     assertZoneAccess(ctx, user, ctx.gateway.controller(door.controllerId))
-    await ctx.gateway.run(req.user, door.controllerId, 'open-door', { door: door.door, name: door.name }, (client, t) => client.openDoor(t, door.door))
+    // remembered devices (mobile app) confirm with fingerprint/Face ID when the administrator requires it
+    if (user.deviceId !== null && ctx.mobile.settings().openConfirmation === 'biometric') {
+      const { webauthn } = z
+        .object({
+          webauthn: z.custom<AuthenticationResponseJSON>((v) => typeof v === 'object' && v !== null).optional(),
+        })
+        .parse(req.body ?? {})
+      if (!webauthn)
+        throw new HttpError(
+          403,
+          ctx.mobile.hasBiometric(user.deviceId) ? 'biometricRequired' : 'biometricNotRegistered',
+        )
+      await ctx.mobile.verifyOpen(relyingParty(ctx, req), user.deviceId, door.id, webauthn)
+    }
+    await ctx.gateway.run(req.user, door.controllerId, 'open-door', { door: door.door, name: door.name }, (client, t) =>
+      client.openDoor(t, door.door),
+    )
     return { ok: true }
   })
 

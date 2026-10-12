@@ -62,6 +62,7 @@ const ctx = createContext(
     backupHour: -1,
     backupKeep: 3,
     mqtt: null,
+    publicUrl: null,
   },
   quiet,
 )

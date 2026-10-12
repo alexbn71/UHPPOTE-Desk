@@ -69,22 +69,27 @@ export class ApiTokenService {
     const token = TOKEN_PREFIX + randomBytes(32).toString('base64url')
     const id = this.db.run(
       'INSERT INTO api_tokens (name, token_hash, prefix, access, zone_ids, door_ids, expires_at, active, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [t.name, hash(token), token.slice(0, TOKEN_PREFIX.length + 6), t.access, JSON.stringify(t.zoneIds), JSON.stringify(t.doorIds), t.expiresAt, fromBool(t.active), createdBy],
+      [
+        t.name,
+        hash(token),
+        token.slice(0, TOKEN_PREFIX.length + 6),
+        t.access,
+        JSON.stringify(t.zoneIds),
+        JSON.stringify(t.doorIds),
+        t.expiresAt,
+        fromBool(t.active),
+        createdBy,
+      ],
     ).lastInsertRowid
     return { token, apiToken: this.get(id)! }
   }
 
   update(id: number, t: ApiTokenInput): boolean {
     return (
-      this.db.run('UPDATE api_tokens SET name = ?, access = ?, zone_ids = ?, door_ids = ?, expires_at = ?, active = ? WHERE id = ?', [
-        t.name,
-        t.access,
-        JSON.stringify(t.zoneIds),
-        JSON.stringify(t.doorIds),
-        t.expiresAt,
-        fromBool(t.active),
-        id,
-      ]).changes > 0
+      this.db.run(
+        'UPDATE api_tokens SET name = ?, access = ?, zone_ids = ?, door_ids = ?, expires_at = ?, active = ? WHERE id = ?',
+        [t.name, t.access, JSON.stringify(t.zoneIds), JSON.stringify(t.doorIds), t.expiresAt, fromBool(t.active), id],
+      ).changes > 0
     )
   }
 
@@ -107,6 +112,7 @@ export class ApiTokenService {
     return {
       id: null,
       tokenId: t.id,
+      deviceId: null,
       username: `token:${t.name}`,
       displayName: t.name,
       role: ROLE[t.access],

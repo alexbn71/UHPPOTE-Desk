@@ -52,3 +52,10 @@ export type RuleSeverity = (typeof RULE_SEVERITIES)[number]
 
 /** Rule trigger fired when a door stays open longer than the configured seconds. */
 export const DOOR_OPEN_FOR = 'door.open_for'
+
+/** How mobile-app users confirm a door opening (labels under `codes.openConfirmation`). */
+export const OPEN_CONFIRMATIONS = ['press', 'biometric'] as const
+export type OpenConfirmation = (typeof OPEN_CONFIRMATIONS)[number]
+
+/** Login duration of remembered devices without fingerprint/Face ID (days). */
+export const MOBILE_SESSION_DAYS = [30, 60, 90, 120, 150, 180] as const

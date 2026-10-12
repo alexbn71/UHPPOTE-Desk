@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { changePasswordSchema, idParam, loginSchema, operatorInputSchema } from '@uhppote-desk/shared'
 import { HttpError, requireSession, SESSION_COOKIE } from '../auth/auth.js'
+import { DEVICE_COOKIE } from '../auth/devices.js'
 import { randomPassword } from '../auth/password.js'
 import type { AppContext } from '../context.js'
 
@@ -13,30 +14,46 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     const f = failures.get(key)
     if (f && f.until > Date.now()) throw new HttpError(429, 'tooManyAttempts')
 
-    const result = await ctx.auth.login(body.username, body.password, req.ip, req.headers['user-agent'] ?? '')
-    if (!result) {
+    const user = await ctx.auth.authenticate(body.username, body.password)
+    if (!user) {
       const count = (f?.count ?? 0) + 1
       failures.set(key, { count, until: count >= 5 ? Date.now() + 5 * 60_000 : 0 })
       ctx.audit.log(null, 'login-failed', `operator:${body.username}`, { ip: req.ip })
       throw new HttpError(401, 'invalidCredentials')
     }
     failures.delete(key)
-    ctx.audit.log(result.user, 'login', `operator:${result.user.username}`, { ip: req.ip })
-    reply.setCookie(SESSION_COOKIE, result.sessionId, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: ctx.config.secureCookies,
-      maxAge: ctx.config.sessionHours * 3600,
-    })
-    return { user: result.user }
+    const cookie = { path: '/', httpOnly: true, sameSite: 'strict' as const, secure: ctx.config.secureCookies }
+    // a remembered device found in this browser is replaced by the new login
+    const previous = ctx.devices.resolve(req.cookies[DEVICE_COOKIE], req.ip)
+    if (previous) ctx.devices.revoke(previous.deviceId)
+    if (body.remember) {
+      // remembered device: only the device cookie, so that every request is known to come from this device
+      const device = ctx.devices.create(
+        user.id!,
+        body.deviceName ?? (req.headers['user-agent'] ?? '').slice(0, 100),
+        req.ip,
+      )
+      ctx.audit.log(user, 'login', `operator:${user.username}`, { ip: req.ip, device: device.deviceId })
+      reply.clearCookie(SESSION_COOKIE, { path: '/' })
+      // the server decides when the device expires; the cookie itself lasts ten years
+      reply.setCookie(DEVICE_COOKIE, device.token, { ...cookie, maxAge: 10 * 365 * 86_400 })
+      return { user: { ...user, deviceId: device.deviceId } }
+    }
+    const sessionId = ctx.auth.createSession(user.id!, req.ip, req.headers['user-agent'] ?? '')
+    ctx.audit.log(user, 'login', `operator:${user.username}`, { ip: req.ip })
+    reply.clearCookie(DEVICE_COOKIE, { path: '/' })
+    reply.setCookie(SESSION_COOKIE, sessionId, { ...cookie, maxAge: ctx.config.sessionHours * 3600 })
+    return { user }
   })
 
   app.post('/auth/logout', async (req, reply) => {
     const sid = req.cookies[SESSION_COOKIE]
     if (sid) ctx.auth.logout(sid)
+    // logging out of a remembered device forgets it (push, fingerprint/Face ID included)
+    if (req.user?.deviceId) ctx.devices.revoke(req.user.deviceId)
     if (req.user) ctx.audit.log(req.user, 'logout', `operator:${req.user.username}`)
     reply.clearCookie(SESSION_COOKIE, { path: '/' })
+    reply.clearCookie(DEVICE_COOKIE, { path: '/' })
     return { ok: true }
   })
 
@@ -54,6 +71,8 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     const ok = await ctx.auth.changePassword(id, body.currentPassword, body.newPassword)
     if (!ok) throw new HttpError(400, 'wrongPassword')
     ctx.auth.revokeSessions(id, req.cookies[SESSION_COOKIE])
+    // the other remembered devices must log in again with the new password
+    ctx.devices.revokeAll(id, req.user.deviceId)
     ctx.audit.log(req.user, 'change-password', `operator:${req.user.username}`)
     return { ok: true }
   })
@@ -72,7 +91,8 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
         'INSERT INTO operators (username, display_name, password_hash, role, active, must_change_password) VALUES (?, ?, ?, ?, ?, 1)',
         [body.username, body.displayName, 'pending', body.role, body.active ? 1 : 0],
       ).lastInsertRowid
-      for (const z of body.zoneIds) ctx.db.run('INSERT INTO operator_zones (operator_id, zone_id) VALUES (?, ?)', [id, z])
+      for (const z of body.zoneIds)
+        ctx.db.run('INSERT INTO operator_zones (operator_id, zone_id) VALUES (?, ?)', [id, z])
       return id
     })
     await ctx.auth.setPassword(id, password, true)
@@ -95,7 +115,8 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
         id,
       ])
       ctx.db.run('DELETE FROM operator_zones WHERE operator_id = ?', [id])
-      for (const z of body.zoneIds) ctx.db.run('INSERT INTO operator_zones (operator_id, zone_id) VALUES (?, ?)', [id, z])
+      for (const z of body.zoneIds)
+        ctx.db.run('INSERT INTO operator_zones (operator_id, zone_id) VALUES (?, ?)', [id, z])
     })
     if (body.password) {
       ctx.auth.assertPasswordChangeable(id)
@@ -112,6 +133,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     const password = randomPassword(12)
     await ctx.auth.setPassword(id, password, true)
     ctx.auth.revokeSessions(id)
+    ctx.devices.revokeAll(id)
     ctx.audit.log(req.user, 'reset-password', `operator:${id}`)
     return { password }
   })

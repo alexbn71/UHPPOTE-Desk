@@ -8,6 +8,7 @@ import { ZodError } from 'zod'
 import { CodecError, NotFoundError, TimeoutError, UhppoteError } from '@uhppote-desk/protocol'
 import { translate } from '@uhppote-desk/shared'
 import { HttpError, SESSION_COOKIE } from './auth/auth.js'
+import { DEVICE_COOKIE } from './auth/devices.js'
 import type { AppContext } from './context.js'
 import { registerAnomalyRoutes } from './routes/anomalies.js'
 import { registerAttendanceRoutes } from './routes/attendance.js'
@@ -20,6 +21,7 @@ import { registerSystemRoutes } from './routes/system.js'
 import { registerTokenRoutes } from './routes/tokens.js'
 import { registerNotificationRoutes } from './routes/notifications.js'
 import { registerRuleRoutes } from './routes/rules.js'
+import { registerMobileRoutes } from './routes/mobile.js'
 import { registerWebhookRoutes } from './routes/webhooks.js'
 
 export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
@@ -37,7 +39,16 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
   app.addHook('onRequest', async (req) => {
     // machine clients: Authorization: Bearer <API token>; browser: session cookie
     const bearer = /^Bearer\s+(\S+)$/i.exec(req.headers.authorization ?? '')
-    req.user = bearer ? ctx.tokens.resolve(bearer[1]!, req.ip) : ctx.auth.resolve(req.cookies[SESSION_COOKIE])
+    if (bearer) {
+      req.user = ctx.tokens.resolve(bearer[1]!, req.ip)
+      return
+    }
+    // browser: the session cookie, otherwise the cookie of a remembered device (mobile app)
+    req.user = ctx.auth.resolve(req.cookies[SESSION_COOKIE])
+    if (!req.user) {
+      const device = ctx.devices.resolve(req.cookies[DEVICE_COOKIE], req.ip)
+      if (device) req.user = ctx.auth.deviceUser(device.operatorId, device.deviceId)
+    }
   })
 
   /** Error body: English `error` text plus a translatable `code` (errors.*) and its `params`. */
@@ -49,7 +60,14 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
   app.setErrorHandler((err, req, reply) => {
     const send = (r: ReturnType<typeof fail>) => reply.status(r.status).send(r.body)
     if (err instanceof ZodError) {
-      return send(fail(400, 'invalidData', {}, { issues: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) }))
+      return send(
+        fail(
+          400,
+          'invalidData',
+          {},
+          { issues: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) },
+        ),
+      )
     }
     if (err instanceof HttpError) return send(fail(err.statusCode, err.code, err.params))
     if (err instanceof TimeoutError) return send(fail(504, 'controllerUnreachable', { detail: err.message }))
@@ -58,9 +76,16 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     if (err instanceof UhppoteError) return send(fail(502, 'controllerError', { detail: err.message }))
     const e = err as Error & { statusCode?: number; code?: string }
     if (e.code === 'ERR_SQLITE_ERROR' && /UNIQUE constraint failed/.test(e.message)) return send(fail(409, 'duplicate'))
-    if (e.code === 'ERR_SQLITE_ERROR' && /FOREIGN KEY constraint failed/.test(e.message)) return send(fail(409, 'inUse'))
+    if (e.code === 'ERR_SQLITE_ERROR' && /FOREIGN KEY constraint failed/.test(e.message))
+      return send(fail(409, 'inUse'))
     if (e.statusCode && e.statusCode < 500) {
-      return reply.status(e.statusCode).send({ error: e.message, code: e.statusCode === 404 ? 'notFound' : 'generic', params: { status: e.statusCode } })
+      return reply
+        .status(e.statusCode)
+        .send({
+          error: e.message,
+          code: e.statusCode === 404 ? 'notFound' : 'generic',
+          params: { status: e.statusCode },
+        })
     }
     req.log.error(err)
     ctx.logger.error?.(`unhandled error on ${req.method} ${req.url}: ${e.stack ?? e.message}`)
@@ -81,6 +106,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerNotificationRoutes(api, ctx)
       registerAnomalyRoutes(api, ctx)
       registerRuleRoutes(api, ctx)
+      registerMobileRoutes(api, ctx)
     },
     { prefix: '/api' },
   )
@@ -90,7 +116,8 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
   if (webDir && fs.existsSync(webDir)) {
     await app.register(fastifyStatic, { root: webDir })
     app.setNotFoundHandler((req, reply) => {
-      if (req.url.startsWith('/api/')) return reply.status(404).send({ error: translate('en', 'errors.notFound'), code: 'notFound', params: {} })
+      if (req.url.startsWith('/api/'))
+        return reply.status(404).send({ error: translate('en', 'errors.notFound'), code: 'notFound', params: {} })
       return reply.sendFile('index.html')
     })
   }

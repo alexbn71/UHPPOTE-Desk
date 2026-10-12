@@ -24,6 +24,8 @@ export interface SessionUser {
   id: number | null
   /** API token id; null for an operator session. */
   tokenId: number | null
+  /** Remembered device (mobile app) the request comes from; null for a normal session or a token. */
+  deviceId: number | null
   username: string
   displayName: string
   role: Role
@@ -90,7 +92,9 @@ export class AuthService {
    * - Without it: on the very first start (no operators) `admin` is created with a generated password that must be
    *   changed at first login; afterwards nothing happens.
    */
-  async ensureAdmin(adminPassword: string | null): Promise<{ action: 'created-generated' | 'created-env' | 'updated-env' | 'unchanged'; password?: string }> {
+  async ensureAdmin(
+    adminPassword: string | null,
+  ): Promise<{ action: 'created-generated' | 'created-env' | 'updated-env' | 'unchanged'; password?: string }> {
     this.adminPasswordManaged = !!adminPassword
     const row = this.db.get<OperatorRow>('SELECT * FROM operators WHERE username = ?', [AuthService.ADMIN])
     if (adminPassword) {
@@ -102,11 +106,12 @@ export class AuthService {
         return { action: 'created-env' }
       }
       const samePassword = await verifyPassword(adminPassword, row.password_hash)
-      if (samePassword && !toBool(row.must_change_password) && toBool(row.active) && row.role === 'admin') return { action: 'unchanged' }
-      this.db.run("UPDATE operators SET password_hash = ?, must_change_password = 0, active = 1, role = 'admin' WHERE id = ?", [
-        samePassword ? row.password_hash : await hashPassword(adminPassword),
-        row.id,
-      ])
+      if (samePassword && !toBool(row.must_change_password) && toBool(row.active) && row.role === 'admin')
+        return { action: 'unchanged' }
+      this.db.run(
+        "UPDATE operators SET password_hash = ?, must_change_password = 0, active = 1, role = 'admin' WHERE id = ?",
+        [samePassword ? row.password_hash : await hashPassword(adminPassword), row.id],
+      )
       if (!samePassword) this.revokeSessions(row.id)
       return { action: 'updated-env' }
     }
@@ -131,22 +136,43 @@ export class AuthService {
     if (row && this.isPasswordManaged(row.username)) throw new HttpError(400, 'passwordManagedByEnv')
   }
 
-  async login(username: string, password: string, ip: string, userAgent: string): Promise<{ sessionId: string; user: SessionUser } | null> {
+  /** Checks the credentials (and records the login); null if wrong. Creates no session. */
+  async authenticate(username: string, password: string): Promise<SessionUser | null> {
     const row = this.db.get<OperatorRow>('SELECT * FROM operators WHERE username = ? AND active = 1', [username])
     // verify a password anyway, so that response times do not reveal whether the user exists
-    const ok = await verifyPassword(password, row?.password_hash ?? 'scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=')
+    const ok = await verifyPassword(
+      password,
+      row?.password_hash ?? 'scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    )
     if (!row || !ok) return null
-    const sessionId = randomBytes(32).toString('base64url')
-    this.db.run('INSERT INTO sessions (id, operator_id, created_at, expires_at, ip, user_agent) VALUES (?, ?, ?, ?, ?, ?)', [
-      sessionId,
-      row.id,
-      localNow(),
-      localNow(this.sessionHours * 3600_000),
-      ip,
-      userAgent.slice(0, 300),
-    ])
     this.db.run('UPDATE operators SET last_login_at = ? WHERE id = ?', [localNow(), row.id])
-    return { sessionId, user: this.toSessionUser(row) }
+    return this.toSessionUser(row)
+  }
+
+  /** The user of a remembered device (active operators only). */
+  deviceUser(operatorId: number, deviceId: number): SessionUser | null {
+    const row = this.db.get<OperatorRow>('SELECT * FROM operators WHERE id = ? AND active = 1', [operatorId])
+    return row ? { ...this.toSessionUser(row), deviceId } : null
+  }
+
+  async login(
+    username: string,
+    password: string,
+    ip: string,
+    userAgent: string,
+  ): Promise<{ sessionId: string; user: SessionUser } | null> {
+    const user = await this.authenticate(username, password)
+    if (!user) return null
+    return { sessionId: this.createSession(user.id!, ip, userAgent), user }
+  }
+
+  createSession(operatorId: number, ip: string, userAgent: string): string {
+    const sessionId = randomBytes(32).toString('base64url')
+    this.db.run(
+      'INSERT INTO sessions (id, operator_id, created_at, expires_at, ip, user_agent) VALUES (?, ?, ?, ?, ?, ?)',
+      [sessionId, operatorId, localNow(), localNow(this.sessionHours * 3600_000), ip, userAgent.slice(0, 300)],
+    )
+    return sessionId
   }
 
   logout(sessionId: string): void {
@@ -192,6 +218,7 @@ export class AuthService {
     return {
       id: row.id,
       tokenId: null,
+      deviceId: null,
       username: row.username,
       displayName: row.display_name,
       role: row.role,
@@ -211,7 +238,9 @@ export class AuthService {
       role: r.role,
       active: toBool(r.active),
       mustChangePassword: toBool(r.must_change_password),
-      zoneIds: this.db.all<{ zone_id: number }>('SELECT zone_id FROM operator_zones WHERE operator_id = ?', [r.id]).map((z) => z.zone_id),
+      zoneIds: this.db
+        .all<{ zone_id: number }>('SELECT zone_id FROM operator_zones WHERE operator_id = ?', [r.id])
+        .map((z) => z.zone_id),
       lastLoginAt: r.last_login_at,
     }))
   }

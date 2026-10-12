@@ -42,6 +42,8 @@ export interface AppConfig {
   backupKeep: number
   /** MQTT bridge (Home Assistant discovery); null = disabled. */
   mqtt: MqttConfig | null
+  /** Public address of the app behind a reverse proxy (e.g. https://doors.example.com): fingerprint/Face ID and push use it. */
+  publicUrl: string | null
 }
 
 export interface MqttConfig {
@@ -119,5 +121,6 @@ export function loadConfig(): AppConfig {
     backupHour: int('BACKUP_HOUR', 2),
     backupKeep: int('BACKUP_KEEP', 14),
     mqtt: loadMqtt(),
+    publicUrl: process.env.PUBLIC_URL ? process.env.PUBLIC_URL.replace(/\/+$/, '') : null,
   }
 }

@@ -39,6 +39,7 @@ const ctx = createContext(
     backupHour: -1,
     backupKeep: 3,
     mqtt: null,
+    publicUrl: null,
   },
   { info: () => undefined, warn: () => undefined, error: (m) => console.error(m) },
 )

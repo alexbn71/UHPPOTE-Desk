@@ -1,5 +1,16 @@
 import { z } from 'zod'
-import { DOOR_OPEN_FOR, RULE_SEVERITIES, TOKEN_ACCESS, WEBHOOK_EVENTS, type RuleSeverity, type TokenAccess, type WebhookEvent } from './labels.js'
+import {
+  DOOR_OPEN_FOR,
+  MOBILE_SESSION_DAYS,
+  OPEN_CONFIRMATIONS,
+  RULE_SEVERITIES,
+  TOKEN_ACCESS,
+  WEBHOOK_EVENTS,
+  type OpenConfirmation,
+  type RuleSeverity,
+  type TokenAccess,
+  type WebhookEvent,
+} from './labels.js'
 import { LANGUAGES, type Language } from './i18n/index.js'
 
 // ---------------------------------------------------------------------------
@@ -28,6 +39,9 @@ export const idParam = z.object({ id: z.coerce.number().int().positive() })
 export const loginSchema = z.object({
   username: z.string().min(1),
   password: z.string().min(1),
+  /** Remember this device: long login with a device cookie (mobile app). */
+  remember: z.boolean().optional(),
+  deviceName: z.string().trim().max(100).optional(),
 })
 
 export const changePasswordSchema = z.object({
@@ -697,4 +711,90 @@ export interface RuleRunDto {
   text: string
   /** Actions that failed. */
   errors: string[]
+}
+
+// ---------------------------------------------------------------------------
+// Mobile app (PWA): remembered devices, fingerprint/Face ID, push notifications
+// ---------------------------------------------------------------------------
+
+export const mobileSettingsSchema = z.object({
+  /** press = hold the button; biometric = fingerprint/Face ID on remembered devices. */
+  openConfirmation: z.enum(OPEN_CONFIRMATIONS).default('press'),
+  /** Login duration of remembered devices without fingerprint/Face ID (devices with it never expire). */
+  sessionDays: z
+    .number()
+    .int()
+    .refine((d) => (MOBILE_SESSION_DAYS as readonly number[]).includes(d), 'Choose 30, 60, 90, 120, 150 or 180 days')
+    .default(90),
+})
+export type MobileSettings = z.infer<typeof mobileSettingsSchema>
+
+export interface DeviceDto {
+  id: number
+  operatorId: number
+  operatorName: string
+  name: string
+  createdAt: string
+  lastUsedAt: string | null
+  lastIp: string | null
+  biometric: boolean
+  push: boolean
+  /** null = no expiry (fingerprint/Face ID registered). */
+  expiresAt: string | null
+}
+
+export interface PushPreferencesDto {
+  events: WebhookEvent[]
+  doorIds: number[]
+  /** Also the firings of automation rules. */
+  rules: boolean
+  language: Language
+  lastSentAt: string | null
+  lastError: string | null
+}
+
+/** What the mobile app needs: settings, this device, its push subscription. */
+export interface MobileConfigDto {
+  openConfirmation: OpenConfirmation
+  sessionDays: number
+  vapidPublicKey: string
+  /** null when logged in without "remember this device". */
+  device: (Pick<DeviceDto, 'id' | 'name' | 'createdAt' | 'biometric' | 'expiresAt'> & { push: PushPreferencesDto | null }) | null
+}
+
+export interface MobileDoorDto {
+  id: number
+  controllerId: number
+  controllerName: string
+  door: number
+  name: string
+  /** The user may open it (role, zones, door restrictions). */
+  canOpen: boolean
+}
+
+export const pushSubscribeSchema = z.object({
+  subscription: z.object({
+    endpoint: z.string().url().max(2000),
+    keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }),
+  }),
+  events: z.array(z.enum(WEBHOOK_EVENTS)).default(['access.denied', 'alarm', 'controller.offline']),
+  doorIds: z.array(z.number().int().positive()).default([]),
+  rules: z.boolean().default(true),
+  language: z
+    .string()
+    .refine((l): l is Language => LANGUAGES.some((x) => x.code === l), 'Unknown language')
+    .default('en'),
+})
+
+/** Body of a push message (read by the service worker). */
+export interface PushPayload {
+  title: string
+  body: string
+  tag: string
+  url: string
+  /** Door of the event, with the "open" action when the user may open it. */
+  door: { id: number; name: string } | null
+  canOpen: boolean
+  confirmation: OpenConfirmation
+  texts: { open: string; opened: string; failed: string }
 }

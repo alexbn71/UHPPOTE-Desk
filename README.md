@@ -35,6 +35,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Automation rules**: when an event or a door left open matches the conditions (doors, people or cards, time window, days), send notifications, call webhooks or open doors — see [docs/RULES.md](docs/RULES.md).
 
+**Mobile app** (PWA at `/m`, installable on the home screen): doors with live state, opening with *hold to open* or fingerprint/Face ID, push notifications with an *Open* action, remembered devices revocable by the administrator — see [docs/MOBILE.md](docs/MOBILE.md).
+
 **API tokens** for machine-to-machine access (`Authorization: Bearer`): read-only, door opening only (optionally limited to specific doors), operator or administrator, with zone restrictions, expiry and audit — see [docs/API-TOKENS.md](docs/API-TOKENS.md).
 
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).

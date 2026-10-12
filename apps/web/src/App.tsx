@@ -22,6 +22,7 @@ import {
   IconApi,
   IconCalendarTime,
   IconChevronDown,
+  IconDeviceMobile,
   IconChecklist,
   IconClockHour4,
   IconCpu,
@@ -59,6 +60,8 @@ import { DashboardPage } from './pages/Dashboard'
 import { DoorsPage } from './pages/Doors'
 import { EventsPage } from './pages/Events'
 import { LoginPage } from './pages/Login'
+import { MobileAdminPage } from './pages/MobileAdmin'
+import { MobileApp } from './pages/MobileApp'
 import { MonitorPage } from './pages/Monitor'
 import { NotificationsPage } from './pages/Notifications'
 import { OperatorsPage } from './pages/Operators'
@@ -91,6 +94,7 @@ type NavKey =
   | 'audit'
   | 'webhooks'
   | 'apiTokens'
+  | 'mobile'
   | 'notifications'
   | 'rules'
   | 'systemInfo'
@@ -140,6 +144,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
       { to: '/rules', label: 'rules', icon: <IconBolt size={18} />, role: 'admin' },
       { to: '/notifications', label: 'notifications', icon: <IconBell size={18} />, role: 'admin' },
       { to: '/webhooks', label: 'webhooks', icon: <IconWebhook size={18} />, role: 'admin' },
+      { to: '/mobile-app', label: 'mobile', icon: <IconDeviceMobile size={18} />, role: 'admin' },
       { to: '/api-tokens', label: 'apiTokens', icon: <IconApi size={18} />, role: 'admin' },
       { to: '/system', label: 'systemInfo', icon: <IconSettings size={18} />, role: 'viewer' },
     ],
@@ -217,6 +222,11 @@ function Shell({ children }: { children: ReactNode }) {
             <Text size="sm" visibleFrom="xs">
               {user?.displayName} · {user ? codes.role(user.role) : ''}
             </Text>
+            <Tooltip label={t('nav.mobile')}>
+              <UnstyledButton onClick={() => navigate('/m')} aria-label={t('nav.mobile')}>
+                <IconDeviceMobile size={20} />
+              </UnstyledButton>
+            </Tooltip>
             <LanguageSelect />
             {!user?.passwordManaged && (
               <Tooltip label={t('nav.changePassword')}>
@@ -310,83 +320,100 @@ export function App() {
         <ChangePasswordPage forced />
       ) : (
         <LiveProvider enabled>
-          <Shell>
-            <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/monitor" element={<MonitorPage />} />
-              <Route path="/events" element={<EventsPage />} />
-              <Route path="/attendance" element={<AttendancePage />} />
-              <Route path="/anomalies" element={<AnomaliesPage />} />
-              <Route path="/people" element={<PeoplePage />} />
-              <Route path="/cards" element={<CardsPage />} />
-              <Route path="/permissions" element={<PermissionsPage />} />
-              <Route path="/structure" element={<StructurePage />} />
-              <Route path="/controllers" element={<ControllersPage />} />
-              <Route path="/controllers/:id" element={<ControllerDetailPage />} />
-              <Route path="/doors" element={<DoorsPage />} />
-              <Route path="/time-profiles" element={<TimeProfilesPage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route
-                path="/sync"
-                element={
-                  <Guard role="operator">
-                    <SyncPage />
-                  </Guard>
-                }
-              />
-              <Route
-                path="/operators"
-                element={
-                  <Guard role="admin">
-                    <OperatorsPage />
-                  </Guard>
-                }
-              />
-              <Route
-                path="/audit"
-                element={
-                  <Guard role="admin">
-                    <AuditPage />
-                  </Guard>
-                }
-              />
-              <Route
-                path="/rules"
-                element={
-                  <Guard role="admin">
-                    <RulesPage />
-                  </Guard>
-                }
-              />
-              <Route
-                path="/notifications"
-                element={
-                  <Guard role="admin">
-                    <NotificationsPage />
-                  </Guard>
-                }
-              />
-              <Route
-                path="/webhooks"
-                element={
-                  <Guard role="admin">
-                    <WebhooksPage />
-                  </Guard>
-                }
-              />
-              <Route
-                path="/api-tokens"
-                element={
-                  <Guard role="admin">
-                    <ApiTokensPage />
-                  </Guard>
-                }
-              />
-              <Route path="/system" element={<SystemPage />} />
-              <Route path="/password" element={<ChangePasswordPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Shell>
+          <Routes>
+            {/* mobile app: full screen, without the menu */}
+            <Route path="/m" element={<MobileApp />} />
+            <Route
+              path="*"
+              element={
+                <Shell>
+                  <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/monitor" element={<MonitorPage />} />
+                    <Route path="/events" element={<EventsPage />} />
+                    <Route path="/attendance" element={<AttendancePage />} />
+                    <Route path="/anomalies" element={<AnomaliesPage />} />
+                    <Route path="/people" element={<PeoplePage />} />
+                    <Route path="/cards" element={<CardsPage />} />
+                    <Route path="/permissions" element={<PermissionsPage />} />
+                    <Route path="/structure" element={<StructurePage />} />
+                    <Route path="/controllers" element={<ControllersPage />} />
+                    <Route path="/controllers/:id" element={<ControllerDetailPage />} />
+                    <Route path="/doors" element={<DoorsPage />} />
+                    <Route path="/time-profiles" element={<TimeProfilesPage />} />
+                    <Route path="/tasks" element={<TasksPage />} />
+                    <Route
+                      path="/sync"
+                      element={
+                        <Guard role="operator">
+                          <SyncPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/operators"
+                      element={
+                        <Guard role="admin">
+                          <OperatorsPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/audit"
+                      element={
+                        <Guard role="admin">
+                          <AuditPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/rules"
+                      element={
+                        <Guard role="admin">
+                          <RulesPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/notifications"
+                      element={
+                        <Guard role="admin">
+                          <NotificationsPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/mobile-app"
+                      element={
+                        <Guard role="admin">
+                          <MobileAdminPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/webhooks"
+                      element={
+                        <Guard role="admin">
+                          <WebhooksPage />
+                        </Guard>
+                      }
+                    />
+                    <Route
+                      path="/api-tokens"
+                      element={
+                        <Guard role="admin">
+                          <ApiTokensPage />
+                        </Guard>
+                      }
+                    />
+                    <Route path="/system" element={<SystemPage />} />
+                    <Route path="/password" element={<ChangePasswordPage />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Shell>
+              }
+            />
+          </Routes>
         </LiveProvider>
       )}
     </BrowserRouter>

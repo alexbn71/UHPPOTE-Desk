@@ -52,6 +52,7 @@ function config(dir: string): AppConfig {
     backupHour: -1,
     backupKeep: 3,
     mqtt: null,
+    publicUrl: null,
   }
 }
 

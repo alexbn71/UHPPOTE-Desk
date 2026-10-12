@@ -37,6 +37,11 @@ function LocalizedProviders({ children }: { children: ReactNode }) {
   )
 }
 
+// service worker: installable app, push notifications (production build only)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  void navigator.serviceWorker.register('/sw.js').catch(() => undefined)
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="auto">
