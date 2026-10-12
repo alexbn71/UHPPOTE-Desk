@@ -27,6 +27,8 @@ export const WEBHOOK_EVENTS = [
   'door.closed',
   'controller.online',
   'controller.offline',
+  'anomaly.unusual_time',
+  'anomaly.repeated_denied',
 ] as const
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]
 

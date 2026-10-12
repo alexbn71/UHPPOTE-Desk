@@ -31,6 +31,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Notifications** on Telegram (with an *Open door* button for authorised users), email, ntfy and Gotify, plus a daily report of who came in and the anomalies — see [docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md).
 
+**Anomaly detection** on the history: accesses at unusual times for each person, repeated denied attempts, and cards unused for months (with bulk revocation) — also as real-time events and in the daily report; see [docs/ANOMALIES.md](docs/ANOMALIES.md).
+
 **API tokens** for machine-to-machine access (`Authorization: Bearer`): read-only, door opening only (optionally limited to specific doors), operator or administrator, with zone restrictions, expiry and audit — see [docs/API-TOKENS.md](docs/API-TOKENS.md).
 
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).

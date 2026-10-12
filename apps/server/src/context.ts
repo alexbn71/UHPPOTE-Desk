@@ -14,6 +14,7 @@ import { EventService } from './services/events.js'
 import { HealthService } from './services/health.js'
 import { MqttService } from './services/mqtt.js'
 import { SyncService } from './services/sync.js'
+import { AnomalyService } from './services/anomalies.js'
 import { IntegrationEvents } from './services/integrationEvents.js'
 import { NotificationService } from './services/notify/notifications.js'
 import { WebhookService } from './services/webhooks.js'
@@ -41,6 +42,7 @@ export interface AppContext {
   /** MQTT bridge to Home Assistant; null when MQTT_URL is not set. */
   mqtt: MqttService | null
   integrationEvents: IntegrationEvents
+  anomalies: AnomalyService
   webhooks: WebhookRepo
   webhookService: WebhookService
   notifications: NotificationRepo
@@ -58,7 +60,8 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
   const events = new EventRepo(db)
   const hub = new LiveHub()
   const webhooks = new WebhookRepo(db)
-  const integrationEvents = new IntegrationEvents(controllers, hub, logger)
+  const anomalies = new AnomalyService(db, events)
+  const integrationEvents = new IntegrationEvents(controllers, hub, logger, anomalies)
   const notifications = new NotificationRepo(db)
   const protoLogger: Logger = config.uhppote.debug ? logger : { warn: logger.warn, error: logger.error, info: logger.info }
   const gateway = new ControllerGateway(controllers, audit, hub, { ...config.uhppote, logger: protoLogger })
@@ -97,9 +100,10 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     mqtt: config.mqtt ? new MqttService(config.mqtt, controllers, gateway, { version: APP_VERSION, logger }) : null,
     webhooks,
     integrationEvents,
+    anomalies,
     webhookService: new WebhookService(webhooks, integrationEvents, { version: APP_VERSION, logger }),
     notifications,
-    notificationService: new NotificationService(notifications, integrationEvents, { controllers, events, gateway }, { logger }),
+    notificationService: new NotificationService(notifications, integrationEvents, { controllers, events, gateway, anomalies }, { logger }),
     logger,
   }
 }

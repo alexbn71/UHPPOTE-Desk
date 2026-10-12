@@ -2,6 +2,7 @@ import { AppShell, Badge, Burger, Center, Group, Loader, NavLink, ScrollArea, Te
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconActivity,
+  IconAlertTriangle,
   IconBell,
   IconApi,
   IconCalendarTime,
@@ -30,6 +31,7 @@ import { LanguageSelect } from './components/LanguageSelect'
 import { useAuth } from './lib/auth'
 import { useCodes } from './lib/codes'
 import { LiveProvider, useLive } from './lib/live'
+import { AnomaliesPage } from './pages/Anomalies'
 import { ApiTokensPage } from './pages/ApiTokens'
 import { AttendancePage } from './pages/Attendance'
 import { AuditPage } from './pages/Audit'
@@ -58,6 +60,7 @@ type NavKey =
   | 'monitor'
   | 'events'
   | 'attendance'
+  | 'anomalies'
   | 'people'
   | 'cards'
   | 'permissions'
@@ -89,6 +92,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
       { to: '/monitor', label: 'monitor', icon: <IconActivity size={18} />, role: 'viewer' },
       { to: '/events', label: 'events', icon: <IconHistory size={18} />, role: 'viewer' },
       { to: '/attendance', label: 'attendance', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
+      { to: '/anomalies', label: 'anomalies', icon: <IconAlertTriangle size={18} />, role: 'viewer' },
     ],
   },
   {
@@ -230,6 +234,7 @@ export function App() {
               <Route path="/monitor" element={<MonitorPage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/attendance" element={<AttendancePage />} />
+              <Route path="/anomalies" element={<AnomaliesPage />} />
               <Route path="/people" element={<PeoplePage />} />
               <Route path="/cards" element={<CardsPage />} />
               <Route path="/permissions" element={<PermissionsPage />} />

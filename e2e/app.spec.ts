@@ -102,6 +102,7 @@ test.describe.serial('UHPPOTE Desk', () => {
       ['/monitor', 'Monitor'],
       ['/events', 'Event history'],
       ['/attendance', 'Attendance'],
+      ['/anomalies', 'Anomalies'],
       ['/people', 'People'],
       ['/cards', 'Cards'],
       ['/permissions', 'Access permissions'],

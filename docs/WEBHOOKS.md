@@ -22,6 +22,8 @@ The **Send test** button sends a `webhook.test` request right away (also to a di
 | `alarm` | Alarms recorded by the controller: door open too long, forced open or closed, fire, theft prevention, 24×7 zone, emergency, exit button under threat. Controller power-on and reset are not sent |
 | `door.opened` / `door.closed` | The door sensor changed, from the live controller status |
 | `controller.online` / `controller.offline` | The controller became reachable / stopped answering |
+| `anomaly.unusual_time` | A granted access at an unusual time for the person (see [ANOMALIES.md](ANOMALIES.md)) |
+| `anomaly.repeated_denied` | Repeated denied attempts with the same card reached the threshold (see [ANOMALIES.md](ANOMALIES.md)) |
 
 Events from the controller older than 10 minutes (stored events downloaded when a controller comes back online) are saved in the history but are not sent.
 

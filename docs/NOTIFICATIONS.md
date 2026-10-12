@@ -4,7 +4,7 @@ UHPPOTE Desk can send messages on **Telegram**, by **email** (SMTP), and to **nt
 
 Channels are managed by administrators in *Administration → Notifications*. Each channel has:
 
-- the **events** that send a message (same list as the [webhooks](WEBHOOKS.md#events)): access granted or denied, door events, alarms, door opened or closed (sensor), controller offline or back online;
+- the **events** that send a message (same list as the [webhooks](WEBHOOKS.md#events)): access granted or denied, door events, alarms, door opened or closed (sensor), controller offline or back online, access at an unusual time, repeated denied attempts;
 - an optional **door filter**;
 - the **language** of the messages;
 - the optional **daily report** and the hour to send it;
@@ -41,6 +41,7 @@ At the chosen hour the channel receives a summary of the **last 24 hours**:
 - **who came in**: every person with granted accesses, with the first and last time and the doors;
 - **denied accesses**: time, door, person or card, reason;
 - **alarms**: door open too long, forced door, fire, theft prevention, emergency…;
+- **unusual times** and **repeated denied attempts** ([anomaly detection](ANOMALIES.md));
 - **controllers offline** at that moment;
 - or "Anomalies: none".
 

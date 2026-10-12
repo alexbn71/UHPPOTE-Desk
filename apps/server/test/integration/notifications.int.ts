@@ -159,7 +159,7 @@ beforeAll(async () => {
   fake = new FakeController({ id: SERIAL })
   await fake.start()
   ctx = createContext(config(dataDir), quiet, ':memory:')
-  ctx.notificationService = new NotificationService(ctx.notifications, ctx.integrationEvents, { controllers: ctx.controllers, events: ctx.events, gateway: ctx.gateway }, {
+  ctx.notificationService = new NotificationService(ctx.notifications, ctx.integrationEvents, { controllers: ctx.controllers, events: ctx.events, gateway: ctx.gateway, anomalies: ctx.anomalies }, {
     telegramApi: base,
     timeoutMs: 3000,
     retryDelayMs: 50,

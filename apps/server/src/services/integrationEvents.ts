@@ -1,8 +1,17 @@
 import { EventEmitter } from 'node:events'
 import type { Logger } from '@uhppote-desk/protocol'
-import { ALARM_REASONS, translator, type ControllerLiveState, type DoorDto, type EventDto, type WebhookEvent, type WsMessage } from '@uhppote-desk/shared'
+import {
+  ALARM_REASONS,
+  translator,
+  type ControllerLiveState,
+  type DoorDto,
+  type EventDto,
+  type WebhookEvent,
+  type WsMessage,
+} from '@uhppote-desk/shared'
 import type { ControllerRecord, ControllerRepo } from '../db/repos.js'
 import type { LiveHub } from '../gateway/gateway.js'
+import type { AnomalyService } from './anomalies.js'
 import { isRecentEvent } from './events.js'
 
 const en = translator('en')
@@ -33,6 +42,8 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
     private readonly controllers: ControllerRepo,
     private readonly hub: LiveHub,
     private readonly logger?: Logger,
+    /** Real-time anomaly checks on new accesses (unusual times, bursts of denied attempts). */
+    private readonly anomalies?: AnomalyService,
   ) {
     super()
     this.setMaxListeners(0)
@@ -71,12 +82,20 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
     const c = this.controllers.get(s.controllerId)
     if (!c?.enabled) return
     if (prev.online !== s.online) {
-      this.publish(s.online ? 'controller.online' : 'controller.offline', c, null, { lastSeenAt: s.lastSeenAt, error: s.online ? null : s.lastError }, null, s)
+      this.publish(
+        s.online ? 'controller.online' : 'controller.offline',
+        c,
+        null,
+        { lastSeenAt: s.lastSeenAt, error: s.online ? null : s.lastError },
+        null,
+        s,
+      )
     }
     if (!prev.online || !s.online) return
     for (const d of s.doors) {
       const before = prev.doors.find((x) => x.door === d.door)
-      if (before && before.open !== d.open) this.publish(d.open ? 'door.opened' : 'door.closed', c, d.door, { open: d.open, unlocked: d.unlocked }, null, s)
+      if (before && before.open !== d.open)
+        this.publish(d.open ? 'door.opened' : 'door.closed', c, d.door, { open: d.open, unlocked: d.unlocked }, null, s)
     }
   }
 
@@ -95,25 +114,45 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
           : null
     const c = type && this.controllers.get(e.controllerId)
     if (!type || !c?.enabled) return
-    this.publish(
-      type,
-      c,
-      e.door >= 1 && e.door <= 4 ? e.door : null,
-      {
-        index: e.index,
-        eventType: e.type,
-        card: e.card || null,
-        personId: e.personId,
-        personName: e.personName,
-        granted: e.granted,
-        direction: e.direction === 1 ? 'in' : e.direction === 2 ? 'out' : null,
-        reasonCode: e.reason,
-        reason: en.reason(e.reason),
-        timestamp: e.timestamp,
-      },
-      e,
-      null,
-    )
+    const door = e.door >= 1 && e.door <= 4 ? e.door : null
+    const data = {
+      index: e.index,
+      eventType: e.type,
+      card: e.card || null,
+      personId: e.personId,
+      personName: e.personName,
+      granted: e.granted,
+      direction: e.direction === 1 ? 'in' : e.direction === 2 ? 'out' : null,
+      reasonCode: e.reason,
+      reason: en.reason(e.reason),
+      timestamp: e.timestamp,
+    }
+    this.publish(type, c, door, data, e, null)
+
+    if (!this.anomalies) return
+    if (type === 'access.granted') {
+      const u = this.anomalies.checkAccess(e)
+      if (u)
+        this.publish(
+          'anomaly.unusual_time',
+          c,
+          door,
+          { ...data, kind: u.kind, usualFrom: u.usualFrom, usualTo: u.usualTo, samples: u.samples },
+          e,
+          null,
+        )
+    } else if (type === 'access.denied') {
+      const burst = this.anomalies.checkDenied(e)
+      if (burst)
+        this.publish(
+          'anomaly.repeated_denied',
+          c,
+          door,
+          { ...data, count: burst.count, windowMinutes: burst.windowMinutes },
+          e,
+          null,
+        )
+    }
   }
 
   private publish(

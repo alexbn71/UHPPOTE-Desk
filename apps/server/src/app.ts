@@ -9,6 +9,7 @@ import { CodecError, NotFoundError, TimeoutError, UhppoteError } from '@uhppote-
 import { translate } from '@uhppote-desk/shared'
 import { HttpError, SESSION_COOKIE } from './auth/auth.js'
 import type { AppContext } from './context.js'
+import { registerAnomalyRoutes } from './routes/anomalies.js'
 import { registerAttendanceRoutes } from './routes/attendance.js'
 import { registerAuthRoutes } from './routes/auth.js'
 import { registerControllerRoutes } from './routes/controllers.js'
@@ -77,6 +78,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerWebhookRoutes(api, ctx)
       registerTokenRoutes(api, ctx)
       registerNotificationRoutes(api, ctx)
+      registerAnomalyRoutes(api, ctx)
     },
     { prefix: '/api' },
   )

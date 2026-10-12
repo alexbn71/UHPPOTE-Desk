@@ -4,6 +4,7 @@ import { translator } from '@uhppote-desk/shared'
 import type { NotificationChannel, NotificationRepo } from '../../db/notifications.js'
 import type { ControllerRepo, EventRepo } from '../../db/repos.js'
 import type { ControllerGateway } from '../../gateway/gateway.js'
+import type { AnomalyService } from '../anomalies.js'
 import { localDate, localDateTime } from '../../util/time.js'
 import { matchesDoors, type IntegrationEvent, type IntegrationEvents } from '../integrationEvents.js'
 import { sendMessage, type TelegramConfig } from './channels.js'
@@ -34,10 +35,20 @@ export class NotificationService {
   constructor(
     private readonly repo: NotificationRepo,
     private readonly bus: IntegrationEvents,
-    private readonly deps: { controllers: ControllerRepo; events: EventRepo; gateway: ControllerGateway },
+    private readonly deps: {
+      controllers: ControllerRepo
+      events: EventRepo
+      gateway: ControllerGateway
+      anomalies: AnomalyService
+    },
     opts: { telegramApi?: string; timeoutMs?: number; retryDelayMs?: number; logger?: Logger | undefined } = {},
   ) {
-    this.opts = { telegramApi: opts.telegramApi ?? 'https://api.telegram.org', timeoutMs: opts.timeoutMs ?? 15_000, retryDelayMs: opts.retryDelayMs ?? 5000, logger: opts.logger }
+    this.opts = {
+      telegramApi: opts.telegramApi ?? 'https://api.telegram.org',
+      timeoutMs: opts.timeoutMs ?? 15_000,
+      retryDelayMs: opts.retryDelayMs ?? 5000,
+      logger: opts.logger,
+    }
   }
 
   start(): void {
@@ -118,13 +129,22 @@ export class NotificationService {
     const allowed = c.doorIds.length > 0 ? new Set(c.doorIds) : null
     const events = this.deps.events
       .query({ from, to, limit: 5000, offset: 0 })
-      .rows.filter((e) => !allowed || doors.some((d) => allowed.has(d.id) && d.controllerId === e.controllerId && d.door === e.door))
+      .rows.filter(
+        (e) =>
+          !allowed || doors.some((d) => allowed.has(d.id) && d.controllerId === e.controllerId && d.door === e.door),
+      )
     const controllers = this.deps.controllers.list().filter((x) => x.enabled)
     const offline = controllers
       .filter((x) => !this.deps.gateway.hub.state(x.id).online)
       .filter((x) => !allowed || doors.some((d) => allowed.has(d.id) && d.controllerId === x.id))
       .map((x) => x.name)
-    return reportMessage({ from, to, events, offline }, c.language)
+    const inDoors = (controllerId: number, door: number) =>
+      !allowed || doors.some((d) => allowed.has(d.id) && d.controllerId === controllerId && d.door === door)
+    const unusual = this.deps.anomalies.unusualAccesses(from, to).filter((u) => inDoors(u.controllerId, u.door))
+    const bursts = this.deps.anomalies
+      .deniedBursts(from, to)
+      .filter((b) => b.doorRefs.some((r) => inDoors(r.controllerId, r.door)))
+    return reportMessage({ from, to, events, offline, unusual, bursts }, c.language)
   }
 
   // --- event notifications ------------------------------------------------------
@@ -171,7 +191,11 @@ export class NotificationService {
 
   private async send(c: NotificationChannel, m: NotifyMessage): Promise<SendResult> {
     try {
-      await sendMessage(c.config, m, { timeoutMs: this.opts.timeoutMs, telegramApi: this.opts.telegramApi, telegramButton: this.openButton(c, m) })
+      await sendMessage(c.config, m, {
+        timeoutMs: this.opts.timeoutMs,
+        telegramApi: this.opts.telegramApi,
+        telegramButton: this.openButton(c, m),
+      })
       this.repo.recordResult(c.id, localDateTime(), null)
       return { ok: true, error: null }
     } catch (err) {
@@ -188,13 +212,21 @@ export class NotificationService {
     if (c.config.type !== 'telegram' || !c.config.openButton || !m.door) return undefined
     const ts = Math.floor(Date.now() / 1000)
     const payload = `${c.id}:${m.door.id}:${ts}`
-    return { text: translator(c.language).t('notify.openButton', { door: m.door.name }), data: `o:${payload}:${sign(c.config.botToken, payload)}` }
+    return {
+      text: translator(c.language).t('notify.openButton', { door: m.door.name }),
+      data: `o:${payload}:${sign(c.config.botToken, payload)}`,
+    }
   }
 
   private async onTelegramUpdate(u: TelegramUpdate, bot: TelegramBot): Promise<void> {
-    const channels = this.repo.list().filter((c) => c.enabled && c.config.type === 'telegram' && c.config.botToken === bot.token)
+    const channels = this.repo
+      .list()
+      .filter((c) => c.enabled && c.config.type === 'telegram' && c.config.botToken === bot.token)
     if (u.message?.text && /^\/(start|id)\b/.test(u.message.text)) {
-      const lang = channels.find((c) => (c.config as TelegramConfig).chatId === String(u.message!.chat.id))?.language ?? channels[0]?.language ?? 'en'
+      const lang =
+        channels.find((c) => (c.config as TelegramConfig).chatId === String(u.message!.chat.id))?.language ??
+        channels[0]?.language ??
+        'en'
       await bot.call('sendMessage', {
         chat_id: u.message.chat.id,
         text: translator(lang).t('notify.chatInfo', { chat: u.message.chat.id, user: u.message.from?.id ?? '?' }),
@@ -203,15 +235,18 @@ export class NotificationService {
     }
     const q = u.callback_query
     if (!q?.data?.startsWith('o:')) return
-    const answer = (text: string) => bot.call('answerCallbackQuery', { callback_query_id: q.id, text, show_alert: true })
+    const answer = (text: string) =>
+      bot.call('answerCallbackQuery', { callback_query_id: q.id, text, show_alert: true })
 
     const [, channelId, doorId, ts, sig] = q.data.split(':')
     const c = channels.find((x) => x.id === Number(channelId))
     const t = translator(c?.language ?? 'en')
     const cfg = c?.config as TelegramConfig | undefined
     const payload = `${channelId}:${doorId}:${ts}`
-    if (!c || !cfg?.openButton || !sig || !safeEqual(sig, sign(cfg.botToken, payload))) return void (await answer(t.t('notify.openNotAllowed')))
-    if (q.message && String(q.message.chat.id) !== cfg.chatId && !cfg.chatId.startsWith('@')) return void (await answer(t.t('notify.openNotAllowed')))
+    if (!c || !cfg?.openButton || !sig || !safeEqual(sig, sign(cfg.botToken, payload)))
+      return void (await answer(t.t('notify.openNotAllowed')))
+    if (q.message && String(q.message.chat.id) !== cfg.chatId && !cfg.chatId.startsWith('@'))
+      return void (await answer(t.t('notify.openNotAllowed')))
     if (!cfg.allowedUserIds.includes(q.from.id)) {
       this.opts.logger?.warn?.(`Telegram: user ${q.from.id} (${q.from.username ?? '?'}) is not allowed to open doors`)
       return void (await answer(t.t('notify.openNotAllowed')))
@@ -237,7 +272,9 @@ export class NotificationService {
       return
     }
     await answer(t.t('notify.openDone', { door: door.name }))
-    await bot.call('sendMessage', { chat_id: cfg.chatId, text: `🔓 ${t.t('notify.opened', { door: door.name, user })}` }).catch(() => undefined)
+    await bot
+      .call('sendMessage', { chat_id: cfg.chatId, text: `🔓 ${t.t('notify.opened', { door: door.name, user })}` })
+      .catch(() => undefined)
   }
 }
 

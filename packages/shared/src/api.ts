@@ -560,3 +560,71 @@ export interface NotificationChannelDto {
   lastError: string | null
   lastReportDate: string | null
 }
+
+// ---------------------------------------------------------------------------
+// Anomaly detection
+// ---------------------------------------------------------------------------
+
+export const anomalySettingsSchema = z.object({
+  /** Days of history that make up each person's habits. */
+  baselineDays: z.number().int().min(7).max(365).default(60),
+  /** Accesses needed before a person's habits are used; with fewer, only the night window applies. */
+  minSamples: z.number().int().min(3).max(500).default(10),
+  /** Minutes from the nearest usual access time beyond which an access is unusual. */
+  toleranceMinutes: z.number().int().min(15).max(720).default(90),
+  /** Night window, used for people without enough history. */
+  nightStart: hhmmSchema.default('22:00'),
+  nightEnd: hhmmSchema.default('06:00'),
+  /** Denied attempts with the same card (or at the same door) within the window that make a burst. */
+  deniedCount: z.number().int().min(2).max(50).default(3),
+  deniedWindowMinutes: z.number().int().min(1).max(1440).default(10),
+  /** Days without a granted access after which an active card is inactive. */
+  inactiveDays: z.number().int().min(14).max(1095).default(90),
+})
+export type AnomalySettings = z.infer<typeof anomalySettingsSchema>
+
+export const anomalyPeriodSchema = z.object({ from: dateSchema, to: dateSchema })
+
+/** hour = far from the usual times; day = non-working day never used before; night = night access without enough history. */
+export type UnusualKind = 'hour' | 'day' | 'night'
+
+export interface UnusualAccessDto {
+  eventId: number
+  personId: number
+  personName: string | null
+  timestamp: string
+  controllerId: number
+  controllerName: string
+  doorName: string | null
+  door: number
+  kind: UnusualKind
+  /** Usual time window of the person (5th–95th percentile), when known. */
+  usualFrom: string | null
+  usualTo: string | null
+  samples: number
+}
+
+export interface DeniedBurstDto {
+  card: number | null
+  personId: number | null
+  personName: string | null
+  doors: string[]
+  /** The doors of the attempts, as controller id and door number. */
+  doorRefs: { controllerId: number; door: number }[]
+  count: number
+  first: string
+  last: string
+  reasons: number[]
+}
+
+export interface InactiveCardDto {
+  cardId: number
+  number: number
+  personId: number | null
+  personName: string | null
+  personActive: boolean | null
+  /** Last granted access; null = never used. */
+  lastUsedAt: string | null
+  createdAt: string
+  daysInactive: number
+}

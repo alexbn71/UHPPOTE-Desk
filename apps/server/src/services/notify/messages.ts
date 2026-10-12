@@ -1,4 +1,12 @@
-import { ALARM_REASONS, translator, type EventDto, type Language, type WebhookEvent } from '@uhppote-desk/shared'
+import {
+  ALARM_REASONS,
+  translator,
+  type DeniedBurstDto,
+  type EventDto,
+  type Language,
+  type UnusualAccessDto,
+  type WebhookEvent,
+} from '@uhppote-desk/shared'
 import { localDateTime } from '../../util/time.js'
 import type { IntegrationEvent } from '../integrationEvents.js'
 
@@ -27,6 +35,18 @@ const STYLE: Record<WebhookEvent, { emoji: string; priority: NotifyMessage['prio
   'door.closed': { emoji: '🔒', priority: 2, tag: 'lock' },
   'controller.offline': { emoji: '🔴', priority: 4, tag: 'red_circle' },
   'controller.online': { emoji: '🟢', priority: 3, tag: 'green_circle' },
+  'anomaly.unusual_time': { emoji: '🕒', priority: 4, tag: 'clock3' },
+  'anomaly.repeated_denied': { emoji: '⛔', priority: 4, tag: 'no_entry_sign' },
+}
+
+/** Explanation of an unusual access: the usual window, a non-working day, or a night access. */
+function unusualText(
+  t: ReturnType<typeof translator>,
+  u: Pick<UnusualAccessDto, 'kind' | 'usualFrom' | 'usualTo'>,
+): string {
+  if (u.kind === 'hour') return t.t('notify.anomaly.usualHours', { from: u.usualFrom ?? '?', to: u.usualTo ?? '?' })
+  if (u.kind === 'day') return t.t('notify.anomaly.nonWorkingDay')
+  return t.t('notify.anomaly.night')
 }
 
 /** 'HH:mm:ss', with the date when it is not today. */
@@ -51,6 +71,9 @@ export function eventMessage(ev: IntegrationEvent, lang: Language): NotifyMessag
     const person = who(t, e)
     if (person) lines.push(person)
     lines.push(`${when(e.timestamp)} · ${t.reason(e.reason)}`)
+    if (ev.type === 'anomaly.unusual_time') lines.push(unusualText(t, ev.data as unknown as UnusualAccessDto))
+    if (ev.type === 'anomaly.repeated_denied')
+      lines.push(t.t('notify.anomaly.repeated', { n: Number(ev.data.count), minutes: Number(ev.data.windowMinutes) }))
   } else if (ev.type === 'controller.offline') {
     if (ev.state?.lastSeenAt) lines.push(t.t('notify.lastSeen', { time: when(ev.state.lastSeenAt) }))
     if (ev.state?.lastError) lines.push(ev.state.lastError)
@@ -69,7 +92,14 @@ export function eventMessage(ev: IntegrationEvent, lang: Language): NotifyMessag
 
 export function testMessage(lang: Language): NotifyMessage {
   const t = translator(lang)
-  return { emoji: '🔔', title: t.t('notify.testTitle'), lines: [t.t('notify.testBody')], priority: 3, tags: ['bell'], door: null }
+  return {
+    emoji: '🔔',
+    title: t.t('notify.testTitle'),
+    lines: [t.t('notify.testBody')],
+    priority: 3,
+    tags: ['bell'],
+    door: null,
+  }
 }
 
 // --- daily report -----------------------------------------------------------
@@ -81,6 +111,8 @@ export interface ReportInput {
   events: EventDto[]
   /** Names of the controllers offline now. */
   offline: string[]
+  unusual: UnusualAccessDto[]
+  bursts: DeniedBurstDto[]
 }
 
 const MAX_ITEMS = 25
@@ -120,17 +152,56 @@ export function reportMessage(r: ReportInput, lang: Language): NotifyMessage {
   }
   if (denied.length > 0) {
     lines.push({ heading: t.t('notify.report.denied', { n: denied.length }) })
-    lines.push(...limited(t, denied.map((e) => `• ${time(e)} ${place(e)} — ${who(t, e) ?? '?'}: ${t.reason(e.reason)}`)))
+    lines.push(
+      ...limited(
+        t,
+        denied.map((e) => `• ${time(e)} ${place(e)} — ${who(t, e) ?? '?'}: ${t.reason(e.reason)}`),
+      ),
+    )
   }
   if (alarms.length > 0) {
     lines.push({ heading: t.t('notify.report.alarms', { n: alarms.length }) })
-    lines.push(...limited(t, alarms.map((e) => `• ${time(e)} ${place(e)} — ${t.reason(e.reason)}`)))
+    lines.push(
+      ...limited(
+        t,
+        alarms.map((e) => `• ${time(e)} ${place(e)} — ${t.reason(e.reason)}`),
+      ),
+    )
+  }
+  if (r.unusual.length > 0) {
+    lines.push({ heading: t.t('notify.report.unusual', { n: r.unusual.length }) })
+    lines.push(
+      ...limited(
+        t,
+        r.unusual.map(
+          (u) =>
+            `• ${u.timestamp.slice(11, 16)} ${u.doorName ?? u.controllerName} — ${u.personName ?? '?'}: ${unusualText(t, u)}`,
+        ),
+      ),
+    )
+  }
+  if (r.bursts.length > 0) {
+    lines.push({ heading: t.t('notify.report.bursts', { n: r.bursts.length }) })
+    lines.push(
+      ...limited(
+        t,
+        r.bursts.map((b) => {
+          const holder = b.personName
+            ? `${b.personName} (${t.t('notify.card', { card: b.card ?? '?' })})`
+            : b.card
+              ? t.t('notify.unknownCard', { card: b.card })
+              : '?'
+          return `• ${b.first.slice(11, 16)}–${b.last.slice(11, 16)} ${b.doors.join(', ')} — ${holder}: ${t.t('notify.anomaly.attempts', { n: b.count })}`
+        }),
+      ),
+    )
   }
   if (r.offline.length > 0) {
     lines.push({ heading: t.t('notify.report.offline', { n: r.offline.length }) })
     lines.push(...r.offline.map((name) => `• ${name}`))
   }
-  if (denied.length === 0 && alarms.length === 0 && r.offline.length === 0) {
+  const anomalies = denied.length + alarms.length + r.offline.length + r.unusual.length + r.bursts.length
+  if (anomalies === 0) {
     lines.push({ heading: t.t('notify.report.anomalies') })
     lines.push(t.t('notify.report.noAnomalies'))
   }
@@ -138,7 +209,7 @@ export function reportMessage(r: ReportInput, lang: Language): NotifyMessage {
     emoji: '📋',
     title: t.t('notify.report.title', { date: r.to.slice(0, 10) }),
     lines,
-    priority: denied.length > 0 || alarms.length > 0 || r.offline.length > 0 ? 3 : 2,
+    priority: anomalies > 0 ? 3 : 2,
     tags: ['clipboard'],
     door: null,
   }
@@ -146,7 +217,5 @@ export function reportMessage(r: ReportInput, lang: Language): NotifyMessage {
 
 /** Plain-text rendering (email, ntfy, Gotify). */
 export function plainText(m: NotifyMessage): string {
-  return m.lines
-    .map((l, i) => (typeof l === 'string' ? l : `${i > 0 ? '\n' : ''}${l.heading}`))
-    .join('\n')
+  return m.lines.map((l, i) => (typeof l === 'string' ? l : `${i > 0 ? '\n' : ''}${l.heading}`)).join('\n')
 }
