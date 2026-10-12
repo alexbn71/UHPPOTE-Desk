@@ -59,8 +59,19 @@ export function LiveProvider({ children, enabled }: { children: ReactNode; enabl
             })
           }
           void qc.invalidateQueries({ queryKey: ['events'] })
+        } else if (msg.type === 'rule') {
+          // automation rule fired: alarms stay on screen until closed
+          notifications.show({
+            color: msg.severity === 'alarm' ? 'red' : msg.severity === 'warning' ? 'orange' : 'blue',
+            title: msg.name,
+            message: msg.text,
+            autoClose: msg.severity === 'alarm' ? false : 10_000,
+          })
         } else if (msg.type === 'sync') {
-          setState((s) => ({ ...s, sync: { ...s.sync, [msg.controllerId]: { status: msg.status, code: msg.code, params: msg.params ?? {} } } }))
+          setState((s) => ({
+            ...s,
+            sync: { ...s.sync, [msg.controllerId]: { status: msg.status, code: msg.code, params: msg.params ?? {} } },
+          }))
         }
       }
       ws.onclose = () => {

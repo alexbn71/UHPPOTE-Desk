@@ -63,6 +63,7 @@ X-UHPPOTE-Signature: sha256=8f2b…
 
 - `id` (also in `X-UHPPOTE-Delivery`) is the same at every retry of the same delivery: use it to ignore duplicates.
 - `door` is `null` for `controller.*` events and for events without a door.
+- A webhook can also be called by an [automation rule](RULES.md): the request has type `rule.triggered`, whatever events the webhook subscribes to.
 - `data` depends on the type: the fields above for `access.*`, `door.event` and `alarm`; `{ open, unlocked }` for `door.opened`/`door.closed`; `{ lastSeenAt, error }` for `controller.*`; `{ message }` for `webhook.test`.
 - `data.timestamp` is the controller's local time; `occurredAt` is when UHPPOTE Desk sent the event (UTC).
 

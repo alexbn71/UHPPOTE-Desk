@@ -33,6 +33,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Anomaly detection** on the history: accesses at unusual times for each person, repeated denied attempts, and cards unused for months (with bulk revocation) — also as real-time events and in the daily report; see [docs/ANOMALIES.md](docs/ANOMALIES.md).
 
+**Automation rules**: when an event or a door left open matches the conditions (doors, people or cards, time window, days), send notifications, call webhooks or open doors — see [docs/RULES.md](docs/RULES.md).
+
 **API tokens** for machine-to-machine access (`Authorization: Bearer`): read-only, door opening only (optionally limited to specific doors), operator or administrator, with zone restrictions, expiry and audit — see [docs/API-TOKENS.md](docs/API-TOKENS.md).
 
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).

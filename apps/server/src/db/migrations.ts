@@ -298,4 +298,35 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       );
     `,
   },
+  {
+    id: 5,
+    name: 'automation rules',
+    sql: /* sql */ `
+      -- AUTOINCREMENT: ids are never reused, so in-memory state (cooldowns, timers) cannot leak to a new rule
+      CREATE TABLE rules (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        enabled INTEGER NOT NULL DEFAULT 1,
+        severity TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info', 'warning', 'alarm')),
+        language TEXT NOT NULL DEFAULT 'en',
+        trigger TEXT NOT NULL,
+        conditions TEXT NOT NULL,
+        actions TEXT NOT NULL,
+        message TEXT NOT NULL DEFAULT '',
+        cooldown_seconds INTEGER NOT NULL DEFAULT 0,
+        last_fired_at TEXT,
+        fire_count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      );
+
+      CREATE TABLE rule_runs (
+        id INTEGER PRIMARY KEY,
+        rule_id INTEGER NOT NULL REFERENCES rules(id) ON DELETE CASCADE,
+        at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        text TEXT NOT NULL,
+        errors TEXT NOT NULL DEFAULT '[]'
+      );
+      CREATE INDEX rule_runs_rule ON rule_runs(rule_id, id);
+    `,
+  },
 ]

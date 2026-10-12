@@ -48,6 +48,10 @@ const adminId = ctx.db.get<{ id: number }>("SELECT id FROM operators WHERE usern
 await ctx.auth.setPassword(adminId, 'admin-e2e-initial', true)
 await ctx.eventService.startListener()
 ctx.health.start()
+// integrations as in main.ts
+ctx.webhookService.start()
+ctx.notificationService.start()
+ctx.ruleEngine.start()
 
 const app = await buildApp(ctx)
 app.post('/__sim/swipe', async (req) => {
@@ -60,6 +64,9 @@ console.log('E2E server ready on http://127.0.0.1:8090')
 
 const stop = async () => {
   ctx.health.stop()
+  ctx.ruleEngine.stop()
+  ctx.notificationService.stop()
+  ctx.webhookService.stop()
   await ctx.eventService.stopListener()
   await app.close()
   await fake.stop()

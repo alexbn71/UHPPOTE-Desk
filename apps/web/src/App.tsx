@@ -2,6 +2,7 @@ import { AppShell, Badge, Burger, Center, Group, Loader, NavLink, ScrollArea, Te
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconActivity,
+  IconBolt,
   IconAlertTriangle,
   IconBell,
   IconApi,
@@ -48,6 +49,7 @@ import { NotificationsPage } from './pages/Notifications'
 import { OperatorsPage } from './pages/Operators'
 import { PeoplePage } from './pages/People'
 import { PermissionsPage } from './pages/Permissions'
+import { RulesPage } from './pages/Rules'
 import { StructurePage } from './pages/Structure'
 import { SyncPage } from './pages/Sync'
 import { SystemPage } from './pages/System'
@@ -75,6 +77,7 @@ type NavKey =
   | 'webhooks'
   | 'apiTokens'
   | 'notifications'
+  | 'rules'
   | 'systemInfo'
 
 interface NavItem {
@@ -119,6 +122,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
     items: [
       { to: '/operators', label: 'operators', icon: <IconUserShield size={18} />, role: 'admin' },
       { to: '/audit', label: 'audit', icon: <IconChecklist size={18} />, role: 'admin' },
+      { to: '/rules', label: 'rules', icon: <IconBolt size={18} />, role: 'admin' },
       { to: '/notifications', label: 'notifications', icon: <IconBell size={18} />, role: 'admin' },
       { to: '/webhooks', label: 'webhooks', icon: <IconWebhook size={18} />, role: 'admin' },
       { to: '/api-tokens', label: 'apiTokens', icon: <IconApi size={18} />, role: 'admin' },
@@ -247,6 +251,7 @@ export function App() {
               <Route path="/sync" element={<Guard role="operator"><SyncPage /></Guard>} />
               <Route path="/operators" element={<Guard role="admin"><OperatorsPage /></Guard>} />
               <Route path="/audit" element={<Guard role="admin"><AuditPage /></Guard>} />
+              <Route path="/rules" element={<Guard role="admin"><RulesPage /></Guard>} />
               <Route path="/notifications" element={<Guard role="admin"><NotificationsPage /></Guard>} />
               <Route path="/webhooks" element={<Guard role="admin"><WebhooksPage /></Guard>} />
               <Route path="/api-tokens" element={<Guard role="admin"><ApiTokensPage /></Guard>} />

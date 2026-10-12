@@ -95,6 +95,13 @@ export class WebhookService {
 
   // --- delivery ---------------------------------------------------------------
 
+  /** Queues a `rule.triggered` request for one webhook (automation rules); false if it does not exist or is disabled. */
+  sendRule(webhookId: number, payload: Omit<WebhookPayload, 'id' | 'type' | 'occurredAt'>): boolean {
+    if (!this.repo.get(webhookId)?.enabled) return false
+    this.enqueue(webhookId, { id: randomUUID(), type: 'rule.triggered', occurredAt: new Date().toISOString(), ...payload })
+    return true
+  }
+
   private enqueue(webhookId: number, payload: WebhookPayload): void {
     let q = this.queues.get(webhookId)
     if (!q) {

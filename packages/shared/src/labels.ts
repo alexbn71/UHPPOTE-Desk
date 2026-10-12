@@ -45,3 +45,10 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
 
 /** Placeholder returned instead of stored passwords and tokens; sent back unchanged it keeps the stored value. */
 export const SECRET_MASK = '••••••••'
+
+/** Severity of an automation rule: sets the notification priority; alarms are also shown in the app (labels under `codes.ruleSeverity`). */
+export const RULE_SEVERITIES = ['info', 'warning', 'alarm'] as const
+export type RuleSeverity = (typeof RULE_SEVERITIES)[number]
+
+/** Rule trigger fired when a door stays open longer than the configured seconds. */
+export const DOOR_OPEN_FOR = 'door.open_for'

@@ -80,6 +80,11 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
     this.emit('message', { type: 'event', event })
   }
 
+  /** An automation rule fired (shown in the web app). */
+  publishRule(msg: Omit<Extract<WsMessage, { type: 'rule' }>, 'type'>): void {
+    this.emit('message', { type: 'rule', ...msg })
+  }
+
   /** Synchronisation progress; `code` is a key under `sync.progress.*` (or `errors.*` for errors). */
   publishSync(controllerId: number, status: 'running' | 'ok' | 'error', code: string, params: Record<string, string | number> = {}): void {
     this.emit('message', { type: 'sync', controllerId, status, code, params })

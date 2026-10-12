@@ -19,6 +19,7 @@ import { registerScheduleRoutes } from './routes/schedule.js'
 import { registerSystemRoutes } from './routes/system.js'
 import { registerTokenRoutes } from './routes/tokens.js'
 import { registerNotificationRoutes } from './routes/notifications.js'
+import { registerRuleRoutes } from './routes/rules.js'
 import { registerWebhookRoutes } from './routes/webhooks.js'
 
 export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
@@ -79,6 +80,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerTokenRoutes(api, ctx)
       registerNotificationRoutes(api, ctx)
       registerAnomalyRoutes(api, ctx)
+      registerRuleRoutes(api, ctx)
     },
     { prefix: '/api' },
   )

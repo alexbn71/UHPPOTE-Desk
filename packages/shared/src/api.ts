@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { TOKEN_ACCESS, WEBHOOK_EVENTS, type TokenAccess, type WebhookEvent } from './labels.js'
+import { DOOR_OPEN_FOR, RULE_SEVERITIES, TOKEN_ACCESS, WEBHOOK_EVENTS, type RuleSeverity, type TokenAccess, type WebhookEvent } from './labels.js'
 import { LANGUAGES, type Language } from './i18n/index.js'
 
 // ---------------------------------------------------------------------------
@@ -349,6 +349,7 @@ export type WsMessage =
   | { type: 'event'; event: EventDto }
   | { type: 'status'; state: ControllerLiveState }
   | { type: 'sync'; controllerId: number; status: 'running' | 'ok' | 'error'; code: string; params?: Record<string, string | number> }
+  | { type: 'rule'; ruleId: number; name: string; severity: RuleSeverity; text: string; at: string }
 
 export interface SyncDiffDto {
   controllerId: number
@@ -427,7 +428,7 @@ export interface WebhookDeliveryDto {
 /** Body of every webhook request. */
 export interface WebhookPayload {
   id: string
-  type: WebhookEvent | 'webhook.test'
+  type: WebhookEvent | 'webhook.test' | 'rule.triggered'
   occurredAt: string
   controller: { id: number; serial: number; name: string } | null
   door: { id: number; number: number; name: string } | null
@@ -627,4 +628,73 @@ export interface InactiveCardDto {
   lastUsedAt: string | null
   createdAt: string
   daysInactive: number
+}
+
+// ---------------------------------------------------------------------------
+// Automation rules
+// ---------------------------------------------------------------------------
+
+export const ruleTriggerSchema = z.object({
+  /** An integration event, or DOOR_OPEN_FOR (door open longer than `seconds`). */
+  type: z.enum([...WEBHOOK_EVENTS, DOOR_OPEN_FOR]),
+  seconds: z.number().int().min(10).max(86_400).default(120),
+})
+
+export const ruleConditionsSchema = z
+  .object({
+    /** Only these doors (empty = all). */
+    doorIds: z.array(z.number().int().positive()).default([]),
+    /** Only accesses of these people or cards (empty = anyone). */
+    personIds: z.array(z.number().int().positive()).default([]),
+    cards: z.array(z.number().int().positive()).default([]),
+    /** Time window, may cross midnight; null = any time. */
+    timeFrom: hhmmSchema.nullable().default(null),
+    timeTo: hhmmSchema.nullable().default(null),
+    /** Monday first. */
+    weekdays: z.array(z.boolean()).length(7).default([true, true, true, true, true, true, true]),
+  })
+  .refine((c) => (c.timeFrom === null) === (c.timeTo === null), { message: 'Set both times or none', path: ['timeTo'] })
+
+export const ruleActionsSchema = z.object({
+  /** Notification channels that receive the message. */
+  channelIds: z.array(z.number().int().positive()).default([]),
+  /** Webhooks that receive a `rule.triggered` request. */
+  webhookIds: z.array(z.number().int().positive()).default([]),
+  /** Doors to open. */
+  openDoorIds: z.array(z.number().int().positive()).default([]),
+})
+
+export const ruleInputSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  enabled: z.boolean().default(true),
+  severity: z.enum(RULE_SEVERITIES).default('warning'),
+  /** Language of the automatic texts (event description, reason, duration). */
+  language: z
+    .string()
+    .refine((l): l is Language => LANGUAGES.some((x) => x.code === l), 'Unknown language')
+    .default('en'),
+  trigger: ruleTriggerSchema,
+  conditions: ruleConditionsSchema.default({ doorIds: [], personIds: [], cards: [], timeFrom: null, timeTo: null, weekdays: [true, true, true, true, true, true, true] }),
+  actions: ruleActionsSchema.default({ channelIds: [], webhookIds: [], openDoorIds: [] }),
+  /** Message text with placeholders {person} {card} {door} {controller} {time} {date} {reason} {duration}; empty = automatic. */
+  message: z.string().max(500).default(''),
+  /** Minimum seconds between two firings of the rule. */
+  cooldownSeconds: z.number().int().min(0).max(86_400).default(0),
+})
+export type RuleInput = z.infer<typeof ruleInputSchema>
+
+export interface RuleDto extends RuleInput {
+  id: number
+  createdAt: string
+  lastFiredAt: string | null
+  fireCount: number
+}
+
+export interface RuleRunDto {
+  id: number
+  ruleId: number
+  at: string
+  text: string
+  /** Actions that failed. */
+  errors: string[]
 }

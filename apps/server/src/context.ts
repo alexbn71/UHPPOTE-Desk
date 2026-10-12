@@ -6,6 +6,7 @@ import type { AppConfig } from './config.js'
 import { AuditLog } from './db/audit.js'
 import { Db } from './db/database.js'
 import { NotificationRepo } from './db/notifications.js'
+import { RuleRepo } from './db/rules.js'
 import { WebhookRepo } from './db/webhooks.js'
 import { ControllerRepo, EventRepo, PeopleRepo, ScheduleRepo, TreeRepo } from './db/repos.js'
 import { ControllerGateway, LiveHub } from './gateway/gateway.js'
@@ -17,6 +18,7 @@ import { SyncService } from './services/sync.js'
 import { AnomalyService } from './services/anomalies.js'
 import { IntegrationEvents } from './services/integrationEvents.js'
 import { NotificationService } from './services/notify/notifications.js'
+import { RuleEngine } from './services/rules.js'
 import { WebhookService } from './services/webhooks.js'
 import { APP_VERSION } from './routes/system.js'
 
@@ -47,6 +49,8 @@ export interface AppContext {
   webhookService: WebhookService
   notifications: NotificationRepo
   notificationService: NotificationService
+  rules: RuleRepo
+  ruleEngine: RuleEngine
   logger: Logger
 }
 
@@ -63,7 +67,10 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
   const anomalies = new AnomalyService(db, events)
   const integrationEvents = new IntegrationEvents(controllers, hub, logger, anomalies)
   const notifications = new NotificationRepo(db)
-  const protoLogger: Logger = config.uhppote.debug ? logger : { warn: logger.warn, error: logger.error, info: logger.info }
+  const rules = new RuleRepo(db)
+  const protoLogger: Logger = config.uhppote.debug
+    ? logger
+    : { warn: logger.warn, error: logger.error, info: logger.info }
   const gateway = new ControllerGateway(controllers, audit, hub, { ...config.uhppote, logger: protoLogger })
   const eventService = new EventService(gateway, controllers, events, {
     listen: config.uhppote.listen,
@@ -79,7 +86,7 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     afterBackOnline: (id) => sync.restoreIfEmpty(id),
     logger,
   })
-  return {
+  const ctx: Omit<AppContext, 'ruleEngine'> & { ruleEngine?: RuleEngine } = {
     config,
     db,
     audit,
@@ -96,14 +103,31 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     eventService,
     health,
     sync,
-    backup: new BackupService(db, path.join(config.dataDir, 'backups'), { hour: config.backupHour, keep: config.backupKeep, logger }),
+    backup: new BackupService(db, path.join(config.dataDir, 'backups'), {
+      hour: config.backupHour,
+      keep: config.backupKeep,
+      logger,
+    }),
     mqtt: config.mqtt ? new MqttService(config.mqtt, controllers, gateway, { version: APP_VERSION, logger }) : null,
     webhooks,
     integrationEvents,
     anomalies,
     webhookService: new WebhookService(webhooks, integrationEvents, { version: APP_VERSION, logger }),
     notifications,
-    notificationService: new NotificationService(notifications, integrationEvents, { controllers, events, gateway, anomalies }, { logger }),
+    notificationService: new NotificationService(
+      notifications,
+      integrationEvents,
+      { controllers, events, gateway, anomalies },
+      { logger },
+    ),
+    rules,
     logger,
   }
+  ctx.ruleEngine = new RuleEngine(
+    rules,
+    integrationEvents,
+    { controllers, gateway, notifications: () => ctx.notificationService, webhooks: () => ctx.webhookService },
+    logger,
+  )
+  return ctx as AppContext
 }

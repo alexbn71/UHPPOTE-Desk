@@ -60,6 +60,7 @@ async function main(): Promise<void> {
   ctx.mqtt?.start()
   ctx.webhookService.start()
   ctx.notificationService.start()
+  ctx.ruleEngine.start()
   ctx.backup.start()
   const collectTimer = setInterval(() => {
     for (const c of ctx.controllers.list().filter((x) => x.enabled && ctx.hub.state(x.id).online)) {
@@ -80,6 +81,7 @@ async function main(): Promise<void> {
     await ctx.mqtt?.stop()
     ctx.webhookService.stop()
     ctx.notificationService.stop()
+    ctx.ruleEngine.stop()
     ctx.integrationEvents.stop()
     await app.close()
     ctx.db.close()

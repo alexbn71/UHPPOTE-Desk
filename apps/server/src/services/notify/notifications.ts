@@ -161,6 +161,13 @@ export class NotificationService {
     }
   }
 
+  /** Queues a message for one channel (automation rules); false if the channel does not exist or is disabled. */
+  sendTo(channelId: number, m: NotifyMessage): boolean {
+    if (!this.repo.get(channelId)?.enabled) return false
+    this.enqueue(channelId, m)
+    return true
+  }
+
   private enqueue(channelId: number, m: NotifyMessage): void {
     let q = this.queues.get(channelId)
     if (!q) {
