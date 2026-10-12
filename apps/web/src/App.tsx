@@ -1,4 +1,18 @@
-import { AppShell, Badge, Burger, Center, Group, Loader, NavLink, ScrollArea, Text, Title, Tooltip, UnstyledButton } from '@mantine/core'
+import {
+  AppShell,
+  Badge,
+  Burger,
+  Center,
+  Collapse,
+  Group,
+  Loader,
+  NavLink,
+  ScrollArea,
+  Text,
+  Title,
+  Tooltip,
+  UnstyledButton,
+} from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconActivity,
@@ -7,6 +21,7 @@ import {
   IconBell,
   IconApi,
   IconCalendarTime,
+  IconChevronDown,
   IconChecklist,
   IconClockHour4,
   IconCpu,
@@ -24,7 +39,7 @@ import {
   IconUserShield,
   IconWebhook,
 } from '@tabler/icons-react'
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import type { Role } from '@uhppote-desk/shared'
@@ -131,6 +146,38 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
   },
 ]
 
+type Section = (typeof NAV)[number]['section']
+
+/** Menu sections collapsed by the user, remembered in the browser; configuration and administration start collapsed. */
+const COLLAPSED_KEY = 'uhd.nav.collapsed'
+const DEFAULT_COLLAPSED: Section[] = ['configuration', 'administration']
+
+function loadCollapsed(): Section[] {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_KEY)
+    return raw ? (JSON.parse(raw) as Section[]) : DEFAULT_COLLAPSED
+  } catch {
+    return DEFAULT_COLLAPSED
+  }
+}
+
+function useCollapsedSections() {
+  const [collapsed, setCollapsed] = useState<Section[]>(loadCollapsed)
+  const update = (next: Section[]) => {
+    setCollapsed(next)
+    try {
+      localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next))
+    } catch {
+      // storage unavailable (private mode): the choice lasts until the page is reloaded
+    }
+  }
+  const toggle = (s: Section) => update(collapsed.includes(s) ? collapsed.filter((x) => x !== s) : [...collapsed, s])
+  const expand = (s: Section) => collapsed.includes(s) && update(collapsed.filter((x) => x !== s))
+  return { collapsed, toggle, expand }
+}
+
+const isActive = (to: string, path: string) => (to === '/' ? path === '/' : path.startsWith(to))
+
 function Shell({ children }: { children: ReactNode }) {
   const [opened, { toggle, close }] = useDisclosure()
   const { user, logout, can } = useAuth()
@@ -139,9 +186,21 @@ function Shell({ children }: { children: ReactNode }) {
   const live = useLive()
   const location = useLocation()
   const navigate = useNavigate()
+  const sections = useCollapsedSections()
+
+  // opening a page of a collapsed section (link, reload) expands that section
+  const activeSection = NAV.find((s) => s.items.some((i) => isActive(i.to, location.pathname)))?.section
+  useEffect(() => {
+    if (activeSection) sections.expand(activeSection)
+    // only when the page changes: a section collapsed by hand on the current page stays collapsed
+  }, [activeSection])
 
   return (
-    <AppShell header={{ height: 56 }} navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: !opened } }} padding="md">
+    <AppShell
+      header={{ height: 56 }}
+      navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      padding="md"
+    >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group gap="sm">
@@ -179,23 +238,42 @@ function Shell({ children }: { children: ReactNode }) {
           {NAV.map((section) => {
             const items = section.items.filter((i) => can(i.role))
             if (!items.length) return null
+            const open = !sections.collapsed.includes(section.section)
             return (
               <div key={section.section}>
-                <Text size="xs" c="dimmed" fw={600} tt="uppercase" px="sm" pt="sm" pb={4}>
-                  {t(`nav.${section.section}`)}
-                </Text>
-                {items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    label={t(`nav.${item.label}`)}
-                    leftSection={item.icon}
-                    active={item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)}
-                    onClick={() => {
-                      navigate(item.to)
-                      close()
-                    }}
-                  />
-                ))}
+                <UnstyledButton
+                  w="100%"
+                  px="sm"
+                  pt="sm"
+                  pb={4}
+                  onClick={() => sections.toggle(section.section)}
+                  aria-expanded={open}
+                >
+                  <Group justify="space-between" wrap="nowrap">
+                    <Text size="xs" c="dimmed" fw={600} tt="uppercase">
+                      {t(`nav.${section.section}`)}
+                    </Text>
+                    <IconChevronDown
+                      size={14}
+                      color="var(--mantine-color-dimmed)"
+                      style={{ transform: open ? undefined : 'rotate(-90deg)', transition: 'transform 150ms ease' }}
+                    />
+                  </Group>
+                </UnstyledButton>
+                <Collapse expanded={open}>
+                  {items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      label={t(`nav.${item.label}`)}
+                      leftSection={item.icon}
+                      active={isActive(item.to, location.pathname)}
+                      onClick={() => {
+                        navigate(item.to)
+                        close()
+                      }}
+                    />
+                  ))}
+                </Collapse>
               </div>
             )
           })}
@@ -248,13 +326,62 @@ export function App() {
               <Route path="/doors" element={<DoorsPage />} />
               <Route path="/time-profiles" element={<TimeProfilesPage />} />
               <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/sync" element={<Guard role="operator"><SyncPage /></Guard>} />
-              <Route path="/operators" element={<Guard role="admin"><OperatorsPage /></Guard>} />
-              <Route path="/audit" element={<Guard role="admin"><AuditPage /></Guard>} />
-              <Route path="/rules" element={<Guard role="admin"><RulesPage /></Guard>} />
-              <Route path="/notifications" element={<Guard role="admin"><NotificationsPage /></Guard>} />
-              <Route path="/webhooks" element={<Guard role="admin"><WebhooksPage /></Guard>} />
-              <Route path="/api-tokens" element={<Guard role="admin"><ApiTokensPage /></Guard>} />
+              <Route
+                path="/sync"
+                element={
+                  <Guard role="operator">
+                    <SyncPage />
+                  </Guard>
+                }
+              />
+              <Route
+                path="/operators"
+                element={
+                  <Guard role="admin">
+                    <OperatorsPage />
+                  </Guard>
+                }
+              />
+              <Route
+                path="/audit"
+                element={
+                  <Guard role="admin">
+                    <AuditPage />
+                  </Guard>
+                }
+              />
+              <Route
+                path="/rules"
+                element={
+                  <Guard role="admin">
+                    <RulesPage />
+                  </Guard>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <Guard role="admin">
+                    <NotificationsPage />
+                  </Guard>
+                }
+              />
+              <Route
+                path="/webhooks"
+                element={
+                  <Guard role="admin">
+                    <WebhooksPage />
+                  </Guard>
+                }
+              />
+              <Route
+                path="/api-tokens"
+                element={
+                  <Guard role="admin">
+                    <ApiTokensPage />
+                  </Guard>
+                }
+              />
               <Route path="/system" element={<SystemPage />} />
               <Route path="/password" element={<ChangePasswordPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
