@@ -1,9 +1,11 @@
 import path from 'node:path'
 import type { Logger } from '@uhppote-desk/protocol'
 import { AuthService } from './auth/auth.js'
+import { ApiTokenService } from './auth/tokens.js'
 import type { AppConfig } from './config.js'
 import { AuditLog } from './db/audit.js'
 import { Db } from './db/database.js'
+import { NotificationRepo } from './db/notifications.js'
 import { WebhookRepo } from './db/webhooks.js'
 import { ControllerRepo, EventRepo, PeopleRepo, ScheduleRepo, TreeRepo } from './db/repos.js'
 import { ControllerGateway, LiveHub } from './gateway/gateway.js'
@@ -12,6 +14,8 @@ import { EventService } from './services/events.js'
 import { HealthService } from './services/health.js'
 import { MqttService } from './services/mqtt.js'
 import { SyncService } from './services/sync.js'
+import { IntegrationEvents } from './services/integrationEvents.js'
+import { NotificationService } from './services/notify/notifications.js'
 import { WebhookService } from './services/webhooks.js'
 import { APP_VERSION } from './routes/system.js'
 
@@ -21,6 +25,7 @@ export interface AppContext {
   db: Db
   audit: AuditLog
   auth: AuthService
+  tokens: ApiTokenService
   zones: TreeRepo
   departments: TreeRepo
   controllers: ControllerRepo
@@ -35,8 +40,11 @@ export interface AppContext {
   backup: BackupService
   /** MQTT bridge to Home Assistant; null when MQTT_URL is not set. */
   mqtt: MqttService | null
+  integrationEvents: IntegrationEvents
   webhooks: WebhookRepo
   webhookService: WebhookService
+  notifications: NotificationRepo
+  notificationService: NotificationService
   logger: Logger
 }
 
@@ -50,6 +58,8 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
   const events = new EventRepo(db)
   const hub = new LiveHub()
   const webhooks = new WebhookRepo(db)
+  const integrationEvents = new IntegrationEvents(controllers, hub, logger)
+  const notifications = new NotificationRepo(db)
   const protoLogger: Logger = config.uhppote.debug ? logger : { warn: logger.warn, error: logger.error, info: logger.info }
   const gateway = new ControllerGateway(controllers, audit, hub, { ...config.uhppote, logger: protoLogger })
   const eventService = new EventService(gateway, controllers, events, {
@@ -71,6 +81,7 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     db,
     audit,
     auth: new AuthService(db, config.sessionHours),
+    tokens: new ApiTokenService(db),
     zones: new TreeRepo(db, 'zones'),
     departments: new TreeRepo(db, 'departments'),
     controllers,
@@ -85,7 +96,10 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     backup: new BackupService(db, path.join(config.dataDir, 'backups'), { hour: config.backupHour, keep: config.backupKeep, logger }),
     mqtt: config.mqtt ? new MqttService(config.mqtt, controllers, gateway, { version: APP_VERSION, logger }) : null,
     webhooks,
-    webhookService: new WebhookService(webhooks, controllers, hub, { version: APP_VERSION, logger }),
+    integrationEvents,
+    webhookService: new WebhookService(webhooks, integrationEvents, { version: APP_VERSION, logger }),
+    notifications,
+    notificationService: new NotificationService(notifications, integrationEvents, { controllers, events, gateway }, { logger }),
     logger,
   }
 }

@@ -219,11 +219,15 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     return { ok: true, pushError }
   })
 
-  app.post('/doors/:id/open', operator, async (req) => {
+  // open to viewers too: API tokens with the `doors` access level have the viewer role
+  app.post('/doors/:id/open', viewer, async (req) => {
     const { id } = idParam.parse(req.params)
+    const user = req.user!
+    if (!user.canOpenDoors) throw new HttpError(403, 'forbidden')
     const door = ctx.controllers.door(id)
     if (!door) throw new HttpError(404, 'doorNotFound')
-    assertZoneAccess(ctx, req.user!, ctx.gateway.controller(door.controllerId))
+    if (user.doorIds.length > 0 && !user.doorIds.includes(door.id)) throw new HttpError(403, 'doorForbidden')
+    assertZoneAccess(ctx, user, ctx.gateway.controller(door.controllerId))
     await ctx.gateway.run(req.user, door.controllerId, 'open-door', { door: door.door, name: door.name }, (client, t) => client.openDoor(t, door.door))
     return { ok: true }
   })

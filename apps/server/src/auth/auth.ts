@@ -20,7 +20,10 @@ interface OperatorRow {
 }
 
 export interface SessionUser {
-  id: number
+  /** Operator id; null for an API token. */
+  id: number | null
+  /** API token id; null for an operator session. */
+  tokenId: number | null
   username: string
   displayName: string
   role: Role
@@ -29,6 +32,10 @@ export interface SessionUser {
   passwordManaged: boolean
   /** Allowed zones; empty = all. */
   zoneIds: number[]
+  /** Doors that may be opened; empty = all (within the zones). */
+  doorIds: number[]
+  /** May open doors (operators and above; API tokens with the `doors` access level). */
+  canOpenDoors: boolean
 }
 
 declare module 'fastify' {
@@ -184,12 +191,15 @@ export class AuthService {
     const zones = this.db.all<{ zone_id: number }>('SELECT zone_id FROM operator_zones WHERE operator_id = ?', [row.id])
     return {
       id: row.id,
+      tokenId: null,
       username: row.username,
       displayName: row.display_name,
       role: row.role,
       mustChangePassword: toBool(row.must_change_password),
       passwordManaged: this.isPasswordManaged(row.username),
       zoneIds: zones.map((z) => z.zone_id),
+      doorIds: [],
+      canOpenDoors: ROLE_RANK[row.role] >= ROLE_RANK.operator,
     }
   }
 
@@ -204,6 +214,15 @@ export class AuthService {
       zoneIds: this.db.all<{ zone_id: number }>('SELECT zone_id FROM operator_zones WHERE operator_id = ?', [r.id]).map((z) => z.zone_id),
       lastLoginAt: r.last_login_at,
     }))
+  }
+}
+
+/** preHandler: requires a minimum role and an operator session (API tokens are refused). */
+export function requireSession(role: Role) {
+  const check = requireRole(role)
+  return async (req: FastifyRequest, reply: FastifyReply) => {
+    await check(req, reply)
+    if (req.user!.tokenId !== null) throw new HttpError(403, 'tokenNotAllowed')
   }
 }
 

@@ -1,6 +1,6 @@
 import mqtt, { type MqttClient } from 'mqtt'
 import type { Logger } from '@uhppote-desk/protocol'
-import { translator, type ControllerLiveState, type EventDto, type WsMessage } from '@uhppote-desk/shared'
+import { ALARM_REASONS, translator, type ControllerLiveState, type EventDto, type WsMessage } from '@uhppote-desk/shared'
 import type { MqttConfig } from '../config.js'
 import type { ControllerRecord, ControllerRepo } from '../db/repos.js'
 import type { ControllerGateway } from '../gateway/gateway.js'
@@ -378,9 +378,10 @@ export class MqttService {
 
 /** Home Assistant event type of an event, null for types that are not forwarded. */
 function haEventType(e: EventDto): (typeof HA_EVENT_TYPES)[number] | null {
+  // same rule as webhooks and notifications: alarms by reason, power-on/reset not forwarded
+  if (ALARM_REASONS.has(e.reason)) return 'alarm'
   if (e.type === 1) return e.granted ? 'granted' : 'denied'
   if (e.type === 2) return 'door'
-  if (e.type === 3) return 'alarm'
   return null
 }
 

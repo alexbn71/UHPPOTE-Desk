@@ -59,7 +59,7 @@ The *Access* event entity has four event types:
 | `granted` | Card swipe, access granted |
 | `denied` | Card swipe, access denied (unknown card, no permission, outside the time profile…) |
 | `door` | Door events: remote opening, exit button, door opened/closed (the last two only when the controller records special events) |
-| `alarm` | Alarms (forced door, door left open, fire…) |
+| `alarm` | Alarms: door open too long, forced open or closed, fire, theft prevention, 24×7 zone, emergency, exit button under threat |
 
 Attributes: `person`, `personId`, `card`, `granted`, `direction` (`in`/`out`), `reason` (text in `MQTT_LANGUAGE`), `reasonCode`, `timestamp`.
 

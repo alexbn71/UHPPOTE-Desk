@@ -16,6 +16,8 @@ import { registerEventRoutes } from './routes/events.js'
 import { registerPeopleRoutes } from './routes/people.js'
 import { registerScheduleRoutes } from './routes/schedule.js'
 import { registerSystemRoutes } from './routes/system.js'
+import { registerTokenRoutes } from './routes/tokens.js'
+import { registerNotificationRoutes } from './routes/notifications.js'
 import { registerWebhookRoutes } from './routes/webhooks.js'
 
 export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
@@ -31,7 +33,9 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
 
   app.decorateRequest('user', null)
   app.addHook('onRequest', async (req) => {
-    req.user = ctx.auth.resolve(req.cookies[SESSION_COOKIE])
+    // machine clients: Authorization: Bearer <API token>; browser: session cookie
+    const bearer = /^Bearer\s+(\S+)$/i.exec(req.headers.authorization ?? '')
+    req.user = bearer ? ctx.tokens.resolve(bearer[1]!, req.ip) : ctx.auth.resolve(req.cookies[SESSION_COOKIE])
   })
 
   /** Error body: English `error` text plus a translatable `code` (errors.*) and its `params`. */
@@ -71,6 +75,8 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerAttendanceRoutes(api, ctx)
       registerSystemRoutes(api, ctx)
       registerWebhookRoutes(api, ctx)
+      registerTokenRoutes(api, ctx)
+      registerNotificationRoutes(api, ctx)
     },
     { prefix: '/api' },
   )

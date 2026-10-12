@@ -111,7 +111,7 @@ beforeAll(async () => {
   await fake.start()
   ctx = createContext(config(dataDir), quiet, ':memory:')
   // short retry delays for the tests
-  ctx.webhookService = new WebhookService(ctx.webhooks, ctx.controllers, ctx.hub, { version: APP_VERSION, logger: quiet, retryDelaysMs: [50, 50], timeoutMs: 2000 })
+  ctx.webhookService = new WebhookService(ctx.webhooks, ctx.integrationEvents, { version: APP_VERSION, logger: quiet, retryDelaysMs: [50, 50], timeoutMs: 2000 })
   await ctx.auth.ensureAdmin(PASSWORD)
   await ctx.eventService.startListener()
   app = await buildApp(ctx)

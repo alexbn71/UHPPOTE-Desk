@@ -29,3 +29,17 @@ export const WEBHOOK_EVENTS = [
   'controller.offline',
 ] as const
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]
+
+/**
+ * Access levels of API tokens (labels under `codes.tokenAccess`):
+ * read = read-only; doors = read-only plus door opening; operator / admin = like the operator roles.
+ */
+export const TOKEN_ACCESS = ['read', 'doors', 'operator', 'admin'] as const
+export type TokenAccess = (typeof TOKEN_ACCESS)[number]
+
+/** Notification channel types (labels under `codes.notificationType`). */
+export const NOTIFICATION_TYPES = ['telegram', 'email', 'ntfy', 'gotify'] as const
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
+
+/** Placeholder returned instead of stored passwords and tokens; sent back unchanged it keeps the stored value. */
+export const SECRET_MASK = '••••••••'

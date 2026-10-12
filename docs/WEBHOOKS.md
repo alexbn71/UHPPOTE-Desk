@@ -19,7 +19,7 @@ The **Send test** button sends a `webhook.test` request right away (also to a di
 | `access.granted` | Card swipe, access granted |
 | `access.denied` | Card swipe, access denied (unknown card, no permission, outside the time profile…) |
 | `door.event` | Door events recorded by the controller: remote opening, exit button, door opened/closed (the last two only when the controller records special events) |
-| `alarm` | Alarms recorded by the controller (forced door, door left open, fire…) |
+| `alarm` | Alarms recorded by the controller: door open too long, forced open or closed, fire, theft prevention, 24×7 zone, emergency, exit button under threat. Controller power-on and reset are not sent |
 | `door.opened` / `door.closed` | The door sensor changed, from the live controller status |
 | `controller.online` / `controller.offline` | The controller became reachable / stopped answering |
 

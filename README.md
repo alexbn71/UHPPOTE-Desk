@@ -29,6 +29,10 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Outgoing webhooks**: signed JSON requests to n8n, Node-RED or any HTTP service on access events, alarms, door state changes and controllers going offline, with filters per door, retries and a delivery log — see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 
+**Notifications** on Telegram (with an *Open door* button for authorised users), email, ntfy and Gotify, plus a daily report of who came in and the anomalies — see [docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md).
+
+**API tokens** for machine-to-machine access (`Authorization: Bearer`): read-only, door opening only (optionally limited to specific doors), operator or administrator, with zone restrictions, expiry and audit — see [docs/API-TOKENS.md](docs/API-TOKENS.md).
+
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).
 
 **User manual** (PDF, with screenshots of every page): [docs/UHPPOTE-Desk-Manual.pdf](docs/UHPPOTE-Desk-Manual.pdf). It is generated from [docs/manual](docs/manual) with `npm run manual`.

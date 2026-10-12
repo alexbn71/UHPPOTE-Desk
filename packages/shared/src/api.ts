@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { WEBHOOK_EVENTS, type WebhookEvent } from './labels.js'
+import { TOKEN_ACCESS, WEBHOOK_EVENTS, type TokenAccess, type WebhookEvent } from './labels.js'
+import { LANGUAGES, type Language } from './i18n/index.js'
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -431,4 +432,131 @@ export interface WebhookPayload {
   controller: { id: number; serial: number; name: string } | null
   door: { id: number; number: number; name: string } | null
   data: Record<string, unknown>
+}
+
+// ---------------------------------------------------------------------------
+// API tokens (machine-to-machine access)
+// ---------------------------------------------------------------------------
+
+export const apiTokenInputSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  access: z.enum(TOKEN_ACCESS),
+  /** Allowed zones (sub-zones included); empty = all. */
+  zoneIds: z.array(z.number().int().positive()).default([]),
+  /** Doors that may be opened; empty = all (within the zones). */
+  doorIds: z.array(z.number().int().positive()).default([]),
+  /** Last valid day (inclusive); null = no expiry. */
+  expiresAt: dateSchema.nullable().default(null),
+  active: z.boolean().default(true),
+})
+
+export interface ApiTokenDto {
+  id: number
+  name: string
+  /** First characters of the token, to recognise it (the token itself is shown only once). */
+  prefix: string
+  access: TokenAccess
+  zoneIds: number[]
+  doorIds: number[]
+  expiresAt: string | null
+  active: boolean
+  createdAt: string
+  createdBy: string | null
+  lastUsedAt: string | null
+  lastUsedIp: string | null
+}
+
+// ---------------------------------------------------------------------------
+// Notifications (Telegram, email, ntfy, Gotify)
+// ---------------------------------------------------------------------------
+
+const httpUrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .url()
+  .refine((u) => /^https?:\/\//i.test(u), 'Only http:// and https:// URLs')
+
+export const telegramConfigSchema = z.object({
+  type: z.literal('telegram'),
+  botToken: z.string().trim().min(1).max(200),
+  /** Numeric chat id (negative for groups) or @channelname. */
+  chatId: z
+    .string()
+    .trim()
+    .regex(/^(-?\d{1,20}|@[A-Za-z0-9_]{5,64})$/, 'Numeric chat id or @channel'),
+  /** "Open door" button under the notifications of a door. */
+  openButton: z.boolean().default(false),
+  /** Telegram user ids allowed to press the button. */
+  allowedUserIds: z.array(z.number().int().positive()).default([]),
+})
+
+export const emailConfigSchema = z.object({
+  type: z.literal('email'),
+  host: z.string().trim().min(1).max(200),
+  port: z.number().int().min(1).max(65535).default(587),
+  /** true = TLS from the start (port 465); false = STARTTLS when offered (587, 25). */
+  secure: z.boolean().default(false),
+  username: z.string().max(200).default(''),
+  password: z.string().max(500).default(''),
+  from: z.string().trim().min(3).max(200),
+  to: z.array(z.string().trim().email()).min(1).max(20),
+})
+
+export const ntfyConfigSchema = z.object({
+  type: z.literal('ntfy'),
+  serverUrl: httpUrlSchema.default('https://ntfy.sh'),
+  topic: z.string().trim().regex(/^[-_A-Za-z0-9]{1,64}$/, 'Letters, digits, - and _ only'),
+  /** Access token (tk_…), or username and password. */
+  token: z.string().max(200).default(''),
+  username: z.string().max(200).default(''),
+  password: z.string().max(500).default(''),
+})
+
+export const gotifyConfigSchema = z.object({
+  type: z.literal('gotify'),
+  serverUrl: httpUrlSchema,
+  appToken: z.string().trim().min(1).max(200),
+})
+
+export const notificationConfigSchema = z.discriminatedUnion('type', [telegramConfigSchema, emailConfigSchema, ntfyConfigSchema, gotifyConfigSchema])
+export type NotificationConfig = z.infer<typeof notificationConfigSchema>
+
+export const notificationInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100),
+    enabled: z.boolean().default(true),
+    events: z.array(z.enum(WEBHOOK_EVENTS)).default([]),
+    /** Only events of these doors (empty = all). */
+    doorIds: z.array(z.number().int().positive()).default([]),
+    language: z
+      .string()
+      .refine((l): l is Language => LANGUAGES.some((x) => x.code === l), 'Unknown language')
+      .default('en'),
+    /** Daily report: who came in and the anomalies of the last 24 hours. */
+    dailyReport: z.boolean().default(false),
+    reportHour: z.number().int().min(0).max(23).default(20),
+    config: notificationConfigSchema,
+  })
+  .refine((n) => n.events.length > 0 || n.dailyReport, { message: 'Choose at least one event or the daily report', path: ['events'] })
+  .refine((n) => n.config.type !== 'telegram' || !n.config.openButton || n.config.allowedUserIds.length > 0, {
+    message: 'The open button needs at least one allowed Telegram user id',
+    path: ['config', 'allowedUserIds'],
+  })
+
+export interface NotificationChannelDto {
+  id: number
+  name: string
+  enabled: boolean
+  events: WebhookEvent[]
+  doorIds: number[]
+  language: Language
+  dailyReport: boolean
+  reportHour: number
+  /** Passwords and tokens are replaced by SECRET_MASK. */
+  config: NotificationConfig
+  createdAt: string
+  lastSentAt: string | null
+  lastError: string | null
+  lastReportDate: string | null
 }

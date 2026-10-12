@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { changePasswordSchema, idParam, loginSchema, operatorInputSchema } from '@uhppote-desk/shared'
-import { HttpError, requireRole, SESSION_COOKIE } from '../auth/auth.js'
+import { HttpError, requireSession, SESSION_COOKIE } from '../auth/auth.js'
 import { randomPassword } from '../auth/password.js'
 import type { AppContext } from '../context.js'
 
@@ -47,18 +47,20 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
 
   app.post('/auth/password', async (req) => {
     if (!req.user) throw new HttpError(401, 'unauthenticated')
+    const id = req.user.id
+    if (id === null) throw new HttpError(403, 'tokenNotAllowed')
     const body = changePasswordSchema.parse(req.body)
-    ctx.auth.assertPasswordChangeable(req.user.id)
-    const ok = await ctx.auth.changePassword(req.user.id, body.currentPassword, body.newPassword)
+    ctx.auth.assertPasswordChangeable(id)
+    const ok = await ctx.auth.changePassword(id, body.currentPassword, body.newPassword)
     if (!ok) throw new HttpError(400, 'wrongPassword')
-    ctx.auth.revokeSessions(req.user.id, req.cookies[SESSION_COOKIE])
+    ctx.auth.revokeSessions(id, req.cookies[SESSION_COOKIE])
     ctx.audit.log(req.user, 'change-password', `operator:${req.user.username}`)
     return { ok: true }
   })
 
-  // --- operator management (admin only) --------------------------------------
+  // --- operator management (admin only, not with API tokens) ------------------
 
-  const admin = { preHandler: requireRole('admin') }
+  const admin = { preHandler: requireSession('admin') }
 
   app.get('/operators', admin, async () => ctx.auth.listOperators())
 

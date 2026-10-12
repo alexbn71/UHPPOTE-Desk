@@ -1,20 +1,8 @@
 import { createHmac, randomUUID } from 'node:crypto'
 import type { Logger } from '@uhppote-desk/protocol'
-import {
-  translator,
-  type ControllerLiveState,
-  type EventDto,
-  type WebhookDeliveryDto,
-  type WebhookEvent,
-  type WebhookPayload,
-  type WsMessage,
-} from '@uhppote-desk/shared'
-import type { ControllerRecord, ControllerRepo } from '../db/repos.js'
+import type { WebhookDeliveryDto, WebhookPayload } from '@uhppote-desk/shared'
 import type { WebhookRepo } from '../db/webhooks.js'
-import type { LiveHub } from '../gateway/gateway.js'
-import { isRecentEvent } from './events.js'
-
-const en = translator('en')
+import { matchesDoors, type IntegrationEvent, type IntegrationEvents } from './integrationEvents.js'
 
 /** Requests waiting per webhook beyond which new ones are dropped (endpoint down for a long time). */
 const MAX_QUEUE = 500
@@ -38,27 +26,26 @@ interface Attempt {
  */
 export class WebhookService {
   private readonly queues = new Map<number, { tail: Promise<void>; pending: number }>()
-  private readonly states = new Map<number, ControllerLiveState>()
   private readonly sleeping = new Set<{ timer: NodeJS.Timeout; resolve: () => void }>()
-  private readonly onHub = (m: WsMessage) => this.onHubMessage(m)
+  private readonly onEvent = (ev: IntegrationEvent) => this.dispatch(ev)
   private stopped = false
 
   constructor(
     private readonly repo: WebhookRepo,
-    private readonly controllers: ControllerRepo,
-    private readonly hub: LiveHub,
+    private readonly events: IntegrationEvents,
     private readonly opts: { version: string; logger?: Logger | undefined; timeoutMs?: number; retryDelaysMs?: number[] },
   ) {}
 
   start(): void {
     this.stopped = false
-    this.hub.on('message', this.onHub)
+    this.events.on('event', this.onEvent)
+    this.events.start()
   }
 
   /** Stops listening and abandons the pending retries. */
   stop(): void {
     this.stopped = true
-    this.hub.off('message', this.onHub)
+    this.events.off('event', this.onEvent)
     for (const s of this.sleeping) {
       clearTimeout(s.timer)
       s.resolve()
@@ -86,71 +73,23 @@ export class WebhookService {
     return this.deliver(webhookId, payload, { retries: false, evenIfDisabled: true })
   }
 
-  // --- triggers ---------------------------------------------------------------
-
-  private onHubMessage(m: WsMessage): void {
+  private dispatch(ev: IntegrationEvent): void {
     try {
-      if (m.type === 'status') this.onStatus(m.state)
-      else if (m.type === 'event') this.onEvent(m.event)
+      const hooks = this.repo.subscribed(ev.type)
+      const c = ev.controller
+      for (const hook of hooks) {
+        if (!matchesDoors(hook.doorIds, ev, () => this.events.controllerDoorIds(c.id))) continue
+        this.enqueue(hook.id, {
+          id: randomUUID(),
+          type: ev.type,
+          occurredAt: new Date().toISOString(),
+          controller: { id: c.id, serial: c.serial, name: c.name },
+          door: ev.door ? { id: ev.door.id, number: ev.door.door, name: ev.door.name } : null,
+          data: ev.data,
+        })
+      }
     } catch (err) {
       this.opts.logger?.error?.(`webhooks: ${(err as Error).message}`)
-    }
-  }
-
-  private onStatus(s: ControllerLiveState): void {
-    const prev = this.states.get(s.controllerId)
-    this.states.set(s.controllerId, s)
-    if (!prev) return // first state after start: nothing changed yet
-    const c = this.controllers.get(s.controllerId)
-    if (!c?.enabled) return
-    if (prev.online !== s.online) {
-      this.emit(s.online ? 'controller.online' : 'controller.offline', c, null, { lastSeenAt: s.lastSeenAt, error: s.online ? null : s.lastError })
-    }
-    if (!prev.online || !s.online) return
-    for (const d of s.doors) {
-      const before = prev.doors.find((x) => x.door === d.door)
-      if (before && before.open !== d.open) this.emit(d.open ? 'door.opened' : 'door.closed', c, d.door, { open: d.open, unlocked: d.unlocked })
-    }
-  }
-
-  private onEvent(e: EventDto): void {
-    if (!isRecentEvent(e)) return
-    const type: WebhookEvent | null = e.type === 1 ? (e.granted ? 'access.granted' : 'access.denied') : e.type === 2 ? 'door.event' : e.type === 3 ? 'alarm' : null
-    const c = type && this.controllers.get(e.controllerId)
-    if (!type || !c?.enabled) return
-    this.emit(type, c, e.door >= 1 && e.door <= 4 ? e.door : null, {
-      index: e.index,
-      eventType: e.type,
-      card: e.card || null,
-      personId: e.personId,
-      personName: e.personName,
-      granted: e.granted,
-      direction: e.direction === 1 ? 'in' : e.direction === 2 ? 'out' : null,
-      reasonCode: e.reason,
-      reason: en.reason(e.reason),
-      timestamp: e.timestamp,
-    })
-  }
-
-  private emit(type: WebhookEvent, c: ControllerRecord, doorNumber: number | null, data: Record<string, unknown>): void {
-    const hooks = this.repo.subscribed(type)
-    if (hooks.length === 0) return
-    const door = doorNumber === null ? undefined : this.controllers.doorByNumber(c.id, doorNumber)
-    const controllerDoorIds = this.controllers.doors(c.id).map((d) => d.id)
-    for (const hook of hooks) {
-      if (hook.doorIds.length > 0) {
-        // door filter: door events of those doors, controller events of their controllers
-        const match = door ? hook.doorIds.includes(door.id) : controllerDoorIds.some((id) => hook.doorIds.includes(id))
-        if (!match) continue
-      }
-      this.enqueue(hook.id, {
-        id: randomUUID(),
-        type,
-        occurredAt: new Date().toISOString(),
-        controller: { id: c.id, serial: c.serial, name: c.name },
-        door: door ? { id: door.id, number: door.door, name: door.name } : null,
-        data,
-      })
     }
   }
 

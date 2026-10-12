@@ -1,7 +1,7 @@
 import type { Logger } from '@uhppote-desk/protocol'
 import { parseEndpoint } from '@uhppote-desk/protocol'
 import type { ControllerRepo } from '../db/repos.js'
-import type { ControllerGateway } from '../gateway/gateway.js'
+import type { Actor, ControllerGateway } from '../gateway/gateway.js'
 import { localDateTime, parseLocal } from '../util/time.js'
 import type { EventService } from './events.js'
 
@@ -111,7 +111,7 @@ export class HealthService {
     return drift
   }
 
-  async syncTime(controllerId: number, actor: { id: number; username: string } | null): Promise<string | null> {
+  async syncTime(controllerId: number, actor: Actor): Promise<string | null> {
     const now = localDateTime()
     const result = await this.gateway.run(actor, controllerId, 'set-time', { time: now }, (client, t) => client.setTime(t, now))
     this.gateway.hub.patch(controllerId, { controllerTime: result, driftSeconds: 0 })

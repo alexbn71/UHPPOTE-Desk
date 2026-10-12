@@ -2,6 +2,8 @@ import { AppShell, Badge, Burger, Center, Group, Loader, NavLink, ScrollArea, Te
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconActivity,
+  IconBell,
+  IconApi,
   IconCalendarTime,
   IconChecklist,
   IconClockHour4,
@@ -28,6 +30,7 @@ import { LanguageSelect } from './components/LanguageSelect'
 import { useAuth } from './lib/auth'
 import { useCodes } from './lib/codes'
 import { LiveProvider, useLive } from './lib/live'
+import { ApiTokensPage } from './pages/ApiTokens'
 import { AttendancePage } from './pages/Attendance'
 import { AuditPage } from './pages/Audit'
 import { CardsPage } from './pages/Cards'
@@ -39,6 +42,7 @@ import { DoorsPage } from './pages/Doors'
 import { EventsPage } from './pages/Events'
 import { LoginPage } from './pages/Login'
 import { MonitorPage } from './pages/Monitor'
+import { NotificationsPage } from './pages/Notifications'
 import { OperatorsPage } from './pages/Operators'
 import { PeoplePage } from './pages/People'
 import { PermissionsPage } from './pages/Permissions'
@@ -66,6 +70,8 @@ type NavKey =
   | 'operators'
   | 'audit'
   | 'webhooks'
+  | 'apiTokens'
+  | 'notifications'
   | 'systemInfo'
 
 interface NavItem {
@@ -109,7 +115,9 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
     items: [
       { to: '/operators', label: 'operators', icon: <IconUserShield size={18} />, role: 'admin' },
       { to: '/audit', label: 'audit', icon: <IconChecklist size={18} />, role: 'admin' },
+      { to: '/notifications', label: 'notifications', icon: <IconBell size={18} />, role: 'admin' },
       { to: '/webhooks', label: 'webhooks', icon: <IconWebhook size={18} />, role: 'admin' },
+      { to: '/api-tokens', label: 'apiTokens', icon: <IconApi size={18} />, role: 'admin' },
       { to: '/system', label: 'systemInfo', icon: <IconSettings size={18} />, role: 'viewer' },
     ],
   },
@@ -234,7 +242,9 @@ export function App() {
               <Route path="/sync" element={<Guard role="operator"><SyncPage /></Guard>} />
               <Route path="/operators" element={<Guard role="admin"><OperatorsPage /></Guard>} />
               <Route path="/audit" element={<Guard role="admin"><AuditPage /></Guard>} />
+              <Route path="/notifications" element={<Guard role="admin"><NotificationsPage /></Guard>} />
               <Route path="/webhooks" element={<Guard role="admin"><WebhooksPage /></Guard>} />
+              <Route path="/api-tokens" element={<Guard role="admin"><ApiTokensPage /></Guard>} />
               <Route path="/system" element={<SystemPage />} />
               <Route path="/password" element={<ChangePasswordPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

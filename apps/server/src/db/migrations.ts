@@ -255,4 +255,47 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       CREATE INDEX webhook_deliveries_hook ON webhook_deliveries(webhook_id, id);
     `,
   },
+  {
+    id: 3,
+    name: 'api tokens',
+    sql: /* sql */ `
+      CREATE TABLE api_tokens (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE,
+        prefix TEXT NOT NULL,
+        access TEXT NOT NULL CHECK (access IN ('read', 'doors', 'operator', 'admin')),
+        zone_ids TEXT NOT NULL DEFAULT '[]',
+        door_ids TEXT NOT NULL DEFAULT '[]',
+        expires_at TEXT,
+        active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        created_by TEXT,
+        last_used_at TEXT,
+        last_used_ip TEXT
+      );
+    `,
+  },
+  {
+    id: 4,
+    name: 'notification channels',
+    sql: /* sql */ `
+      CREATE TABLE notification_channels (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('telegram', 'email', 'ntfy', 'gotify')),
+        enabled INTEGER NOT NULL DEFAULT 1,
+        events TEXT NOT NULL DEFAULT '[]',
+        door_ids TEXT NOT NULL DEFAULT '[]',
+        language TEXT NOT NULL DEFAULT 'en',
+        config TEXT NOT NULL,
+        daily_report INTEGER NOT NULL DEFAULT 0,
+        report_hour INTEGER NOT NULL DEFAULT 20 CHECK (report_hour BETWEEN 0 AND 23),
+        last_report_date TEXT,
+        last_sent_at TEXT,
+        last_error TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      );
+    `,
+  },
 ]
