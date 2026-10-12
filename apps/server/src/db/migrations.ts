@@ -223,4 +223,36 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       );
     `,
   },
+  {
+    id: 2,
+    name: 'outgoing webhooks',
+    sql: /* sql */ `
+      CREATE TABLE webhooks (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        url TEXT NOT NULL,
+        secret TEXT NOT NULL,
+        enabled INTEGER NOT NULL DEFAULT 1,
+        events TEXT NOT NULL,
+        door_ids TEXT NOT NULL DEFAULT '[]',
+        headers TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      );
+
+      CREATE TABLE webhook_deliveries (
+        id INTEGER PRIMARY KEY,
+        webhook_id INTEGER NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
+        delivery_id TEXT NOT NULL,
+        event TEXT NOT NULL,
+        at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        ok INTEGER NOT NULL,
+        status_code INTEGER,
+        error TEXT,
+        duration_ms INTEGER NOT NULL,
+        attempts INTEGER NOT NULL,
+        payload TEXT NOT NULL
+      );
+      CREATE INDEX webhook_deliveries_hook ON webhook_deliveries(webhook_id, id);
+    `,
+  },
 ]

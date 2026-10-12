@@ -57,6 +57,8 @@ async function main(): Promise<void> {
   }
 
   ctx.health.start()
+  ctx.mqtt?.start()
+  ctx.webhookService.start()
   ctx.backup.start()
   const collectTimer = setInterval(() => {
     for (const c of ctx.controllers.list().filter((x) => x.enabled && ctx.hub.state(x.id).online)) {
@@ -74,6 +76,8 @@ async function main(): Promise<void> {
     ctx.health.stop()
     ctx.backup.stop()
     await ctx.eventService.stopListener()
+    await ctx.mqtt?.stop()
+    ctx.webhookService.stop()
     await app.close()
     ctx.db.close()
     process.exit(0)

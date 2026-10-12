@@ -64,6 +64,19 @@ In the examples the server has IP `192.168.1.10` and the controllers are on the 
 | `BACKUP_KEEP` | `14` | Number of backups to keep. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`. |
 
+### Home Assistant (MQTT)
+
+All optional: without `MQTT_URL` the integration is off. Details in **[HOME-ASSISTANT.md](HOME-ASSISTANT.md)**.
+
+| Variable | Default | Description |
+|---|---|---|
+| `MQTT_URL` | — | Broker URL, e.g. `mqtt://192.168.1.10:1883` or `mqtts://broker.lan:8883`. |
+| `MQTT_USERNAME` / `MQTT_PASSWORD` | — | Broker credentials. |
+| `MQTT_DOOR_CONTROL` | `true` | `false` = Home Assistant sees doors and events but gets no *Open* buttons, and open commands are ignored. |
+| `MQTT_LANGUAGE` | `en` | Language of the entity names and event texts: `en`, `it`, `es`, `fr`, `de`. |
+| `MQTT_BASE_TOPIC` | `uhppote-desk` | Prefix of the published topics. |
+| `MQTT_DISCOVERY_PREFIX` | `homeassistant` | Home Assistant discovery prefix (change it only if you changed it in Home Assistant). |
+
 ### Data folder owner
 
 | Variable | Default | Description |
@@ -209,5 +222,6 @@ docker exec -d  uhppote-desk node hwtest/devsim.js --auto 10    # background: a 
 | `startup failed: the data directory /data is not writable by the process …` (or `cannot open the database`) | The container was started with `--user`/`user:` and the host folder belongs to someone else | Remove `--user` and set `PUID`/`PGID` instead (the container then fixes the folder owner), or `chown -R <uid>:<gid>` the host folder |
 | The web interface does not open | Port in use or blocked by the firewall | Change `HTTP_PORT` |
 | Wrong time on the controllers or in reports | `TZ` not set | Set `TZ`, e.g. `Europe/Rome` |
+| *System* shows MQTT "not connected"; log `MQTT: broker … unreachable` | Wrong `MQTT_URL`, credentials or firewall | Check the URL and the user in the broker; see [HOME-ASSISTANT.md](HOME-ASSISTANT.md#troubleshooting) |
 | Forgotten `admin` password | — | Set `ADMIN_PASSWORD` and restart the container: the new password is applied |
 | Log warning "INITIAL_ADMIN_PASSWORD is deprecated" | Old variable name | Rename it to `ADMIN_PASSWORD` (the old name still works as a fallback) |

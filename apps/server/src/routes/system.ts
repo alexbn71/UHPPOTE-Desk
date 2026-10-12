@@ -33,6 +33,7 @@ export function registerSystemRoutes(app: FastifyInstance, ctx: AppContext): voi
         timeoutMs: ctx.config.uhppote.timeoutMs,
       },
       counts,
+      mqtt: ctx.mqtt?.status() ?? { enabled: false, connected: false, broker: null, baseTopic: null, doorControl: false },
     }
   })
 

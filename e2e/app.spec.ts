@@ -114,6 +114,7 @@ test.describe.serial('UHPPOTE Desk', () => {
       ['/sync', 'Synchronisation'],
       ['/operators', 'Operators'],
       ['/audit', 'Audit log'],
+      ['/webhooks', 'Webhooks'],
       ['/system', 'System'],
       ['/password', 'Change password'],
     ]

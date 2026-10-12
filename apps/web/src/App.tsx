@@ -18,6 +18,7 @@ import {
   IconSitemap,
   IconUsers,
   IconUserShield,
+  IconWebhook,
 } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -46,6 +47,7 @@ import { SyncPage } from './pages/Sync'
 import { SystemPage } from './pages/System'
 import { TasksPage } from './pages/Tasks'
 import { TimeProfilesPage } from './pages/TimeProfiles'
+import { WebhooksPage } from './pages/Webhooks'
 
 type NavKey =
   | 'dashboard'
@@ -63,6 +65,7 @@ type NavKey =
   | 'sync'
   | 'operators'
   | 'audit'
+  | 'webhooks'
   | 'systemInfo'
 
 interface NavItem {
@@ -106,6 +109,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
     items: [
       { to: '/operators', label: 'operators', icon: <IconUserShield size={18} />, role: 'admin' },
       { to: '/audit', label: 'audit', icon: <IconChecklist size={18} />, role: 'admin' },
+      { to: '/webhooks', label: 'webhooks', icon: <IconWebhook size={18} />, role: 'admin' },
       { to: '/system', label: 'systemInfo', icon: <IconSettings size={18} />, role: 'viewer' },
     ],
   },
@@ -230,6 +234,7 @@ export function App() {
               <Route path="/sync" element={<Guard role="operator"><SyncPage /></Guard>} />
               <Route path="/operators" element={<Guard role="admin"><OperatorsPage /></Guard>} />
               <Route path="/audit" element={<Guard role="admin"><AuditPage /></Guard>} />
+              <Route path="/webhooks" element={<Guard role="admin"><WebhooksPage /></Guard>} />
               <Route path="/system" element={<SystemPage />} />
               <Route path="/password" element={<ChangePasswordPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -31,6 +31,7 @@ function config(dir: string, adminPassword: string | null): AppConfig {
     initialBackfill: 10,
     backupHour: -1,
     backupKeep: 1,
+    mqtt: null,
   }
 }
 

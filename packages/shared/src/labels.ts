@@ -16,3 +16,16 @@ export const ANTIPASSBACK_MODES = [0, 1, 2, 3, 4] as const
 export const TASK_TYPES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const
 export const ROLES = ['admin', 'operator', 'viewer'] as const
 export const LEAVE_TYPES = ['ferie', 'permesso', 'malattia', 'trasferta', 'altro'] as const
+
+/** Event types that outgoing webhooks can subscribe to (labels under `codes.webhookEvent`, with `.` → `_`). */
+export const WEBHOOK_EVENTS = [
+  'access.granted',
+  'access.denied',
+  'door.event',
+  'alarm',
+  'door.opened',
+  'door.closed',
+  'controller.online',
+  'controller.offline',
+] as const
+export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]

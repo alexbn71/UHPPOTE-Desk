@@ -25,6 +25,10 @@ UHPPOTE Desk is an independent project and is not affiliated with uhppoted or wi
 
 Controller discovery and configuration, people/cards/permissions with automatic synchronisation, time profiles, scheduled tasks, interlock, anti-passback, keypads and door passcodes, first card, remote door opening, live monitor with photos, event history, attendance (shifts, holidays, leave, manual punches, reports), operators with roles and an audit log.
 
+**Home Assistant** integration over MQTT with automatic discovery: door, lock and controller states, access events for automations, and *Open* buttons — see [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
+
+**Outgoing webhooks**: signed JSON requests to n8n, Node-RED or any HTTP service on access events, alarms, door state changes and controllers going offline, with filters per door, retries and a delivery log — see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
+
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).
 
 **User manual** (PDF, with screenshots of every page): [docs/UHPPOTE-Desk-Manual.pdf](docs/UHPPOTE-Desk-Manual.pdf). It is generated from [docs/manual](docs/manual) with `npm run manual`.

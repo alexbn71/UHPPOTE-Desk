@@ -29,5 +29,12 @@
   <Config Name="Event destination" Target="UHPPOTE_LISTENER_PUBLIC" Default="" Description="IP:port of this server as reached by the controllers, e.g. 192.168.1.10:60001 (without it events arrive only through periodic polling)" Type="Variable" Display="always" Required="true"></Config>
   <Config Name="HTTPS-only cookies" Target="SECURE_COOKIES" Default="false" Description="true if published behind an HTTPS reverse proxy" Type="Variable" Display="advanced" Required="false">false</Config>
   <Config Name="Packet debug" Target="UHPPOTE_DEBUG" Default="false" Description="Log every packet in hexadecimal" Type="Variable" Display="advanced" Required="false">false</Config>
+  <Config Name="MQTT broker" Target="MQTT_URL" Default="" Description="Home Assistant integration: MQTT broker URL, e.g. mqtt://192.168.1.10:1883 (empty = disabled). See docs/HOME-ASSISTANT.md" Type="Variable" Display="always" Required="false"></Config>
+  <Config Name="MQTT username" Target="MQTT_USERNAME" Default="" Description="MQTT broker user" Type="Variable" Display="always" Required="false"></Config>
+  <Config Name="MQTT password" Target="MQTT_PASSWORD" Default="" Description="MQTT broker password" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="MQTT door control" Target="MQTT_DOOR_CONTROL" Default="true" Description="false = Home Assistant can see the doors but not open them" Type="Variable" Display="advanced" Required="false">true</Config>
+  <Config Name="MQTT language" Target="MQTT_LANGUAGE" Default="en" Description="Language of the Home Assistant entity names and event texts: en, it, es, fr, de" Type="Variable" Display="advanced" Required="false">en</Config>
+  <Config Name="MQTT base topic" Target="MQTT_BASE_TOPIC" Default="uhppote-desk" Description="Prefix of the published topics" Type="Variable" Display="advanced" Required="false">uhppote-desk</Config>
+  <Config Name="MQTT discovery prefix" Target="MQTT_DISCOVERY_PREFIX" Default="homeassistant" Description="Home Assistant discovery prefix" Type="Variable" Display="advanced" Required="false">homeassistant</Config>
   <Config Name="Time zone" Target="TZ" Default="Europe/Rome" Description="Used for the time set on the controllers and for reports" Type="Variable" Display="advanced" Required="true">Europe/Rome</Config>
 </Container>

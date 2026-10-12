@@ -16,6 +16,7 @@ import { registerEventRoutes } from './routes/events.js'
 import { registerPeopleRoutes } from './routes/people.js'
 import { registerScheduleRoutes } from './routes/schedule.js'
 import { registerSystemRoutes } from './routes/system.js'
+import { registerWebhookRoutes } from './routes/webhooks.js'
 
 export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
   const app = Fastify({
@@ -69,6 +70,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerEventRoutes(api, ctx)
       registerAttendanceRoutes(api, ctx)
       registerSystemRoutes(api, ctx)
+      registerWebhookRoutes(api, ctx)
     },
     { prefix: '/api' },
   )

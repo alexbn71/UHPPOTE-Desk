@@ -16,6 +16,7 @@ interface SystemInfo {
   interfaces: { name: string; address: string; netmask: string }[]
   uhppote: { bindAddress: string; broadcast: string; listen: string; listenerPublic: string | null; timeoutMs: number }
   counts: { people: number; cards: number; events: number; controllers: number }
+  mqtt: { enabled: boolean; connected: boolean; broker: string | null; baseTopic: string | null; doorControl: boolean }
 }
 
 export function SystemPage() {
@@ -68,6 +69,30 @@ export function SystemPage() {
               <Alert color="orange" mt="sm">
                 {t('system.listenerWarning')}
               </Alert>
+            )}
+          </Card>
+          <Card withBorder>
+            <Title order={5} mb="xs">
+              {t('system.mqtt')}
+            </Title>
+            {d.mqtt.enabled ? (
+              <Table>
+                <Table.Tbody>
+                  {row(t('system.mqttBroker'), d.mqtt.broker, true)}
+                  {row(
+                    t('system.mqttStatus'),
+                    <Text span c={d.mqtt.connected ? 'green' : 'orange'}>
+                      {t(d.mqtt.connected ? 'system.mqttConnected' : 'system.mqttDisconnected')}
+                    </Text>,
+                  )}
+                  {row(t('system.mqttTopics'), `${d.mqtt.baseTopic}/#`, true)}
+                  {row(t('system.mqttDoorControl'), t(d.mqtt.doorControl ? 'system.mqttAllowed' : 'system.mqttNotAllowed'))}
+                </Table.Tbody>
+              </Table>
+            ) : (
+              <Text size="sm" c="dimmed">
+                {t('system.mqttDisabled')}
+              </Text>
             )}
           </Card>
           {can('admin') && (

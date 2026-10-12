@@ -4,12 +4,16 @@ import { AuthService } from './auth/auth.js'
 import type { AppConfig } from './config.js'
 import { AuditLog } from './db/audit.js'
 import { Db } from './db/database.js'
+import { WebhookRepo } from './db/webhooks.js'
 import { ControllerRepo, EventRepo, PeopleRepo, ScheduleRepo, TreeRepo } from './db/repos.js'
 import { ControllerGateway, LiveHub } from './gateway/gateway.js'
 import { BackupService } from './services/backup.js'
 import { EventService } from './services/events.js'
 import { HealthService } from './services/health.js'
+import { MqttService } from './services/mqtt.js'
 import { SyncService } from './services/sync.js'
+import { WebhookService } from './services/webhooks.js'
+import { APP_VERSION } from './routes/system.js'
 
 /** All the application dependencies (injectable in tests). */
 export interface AppContext {
@@ -29,6 +33,10 @@ export interface AppContext {
   health: HealthService
   sync: SyncService
   backup: BackupService
+  /** MQTT bridge to Home Assistant; null when MQTT_URL is not set. */
+  mqtt: MqttService | null
+  webhooks: WebhookRepo
+  webhookService: WebhookService
   logger: Logger
 }
 
@@ -41,6 +49,7 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
   const schedule = new ScheduleRepo(db)
   const events = new EventRepo(db)
   const hub = new LiveHub()
+  const webhooks = new WebhookRepo(db)
   const protoLogger: Logger = config.uhppote.debug ? logger : { warn: logger.warn, error: logger.error, info: logger.info }
   const gateway = new ControllerGateway(controllers, audit, hub, { ...config.uhppote, logger: protoLogger })
   const eventService = new EventService(gateway, controllers, events, {
@@ -74,6 +83,9 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     health,
     sync,
     backup: new BackupService(db, path.join(config.dataDir, 'backups'), { hour: config.backupHour, keep: config.backupKeep, logger }),
+    mqtt: config.mqtt ? new MqttService(config.mqtt, controllers, gateway, { version: APP_VERSION, logger }) : null,
+    webhooks,
+    webhookService: new WebhookService(webhooks, controllers, hub, { version: APP_VERSION, logger }),
     logger,
   }
 }

@@ -76,6 +76,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     const id = ctx.controllers.create(b)
     ctx.audit.log(req.user, 'create-controller', `controller:${b.serial}`, b)
     void ctx.health.check(id)
+    ctx.mqtt?.refresh()
     return { id }
   })
 
@@ -85,6 +86,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     ctx.controllers.update(id, b)
     ctx.audit.log(req.user, 'update-controller', `controller:${b.serial}`, b)
     void ctx.health.check(id)
+    ctx.mqtt?.refresh()
     return { ok: true }
   })
 
@@ -94,6 +96,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     ctx.controllers.delete(id)
     ctx.hub.remove(id)
     ctx.audit.log(req.user, 'delete-controller', `controller:${c.serial}`)
+    ctx.mqtt?.refresh()
     return { ok: true }
   })
 
@@ -204,6 +207,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     if (!door) throw new HttpError(404, 'doorNotFound')
     ctx.controllers.updateDoor(id, b)
     ctx.audit.log(req.user, 'update-door', `door:${id}`, b)
+    ctx.mqtt?.refresh()
     let pushError: string | null = null
     if (door.mode !== b.mode || door.delay !== b.delay) {
       try {

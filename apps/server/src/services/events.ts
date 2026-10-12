@@ -8,7 +8,18 @@ import {
 } from '@uhppote-desk/protocol'
 import type { ControllerRepo, EventRepo } from '../db/repos.js'
 import type { ControllerGateway } from '../gateway/gateway.js'
-import { localDateTime } from '../util/time.js'
+import type { EventDto } from '@uhppote-desk/shared'
+import { localDateTime, parseLocal } from '../util/time.js'
+
+/**
+ * Events older than this (backfill, offline swipes collected later) are stored
+ * but do not trigger integrations (MQTT event entities, webhooks).
+ */
+export const RECENT_EVENT_MS = 10 * 60_000
+
+export function isRecentEvent(e: Pick<EventDto, 'timestamp'>, now = Date.now()): boolean {
+  return !e.timestamp || now - parseLocal(e.timestamp).getTime() <= RECENT_EVENT_MS
+}
 
 export interface CollectResult {
   controllerId: number

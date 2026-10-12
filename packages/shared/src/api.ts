@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { WEBHOOK_EVENTS, type WebhookEvent } from './labels.js'
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -372,4 +373,62 @@ export interface AttendanceDayDto {
   overtimeMinutes: number
   /** anomaly codes (translated under codes.anomaly) */
   anomalies: ('singlePunch' | 'oddPunches')[]
+}
+
+// ---------------------------------------------------------------------------
+// Outgoing webhooks
+// ---------------------------------------------------------------------------
+
+export const webhookInputSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  url: z
+    .string()
+    .trim()
+    .max(2000)
+    .url()
+    .refine((u) => /^https?:\/\//i.test(u), 'Only http:// and https:// URLs'),
+  enabled: z.boolean().default(true),
+  events: z.array(z.enum(WEBHOOK_EVENTS)).min(1),
+  /** Only events of these doors (empty = all). */
+  doorIds: z.array(z.number().int().positive()).default([]),
+  /** Extra request headers, e.g. Authorization. */
+  headers: z.record(z.string().regex(/^[A-Za-z0-9-]{1,100}$/, 'Invalid header name'), z.string().max(2000)).default({}),
+})
+
+export interface WebhookDto {
+  id: number
+  name: string
+  url: string
+  enabled: boolean
+  events: WebhookEvent[]
+  doorIds: number[]
+  headers: Record<string, string>
+  /** Key of the HMAC-SHA256 signature (X-UHPPOTE-Signature header). */
+  secret: string
+  createdAt: string
+  lastDelivery: { at: string; ok: boolean; statusCode: number | null; error: string | null } | null
+}
+
+export interface WebhookDeliveryDto {
+  id: number
+  webhookId: number
+  deliveryId: string
+  event: string
+  at: string
+  ok: boolean
+  statusCode: number | null
+  error: string | null
+  durationMs: number
+  attempts: number
+  payload: string
+}
+
+/** Body of every webhook request. */
+export interface WebhookPayload {
+  id: string
+  type: WebhookEvent | 'webhook.test'
+  occurredAt: string
+  controller: { id: number; serial: number; name: string } | null
+  door: { id: number; number: number; name: string } | null
+  data: Record<string, unknown>
 }

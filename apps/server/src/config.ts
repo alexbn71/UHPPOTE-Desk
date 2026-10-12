@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { LANGUAGES, type Language } from '@uhppote-desk/shared'
 
 export interface AppConfig {
   /** HTTP port of the web app. */
@@ -39,6 +40,23 @@ export interface AppConfig {
   /** Hour of the daily backup (0-23; -1 = disabled). */
   backupHour: number
   backupKeep: number
+  /** MQTT bridge (Home Assistant discovery); null = disabled. */
+  mqtt: MqttConfig | null
+}
+
+export interface MqttConfig {
+  /** Broker URL, e.g. mqtt://192.168.1.10:1883 or mqtts://broker:8883. */
+  url: string
+  username: string | null
+  password: string | null
+  /** Prefix of the topics published by the app. */
+  baseTopic: string
+  /** Home Assistant discovery prefix. */
+  discoveryPrefix: string
+  /** Whether doors may be opened by MQTT commands (the Home Assistant buttons). */
+  doorControl: boolean
+  /** Language of the entity names and event texts sent to Home Assistant. */
+  language: Language
 }
 
 function env(name: string, fallback: string): string {
@@ -54,6 +72,24 @@ function int(name: string, fallback: number): number {
 
 function bool(name: string, fallback: boolean): boolean {
   return ['1', 'true', 'yes', 'on'].includes(env(name, String(fallback)).toLowerCase())
+}
+
+function loadMqtt(): MqttConfig | null {
+  const url = env('MQTT_URL', '')
+  if (!url) return null
+  const language = env('MQTT_LANGUAGE', 'en')
+  if (!LANGUAGES.some((l) => l.code === language)) {
+    throw new Error(`variable MQTT_LANGUAGE must be one of ${LANGUAGES.map((l) => l.code).join(', ')}`)
+  }
+  return {
+    url,
+    username: process.env.MQTT_USERNAME || null,
+    password: process.env.MQTT_PASSWORD || null,
+    baseTopic: env('MQTT_BASE_TOPIC', 'uhppote-desk').replace(/\/+$/, ''),
+    discoveryPrefix: env('MQTT_DISCOVERY_PREFIX', 'homeassistant').replace(/\/+$/, ''),
+    doorControl: bool('MQTT_DOOR_CONTROL', true),
+    language: language as Language,
+  }
 }
 
 export function loadConfig(): AppConfig {
@@ -82,5 +118,6 @@ export function loadConfig(): AppConfig {
     initialBackfill: int('INITIAL_BACKFILL', 5000),
     backupHour: int('BACKUP_HOUR', 2),
     backupKeep: int('BACKUP_KEEP', 14),
+    mqtt: loadMqtt(),
   }
 }
