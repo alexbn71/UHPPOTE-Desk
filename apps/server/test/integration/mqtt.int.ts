@@ -163,7 +163,8 @@ describe('Home Assistant discovery', () => {
 describe('events and commands', () => {
   it('forwards a denied swipe to the door event entity', async () => {
     fake.swipe(10058400, 1)
-    await waitFor(() => received.some((m) => m.topic === `uhd/${SERIAL}/door/1/event`))
+    // the event (QoS 0) and last_access (retained, QoS 1) may arrive in either order
+    await waitFor(() => received.some((m) => m.topic === `uhd/${SERIAL}/door/1/event`) && seen.has(`uhd/${SERIAL}/door/1/last_access`))
     const ev = JSON.parse(received.find((m) => m.topic === `uhd/${SERIAL}/door/1/event`)!.payload)
     expect(ev).toMatchObject({ event_type: 'denied', card: 10058400, granted: false, direction: 'in' })
     expect(json(`uhd/${SERIAL}/door/1/last_access`)).toMatchObject({ card: 10058400, granted: false })

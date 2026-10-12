@@ -53,6 +53,9 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
   start(): void {
     if (this.started) return
     this.started = true
+    // start from the states the hub already knows: otherwise the first change of a controller polled
+    // before the start (e.g. a door opening) would only set the baseline and be lost
+    for (const s of this.hub.allStates()) if (!this.states.has(s.controllerId)) this.states.set(s.controllerId, s)
     this.hub.on('message', this.onHub)
   }
 
