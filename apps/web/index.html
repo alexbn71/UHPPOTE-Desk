@@ -11,6 +11,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="UHPPOTE Desk" />
     <title>UHPPOTE Desk</title>
+    <script>
+      // apply the saved theme before the first paint (no light flash in dark mode)
+      try {
+        var scheme = localStorage.getItem('mantine-color-scheme-value') || 'auto'
+        if (scheme === 'auto') scheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-mantine-color-scheme', scheme)
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

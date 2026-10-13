@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { LanguageSelect } from '../components/LanguageSelect'
+import { ThemeSelect } from '../components/ThemeSelect'
 import { api, errorMessage } from '../lib/api'
 import type { CurrentUser } from '../lib/auth'
 import { deviceName, prefersRemember } from '../lib/device'
@@ -40,7 +41,8 @@ export function LoginPage() {
       <Paper withBorder shadow="md" p="xl" w={360} maw="calc(100vw - 32px)">
         <form onSubmit={submit}>
           <Stack>
-            <Group justify="flex-end" mb={-16}>
+            <Group justify="flex-end" gap="xs" mb={-16}>
+              <ThemeSelect />
               <LanguageSelect />
             </Group>
             <Center>

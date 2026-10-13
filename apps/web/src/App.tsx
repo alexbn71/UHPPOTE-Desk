@@ -45,6 +45,7 @@ import { useTranslation } from 'react-i18next'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import type { Role } from '@uhppote-desk/shared'
 import { LanguageSelect } from './components/LanguageSelect'
+import { ThemeSelect } from './components/ThemeSelect'
 import { useAuth } from './lib/auth'
 import { useCodes } from './lib/codes'
 import { LiveProvider, useLive } from './lib/live'
@@ -207,18 +208,20 @@ function Shell({ children }: { children: ReactNode }) {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="sm">
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group gap="sm" wrap="nowrap">
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <img src="/icon.svg" width={28} height={28} alt="" />
-            <Title order={4}>{t('app.name')}</Title>
+            <Title order={4} visibleFrom="xs">
+              {t('app.name')}
+            </Title>
             <Tooltip label={live.connected ? t('nav.liveOn') : t('nav.liveOff')}>
               <Badge color={live.connected ? 'green' : 'red'} variant="dot">
                 {live.connected ? t('common.live') : t('common.offline')}
               </Badge>
             </Tooltip>
           </Group>
-          <Group gap="sm">
+          <Group gap="sm" wrap="nowrap">
             <Text size="sm" visibleFrom="xs">
               {user?.displayName} · {user ? codes.role(user.role) : ''}
             </Text>
@@ -227,6 +230,7 @@ function Shell({ children }: { children: ReactNode }) {
                 <IconDeviceMobile size={20} />
               </UnstyledButton>
             </Tooltip>
+            <ThemeSelect />
             <LanguageSelect />
             {!user?.passwordManaged && (
               <Tooltip label={t('nav.changePassword')}>
