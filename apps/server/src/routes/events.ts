@@ -4,6 +4,7 @@ import { eventQuerySchema } from '@uhppote-desk/shared'
 import { requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
 import { toCsv } from '../util/csv.js'
+import { localDateTime } from '../util/time.js'
 import { requestTranslator } from '../util/lang.js'
 
 export function registerEventRoutes(app: FastifyInstance, ctx: AppContext): void {
@@ -15,6 +16,8 @@ export function registerEventRoutes(app: FastifyInstance, ctx: AppContext): void
   }
 
   app.get('/events', viewer, async (req) => ctx.events.query(filter(req.query)))
+
+  app.get('/events/stats', viewer, async () => ctx.events.stats(localDateTime()))
 
   app.get('/events/export.csv', viewer, async (req, reply) => {
     const { lang: _lang, ...query } = req.query as Record<string, unknown>

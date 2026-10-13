@@ -339,6 +339,24 @@ export interface EventDto {
   receivedAt: string
 }
 
+/** Card swipes counted as granted/denied. */
+export interface AccessCounts {
+  granted: number
+  denied: number
+}
+
+/** Aggregated card swipes for the dashboard charts (local time). */
+export interface EventStatsDto {
+  /** Last 7 days including today, oldest first ('YYYY-MM-DD'). */
+  daily: (AccessCounts & { date: string })[]
+  /** Last 24 hours including the current one, oldest first ('YYYY-MM-DD HH'). */
+  hourly: (AccessCounts & { hour: string })[]
+  /** Last 7 days, per door, busiest first. */
+  byDoor: (AccessCounts & { controllerId: number; controllerName: string; door: number; doorName: string | null })[]
+  /** Last 28 days: granted swipes per weekday (0 = Monday) and hour. */
+  weekHours: { weekday: number; hour: number; count: number }[]
+}
+
 export interface DoorLiveState {
   door: number
   open: boolean

@@ -1,14 +1,17 @@
 import type {
+  AccessCounts,
   CardDto,
   ControllerDto,
   ControllerSettings,
   DoorDto,
   EventDto,
+  EventStatsDto,
   PersonDto,
 } from '@uhppote-desk/shared'
 import { HttpError } from '../auth/auth.js'
 import type { Db } from './database.js'
 import { fromBool, toBool, weekdaysFromString, weekdaysToString } from './database.js'
+import { addDays, localDateTime, parseLocal } from '../util/time.js'
 
 // ===========================================================================
 // Zones and departments (identical tree structures)
@@ -719,6 +722,62 @@ export class EventRepo {
     const total = this.db.get<{ n: number }>(`SELECT COUNT(*) n FROM events e ${w}`, params)!.n
     const rows = this.db.all<EventRow>(`${EVENT_SELECT} ${w} ORDER BY e.timestamp DESC, e.id DESC LIMIT ? OFFSET ?`, [...params, f.limit, f.offset]).map(mapEvent)
     return { rows, total }
+  }
+
+  /** Card swipes aggregated for the dashboard charts. `now` is local 'YYYY-MM-DD HH:mm:ss'. */
+  stats(now: string): EventStatsDto {
+    const today = now.slice(0, 10)
+    const hourStart = (h: number) => {
+      const d = parseLocal(`${now.slice(0, 13)}:00:00`)
+      d.setHours(d.getHours() - h)
+      return localDateTime(d)
+    }
+    const counts = 'COALESCE(SUM(e.granted = 1), 0) AS granted, COALESCE(SUM(e.granted = 0), 0) AS denied'
+    const swipes = 'e.type = 1 AND e.timestamp >= ? AND e.timestamp <= ?'
+    const end = `${today} 23:59:59`
+    const weekStart = `${addDays(today, -6)} 00:00:00`
+
+    const dayRows = this.db.all<AccessCounts & { date: string }>(
+      `SELECT substr(e.timestamp, 1, 10) AS date, ${counts} FROM events e WHERE ${swipes} GROUP BY date`,
+      [weekStart, end],
+    )
+    const daily = Array.from({ length: 7 }, (_, i) => {
+      const date = addDays(today, i - 6)
+      const r = dayRows.find((x) => x.date === date)
+      return { date, granted: r?.granted ?? 0, denied: r?.denied ?? 0 }
+    })
+
+    const hourRows = this.db.all<AccessCounts & { hour: string }>(
+      `SELECT substr(e.timestamp, 1, 13) AS hour, ${counts} FROM events e WHERE ${swipes} GROUP BY hour`,
+      [hourStart(23), end],
+    )
+    const hourly = Array.from({ length: 24 }, (_, i) => {
+      const hour = hourStart(23 - i).slice(0, 13)
+      const r = hourRows.find((x) => x.hour === hour)
+      return { hour, granted: r?.granted ?? 0, denied: r?.denied ?? 0 }
+    })
+
+    const byDoor = this.db.all<EventStatsDto['byDoor'][number]>(
+      `SELECT e.controller_id AS controllerId, c.name AS controllerName, e.door, d.name AS doorName, ${counts}
+       FROM events e
+       JOIN controllers c ON c.id = e.controller_id
+       LEFT JOIN doors d ON d.controller_id = e.controller_id AND d.door = e.door
+       WHERE ${swipes}
+       GROUP BY e.controller_id, e.door
+       ORDER BY COUNT(*) DESC, c.name, e.door`,
+      [weekStart, end],
+    )
+
+    // strftime('%w'): 0 = Sunday, shifted so that 0 = Monday
+    const weekHours = this.db.all<EventStatsDto['weekHours'][number]>(
+      `SELECT (CAST(strftime('%w', e.timestamp) AS INTEGER) + 6) % 7 AS weekday, CAST(substr(e.timestamp, 12, 2) AS INTEGER) AS hour,
+              COUNT(*) AS count
+       FROM events e WHERE ${swipes} AND e.granted = 1
+       GROUP BY weekday, hour`,
+      [`${addDays(today, -27)} 00:00:00`, end],
+    )
+
+    return { daily, hourly, byDoor, weekHours }
   }
 
   /** Last denied swipe of an unknown card (for "swipe the card" enrolment). */

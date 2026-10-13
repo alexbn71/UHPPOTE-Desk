@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title, Tooltip } from '@mantine/core'
+import { Alert, Badge, Box, Button, Card, Group, SimpleGrid, Stack, Text, Title, Tooltip } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { IconAlertTriangle, IconDoorEnter, IconLock, IconLockOpen } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import type { ControllerDto, ControllerLiveState, DoorDto, EventDto } from '@uhppote-desk/shared'
 import { EventsTable, PageHeader } from '../components/common'
+import { ActivityCharts, StatTiles, useEventStats, WeekHoursChart } from '../components/DashboardStats'
 import i18n from '../i18n'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -115,6 +116,7 @@ export function DashboardPage() {
   const { can } = useAuth()
   const navigate = useNavigate()
   const latest = useQuery({ queryKey: ['events', 'latest'], queryFn: () => api.get<{ rows: EventDto[] }>('/events?limit=15') })
+  const stats = useEventStats()
 
   return (
     <>
@@ -133,9 +135,18 @@ export function DashboardPage() {
           )}
         </Alert>
       )}
+      {!!controllers.data?.length && <StatTiles stats={stats.data} controllers={controllers.data} states={live.states} />}
       <SimpleGrid cols={{ base: 1, lg: 2 }} mb="lg">
         {controllers.data?.map((c) => <ControllerCard key={c.id} c={c} live={live.states[c.id]} canOpen={can('operator')} />)}
       </SimpleGrid>
+      {!!controllers.data?.length && stats.data && (
+        <>
+          <ActivityCharts stats={stats.data} />
+          <Box mb="lg">
+            <WeekHoursChart stats={stats.data} />
+          </Box>
+        </>
+      )}
       <Card withBorder>
         <Group justify="space-between" mb="sm">
           <Title order={4}>{t('dashboard.latestEvents')}</Title>
