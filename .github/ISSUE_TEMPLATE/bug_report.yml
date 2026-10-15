@@ -1,0 +1,99 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem! For questions about installation or configuration, please use
+        [Discussions](https://github.com/alexbn71/UHPPOTE-Desk/discussions) instead.
+        **Do not include passwords, API tokens or personal data** of the people registered in the app.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened
+      description: A clear description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Click on …
+        3. See the error …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: UHPPOTE Desk version
+      description: Shown on the *System* page, e.g. 1.0.0 (or the Docker tag / commit you run).
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installation
+      options:
+        - Docker / Docker Compose
+        - Unraid
+        - Synology / QNAP
+        - From source (npm)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: controller
+    attributes:
+      label: Controller model and firmware
+      description: e.g. UT0311-L04, firmware v8.92 (shown in the controller's *Diagnostics* tab). Leave empty if not related to a controller.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Controllers and doors
+        - People, cards and permissions
+        - Synchronisation
+        - Monitor and events
+        - Attendance
+        - Home Assistant / MQTT
+        - Notifications, webhooks, rules
+        - Mobile app
+        - Interface and translations
+        - Installation and Docker
+        - Other
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      description: Only for interface problems, e.g. Chrome 130 on Windows, Safari on iPhone.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server log
+      description: The container log around the problem (`docker logs uhppote-desk`). Remove any sensitive data.
+      render: text
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots and other details

@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and help
+    url: https://github.com/alexbn71/UHPPOTE-Desk/discussions/categories/q-a
+    about: Installation, configuration and "how do I…" questions
+  - name: Ideas and discussions
+    url: https://github.com/alexbn71/UHPPOTE-Desk/discussions/categories/ideas
+    about: Talk about an idea before opening a feature request
+  - name: Security vulnerability
+    url: https://github.com/alexbn71/UHPPOTE-Desk/security/advisories/new
+    about: Report security problems privately, not as a public issue
+  - name: Documentation
+    url: https://github.com/alexbn71/UHPPOTE-Desk#readme
+    about: README, Docker guide, Home Assistant guide and user manual

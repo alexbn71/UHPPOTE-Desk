@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest a new feature or an improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! If you would like to discuss it first, open a topic in
+        [Discussions → Ideas](https://github.com/alexbn71/UHPPOTE-Desk/discussions).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what makes it hard today?
+      placeholder: e.g. I want to … but I have to …
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: The solution you would like
+      description: How should it work? Pages, buttons, settings, Home Assistant entities…
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Workarounds you use today, or other ways to solve it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Controllers and doors
+        - People, cards and permissions
+        - Synchronisation
+        - Monitor and events
+        - Attendance
+        - Home Assistant / MQTT
+        - Notifications, webhooks, rules
+        - Mobile app
+        - Interface and translations
+        - Installation and Docker
+        - Other
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to help implement it (see CONTRIBUTING.md)

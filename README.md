@@ -175,6 +175,10 @@ Local development uses the same variables, in a `.env` file at the project root 
 - Original manufacturer software (not included in this repository): http://www.wiegand.com.cn/soft/soft_all_32/MJ_all_en.rar. Manufacturer files can be kept locally in `Legacy/`, which is ignored by git.
 - Project resources: [RESOURCES.md](RESOURCES.md).
 
+## Contributing
+
+Questions and ideas are welcome in [Discussions](https://github.com/alexbn71/UHPPOTE-Desk/discussions), bugs and feature requests in the [issues](https://github.com/alexbn71/UHPPOTE-Desk/issues/new/choose). To contribute code or translations, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 Copyright (C) 2026 Alessandro Blason.
