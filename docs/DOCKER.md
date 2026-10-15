@@ -7,11 +7,13 @@ This guide explains how to install UHPPOTE Desk with Docker on a server or NAS a
 | | |
 |---|---|
 | Image | `ghcr.io/alexbn71/uhppote-desk` |
-| Tags | `latest` (latest version of `main`), `sha-<commit>` (exact version), `<x.y.z>` (releases) |
+| Tags | `latest` (latest version of `main`), `<x.y.z>` (a release, e.g. `1.0.0`), `<x.y>` and `<x>` (latest release of that series, e.g. `1`), `sha-<commit>` (exact commit) |
 | Architecture | `linux/amd64` |
 | Ports | `8080/tcp` web interface (configurable) · `60001/udp` events from the controllers |
 | Volume | `/data`: database, backups, photos, test reports — a named volume or a host folder |
 | Icon | `https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png` (label `net.unraid.docker.icon`) |
+
+To stay on a release instead of following `main`, use a version tag: `ghcr.io/alexbn71/uhppote-desk:1` receives the 1.x releases (new features and fixes, no breaking changes), `:1.0.0` never changes. The releases and their notes are on the [releases page](https://github.com/alexbn71/UHPPOTE-Desk/releases) and in [CHANGELOG.md](../CHANGELOG.md).
 | User | the application runs as `PUID:PGID` (default `1000:1000`); see [Data folder and permissions](#data-folder-and-permissions) |
 
 The image is built and verified by GitHub Actions on every change: tests, a trial start of the container, publication.

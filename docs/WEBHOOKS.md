@@ -34,7 +34,7 @@ With a door filter, door events are sent only for the selected doors, and `contr
 ```http
 POST /your/path HTTP/1.1
 Content-Type: application/json
-User-Agent: UHPPOTE-Desk/0.1.0
+User-Agent: UHPPOTE-Desk/1.0.0
 X-UHPPOTE-Event: access.granted
 X-UHPPOTE-Delivery: 5d0c1c55-3d0e-4d47-a6a8-3c7d9f1b2e10
 X-UHPPOTE-Timestamp: 1791820800

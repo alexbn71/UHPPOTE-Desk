@@ -121,6 +121,8 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
             type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -141,3 +143,34 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
+
+  release:
+    name: GitHub release
+    needs: image
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on && !/^\[[^]]+\]: / { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "CHANGELOG.md has no entry for $version"; exit 1; }
+          image="ghcr.io/${{ github.repository_owner }}/uhppote-desk"
+          printf '\n### Docker image\n\n```\ndocker pull %s:%s\n```\n\nAlso tagged `%s` and `%s` (latest release of the series).\n' \
+            "$image" "$version" "${version%.*}" "${version%%.*}" >> notes.md
+          cat notes.md
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "UHPPOTE Desk ${GITHUB_REF_NAME}" --notes-file notes.md \
+            "docs/UHPPOTE-Desk-Manual.pdf#User manual (PDF)"

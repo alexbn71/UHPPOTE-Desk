@@ -163,7 +163,7 @@ Public URL for Docker managers: `https://raw.githubusercontent.com/alexbn71/UHPP
 
 ## Installation with Docker
 
-The ready-made image is `ghcr.io/alexbn71/uhppote-desk:latest`. The complete guide is **[docs/DOCKER.md](docs/DOCKER.md)**: network requirements (`host` networking is mandatory), the list of environment variables, examples for Docker Compose, `docker run`, Unraid, Synology and QNAP, first start, updates and troubleshooting.
+The ready-made image is `ghcr.io/alexbn71/uhppote-desk:latest` (development version, follows `main`) or, to stay on a release, `ghcr.io/alexbn71/uhppote-desk:1` — see the [releases](https://github.com/alexbn71/UHPPOTE-Desk/releases) and [CHANGELOG.md](CHANGELOG.md). The complete guide is **[docs/DOCKER.md](docs/DOCKER.md)**: network requirements (`host` networking is mandatory), the list of environment variables, examples for Docker Compose, `docker run`, Unraid, Synology and QNAP, first start, updates and troubleshooting.
 
 In short, the only required variable is `UHPPOTE_LISTENER_PUBLIC` (IP:port of the server as seen by the controllers, e.g. `192.168.1.10:60001`); setting `UHPPOTE_BROADCAST` (broadcast address of the controllers' subnet, e.g. `192.168.1.255:60000`) and `TZ` is also recommended.
 
