@@ -163,8 +163,11 @@ With a host folder instead of a named volume: `-v /srv/uhppote-desk:/data -e PUI
 4. The template already sets:
    - **`host` networking**;
    - **data folder** `/mnt/user/appdata/uhppote-desk` mounted on `/data`;
-   - **`PUID=99`, `PGID=100`** (`nobody:users`), the standard owner of `appdata`.
+   - **`PUID=99`, `PGID=100`** (`nobody:users`), the standard owner of `appdata`;
+   - the image tag **`:1`** (stable releases); change it to `:latest` to follow the development version.
 5. **Apply**, then open the WebUI from the container icon.
+
+Support for Unraid: [forum thread](https://forums.unraid.net/topic/200911-support-alexbn71-uhppote-desk/). The template is also published in [alexbn71/unraid-templates](https://github.com/alexbn71/unraid-templates) for Community Applications.
 
 ## Other NAS systems
 

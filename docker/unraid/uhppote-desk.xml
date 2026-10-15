@@ -1,18 +1,21 @@
 <?xml version="1.0"?>
 <!--
   Unraid template for UHPPOTE Desk.
-  Copy to /boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml,
+  Published in Community Applications from github.com/alexbn71/unraid-templates (keep the two copies identical).
+  For a manual install, copy to /boot/config/plugins/dockerMan/templates-user/my-uhppote-desk.xml,
   then Docker → Add Container → Template: uhppote-desk.
   Full guide: https://github.com/alexbn71/UHPPOTE-Desk/blob/main/docs/DOCKER.md
 -->
 <Container version="2">
   <Name>uhppote-desk</Name>
-  <Repository>ghcr.io/alexbn71/uhppote-desk:latest</Repository>
+  <Repository>ghcr.io/alexbn71/uhppote-desk:1</Repository>
   <Registry>https://github.com/alexbn71/UHPPOTE-Desk/pkgs/container/uhppote-desk</Registry>
   <Network>host</Network>
   <Privileged>false</Privileged>
-  <Support>https://github.com/alexbn71/UHPPOTE-Desk</Support>
+  <Support>https://forums.unraid.net/topic/200911-support-alexbn71-uhppote-desk/</Support>
   <Project>https://github.com/alexbn71/UHPPOTE-Desk</Project>
+  <ReadMe>https://github.com/alexbn71/UHPPOTE-Desk/blob/main/docs/DOCKER.md#installation-on-unraid</ReadMe>
+  <TemplateURL>https://raw.githubusercontent.com/alexbn71/unraid-templates/main/UHPPOTE-Desk/uhppote-desk.xml</TemplateURL>
   <Overview>Management of UHPPOTE UT0311-L0x access controllers. Requires "host" networking to discover the controllers and receive their UDP events. User interface in English, Italian, Spanish, French and German.</Overview>
   <Category>HomeAutomation: Security:</Category>
   <WebUI>http://[IP]:8080/</WebUI>
