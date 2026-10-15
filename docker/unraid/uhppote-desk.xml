@@ -16,11 +16,25 @@
   <Project>https://github.com/alexbn71/UHPPOTE-Desk</Project>
   <ReadMe>https://github.com/alexbn71/UHPPOTE-Desk/blob/main/docs/DOCKER.md#installation-on-unraid</ReadMe>
   <TemplateURL>https://raw.githubusercontent.com/alexbn71/unraid-templates/main/UHPPOTE-Desk/uhppote-desk.xml</TemplateURL>
-  <Overview>Management of UHPPOTE UT0311-L0x access controllers. Requires "host" networking to discover the controllers and receive their UDP events. User interface in English, Italian, Spanish, French and German.</Overview>
+  <Overview>Web application to manage UHPPOTE UT0311-L0x access controllers (1/2/4-door Wiegand boards), replacing the Windows "Access Control" software (N3000).[br][br]
+Controller discovery and configuration, people, cards and permissions with automatic sync, time profiles and scheduled tasks, live monitor with photos, event history, attendance reports, anomaly detection.[br]
+Home Assistant integration over MQTT (auto discovery), webhooks, Telegram/email/ntfy/Gotify notifications, automation rules and a mobile app (PWA) with fingerprint/Face ID.[br][br]
+Interface in English, Italian, Spanish, French and German. Requires "host" networking to discover the controllers and receive their UDP events.</Overview>
   <Category>HomeAutomation: Security:</Category>
   <WebUI>http://[IP]:8080/</WebUI>
   <Icon>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
+  <Shell>bash</Shell>
+  <Requires>Network type "host" (already set): the controllers are discovered with UDP broadcast and send their events over UDP. Set "Event destination" to this server's IP and port 60001 (e.g. 192.168.1.10:60001) and "Discovery broadcast" to the broadcast address of the controllers' subnet (e.g. 192.168.1.255:60000).</Requires>
+  <Changes>
+### 1.0.0 (2026-10-15)
+- First public release. Full notes: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.0.0
+  </Changes>
+  <Screenshot>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docs/screenshots/dashboard.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docs/screenshots/monitor.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docs/screenshots/person.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docs/screenshots/attendance.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/docs/screenshots/mobile.png</Screenshot>
   <Config Name="Data" Target="/data" Default="/mnt/user/appdata/uhppote-desk" Mode="rw" Description="Database, backups, test reports" Type="Path" Display="always" Required="true">/mnt/user/appdata/uhppote-desk</Config>
   <Config Name="PUID" Target="PUID" Default="99" Description="User ID that will own the data folder (Unraid: 99 = nobody)" Type="Variable" Display="advanced" Required="true">99</Config>
   <Config Name="PGID" Target="PGID" Default="100" Description="Group ID that will own the data folder (Unraid: 100 = users)" Type="Variable" Display="advanced" Required="true">100</Config>
@@ -41,4 +55,14 @@
   <Config Name="MQTT base topic" Target="MQTT_BASE_TOPIC" Default="uhppote-desk" Description="Prefix of the published topics" Type="Variable" Display="advanced" Required="false">uhppote-desk</Config>
   <Config Name="MQTT discovery prefix" Target="MQTT_DISCOVERY_PREFIX" Default="homeassistant" Description="Home Assistant discovery prefix" Type="Variable" Display="advanced" Required="false">homeassistant</Config>
   <Config Name="Time zone" Target="TZ" Default="Europe/Rome" Description="Used for the time set on the controllers and for reports" Type="Variable" Display="advanced" Required="true">Europe/Rome</Config>
+  <Config Name="Controller reply timeout" Target="UHPPOTE_TIMEOUT_MS" Default="2500" Description="Maximum wait for a controller reply, in milliseconds" Type="Variable" Display="advanced" Required="false">2500</Config>
+  <Config Name="Retries" Target="UHPPOTE_RETRIES" Default="1" Description="Additional attempts after a timeout (only for operations that can be repeated safely; door opening is never repeated)" Type="Variable" Display="advanced" Required="false">1</Config>
+  <Config Name="Status check interval" Target="HEALTH_INTERVAL_SEC" Default="15" Description="Seconds between controller status checks (online/offline, doors)" Type="Variable" Display="advanced" Required="false">15</Config>
+  <Config Name="Event download interval" Target="COLLECT_INTERVAL_SEC" Default="300" Description="Seconds between event downloads from the controllers, a safety net for events not received over UDP" Type="Variable" Display="advanced" Required="false">300</Config>
+  <Config Name="Clock correction threshold" Target="TIME_SYNC_THRESHOLD_SEC" Default="30" Description="Difference in seconds beyond which the controller clock is corrected automatically (0 = never)" Type="Variable" Display="advanced" Required="false">30</Config>
+  <Config Name="Initial event import" Target="INITIAL_BACKFILL" Default="5000" Description="Number of events already stored on a controller to import the first time it is connected" Type="Variable" Display="advanced" Required="false">5000</Config>
+  <Config Name="Session duration" Target="SESSION_HOURS" Default="12" Description="Operator session duration, in hours" Type="Variable" Display="advanced" Required="false">12</Config>
+  <Config Name="Backup hour" Target="BACKUP_HOUR" Default="2" Description="Hour of the daily database backup into /data/backups (-1 = disabled)" Type="Variable" Display="advanced" Required="false">2</Config>
+  <Config Name="Backups kept" Target="BACKUP_KEEP" Default="14" Description="Number of daily backups to keep" Type="Variable" Display="advanced" Required="false">14</Config>
+  <Config Name="Log level" Target="LOG_LEVEL" Default="info" Description="debug, info, warn or error" Type="Variable" Display="advanced" Required="false">info</Config>
 </Container>
