@@ -159,7 +159,11 @@ export class UhppoteClient {
       return udpExchange(common, dest, packet, accept, expectReply, false)
     }
     if (target.transport === 'tcp') {
-      return Promise.reject(new TransportError(`TCP requires the IP address of controller ${target.id}`))
+      return Promise.reject(new TransportError(`TCP requires the IP address of controller ${target.id}`, {
+          code: 'protocol.tcpNeedsAddress',
+          params: { controller: target.id },
+        }),
+      )
     }
     return udpExchange(common, this.broadcast, packet, accept, expectReply, true)
   }
@@ -324,7 +328,10 @@ export class UhppoteClient {
   async getEvent(t: ControllerTarget, index: number): Promise<ControllerEvent> {
     const { event } = await this.call(t, 'get-event', encode.getEvent(t.id, index), decode.getEvent, true)
     if (event.type === EventType.Overwritten) throw new EventOverwrittenError(t.id, index)
-    if (event.index === 0) throw new NotFoundError(`event ${index} not present on controller ${t.id}`)
+    if (event.index === 0) throw new NotFoundError(`event ${index} not present on controller ${t.id}`, {
+        code: 'protocol.eventMissing',
+        params: { controller: t.id, index },
+      })
     return event
   }
 

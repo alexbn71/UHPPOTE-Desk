@@ -70,10 +70,10 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       )
     }
     if (err instanceof HttpError) return send(fail(err.statusCode, err.code, err.params))
-    if (err instanceof TimeoutError) return send(fail(504, 'controllerUnreachable', { detail: err.message }))
-    if (err instanceof CodecError) return send(fail(400, 'controllerError', { detail: err.message }))
-    if (err instanceof NotFoundError) return send(fail(404, 'controllerError', { detail: err.message }))
-    if (err instanceof UhppoteError) return send(fail(502, 'controllerError', { detail: err.message }))
+    if (err instanceof UhppoteError) {
+      const status = err instanceof TimeoutError ? 504 : err instanceof CodecError ? 400 : err instanceof NotFoundError ? 404 : 502
+      return send(fail(status, err.code, err.params))
+    }
     const e = err as Error & { statusCode?: number; code?: string }
     if (e.code === 'ERR_SQLITE_ERROR' && /UNIQUE constraint failed/.test(e.message)) return send(fail(409, 'duplicate'))
     if (e.code === 'ERR_SQLITE_ERROR' && /FOREIGN KEY constraint failed/.test(e.message))

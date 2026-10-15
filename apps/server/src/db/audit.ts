@@ -1,3 +1,4 @@
+import { errorInfo, type ErrorInfo } from '@uhppote-desk/shared'
 import type { Db } from './database.js'
 import type { SessionUser } from '../auth/auth.js'
 
@@ -10,7 +11,10 @@ export interface AuditEntry {
   target: string | null
   details: unknown
   outcome: 'ok' | 'error'
+  /** English text of the error. */
   error: string | null
+  /** Translatable form of the error, when it has a code (controller errors). */
+  errorInfo: ErrorInfo | null
 }
 
 export class AuditLog {
@@ -23,8 +27,9 @@ export class AuditLog {
     details?: unknown,
     error?: Error | string | null,
   ): void {
+    const info = error ? errorInfo(error) : null
     this.db.run(
-      'INSERT INTO audit_log (operator_id, operator_name, action, target, details, outcome, error) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO audit_log (operator_id, operator_name, action, target, details, outcome, error, error_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [
         user?.id ?? null,
         user?.username ?? 'sistema',
@@ -33,6 +38,7 @@ export class AuditLog {
         details === undefined ? null : JSON.stringify(details),
         error ? 'error' : 'ok',
         error ? (typeof error === 'string' ? error : error.message) : null,
+        info?.code ? JSON.stringify(info) : null,
       ],
     )
   }
@@ -79,6 +85,7 @@ export class AuditLog {
         details: string | null
         outcome: 'ok' | 'error'
         error: string | null
+        error_info: string | null
       }>(`SELECT * FROM audit_log ${w} ORDER BY id DESC LIMIT ? OFFSET ?`, [...params, opts.limit, opts.offset])
       .map((r) => ({
         id: r.id,
@@ -90,6 +97,7 @@ export class AuditLog {
         details: r.details ? JSON.parse(r.details) : null,
         outcome: r.outcome,
         error: r.error,
+        errorInfo: r.error_info ? (JSON.parse(r.error_info) as ErrorInfo) : null,
       }))
     return { rows, total }
   }

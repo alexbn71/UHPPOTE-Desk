@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { KNOWN_REASONS, LANGUAGES, normalizeLanguage, resources, translate, translator } from '../src/index.js'
+import { errorInfo, KNOWN_REASONS, LANGUAGES, normalizeLanguage, resources, translate, translateError, translator } from '../src/index.js'
 
 function flatten(obj: unknown, prefix = ''): Map<string, string> {
   const out = new Map<string, string>()
@@ -55,5 +55,38 @@ describe('translations', () => {
     expect(normalizeLanguage('DE')).toBe('de')
     expect(normalizeLanguage('pt-BR')).toBe('en')
     expect(normalizeLanguage(undefined)).toBe('en')
+  })
+})
+
+describe('translateError', () => {
+  class CodedError extends Error {
+    constructor(
+      message: string,
+      readonly code: string,
+      readonly params: Record<string, string | number>,
+    ) {
+      super(message)
+    }
+  }
+  const timeout = new CodedError('no reply from controller 405419896 (function 0x20) within 2500 ms', 'protocol.timeout', {
+    controller: 405419896,
+    function: '0x20',
+    timeoutMs: 2500,
+  })
+
+  it('translates errors with a code', () => {
+    expect(translateError('it', timeout)).toBe('Nessuna risposta dal controller 405419896 entro 2500 ms (funzione 0x20)')
+    expect(translateError('en', timeout)).toBe('No reply from controller 405419896 within 2500 ms (function 0x20)')
+  })
+
+  it('accepts the stored form (ErrorInfo)', () => {
+    expect(translateError('de', errorInfo(timeout))).toMatch(/^Keine Antwort von Controller 405419896/)
+  })
+
+  it('keeps the text of errors without a known code', () => {
+    const system = Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' })
+    expect(translateError('it', system)).toBe('connect ECONNREFUSED')
+    expect(translateError('it', new CodedError('raw text', 'no.such.key', {}))).toBe('raw text')
+    expect(translateError('it', 'plain string')).toBe('plain string')
   })
 })

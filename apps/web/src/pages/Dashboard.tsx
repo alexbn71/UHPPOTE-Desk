@@ -8,7 +8,7 @@ import type { ControllerDto, ControllerLiveState, DoorDto, EventDto } from '@uhp
 import { EventsTable, PageHeader } from '../components/common'
 import { ActivityCharts, StatTiles, useEventStats, WeekHoursChart } from '../components/DashboardStats'
 import i18n from '../i18n'
-import { api, notifyError, notifyOk } from '../lib/api'
+import { api, errorText, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
 import { fmtDateTime } from '../lib/format'
@@ -92,7 +92,7 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
       </Group>
       {!online && live?.lastError && (
         <Alert color="red" variant="light" mb="xs" icon={<IconAlertTriangle size={16} />}>
-          {live.lastError}
+          {errorText(live.lastErrorInfo ?? live.lastError)}
         </Alert>
       )}
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">

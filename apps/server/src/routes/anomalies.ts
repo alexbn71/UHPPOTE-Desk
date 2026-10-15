@@ -1,8 +1,9 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { anomalyPeriodSchema, anomalySettingsSchema } from '@uhppote-desk/shared'
 import { requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
+import { requestErrorText } from '../util/lang.js'
 
 export function registerAnomalyRoutes(app: FastifyInstance, ctx: AppContext): void {
   const viewer = { preHandler: requireRole('viewer') }
@@ -47,7 +48,8 @@ export function registerAnomalyRoutes(app: FastifyInstance, ctx: AppContext): vo
       ctx.audit.log(req.user, 'disable-inactive-card', `card:${card.number}`, { personId: card.personId })
       disabled.push(card.number)
       const results = await ctx.sync.pushPerson(req.user, card.personId, [card.number])
-      for (const r of results) if (r.error) pushErrors.push({ controllerId: r.controllerId, error: r.error })
+      for (const r of results)
+        if (r.error) pushErrors.push({ controllerId: r.controllerId, error: requestErrorText(req, r.error) })
     }
     return { disabled: disabled.length, pushErrors }
   })

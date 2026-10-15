@@ -1,5 +1,6 @@
 import {
   ALARM_REASONS,
+  translateError,
   translator,
   type DeniedBurstDto,
   type EventDto,
@@ -76,7 +77,7 @@ export function eventMessage(ev: IntegrationEvent, lang: Language): NotifyMessag
       lines.push(t.t('notify.anomaly.repeated', { n: Number(ev.data.count), minutes: Number(ev.data.windowMinutes) }))
   } else if (ev.type === 'controller.offline') {
     if (ev.state?.lastSeenAt) lines.push(t.t('notify.lastSeen', { time: when(ev.state.lastSeenAt) }))
-    if (ev.state?.lastError) lines.push(ev.state.lastError)
+    if (ev.state?.lastError) lines.push(translateError(lang, ev.state.lastErrorInfo ?? ev.state.lastError))
   } else {
     lines.push(when(null))
   }

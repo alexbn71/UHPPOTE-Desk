@@ -275,7 +275,7 @@ export class NotificationService {
         (client, target) => client.openDoor(target, door.door),
       )
     } catch (err) {
-      await answer(t.t('notify.openFailed', { door: door.name, error: (err as Error).message }))
+      await answer(t.t('notify.openFailed', { door: door.name, error: t.error(err) }))
       return
     }
     await answer(t.t('notify.openDone', { door: door.name }))

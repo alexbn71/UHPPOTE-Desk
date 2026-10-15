@@ -227,7 +227,7 @@ export class RuleEngine {
           (client, target) => client.openDoor(target, door.door),
         )
       } catch (err) {
-        errors.push(t.t('notify.rule.openFailed', { door: door.name, error: (err as Error).message }))
+        errors.push(t.t('notify.rule.openFailed', { door: door.name, error: t.error(err) }))
       }
     }
     const at = localDateTime()

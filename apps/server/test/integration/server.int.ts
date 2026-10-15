@@ -150,9 +150,22 @@ describe('controller', () => {
   it('offline controller: error 504 and offline state', async () => {
     fake.offline = true
     try {
-      expect((await api('GET', `/controllers/${controllerId}/info`)).statusCode).toBe(504)
+      const r = await api('GET', `/controllers/${controllerId}/info`)
+      expect(r.statusCode).toBe(504)
+      expect(r.json()).toMatchObject({ code: 'protocol.timeout', params: { controller: SERIAL } })
       await ctx.health.check(controllerId)
       expect(ctx.hub.state(controllerId).online).toBe(false)
+      expect(ctx.hub.state(controllerId).lastErrorInfo).toMatchObject({ code: 'protocol.timeout' })
+      // a failed door opening is recorded in the audit log, shown in the reader's language
+      const door = (await api('GET', '/doors')).json()[0] as { id: number }
+      expect((await api('POST', `/doors/${door.id}/open`)).statusCode).toBe(504)
+      const audit = await app.inject({
+        method: 'GET',
+        url: '/api/audit?limit=1',
+        headers: { cookie: adminCookie, 'accept-language': 'it-IT' },
+      })
+      expect(audit.json().rows[0]).toMatchObject({ action: 'open-door', outcome: 'error' })
+      expect(audit.json().rows[0].error).toMatch(new RegExp(`^Nessuna risposta dal controller ${SERIAL} entro`))
     } finally {
       fake.offline = false
       await ctx.health.check(controllerId)

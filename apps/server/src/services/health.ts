@@ -1,5 +1,6 @@
 import type { Logger } from '@uhppote-desk/protocol'
 import { parseEndpoint } from '@uhppote-desk/protocol'
+import { errorInfo } from '@uhppote-desk/shared'
 import type { ControllerRepo } from '../db/repos.js'
 import type { Actor, ControllerGateway } from '../gateway/gateway.js'
 import { localDateTime, parseLocal } from '../util/time.js'
@@ -62,7 +63,7 @@ export class HealthService {
       await this.checkTime(controllerId)
     } catch (err) {
       if (wasOnline) this.opts.logger?.warn?.(`controller ${controllerId} offline: ${(err as Error).message}`)
-      hub.patch(controllerId, { online: false, lastError: (err as Error).message })
+      hub.patch(controllerId, { online: false, lastError: (err as Error).message, lastErrorInfo: errorInfo(err) })
     }
   }
 

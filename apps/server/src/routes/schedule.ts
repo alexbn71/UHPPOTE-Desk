@@ -1,21 +1,22 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { idParam, taskInputSchema, timeProfileInputSchema } from '@uhppote-desk/shared'
 import { HttpError, requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
+import { requestErrorText } from '../util/lang.js'
 
 export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): void {
   const viewer = { preHandler: requireRole('viewer') }
   const admin = { preHandler: requireRole('admin') }
 
   /** Sends the time profiles to all active controllers; returns the errors per controller. */
-  const pushProfilesEverywhere = async (actor: Parameters<typeof ctx.sync.pushTimeProfiles>[0]) => {
+  const pushProfilesEverywhere = async (req: FastifyRequest) => {
     const errors: { controllerId: number; error: string }[] = []
     for (const c of ctx.controllers.list().filter((x) => x.enabled)) {
       try {
-        await ctx.sync.pushTimeProfiles(actor, c.id)
+        await ctx.sync.pushTimeProfiles(req.user, c.id)
       } catch (err) {
-        errors.push({ controllerId: c.id, error: (err as Error).message })
+        errors.push({ controllerId: c.id, error: requestErrorText(req, err) })
       }
     }
     return errors
@@ -36,7 +37,7 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     }
     ctx.schedule.saveProfile(b)
     ctx.audit.log(req.user, 'save-time-profile', `profile:${id}`, b)
-    return { ok: true, pushErrors: await pushProfilesEverywhere(req.user) }
+    return { ok: true, pushErrors: await pushProfilesEverywhere(req) }
   })
 
   app.delete('/time-profiles/:id', admin, async (req) => {
@@ -47,10 +48,10 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     if (linked.length) throw new HttpError(409, 'profileLinked', { ids: linked.map((p) => p.id).join(', ') })
     ctx.schedule.deleteProfile(id)
     ctx.audit.log(req.user, 'delete-time-profile', `profile:${id}`)
-    return { ok: true, pushErrors: await pushProfilesEverywhere(req.user) }
+    return { ok: true, pushErrors: await pushProfilesEverywhere(req) }
   })
 
-  app.post('/time-profiles/push', admin, async (req) => ({ pushErrors: await pushProfilesEverywhere(req.user) }))
+  app.post('/time-profiles/push', admin, async (req) => ({ pushErrors: await pushProfilesEverywhere(req) }))
 
   // --- task ------------------------------------------------------------------
 
@@ -59,12 +60,12 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     return ctx.schedule.tasks(q.controllerId)
   })
 
-  const pushTasks = async (actor: Parameters<typeof ctx.sync.pushTasks>[0], controllerId: number) => {
+  const pushTasks = async (req: FastifyRequest, controllerId: number) => {
     try {
-      await ctx.sync.pushTasks(actor, controllerId)
+      await ctx.sync.pushTasks(req.user, controllerId)
       return null
     } catch (err) {
-      return (err as Error).message
+      return requestErrorText(req, err)
     }
   }
 
@@ -73,7 +74,7 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     ctx.gateway.controller(b.controllerId)
     const id = ctx.schedule.saveTask(b)
     ctx.audit.log(req.user, 'create-task', `task:${id}`, b)
-    return { id, pushError: await pushTasks(req.user, b.controllerId) }
+    return { id, pushError: await pushTasks(req, b.controllerId) }
   })
 
   app.put('/tasks/:id', admin, async (req) => {
@@ -83,8 +84,8 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     if (!old) throw new HttpError(404, 'taskNotFound')
     ctx.schedule.saveTask(b, id)
     ctx.audit.log(req.user, 'update-task', `task:${id}`, b)
-    const errors = [await pushTasks(req.user, b.controllerId)]
-    if (old.controllerId !== b.controllerId) errors.push(await pushTasks(req.user, old.controllerId))
+    const errors = [await pushTasks(req, b.controllerId)]
+    if (old.controllerId !== b.controllerId) errors.push(await pushTasks(req, old.controllerId))
     return { ok: true, pushError: errors.filter(Boolean).join('; ') || null }
   })
 
@@ -94,6 +95,6 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     if (!old) throw new HttpError(404, 'taskNotFound')
     ctx.schedule.deleteTask(id)
     ctx.audit.log(req.user, 'delete-task', `task:${id}`)
-    return { ok: true, pushError: await pushTasks(req.user, old.controllerId) }
+    return { ok: true, pushError: await pushTasks(req, old.controllerId) }
   })
 }

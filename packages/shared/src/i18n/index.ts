@@ -47,11 +47,39 @@ export function translate(lang: Language, key: string, params: Record<string, st
   return text.replace(/\{\{(\w+)\}\}/g, (_, name: string) => (name in params ? String(params[name]) : `{{${name}}}`))
 }
 
+/** Error that can be shown in any language: `code` is a key below `errors.`, `params` its placeholders. */
+export interface ErrorInfo {
+  /** English text, used when there is no code or no translation for it. */
+  message: string
+  code?: string
+  params?: Record<string, string | number>
+}
+
+/** Code and params of an error that carries them (controller and HTTP errors), otherwise just its text; an `ErrorInfo` is returned as is. */
+export function errorInfo(err: unknown): ErrorInfo {
+  if (!(err instanceof Error)) {
+    const info = err as ErrorInfo | null
+    return info !== null && typeof info === 'object' && typeof info.message === 'string' ? info : { message: String(err) }
+  }
+  const { code, params } = err as Error & { code?: unknown; params?: unknown }
+  if (typeof code === 'string' && params !== null && typeof params === 'object') {
+    return { message: err.message, code, params: params as Record<string, string | number> }
+  }
+  return { message: err.message }
+}
+
+/** Text of an error in a language; errors without a translatable code keep their own text. */
+export function translateError(lang: Language, err: unknown): string {
+  const info = errorInfo(err)
+  return info.code && lookup(resources.en, `errors.${info.code}`) ? translate(lang, `errors.${info.code}`, info.params) : info.message
+}
+
 /** Translator bound to one language, with helpers for the protocol codes. */
 export function translator(lang: Language) {
   const t = (key: string, params?: Record<string, string | number>) => translate(lang, key, params)
   return {
     t,
+    error: (err: unknown) => translateError(lang, err),
     reason: (code: number) => (lookup(resources[lang], `codes.reason.${code}`) ? t(`codes.reason.${code}`) : t('codes.reason.unknown', { code })),
     eventType: (code: number) => t(`codes.eventType.${code}`),
     direction: (code: number) => (code === 1 || code === 2 ? t(`codes.direction.${code}`) : ''),

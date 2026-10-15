@@ -256,7 +256,7 @@ function InactiveTab() {
                 {can('operator') && (
                   <Table.Th w={40}>
                     <Checkbox
-                      aria-label="all"
+                      aria-label={t('common.all')}
                       checked={rows.length > 0 && selected.length === rows.length}
                       indeterminate={selected.length > 0 && selected.length < rows.length}
                       onChange={(e) => setSelected(e.currentTarget.checked ? rows.map((r) => r.cardId) : [])}

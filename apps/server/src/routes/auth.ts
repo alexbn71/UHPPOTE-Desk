@@ -4,6 +4,7 @@ import { HttpError, requireSession, SESSION_COOKIE } from '../auth/auth.js'
 import { DEVICE_COOKIE } from '../auth/devices.js'
 import { randomPassword } from '../auth/password.js'
 import type { AppContext } from '../context.js'
+import { requestErrorText } from '../util/lang.js'
 
 export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void {
   const failures = new Map<string, { count: number; until: number }>()
@@ -148,11 +149,17 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
 
   app.get('/audit', admin, async (req) => {
     const q = req.query as { limit?: string; offset?: string; action?: string; operatorId?: string }
-    return ctx.audit.query({
+    const result = ctx.audit.query({
       limit: Math.min(Number(q.limit ?? 100), 1000),
       offset: Number(q.offset ?? 0),
       action: q.action,
       operatorId: q.operatorId ? Number(q.operatorId) : undefined,
     })
+    // errors in the reader's language
+    const rows = result.rows.map(({ errorInfo, ...r }) => ({
+      ...r,
+      error: errorInfo ? requestErrorText(req, errorInfo) : r.error,
+    }))
+    return { ...result, rows }
   })
 }

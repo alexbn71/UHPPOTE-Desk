@@ -11,7 +11,7 @@ import {
   type TokenAccess,
   type WebhookEvent,
 } from './labels.js'
-import { LANGUAGES, type Language } from './i18n/index.js'
+import { LANGUAGES, type ErrorInfo, type Language } from './i18n/index.js'
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -374,7 +374,9 @@ export interface ControllerLiveState {
   forceLock: boolean
   fireAlarm: boolean
   systemError: number
+  /** Last communication error, in English (MQTT, webhooks); `lastErrorInfo` is the translatable form. */
   lastError: string | null
+  lastErrorInfo: ErrorInfo | null
 }
 
 export type WsMessage =

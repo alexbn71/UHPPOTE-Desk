@@ -1293,7 +1293,6 @@ export const en = {
     rangeTooLong: 'Maximum range: 400 days',
     duplicate: 'Item already exists (duplicate value)',
     inUse: 'Operation not possible: the item is in use',
-    controllerUnreachable: 'Controller unreachable: {{detail}}',
     controllerError: 'Controller error: {{detail}}',
     internal: 'Internal server error',
     passwordManagedByEnv: "The password of this user is set by the ADMIN_PASSWORD variable and cannot be changed here",
@@ -1301,6 +1300,20 @@ export const en = {
     importInvalidCard: 'invalid card: {{card}}',
     importCardTaken: 'card {{card}} already assigned to {{person}}',
     selfParent: 'An item cannot be its own parent',
+    protocol: {
+      generic: 'Controller error: {{detail}}',
+      invalidValue: 'Value not accepted by the controller: {{detail}}',
+      timeout: 'No reply from controller {{controller}} within {{timeoutMs}} ms (function {{function}})',
+      refused: 'Controller {{controller}} did not perform the operation ({{operation}})',
+      eventOverwritten: 'Event {{index}} of controller {{controller}} has been overwritten',
+      eventMissing: 'Event {{index}} is not present on controller {{controller}}',
+      tcpNeedsAddress: 'TCP requires the IP address of controller {{controller}}',
+      socketOpen: 'Cannot open a UDP socket on {{address}}: {{detail}}',
+      socketPort: 'The operating system keeps assigning port 60000 to the client socket',
+      socketError: 'Network error (UDP socket): {{detail}}',
+      sendFailed: 'Sending to {{target}} failed: {{detail}}',
+      listenFailed: 'Cannot listen on {{address}}: {{detail}}',
+    },
   },
 }
 

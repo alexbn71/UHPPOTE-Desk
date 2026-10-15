@@ -17,6 +17,7 @@ import type { AuthenticationResponseJSON } from '@simplewebauthn/server'
 import { canOperateController } from '../auth/zones.js'
 import { relyingParty } from './mobile.js'
 import type { AppContext } from '../context.js'
+import { requestErrorText } from '../util/lang.js'
 import type { ControllerRecord } from '../db/repos.js'
 import { localDateTime } from '../util/time.js'
 
@@ -240,7 +241,7 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
       try {
         await ctx.sync.pushDoor(req.user, id)
       } catch (err) {
-        pushError = (err as Error).message
+        pushError = requestErrorText(req, err)
       }
     }
     return { ok: true, pushError }
@@ -296,10 +297,16 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
 
   app.get('/controllers/:id/sync/history', viewer, async (req) => {
     const { id } = idParam.parse(req.params)
-    return ctx.db.all(
+    const rows = ctx.db.all<{ status: string; summary: string | null }>(
       `SELECT s.id, s.kind, s.started_at AS startedAt, s.finished_at AS finishedAt, s.status, s.summary, o.username AS operator
        FROM sync_runs s LEFT JOIN operators o ON o.id = s.operator_id WHERE s.controller_id = ? ORDER BY s.id DESC LIMIT 50`,
       [id],
+    )
+    // failed runs store the error as an ErrorInfo (older runs: plain English text)
+    return rows.map((r) =>
+      r.status === 'error' && r.summary?.startsWith('{')
+        ? { ...r, summary: requestErrorText(req, JSON.parse(r.summary)) }
+        : r,
     )
   })
 }

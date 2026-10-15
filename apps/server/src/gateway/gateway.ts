@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { UhppoteClient, type ControllerTarget, type ControllerStatus, type Logger } from '@uhppote-desk/protocol'
-import type { ControllerLiveState, EventDto, WsMessage } from '@uhppote-desk/shared'
+import { errorInfo, type ControllerLiveState, type EventDto, type WsMessage } from '@uhppote-desk/shared'
 import type { AuditLog } from '../db/audit.js'
 import type { ControllerRecord, ControllerRepo } from '../db/repos.js'
 import type { SessionUser } from '../auth/auth.js'
@@ -30,6 +30,7 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
         fireAlarm: false,
         systemError: 0,
         lastError: null,
+        lastErrorInfo: null,
       }
     )
   }
@@ -55,6 +56,7 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
       fireAlarm: s.fireAlarm,
       systemError: s.systemError,
       lastError: null,
+      lastErrorInfo: null,
     }
     this.set(next)
     return next
@@ -137,7 +139,7 @@ export class ControllerGateway {
       try {
         return await fn(this.client, this.target(c), c)
       } catch (err) {
-        this.hub.patch(c.id, { lastError: (err as Error).message })
+        this.hub.patch(c.id, { lastError: (err as Error).message, lastErrorInfo: errorInfo(err) })
         throw err
       }
     }

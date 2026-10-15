@@ -1,4 +1,5 @@
 import { notifications } from '@mantine/notifications'
+import { normalizeLanguage, translateError, type ErrorInfo } from '@uhppote-desk/shared'
 import i18n from '../i18n'
 
 type Params = Record<string, string | number>
@@ -23,6 +24,11 @@ export function errorMessage(err: unknown): string {
     return base + detail
   }
   return err instanceof Error ? err.message : String(err)
+}
+
+/** Text of a server-side error (e.g. the last error of a controller) in the current language. */
+export function errorText(err: ErrorInfo | string): string {
+  return translateError(normalizeLanguage(i18n.resolvedLanguage), err)
 }
 
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {

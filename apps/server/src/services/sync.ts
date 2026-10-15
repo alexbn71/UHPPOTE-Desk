@@ -1,5 +1,5 @@
 import type { Card, Logger, Quad } from '@uhppote-desk/protocol'
-import type { SyncDiffDto } from '@uhppote-desk/shared'
+import { errorInfo, type SyncDiffDto } from '@uhppote-desk/shared'
 import type { Db } from '../db/database.js'
 import type { ControllerRepo, PeopleRepo, ScheduleRepo } from '../db/repos.js'
 import type { Actor, ControllerGateway } from '../gateway/gateway.js'
@@ -149,8 +149,11 @@ export class SyncService {
       hub.publishSync(controllerId, 'ok', 'sync.progress.cardsDone', { added: summary.toAdd.length, updated: summary.toUpdate.length, deleted: summary.toDelete.length })
       return summary
     } catch (err) {
-      this.db.run("UPDATE sync_runs SET status = 'error', finished_at = datetime('now','localtime'), summary = ? WHERE id = ?", [(err as Error).message, run])
-      hub.publishSync(controllerId, 'error', 'errors.controllerError', { detail: (err as Error).message })
+      // the error is stored as an ErrorInfo so the history can show it in the reader's language
+      const info = errorInfo(err)
+      this.db.run("UPDATE sync_runs SET status = 'error', finished_at = datetime('now','localtime'), summary = ? WHERE id = ?", [JSON.stringify(info), run])
+      if (info.code) hub.publishSync(controllerId, 'error', `errors.${info.code}`, info.params)
+      else hub.publishSync(controllerId, 'error', 'errors.controllerError', { detail: info.message })
       throw err
     }
   }
@@ -160,8 +163,8 @@ export class SyncService {
    * `removedCards`: card numbers to delete (e.g. a lost or removed card).
    * Errors are collected and returned per controller (offline controllers are aligned by the full sync).
    */
-  async pushPerson(actor: Actor, personId: number | null, removedCards: number[] = []): Promise<{ controllerId: number; error?: string }[]> {
-    const results: { controllerId: number; error?: string }[] = []
+  async pushPerson(actor: Actor, personId: number | null, removedCards: number[] = []): Promise<{ controllerId: number; error?: unknown }[]> {
+    const results: { controllerId: number; error?: unknown }[] = []
     for (const c of this.controllers.list().filter((x) => x.enabled)) {
       try {
         const desired = personId ? this.desiredCards(c.id, personId) : new Map<number, Card>()
@@ -173,7 +176,7 @@ export class SyncService {
         })
         results.push({ controllerId: c.id })
       } catch (err) {
-        results.push({ controllerId: c.id, error: (err as Error).message })
+        results.push({ controllerId: c.id, error: err })
       }
     }
     return results

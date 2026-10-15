@@ -368,4 +368,11 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       );
     `,
   },
+  {
+    id: 7,
+    name: 'audit log: translatable error (code and params)',
+    sql: /* sql */ `
+      ALTER TABLE audit_log ADD COLUMN error_info TEXT;
+    `,
+  },
 ]

@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { isValidWiegand26 } from '@uhppote-desk/protocol'
 import {
@@ -13,6 +13,7 @@ import {
 } from '@uhppote-desk/shared'
 import { HttpError, requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
+import { requestErrorText } from '../util/lang.js'
 import { parseCsv } from '../util/csv.js'
 import { addDays, localDate, localDateTime } from '../util/time.js'
 
@@ -31,9 +32,9 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   const operator = { preHandler: requireRole('operator') }
 
   /** Propagates the changes of a person to the controllers; errors do not block saving. */
-  const push = async (actor: Parameters<typeof ctx.sync.pushPerson>[0], personId: number | null, removed: number[] = []) => {
-    const results = await ctx.sync.pushPerson(actor, personId, removed)
-    return results.filter((r) => r.error).map((r) => ({ controllerId: r.controllerId, error: r.error! }))
+  const push = async (req: FastifyRequest, personId: number | null, removed: number[] = []) => {
+    const results = await ctx.sync.pushPerson(req.user, personId, removed)
+    return results.filter((r) => r.error).map((r) => ({ controllerId: r.controllerId, error: requestErrorText(req, r.error) }))
   }
 
   // --- departments -----------------------------------------------------------
@@ -91,7 +92,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const b = personInputSchema.parse(req.body)
     if (!ctx.people.update(id, b)) throw new HttpError(404, 'personNotFound')
     ctx.audit.log(req.user, 'update-person', `person:${id}`, { code: b.code, active: b.active, validFrom: b.validFrom, validTo: b.validTo })
-    return { ok: true, pushErrors: await push(req.user, id) }
+    return { ok: true, pushErrors: await push(req, id) }
   })
 
   app.delete('/people/:id', operator, async (req) => {
@@ -104,7 +105,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
       ctx.people.delete(id)
     })
     ctx.audit.log(req.user, 'delete-person', `person:${id}`, { code: p.code, cards })
-    return { ok: true, pushErrors: await push(req.user, null, cards) }
+    return { ok: true, pushErrors: await push(req, null, cards) }
   })
 
   app.put('/people/:id/photo', operator, async (req) => {
@@ -139,7 +140,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     if (!ctx.people.get(id)) throw new HttpError(404, 'personNotFound')
     ctx.people.setPermissions(id, b.permissions)
     ctx.audit.log(req.user, 'set-permissions', `person:${id}`, b.permissions)
-    return { ok: true, pushErrors: await push(req.user, id) }
+    return { ok: true, pushErrors: await push(req, id) }
   })
 
   app.post('/permissions/bulk', operator, async (req) => {
@@ -154,7 +155,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     })
     ctx.audit.log(req.user, `bulk-${b.action}`, null, b)
     const errors = []
-    for (const p of b.personIds) errors.push(...(await push(req.user, p)))
+    for (const p of b.personIds) errors.push(...(await push(req, p)))
     return { ok: true, pushErrors: errors }
   })
 
@@ -176,7 +177,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     if (!isValidWiegand26(b.number)) throw new HttpError(400, 'invalidWiegand')
     const id = ctx.people.createCard(b.number, b.personId, b.status)
     ctx.audit.log(req.user, 'create-card', `card:${b.number}`, b)
-    return { id, pushErrors: b.personId ? await push(req.user, b.personId) : [] }
+    return { id, pushErrors: b.personId ? await push(req, b.personId) : [] }
   })
 
   app.put('/cards/:id', operator, async (req) => {
@@ -189,7 +190,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     ctx.audit.log(req.user, 'update-card', `card:${b.number}`, b)
     // card disabled or no longer assigned: remove it; otherwise it follows the permissions of its (new) holder
     const removed = b.status !== 'active' || b.personId === null ? [b.number] : []
-    return { ok: true, pushErrors: await push(req.user, b.personId, removed) }
+    return { ok: true, pushErrors: await push(req, b.personId, removed) }
   })
 
   app.delete('/cards/:id', operator, async (req) => {
@@ -198,7 +199,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     if (!card) throw new HttpError(404, 'cardNotFound')
     ctx.people.deleteCard(id)
     ctx.audit.log(req.user, 'delete-card', `card:${card.number}`)
-    return { ok: true, pushErrors: await push(req.user, null, [card.number]) }
+    return { ok: true, pushErrors: await push(req, null, [card.number]) }
   })
 
   /** Lost card: the old one is marked "lost" and removed from the controllers, the new one is assigned to the same person. */
@@ -213,7 +214,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
       return ctx.people.createCard(b.newNumber, old.personId, 'active')
     })
     ctx.audit.log(req.user, 'replace-card', `card:${old.number}`, { newNumber: b.newNumber, personId: old.personId })
-    return { id: newId, pushErrors: await push(req.user, old.personId, [old.number]) }
+    return { id: newId, pushErrors: await push(req, old.personId, [old.number]) }
   })
 
   // --- import CSV --------------------------------------------------------------
