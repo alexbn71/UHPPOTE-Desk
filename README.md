@@ -4,6 +4,11 @@
 
 Web application (Node.js + React) to manage **UHPPOTE UT0311-L0x** access controllers (in particular the 4-door UT0311-L04), replacing the Windows "Access Control" software (N3000).
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark.png">
+  <img src="docs/screenshots/dashboard.png" alt="UHPPOTE Desk dashboard: controller and door states, today's swipes and activity charts">
+</picture>
+
 ## Acknowledgements
 
 This project would not exist without **[uhppoted](https://codeberg.org/uhppoted)**, the open-source project that reverse-engineered and documented the UHPPOTE controller protocol and built a complete set of tools around it. Many thanks to its author and contributors for their work and for publishing it under the MIT licence.
@@ -44,6 +49,22 @@ The user interface is available in **English** (base language), **Italian**, **S
 **User manual** (PDF, with screenshots of every page): [docs/UHPPOTE-Desk-Manual.pdf](docs/UHPPOTE-Desk-Manual.pdf). It is generated from [docs/manual](docs/manual) with `npm run manual`.
 
 The full technical analysis (protocol, design decisions, risks) is in [ANALYSIS.md](ANALYSIS.md).
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Live monitor with the photo of the last person and the events as they arrive](docs/screenshots/monitor.png) | ![Person details: photo, validity, keypad PIN and shift](docs/screenshots/person.png) |
+| **Live monitor**: the last swipe with the person's photo, events as the controller sends them | **People**: details, cards and permissions of each person |
+| ![Attendance report with hours worked, overtime, late arrivals and absences](docs/screenshots/attendance.png) | ![Controller diagnostics: device data, firmware and door states](docs/screenshots/controller.png) |
+| **Attendance**: hours worked, overtime, late arrivals and absences, exportable to CSV | **Controller diagnostics**: network, firmware, stored cards and door states |
+
+<p align="center">
+  <img src="docs/screenshots/mobile.png" width="260" alt="Mobile app: doors with live state and hold-to-open buttons"><br>
+  <b>Mobile app</b>: doors with live state, <i>hold to open</i> or fingerprint/Face ID
+</p>
+
+The screenshots use demonstration data and a simulated controller; they are regenerated with `npm run screenshots`.
 
 ## Repository layout
 

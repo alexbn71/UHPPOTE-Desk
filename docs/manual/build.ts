@@ -6,6 +6,8 @@
  *   4. renders docs/manual/manual.html (which references the screenshots) to PDF.
  *
  *   npm run manual        (builds the web app first)
+ *
+ * With `--readme` (npm run screenshots) it only takes the screenshots shown in the README (docs/screenshots).
  */
 import fs from 'node:fs'
 import os from 'node:os'
@@ -19,6 +21,7 @@ const ROOT = path.resolve(import.meta.dirname, '../..')
 const MANUAL_DIR = path.join(ROOT, 'docs/manual')
 const SHOTS = path.join(MANUAL_DIR, 'shots')
 const OUTPUT = path.join(ROOT, 'docs/UHPPOTE-Desk-Manual.pdf')
+const README_SHOTS = path.join(ROOT, 'docs/screenshots')
 const PORT = 8091
 const BASE = `http://127.0.0.1:${PORT}`
 const SERIAL = 405419896
@@ -82,8 +85,9 @@ async function call<T = unknown>(method: string, url: string, body?: unknown): P
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   })
   if (!r.ok) throw new Error(`${method} ${url}: ${r.status} ${await r.text()}`)
-  const setCookie = r.headers.get('set-cookie')
-  if (setCookie) cookie = setCookie.split(';')[0]!
+  // login sets several cookies (session, and clears the device cookie): keep the ones with a value
+  const set = r.headers.getSetCookie().map((c) => c.split(';')[0]!).filter((c) => !c.endsWith('='))
+  if (set.length) cookie = set.join('; ')
   return (await r.json()) as T
 }
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -263,6 +267,76 @@ await call('POST', `/doors/${door(1)}/open`)
 await call('POST', `/controllers/${controller.id}/sync/all`)
 await sleep(500)
 
+// --- README screenshots ------------------------------------------------------------------------------------
+if (process.argv.includes('--readme')) {
+  await readmeScreenshots()
+  await shutdown()
+  console.log(`README screenshots written to ${path.relative(ROOT, README_SHOTS)}`)
+  process.exit(0)
+}
+
+/** Full-window screenshots for the README: light and dark desktop, and the mobile app on a phone. */
+async function readmeScreenshots(): Promise<void> {
+  fs.rmSync(README_SHOTS, { recursive: true, force: true })
+  fs.mkdirSync(README_SHOTS, { recursive: true })
+  const open = async (options: Parameters<typeof browser.newContext>[0]) => {
+    const context = await browser.newContext({ locale: 'en-GB', ...options })
+    const page = await context.newPage()
+    await page.goto(BASE)
+    await page.getByRole('textbox', { name: 'Username', exact: true }).fill('admin')
+    await page.getByRole('textbox', { name: 'Password', exact: true }).fill(PASSWORD)
+    await page.getByRole('button', { name: 'Log in' }).click()
+    await page.getByRole('heading', { name: 'Dashboard' }).waitFor()
+    await page.getByText('Online').first().waitFor({ timeout: 10_000 })
+    return { context, page }
+  }
+  const save = async (page: Page, name: string) => {
+    await page.waitForLoadState('networkidle').catch(() => undefined)
+    await page.mouse.move(0, 0) // no hover effects or chart tooltips
+    await sleep(600)
+    await page.screenshot({ path: path.join(README_SHOTS, `${name}.png`) })
+    console.log(`  ${name}`)
+  }
+  const visit = async (page: Page, url: string, heading: string) => {
+    await page.goto(`${BASE}${url}`)
+    await page.getByRole('heading', { name: heading, exact: true }).first().waitFor()
+  }
+
+  const desktop = { viewport: { width: 1600, height: 960 }, deviceScaleFactor: 1 }
+  for (const scheme of ['light', 'dark'] as const) {
+    const { context, page } = await open({ ...desktop, colorScheme: scheme })
+    await save(page, scheme === 'light' ? 'dashboard' : 'dashboard-dark')
+    if (scheme === 'light') {
+      await visit(page, '/monitor', 'Monitor')
+      await page.getByText('Live', { exact: true }).first().waitFor()
+      fake.swipe(garcia.card, 2, 1)
+      await sleep(700)
+      fake.swipe(10099999, 3, 1)
+      await sleep(700)
+      fake.swipe(rossi.card, 1, 1)
+      await page.getByText('Rossi Maria').first().waitFor({ timeout: 10_000 })
+      await save(page, 'monitor')
+      await visit(page, '/people', 'People')
+      await page.getByRole('cell', { name: 'E001' }).click()
+      await page.getByRole('tab', { name: 'Details' }).waitFor()
+      await save(page, 'person')
+      await visit(page, '/attendance', 'Attendance')
+      await page.getByText('Period summary').waitFor()
+      await save(page, 'attendance')
+      await visit(page, `/controllers/${controller.id}`, 'Main building')
+      await page.getByText('v8.92').first().waitFor({ timeout: 10_000 })
+      await save(page, 'controller')
+    }
+    await context.close()
+  }
+
+  const { context, page } = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: 'dark' })
+  await page.goto(`${BASE}/m`)
+  await page.getByText('Main entrance').first().waitFor({ timeout: 10_000 })
+  await save(page, 'mobile')
+  await context.close()
+}
+
 // --- screenshots ---------------------------------------------------------------------------------------------
 console.log('Taking screenshots…')
 const context = await browser.newContext({ viewport: { width: 1360, height: 850 }, deviceScaleFactor: 2, colorScheme: 'light', locale: 'en-GB' })
@@ -419,11 +493,14 @@ await pdfPage.pdf({
   margin: { top: '14mm', bottom: '16mm', left: '0', right: '0' },
 })
 await pdfPage.close()
-await browser.close()
-
-await app.close()
-await ctx.eventService.stopListener()
-ctx.db.close()
-await fake.stop()
-fs.rmSync(dataDir, { recursive: true, force: true })
+await shutdown()
 console.log(`Manual written to ${path.relative(ROOT, OUTPUT)}`)
+
+async function shutdown(): Promise<void> {
+  await browser.close()
+  await app.close()
+  await ctx.eventService.stopListener()
+  ctx.db.close()
+  await fake.stop()
+  fs.rmSync(dataDir, { recursive: true, force: true })
+}

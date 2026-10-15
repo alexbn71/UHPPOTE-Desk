@@ -23,6 +23,7 @@
     "hw": "tsx tools/hwtest/src/cli.ts",
     "sim": "tsx tools/hwtest/src/devsim.ts",
     "manual": "npm run build --workspace @uhppote-desk/web && tsx docs/manual/build.ts",
+    "screenshots": "npm run build --workspace @uhppote-desk/web && tsx docs/manual/build.ts --readme",
     "e2e": "npm run build --workspace @uhppote-desk/web && playwright test",
     "dev:server": "tsx watch --disable-warning=ExperimentalWarning apps/server/src/main.ts"
   },
