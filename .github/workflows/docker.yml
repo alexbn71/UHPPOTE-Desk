@@ -179,16 +179,7 @@ jobs:
 
       - name: Release notes from CHANGELOG.md
         run: |
-          version="${TAG#v}"
-          awk -v v="$version" '
-            $0 ~ "^## \\[" v "\\]" { on = 1; next }
-            on && /^## \[/ { exit }
-            on && !/^\[[^]]+\]: / { print }
-          ' CHANGELOG.md > notes.md
-          test -s notes.md || { echo "CHANGELOG.md has no entry for $version"; exit 1; }
-          image="ghcr.io/${{ github.repository_owner }}/uhppote-desk"
-          printf '\n### Docker image\n\n```\ndocker pull %s:%s\n```\n\nAlso tagged `%s` and `%s` (latest release of the series).\n' \
-            "$image" "$version" "${version%.*}" "${version%%.*}" >> notes.md
+          .github/scripts/release-notes.sh "${TAG#v}" > notes.md
           cat notes.md
 
       - name: Create the release
