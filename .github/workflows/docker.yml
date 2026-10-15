@@ -40,6 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      # arm64 (Raspberry Pi, ARM NAS) besides amd64
+      - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
       - name: Build (for the smoke test)
@@ -113,9 +115,26 @@ jobs:
           docker logs bindC 2>&1 | tee /dev/stderr | grep -q 'is not writable by the process'
           docker rm -f bindC
 
+      - name: Home Assistant add-on (options file, no Supervisor)
+        run: |
+          set -e
+          # the add-on is built on the image just tested, with the local docker builder
+          docker build --builder default --build-arg BUILD_FROM=uhppote-desk:ci --build-arg BUILD_VERSION=ci \
+            -t uhppote-desk-addon:ci homeassistant-addon
+          mkdir -p "$RUNNER_TEMP/addon"
+          echo '{"admin_password":"addon-pass","mqtt_enabled":true,"mqtt_door_control":true,"mqtt_language":"en","log_level":"info"}' \
+            > "$RUNNER_TEMP/addon/options.json"
+          docker run -d --name addon --network host -v "$RUNNER_TEMP/addon:/data" uhppote-desk-addon:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:8080/api/health
+          docker logs addon 2>&1 | grep -q 'add-on: web interface on port 8080'
+          curl -sf -H 'Content-Type: application/json' -d '{"username":"admin","password":"addon-pass"}' \
+            http://127.0.0.1:8080/api/auth/login > /dev/null
+          docker rm -f addon
+
       - name: Container log on failure
         if: failure()
-        run: for c in smoke bindA bindB bindC; do docker logs $c 2>/dev/null || true; done
+        run: for c in smoke bindA bindB bindC addon; do docker logs $c 2>/dev/null || true; done
 
       - name: Release version
         id: ver
@@ -128,6 +147,7 @@ jobs:
             [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "invalid version: $v"; exit 1; }
             pkg=$(node -p "require('./package.json').version")
             [ "$pkg" = "$v" ] || { echo "package.json has version $pkg, not $v"; exit 1; }
+            grep -q "^version: \"$v\"" homeassistant-addon/config.yaml || { echo "homeassistant-addon/config.yaml is not at version $v"; exit 1; }
             echo "version=$v" >> "$GITHUB_OUTPUT"
             echo "minor=${v%.*}" >> "$GITHUB_OUTPUT"
             echo "major=${v%%.*}" >> "$GITHUB_OUTPUT"
@@ -159,11 +179,38 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
+
+      # Home Assistant add-on (homeassistant-addon/config.yaml): one image per architecture, only for releases
+      - name: Publish the Home Assistant add-on (amd64)
+        if: github.event_name != 'pull_request' && steps.ver.outputs.version != ''
+        uses: docker/build-push-action@v6
+        with:
+          context: homeassistant-addon
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            BUILD_FROM=${{ env.IMAGE }}:${{ steps.ver.outputs.version }}
+            BUILD_VERSION=${{ steps.ver.outputs.version }}
+            BUILD_ARCH=amd64
+          tags: ghcr.io/${{ github.repository_owner }}/amd64-uhppote-desk-addon:${{ steps.ver.outputs.version }}
+
+      - name: Publish the Home Assistant add-on (aarch64)
+        if: github.event_name != 'pull_request' && steps.ver.outputs.version != ''
+        uses: docker/build-push-action@v6
+        with:
+          context: homeassistant-addon
+          platforms: linux/arm64
+          push: true
+          build-args: |
+            BUILD_FROM=${{ env.IMAGE }}:${{ steps.ver.outputs.version }}
+            BUILD_VERSION=${{ steps.ver.outputs.version }}
+            BUILD_ARCH=aarch64
+          tags: ghcr.io/${{ github.repository_owner }}/aarch64-uhppote-desk-addon:${{ steps.ver.outputs.version }}
 
   release:
     name: GitHub release

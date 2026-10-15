@@ -13,6 +13,15 @@ describe('version', () => {
     }
   })
 
+  it('the Home Assistant add-on is at the same version', () => {
+    const read = (file: string) => fs.readFileSync(path.join(ROOT, file), 'utf8')
+    expect(read('homeassistant-addon/config.yaml')).toMatch(new RegExp(`^version: "${APP_VERSION.replaceAll('.', '\\.')}"$`, 'm'))
+    for (const line of read('homeassistant-addon/build.yaml').split('\n').filter((l) => l.includes('uhppote-desk:'))) {
+      expect(line).toMatch(new RegExp(`:${APP_VERSION.replaceAll('.', '\\.')}$`))
+    }
+    expect(read('homeassistant-addon/CHANGELOG.md')).toContain(`## ${APP_VERSION}`)
+  })
+
   it('the changelog has an entry for the current version', () => {
     expect(fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8')).toMatch(new RegExp(`^## \\[${APP_VERSION.replaceAll('.', '\\.')}\\]`, 'm'))
   })

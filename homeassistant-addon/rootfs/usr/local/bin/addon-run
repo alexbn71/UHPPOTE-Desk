@@ -1,0 +1,8 @@
+#!/bin/sh
+# Home Assistant add-on start: options and Supervisor data → environment, then the normal container entrypoint.
+set -eu
+env_file="$(mktemp)"
+node /usr/local/lib/uhppote-addon/options.mjs > "$env_file"
+. "$env_file"
+rm -f "$env_file"
+exec /usr/local/bin/uhppote-entrypoint "$@"

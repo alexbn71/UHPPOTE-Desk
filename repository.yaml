@@ -1,0 +1,5 @@
+# Home Assistant add-on repository: add https://github.com/alexbn71/UHPPOTE-Desk in
+# Settings → Add-ons → Add-on store → ⋮ → Repositories. The add-on is in homeassistant-addon/.
+name: UHPPOTE Desk
+url: https://github.com/alexbn71/UHPPOTE-Desk
+maintainer: Alessandro Blason

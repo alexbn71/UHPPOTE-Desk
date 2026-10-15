@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify'
 import { requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
 
-export const APP_VERSION = '1.0.0'
+export const APP_VERSION = '1.1.0'
 
 export function registerSystemRoutes(app: FastifyInstance, ctx: AppContext): void {
   const viewer = { preHandler: requireRole('viewer') }

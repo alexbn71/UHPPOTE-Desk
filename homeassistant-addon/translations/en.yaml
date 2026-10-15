@@ -1,0 +1,43 @@
+configuration:
+  admin_password:
+    name: Admin password
+    description: >-
+      Password of the admin user, applied at every start. If empty, a password is generated on the first start
+      (see the add-on log) and must be changed at first login.
+  event_destination:
+    name: Event destination
+    description: >-
+      IP:port of this server as reached by the controllers, e.g. 192.168.1.10:60001. Empty = the IP of Home
+      Assistant on its main network interface.
+  discovery_broadcast:
+    name: Discovery broadcast
+    description: >-
+      Broadcast address used to discover the controllers, e.g. 192.168.1.255:60000. Empty = the broadcast of the
+      main network of Home Assistant.
+  mqtt_enabled:
+    name: Home Assistant integration
+    description: >-
+      Publish controllers, doors and access events to Home Assistant through the MQTT broker (Mosquitto add-on),
+      configured automatically.
+  mqtt_door_control:
+    name: Open doors from Home Assistant
+    description: Off = Home Assistant sees doors and events but gets no Open buttons.
+  mqtt_language:
+    name: Language of the entities
+    description: Language of the Home Assistant entity names and event texts.
+  public_url:
+    name: Public address
+    description: >-
+      Public HTTPS address behind a reverse proxy, e.g. https://doors.example.com (mobile app: fingerprint/Face ID
+      and push notifications).
+  secure_cookies:
+    name: HTTPS-only cookies
+    description: On when the interface is published over HTTPS through a reverse proxy.
+  packet_debug:
+    name: Packet debug
+    description: Write every packet exchanged with the controllers to the log, in hexadecimal.
+  log_level:
+    name: Log level
+network:
+  8080/tcp: Web interface
+  60001/udp: Events from the controllers

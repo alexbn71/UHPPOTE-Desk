@@ -6,7 +6,12 @@ export default defineConfig({
       {
         test: {
           name: 'unit',
-          include: ['packages/**/test/**/*.test.ts', 'apps/server/test/unit/**/*.test.ts', 'tools/**/test/**/*.test.ts'],
+          include: [
+            'packages/**/test/**/*.test.ts',
+            'apps/server/test/unit/**/*.test.ts',
+            'tools/**/test/**/*.test.ts',
+            'homeassistant-addon/test/**/*.test.mjs',
+          ],
           environment: 'node',
         },
       },

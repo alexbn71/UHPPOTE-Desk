@@ -2,6 +2,16 @@
 
 UHPPOTE Desk can publish its controllers and doors to an MQTT broker using **Home Assistant MQTT discovery**: the devices appear in Home Assistant by themselves, with live door states, access events for automations and *Open* buttons. No custom component is needed.
 
+## Home Assistant OS: the add-on
+
+On Home Assistant OS (or Supervised) the simplest way is the **UHPPOTE Desk add-on**: add the repository
+`https://github.com/alexbn71/UHPPOTE-Desk` in *Settings → Add-ons → Add-on store → ⋮ → Repositories* and install it.
+With the **Mosquitto broker** add-on installed, the MQTT connection is configured automatically: skip the setup below
+and go to [What appears in Home Assistant](#what-appears-in-home-assistant). Options:
+[add-on documentation](../homeassistant-addon/DOCS.md).
+
+The rest of this page is for UHPPOTE Desk running in Docker next to Home Assistant.
+
 ## Requirements
 
 - An MQTT broker reachable from the UHPPOTE Desk server, e.g. the **Mosquitto broker** add-on of Home Assistant, or Mosquitto in Docker.

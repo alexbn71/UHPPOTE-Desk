@@ -3,6 +3,14 @@
 All notable changes to UHPPOTE Desk. Versions follow [Semantic Versioning](https://semver.org); every release is
 also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see [docs/DOCKER.md](docs/DOCKER.md)).
 
+## [1.1.0] - 2026-10-15
+
+### Added
+- **Home Assistant add-on**: install UHPPOTE Desk from the add-on store of Home Assistant OS (add this repository in
+  *Settings → Add-ons → Add-on store → Repositories*). The MQTT broker of Home Assistant, the network addresses and
+  the time zone are configured automatically; the database is included in the Home Assistant backups.
+- **ARM64 image** (`linux/arm64`) besides `linux/amd64`: Raspberry Pi 4/5, ARM NAS and mini PCs.
+
 ## [1.0.0] - 2026-10-15
 
 First public release: a web application that replaces the Windows "Access Control" software (N3000) for
@@ -52,4 +60,5 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.1.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.1.0
 [1.0.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.0.0

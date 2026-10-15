@@ -77,6 +77,7 @@ The screenshots use demonstration data and a simulated controller; they are rege
 | [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L5) and a development simulator |
 | [e2e](e2e) | Playwright end-to-end tests |
 | [docker](docker) | Docker image, compose files, Unraid template |
+| [homeassistant-addon](homeassistant-addon) | Home Assistant add-on (with [repository.yaml](repository.yaml) at the root) |
 | [docs](docs) | Installation guides |
 
 ## Requirements
@@ -161,9 +162,13 @@ The application icon is in [apps/web/public](apps/web/public) and is served by t
 
 Public URL for Docker managers: `https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png` (also set in the image label `net.unraid.docker.icon` and in the Unraid template).
 
+## Installation on Home Assistant OS
+
+UHPPOTE Desk is also a **Home Assistant add-on** (amd64 and aarch64, e.g. Raspberry Pi 4/5): in Home Assistant open *Settings → Add-ons → Add-on store → ⋮ → Repositories*, add `https://github.com/alexbn71/UHPPOTE-Desk`, then install **UHPPOTE Desk**. The MQTT broker of Home Assistant, the network addresses and the time zone are configured automatically — see [the add-on documentation](homeassistant-addon/DOCS.md).
+
 ## Installation with Docker
 
-The ready-made image is `ghcr.io/alexbn71/uhppote-desk:latest` (development version, follows `main`) or, to stay on a release, `ghcr.io/alexbn71/uhppote-desk:1` — see the [releases](https://github.com/alexbn71/UHPPOTE-Desk/releases) and [CHANGELOG.md](CHANGELOG.md). The complete guide is **[docs/DOCKER.md](docs/DOCKER.md)**: network requirements (`host` networking is mandatory), the list of environment variables, examples for Docker Compose, `docker run`, Unraid, Synology and QNAP, first start, updates and troubleshooting.
+The ready-made image (`linux/amd64` and `linux/arm64`) is `ghcr.io/alexbn71/uhppote-desk:latest` (development version, follows `main`) or, to stay on a release, `ghcr.io/alexbn71/uhppote-desk:1` — see the [releases](https://github.com/alexbn71/UHPPOTE-Desk/releases) and [CHANGELOG.md](CHANGELOG.md). The complete guide is **[docs/DOCKER.md](docs/DOCKER.md)**: network requirements (`host` networking is mandatory), the list of environment variables, examples for Docker Compose, `docker run`, Unraid, Synology and QNAP, first start, updates and troubleshooting.
 
 In short, the only required variable is `UHPPOTE_LISTENER_PUBLIC` (IP:port of the server as seen by the controllers, e.g. `192.168.1.10:60001`); setting `UHPPOTE_BROADCAST` (broadcast address of the controllers' subnet, e.g. `192.168.1.255:60000`) and `TZ` is also recommended.
 

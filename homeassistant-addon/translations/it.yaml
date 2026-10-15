@@ -1,0 +1,43 @@
+configuration:
+  admin_password:
+    name: Password dell'amministratore
+    description: >-
+      Password dell'utente admin, applicata a ogni avvio. Se vuota, al primo avvio viene generata una password
+      (vedi il registro del componente aggiuntivo) da cambiare al primo accesso.
+  event_destination:
+    name: Destinazione degli eventi
+    description: >-
+      IP:porta di questo server come lo raggiungono i controller, es. 192.168.1.10:60001. Vuoto = l'IP di Home
+      Assistant sulla sua interfaccia di rete principale.
+  discovery_broadcast:
+    name: Broadcast di ricerca
+    description: >-
+      Indirizzo di broadcast usato per trovare i controller, es. 192.168.1.255:60000. Vuoto = il broadcast della
+      rete principale di Home Assistant.
+  mqtt_enabled:
+    name: Integrazione con Home Assistant
+    description: >-
+      Pubblica controller, porte ed eventi di accesso in Home Assistant tramite il broker MQTT (componente
+      aggiuntivo Mosquitto), configurato automaticamente.
+  mqtt_door_control:
+    name: Apertura porte da Home Assistant
+    description: Disattivato = Home Assistant vede porte ed eventi ma non ha i pulsanti Apri.
+  mqtt_language:
+    name: Lingua delle entità
+    description: Lingua dei nomi delle entità e dei testi degli eventi in Home Assistant.
+  public_url:
+    name: Indirizzo pubblico
+    description: >-
+      Indirizzo HTTPS pubblico dietro un reverse proxy, es. https://porte.esempio.it (app mobile: impronta/Face ID
+      e notifiche push).
+  secure_cookies:
+    name: Cookie solo HTTPS
+    description: Attivo quando l'interfaccia è pubblicata in HTTPS tramite un reverse proxy.
+  packet_debug:
+    name: Debug dei pacchetti
+    description: Scrive nel registro ogni pacchetto scambiato con i controller, in esadecimale.
+  log_level:
+    name: Livello di log
+network:
+  8080/tcp: Interfaccia web
+  60001/udp: Eventi dai controller

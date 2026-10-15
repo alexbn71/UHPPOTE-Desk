@@ -1,9 +1,11 @@
 # syntax=docker/dockerfile:1
 # UHPPOTE Desk production image (Node.js server + compiled React frontend).
 # Build from the project root:  docker build -f docker/Dockerfile -t uhppote-desk .
+# Multi-architecture (amd64 + arm64): the dependencies are plain JavaScript, so the build and deps stages run once
+# on the build machine ($BUILDPLATFORM) and only the runtime stage is per architecture.
 
 # --- build ---------------------------------------------------------------------
-FROM node:24-bookworm-slim AS build
+FROM --platform=$BUILDPLATFORM node:24-bookworm-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY packages/protocol/package.json packages/protocol/
@@ -21,7 +23,7 @@ RUN npm run build --workspace @uhppote-desk/web \
  && npm run build --workspace @uhppote-desk/hwtest
 
 # --- runtime dependencies ------------------------------------------------------
-FROM node:24-bookworm-slim AS deps
+FROM --platform=$BUILDPLATFORM node:24-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY packages/protocol/package.json packages/protocol/

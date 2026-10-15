@@ -8,7 +8,7 @@ This guide explains how to install UHPPOTE Desk with Docker on a server or NAS a
 |---|---|
 | Image | `ghcr.io/alexbn71/uhppote-desk` |
 | Tags | `latest` (latest version of `main`), `<x.y.z>` (a release, e.g. `1.0.0`), `<x.y>` and `<x>` (latest release of that series, e.g. `1`), `sha-<commit>` (exact commit) |
-| Architecture | `linux/amd64` |
+| Architecture | `linux/amd64`, `linux/arm64` (Raspberry Pi 4/5, ARM NAS) |
 | Ports | `8080/tcp` web interface (configurable) · `60001/udp` events from the controllers |
 | Volume | `/data`: database, backups, photos, test reports — a named volume or a host folder |
 | Icon | `https://raw.githubusercontent.com/alexbn71/UHPPOTE-Desk/main/apps/web/public/icon-512.png` (label `net.unraid.docker.icon`) |

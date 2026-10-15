@@ -1,0 +1,47 @@
+name: UHPPOTE Desk
+version: "1.1.0"
+slug: uhppote_desk
+description: Manage UHPPOTE UT0311-L0x access controllers - doors, cards, permissions, live monitor and attendance
+url: https://github.com/alexbn71/UHPPOTE-Desk
+arch:
+  - amd64
+  - aarch64
+image: ghcr.io/alexbn71/{arch}-uhppote-desk-addon
+startup: application
+boot: auto
+# the controllers are discovered with UDP broadcast and send their events over UDP
+host_network: true
+# MQTT broker of Home Assistant, host network data and port mapping
+hassio_api: true
+services:
+  - mqtt:want
+ports:
+  8080/tcp: 8080
+  60001/udp: 60001
+ports_description:
+  8080/tcp: Web interface
+  60001/udp: Events from the controllers
+webui: http://[HOST]:[PORT:8080]/
+watchdog: http://[HOST]:[PORT:8080]/api/health
+# daily database backups of the application: Home Assistant backups already include the database
+backup_exclude:
+  - backups/*
+options:
+  admin_password: ""
+  event_destination: ""
+  discovery_broadcast: ""
+  mqtt_enabled: true
+  mqtt_door_control: true
+  mqtt_language: en
+  log_level: info
+schema:
+  admin_password: password?
+  event_destination: str?
+  discovery_broadcast: str?
+  mqtt_enabled: bool
+  mqtt_door_control: bool
+  mqtt_language: list(en|it|es|fr|de)
+  public_url: url?
+  secure_cookies: bool?
+  packet_debug: bool?
+  log_level: list(debug|info|warn|error)
