@@ -153,3 +153,13 @@ Local development uses the same variables, in a `.env` file at the project root 
 - Protocol and tools: the [uhppoted](https://codeberg.org/uhppoted) project (MIT) — see [Acknowledgements](#acknowledgements). The test vectors in `packages/protocol/test/fixtures` come from `uhppoted-codegen` ([NOTICE](packages/protocol/test/fixtures/NOTICE.md)).
 - Original manufacturer software (not included in this repository): http://www.wiegand.com.cn/soft/soft_all_32/MJ_all_en.rar. Manufacturer files can be kept locally in `Legacy/`, which is ignored by git.
 - Project resources: [RESOURCES.md](RESOURCES.md).
+
+## License
+
+Copyright (C) 2026 Alessandro Blason.
+
+UHPPOTE Desk is free software, released under the **[GNU Affero General Public License v3.0 or later](LICENSE)** (AGPL-3.0-or-later). Anyone who modifies it and makes it available to others, including over a network, must publish the source of their version under the same license.
+
+As an additional term under section 7(b) of the license, the author credits shown at the bottom of the application ("UHPPOTE Desk © 2026 Alessandro Blason · AGPL-3.0 · Source code") must stay visible and unaltered in every copy and modified version: see **[ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md)**.
+
+The test vectors in `packages/protocol/test/fixtures` keep their own MIT licence ([NOTICE](packages/protocol/test/fixtures/NOTICE.md)).

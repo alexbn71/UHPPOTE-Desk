@@ -2,6 +2,7 @@ import { Alert, Button, Center, Checkbox, Group, Paper, PasswordInput, Stack, Te
 import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Credits } from '../components/Credits'
 import { LanguageSelect } from '../components/LanguageSelect'
 import { ThemeSelect } from '../components/ThemeSelect'
 import { api, errorMessage } from '../lib/api'
@@ -38,47 +39,50 @@ export function LoginPage() {
 
   return (
     <Center h="100vh" bg="var(--mantine-color-gray-light)">
-      <Paper withBorder shadow="md" p="xl" w={360} maw="calc(100vw - 32px)">
-        <form onSubmit={submit}>
-          <Stack>
-            <Group justify="flex-end" gap="xs" mb={-16}>
-              <ThemeSelect />
-              <LanguageSelect />
-            </Group>
-            <Center>
-              <img src="/icon.svg" width={64} height={64} alt="" />
-            </Center>
-            <Title order={3} ta="center">
-              {t('app.name')}
-            </Title>
-            {error && <Alert color="red">{error}</Alert>}
-            <TextInput
-              label={t('login.username')}
-              value={username}
-              onChange={(e) => setUsername(e.currentTarget.value)}
-              autoFocus
-              required
-              autoComplete="username"
-            />
-            <PasswordInput
-              label={t('login.password')}
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
-              required
-              autoComplete="current-password"
-            />
-            <Checkbox
-              label={t('login.remember')}
-              description={t('login.rememberHint')}
-              checked={remember}
-              onChange={(e) => setRemember(e.currentTarget.checked)}
-            />
-            <Button type="submit" loading={busy} fullWidth>
-              {t('login.submit')}
-            </Button>
-          </Stack>
-        </form>
-      </Paper>
+      <Stack gap={0} align="center">
+        <Paper withBorder shadow="md" p="xl" w={360} maw="calc(100vw - 32px)">
+          <form onSubmit={submit}>
+            <Stack>
+              <Group justify="flex-end" gap="xs" mb={-16}>
+                <ThemeSelect />
+                <LanguageSelect />
+              </Group>
+              <Center>
+                <img src="/icon.svg" width={64} height={64} alt="" />
+              </Center>
+              <Title order={3} ta="center">
+                {t('app.name')}
+              </Title>
+              {error && <Alert color="red">{error}</Alert>}
+              <TextInput
+                label={t('login.username')}
+                value={username}
+                onChange={(e) => setUsername(e.currentTarget.value)}
+                autoFocus
+                required
+                autoComplete="username"
+              />
+              <PasswordInput
+                label={t('login.password')}
+                value={password}
+                onChange={(e) => setPassword(e.currentTarget.value)}
+                required
+                autoComplete="current-password"
+              />
+              <Checkbox
+                label={t('login.remember')}
+                description={t('login.rememberHint')}
+                checked={remember}
+                onChange={(e) => setRemember(e.currentTarget.checked)}
+              />
+              <Button type="submit" loading={busy} fullWidth>
+                {t('login.submit')}
+              </Button>
+            </Stack>
+          </form>
+        </Paper>
+        <Credits />
+      </Stack>
     </Center>
   )
 }

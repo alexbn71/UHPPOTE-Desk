@@ -44,6 +44,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import type { Role } from '@uhppote-desk/shared'
+import { Credits } from './components/Credits'
 import { LanguageSelect } from './components/LanguageSelect'
 import { ThemeSelect } from './components/ThemeSelect'
 import { useAuth } from './lib/auth'
@@ -293,7 +294,10 @@ function Shell({ children }: { children: ReactNode }) {
           })}
         </ScrollArea>
       </AppShell.Navbar>
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        {children}
+        <Credits />
+      </AppShell.Main>
     </AppShell>
   )
 }

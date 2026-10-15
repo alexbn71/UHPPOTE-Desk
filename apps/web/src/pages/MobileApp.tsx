@@ -32,6 +32,7 @@ import type {
 } from '@uhppote-desk/shared'
 import { LANGUAGES, WEBHOOK_EVENTS } from '@uhppote-desk/shared'
 import { GrantedBadge } from '../components/common'
+import { Credits } from '../components/Credits'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
@@ -82,6 +83,7 @@ export function MobileApp() {
         ) : (
           <SettingsTab config={config.data} />
         )}
+        <Credits />
       </Box>
       <Box
         px="md"

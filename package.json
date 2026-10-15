@@ -2,6 +2,7 @@
   "name": "uhppote-desk",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "description": "Web app to manage UHPPOTE UT0311-L0x access controllers",
   "type": "module",
   "workspaces": [

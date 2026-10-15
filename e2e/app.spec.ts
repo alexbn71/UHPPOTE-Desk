@@ -34,6 +34,20 @@ test.describe.serial('UHPPOTE Desk', () => {
     expect(errors).toEqual([])
   })
 
+  test('author credits on the login page, the main app and the mobile app', async ({ page }) => {
+    const credits = page.getByTestId('credits')
+    await page.goto('/')
+    await expect(credits).toHaveText('UHPPOTE Desk © 2026 Alessandro Blason · AGPL-3.0 · Source code')
+    await expect(credits.getByRole('link', { name: 'Source code' })).toHaveAttribute(
+      'href',
+      'https://github.com/alexbn71/UHPPOTE-Desk',
+    )
+    await login(page, 'admin', ADMIN_PASSWORD)
+    await expect(credits).toBeVisible()
+    await page.goto('/m')
+    await expect(credits).toBeVisible()
+  })
+
   test('network search and adding the controller', async ({ page }) => {
     const errors = trackErrors(page)
     await login(page, 'admin', ADMIN_PASSWORD)

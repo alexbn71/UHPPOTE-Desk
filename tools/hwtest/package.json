@@ -2,6 +2,7 @@
   "name": "@uhppote-desk/hwtest",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "description": "Test suite on real hardware for UHPPOTE controllers (levels L0-L5)",
   "type": "module",
   "dependencies": {
