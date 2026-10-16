@@ -51,6 +51,13 @@ export function WeekdaysInput({ value, onChange, label }: { value: boolean[]; on
   )
 }
 
+/** Controller status: disabled (gray), online (green) or offline (red). */
+export function ControllerStatusBadge({ enabled, online }: { enabled: boolean; online: boolean }) {
+  const { t } = useTranslation()
+  if (!enabled) return <Badge color="gray">{t('controllers.disabled')}</Badge>
+  return <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
+}
+
 export function GrantedBadge({ granted }: { granted: boolean }) {
   const { t } = useTranslation()
   return granted ? (

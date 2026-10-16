@@ -4,7 +4,7 @@ import { IconRefresh, IconSearch, IconUpload } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ControllerDto, SyncDiffDto } from '@uhppote-desk/shared'
-import { PageHeader } from '../components/common'
+import { ControllerStatusBadge, PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useLive } from '../lib/live'
@@ -56,7 +56,7 @@ function SyncCard({ c }: { c: ControllerDto }) {
     <Card withBorder>
       <Group justify="space-between" mb="sm">
         <Title order={4}>{c.name}</Title>
-        <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
+        <ControllerStatusBadge enabled={c.enabled} online={online} />
       </Group>
       <Stack>
         {progress && busy && (

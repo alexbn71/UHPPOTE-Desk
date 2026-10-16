@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { PageHeader } from '../components/common'
+import { ControllerStatusBadge, PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { fmtDateTime } from '../lib/format'
@@ -154,11 +154,7 @@ export function ControllersPage() {
                     </Table.Td>
                     <Table.Td>{c.firmware ?? '—'}</Table.Td>
                     <Table.Td>
-                      {!c.enabled ? (
-                        <Badge color="gray">{t('controllers.disabled')}</Badge>
-                      ) : (
-                        <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
-                      )}
+                      <ControllerStatusBadge enabled={c.enabled} online={online} />
                     </Table.Td>
                     <Table.Td>{fmtDateTime(state?.lastSeenAt ?? c.lastSeenAt)}</Table.Td>
                   </Table.Tr>

@@ -163,7 +163,8 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
         interval: z.number().int().min(0).max(255),
       })
       .nullable()
-      .parse(req.body ?? null)
+      // empty body (the web client sends {} instead of null) = automatic configuration
+      .parse(req.body && Object.keys(req.body).length ? req.body : null)
     if (!b) return { changed: await ctx.health.ensureListener(id) }
     await ctx.gateway.run(req.user, id, 'set-listener', b, (client, t) => client.setListener(t, b))
     return { changed: true }

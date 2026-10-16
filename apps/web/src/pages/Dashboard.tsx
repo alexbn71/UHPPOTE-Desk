@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import type { ControllerDto, ControllerLiveState, DoorDto, EventDto } from '@uhppote-desk/shared'
-import { EventsTable, PageHeader } from '../components/common'
+import { ControllerStatusBadge, EventsTable, PageHeader } from '../components/common'
 import { ActivityCharts, StatTiles, useEventStats, WeekHoursChart } from '../components/DashboardStats'
 import i18n from '../i18n'
 import { api, errorText, notifyError, notifyOk } from '../lib/api'
@@ -34,7 +34,8 @@ export function openDoorWithConfirm(door: DoorDto, onDone?: () => void) {
 function DoorTile({ door, live, canOpen }: { door: DoorDto; live?: ControllerLiveState; canOpen: boolean }) {
   const { t } = useTranslation()
   const codes = useCodes()
-  const state = live?.doors.find((d) => d.door === door.door)
+  // offline or disabled: the last known door state is not reliable
+  const state = live?.online ? live.doors.find((d) => d.door === door.door) : undefined
   return (
     <Card withBorder padding="sm">
       <Group justify="space-between" wrap="nowrap">
@@ -75,13 +76,13 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
   const online = live?.online ?? c.online
   const drift = live?.driftSeconds
   return (
-    <Card withBorder shadow="xs">
+    <Card withBorder shadow="xs" style={c.enabled ? undefined : { opacity: 0.6 }}>
       <Group justify="space-between" mb="xs">
         <Group gap="xs">
           <Title order={4} style={{ cursor: 'pointer' }} onClick={() => navigate(`/controllers/${c.id}`)}>
             {c.name}
           </Title>
-          <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
+          <ControllerStatusBadge enabled={c.enabled} online={online} />
           {live?.fireAlarm && <Badge color="red">{t('dashboard.fireAlarm')}</Badge>}
           {live?.forceLock && <Badge color="orange">{t('dashboard.forcedLock')}</Badge>}
         </Group>
@@ -90,7 +91,7 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
           {drift !== null && drift !== undefined && Math.abs(drift) > 30 ? ` · ${t('dashboard.clockDrift', { n: drift })}` : ''}
         </Text>
       </Group>
-      {!online && live?.lastError && (
+      {c.enabled && !online && live?.lastError && (
         <Alert color="red" variant="light" mb="xs" icon={<IconAlertTriangle size={16} />}>
           {errorText(live.lastErrorInfo ?? live.lastError)}
         </Alert>

@@ -71,8 +71,9 @@ export function StatTiles({
 }) {
   const { t } = useTranslation()
   const today = stats?.daily.at(-1)
-  const online = controllers.filter((c) => states[c.id]?.online ?? c.online).length
-  const activeDoors = controllers.flatMap((c) => c.doors.filter((d) => d.active).map((d) => ({ c, d })))
+  const enabled = controllers.filter((c) => c.enabled)
+  const online = enabled.filter((c) => states[c.id]?.online ?? c.online).length
+  const activeDoors = enabled.flatMap((c) => c.doors.filter((d) => d.active).map((d) => ({ c, d })))
   const openDoors = activeDoors.filter(({ c, d }) => states[c.id]?.doors.find((s) => s.door === d.door)?.open).length
   return (
     <SimpleGrid cols={{ base: 2, md: 4 }} spacing="sm" mb="lg">
@@ -100,9 +101,9 @@ export function StatTiles({
       />
       <StatTile
         label={t('dashboard.statOnline')}
-        value={`${online}/${controllers.length}`}
+        value={`${online}/${enabled.length}`}
         icon={<IconServer size={20} />}
-        color={online < controllers.length ? 'red.6' : 'green.6'}
+        color={online < enabled.length ? 'red.6' : 'green.6'}
       />
     </SimpleGrid>
   )

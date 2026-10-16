@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import type { ControllerDto, ControllerSettings } from '@uhppote-desk/shared'
 import { ANTIPASSBACK_MODES, FIRST_CARD_MODES, INTERLOCK_MODES } from '@uhppote-desk/shared'
-import { PageHeader, WeekdaysInput } from '../components/common'
+import { ControllerStatusBadge, PageHeader, WeekdaysInput } from '../components/common'
 import { api, errorMessage, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
@@ -565,7 +565,7 @@ export function ControllerDetailPage() {
         title={c.name}
         description={
           <>
-            S/N {c.serial} · {c.host ?? t('controllers.broadcast')} · <Badge color={online ? 'green' : 'red'}>{online ? t('common.online') : t('common.offline')}</Badge>
+            S/N {c.serial} · {c.host ?? t('controllers.broadcast')} · <ControllerStatusBadge enabled={c.enabled} online={online} />
           </>
         }
       />
