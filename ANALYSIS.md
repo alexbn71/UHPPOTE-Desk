@@ -428,4 +428,4 @@ Not included in v1 (see §4): meal, patrol, meeting, lifts, alarm output reset, 
 3. Door sensors and exit buttons wired on all 4 doors?
 4. Addressing: server subnet and static IP to assign to the controller.
 5. Possible data migration from the legacy software (`iCCard3000.mdb`, password `168168`) — out of scope for v1, feasible as an import.
-6. Alarm expansion board (hardware level L6): ~~`0xF2` mapping (index + 16)~~ confirmed and applied immediately on v9.f8. Still open: is the triggering source 0–3 or a door bit mask (factory values 1, 2, 4)? Does the status packet report the board relays? Which event does the duress code produce? Does the firmware answer `0xC2`?
+6. Alarm expansion board (hardware level L6): ~~`0xF2` mapping (index + 16)~~ confirmed and applied immediately on v9.f8. ~~Triggering source 0–3 or a bit mask?~~ door index 0–3 (vendor upload of door 4 = 3). Still open: does the status packet report the board relays? Which event does the duress code produce? Does the firmware answer `0xC2`?

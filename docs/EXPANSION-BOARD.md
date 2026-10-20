@@ -60,9 +60,6 @@ duress code needs a reader with a PIN keypad (*Advanced settings → Keypads*).
   the save reports that it could not be verified.
 - A configuration made with the manufacturer's software is replaced at the next save: use *Read from the
   controller → Copy into the form* first to keep it.
-- **Triggering source:** the manufacturer's software writes 0–3 for doors 1–4, but the factory values found in a
-  controller are 1, 2, 4 (a door bit mask?). Which encoding the relays follow will be confirmed by hardware test
-  L6.5; until then UHPPOTE Desk writes 0–3 like the manufacturer's software.
 - **Before removing the board**, deactivate the outputs and save: turning off *Expansion board connected* only
   stops UHPPOTE Desk from writing, it does not clear what is already in the controller.
 - **Burglar alarm (ARM)** uses the manufacturer's default control mode (126) and arm/disarm delays (30 s); how it
@@ -117,7 +114,7 @@ Four relay blocks of 6 bytes at index **136 + 6·n** (n = 0…3 → outputs 1–
 
 | Offset | Field | Values |
 |---|---|---|
-| +0 | source | 0–3 = door 1–4, 16 = ARM |
+| +0 | source | 0–3 = door 1–4 (door index: the manufacturer's software writes 3 for door 4), 16 = ARM. Factory values seen in a new controller: 1, 2, 4, 16 with all outputs inactive |
 | +1 | output mode | 0 = inactive, 1–5 (table above) |
 | +2 | events (bitmask) | 0x01 duress · 0x02 open too long · 0x04 forced open · 0x08 forced lock · 0x10 invalid card · 0x20 fire |
 | +3 | signals (bitmask) | 0x01 lock relay [NC] · 0x02 door sensor [NC] · 0x04 exit button [NO] · 0x08 force lock [NO] · 0x10/0x20/0x40 inputs A1–A3 [NC] · 0x80 fire input [NO] |
@@ -176,8 +173,7 @@ npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 6 --destructive
 | L6.9 | **duress code** on the door 1 keypad (output 1); logs the events the controller sends | board, PIN keypad, `--destructive` |
 
 Before every physical test the configuration is read back: the test does not start if the controller did not
-store it. If L6.5 fails (output 1 does not switch on a forced opening), the triggering source may be a door bit
-mask instead of 0–3: report it.
+store it.
 
 Every test logs the raw *relays* and *inputs* bytes of the status at the moment of the alarm: send the report
 (`reports/hwtest-*.md` and `.json`) when something does not behave as described here.
