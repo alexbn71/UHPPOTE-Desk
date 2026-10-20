@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Code,
-  CopyButton,
   Group,
   Modal,
   MultiSelect,
@@ -38,6 +37,7 @@ import { useTranslation } from 'react-i18next'
 import type { GuestLinkDto, GuestOpenDto, GuestPassDto, GuestStatus, MobileDoorDto } from '@uhppote-desk/shared'
 import { MIN_PLATE_LENGTH, normalizePlate } from '@uhppote-desk/shared'
 import { IconButton, PageHeader, WeekdaysInput } from '../components/common'
+import { CopyButton } from '../components/CopyButton'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useCodes } from '../lib/codes'
 import { addDays, fmtDateTime, fmtDateTimeShort, today } from '../lib/format'

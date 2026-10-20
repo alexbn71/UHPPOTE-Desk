@@ -1,4 +1,4 @@
-import { Alert, Box, Card, Container, Group, Loader, PasswordInput, Stack, Text, Title } from '@mantine/core'
+import { Alert, Box, Card, Container, Group, Loader, Stack, Text, TextInput, Title } from '@mantine/core'
 import { IconAlertTriangle, IconDeviceMobileOff, IconLinkOff } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -68,15 +68,21 @@ export function GuestApp({ token }: { token: string }) {
             ) : (
               <>
                 {g.pinRequired && (
-                  <PasswordInput
+                  // a text field masked with dots, not a password field: the browser must not offer
+                  // the saved passwords (nor offer to save the PIN) as if this were a login
+                  <TextInput
                     label={t('guestApp.pin')}
                     description={t('guestApp.pinHint')}
                     inputMode="numeric"
-                    autoComplete="one-time-code"
+                    autoComplete="off"
+                    data-1p-ignore
+                    data-lpignore="true"
+                    name="guest-pin"
                     maxLength={8}
                     size="lg"
                     value={pin}
                     onChange={(e) => setPin(e.currentTarget.value.replace(/\D/g, ''))}
+                    styles={{ input: { WebkitTextSecurity: 'disc', letterSpacing: '0.3em' } as React.CSSProperties }}
                   />
                 )}
                 <Text>{t('guestApp.intro')}</Text>

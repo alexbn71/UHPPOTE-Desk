@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Code,
-  CopyButton,
   Group,
   Image,
   Modal,
@@ -28,6 +27,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlateDto, PlateReadDto, PlateReaderDto, PlateReaderKeyDto } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
+import { CopyButton } from '../components/CopyButton'
 import { api, notifyError, qs } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { fmtDate, fmtDateTime } from '../lib/format'

@@ -5,7 +5,6 @@ import {
   Card,
   Checkbox,
   Code,
-  CopyButton,
   Group,
   Modal,
   MultiSelect,
@@ -25,6 +24,7 @@ import { useTranslation } from 'react-i18next'
 import type { WebhookDeliveryDto, WebhookDto, WebhookEvent } from '@uhppote-desk/shared'
 import { WEBHOOK_EVENTS } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
+import { CopyButton } from '../components/CopyButton'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { fmtDateTime } from '../lib/format'
 import { useDoors } from '../lib/queries'

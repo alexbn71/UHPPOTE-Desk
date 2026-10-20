@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Code,
-  CopyButton,
   Group,
   Modal,
   MultiSelect,
@@ -24,6 +23,7 @@ import { useTranslation } from 'react-i18next'
 import type { ApiTokenDto, TokenAccess } from '@uhppote-desk/shared'
 import { TOKEN_ACCESS } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
+import { CopyButton } from '../components/CopyButton'
 import { api, notifyError } from '../lib/api'
 import { DATE_INPUT_FORMAT, fmtDate, fmtDateTime, today } from '../lib/format'
 import { treeOptions, useDoors, useZones } from '../lib/queries'
