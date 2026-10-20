@@ -88,7 +88,7 @@ local MODES = {
   [0] = 'inactive', [1] = 'for the duration', [2] = 'for the duration and until reset', [3] = 'until reset',
   [4] = 'any signal', [5] = 'all signals',
 }
-local EVENT_BITS = { 'duress', 'open too long', 'forced open', 'forced lock', 'invalid card', 'fire', 'ARM' }
+local EVENT_BITS = { 'duress', 'open too long', 'forced open', 'forced lock', 'invalid card', 'fire', 'ARM', 'duress only after a card' }
 local SIGNAL_BITS = { 'lock relay', 'door sensor', 'push button', 'force lock', 'ExtA1', 'ExtA2', 'ExtA3', 'Ext fire' }
 
 local function bits(v, names)
@@ -124,6 +124,8 @@ local function param_name(index, value)
     [47] = 'disarm delay (s)', [56] = 'receive fire signal (network)', [57] = 'send fire signal (network)',
     [60] = 'ARM status', [74] = 'duress code, low byte', [75] = 'duress code, middle byte',
     [162] = 'door open too long, high byte', [163] = 'duress code, high byte',
+    [245] = 'invalid card alarm after N swipes (0 = every swipe)',
+    [252] = 'open too long alarm (0xA5 = on)',
   }
   if index >= 384 and index <= 387 then return 'network: IP address' end
   if index >= 388 and index <= 391 then return 'network: netmask' end
@@ -217,7 +219,7 @@ function p.dissector(tvb, pinfo, tree)
           end
           item:add(f.lflagged, tvb(1044, 128), flagged)
         end
-        local interesting = { 2, 4, 6, 8, 10, 11, 12, 13, 30, 32, 35, 74, 75, 162, 163 }
+        local interesting = { 2, 4, 6, 8, 10, 11, 12, 13, 30, 32, 35, 74, 75, 162, 163, 245, 252 }
         for i = 136, 159 do interesting[#interesting + 1] = i end
         for _, i in ipairs(interesting) do
           local v = tvt(i, 1):uint()

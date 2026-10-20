@@ -52,6 +52,9 @@ const SIGNALS = [
 ] as const
 
 const ARM = 16
+
+/** Vendor "extended functions" that change how the controller raises the alarms. */
+const ALARM_OPTIONS = ['openTooLongAlarm', 'invalidCardAlarmAfter3', 'duressAfterCard'] as const
 const MODES = [1, 2, 3, 4, 5] as const
 
 function RelayCard({
@@ -230,6 +233,11 @@ function ControllerCopy({
         {t('expansion.doorOpenTooLong')}: {read.doorOpenTooLong} · {t('expansion.duressCode')}: {read.duressCode} ·{' '}
         {t('expansion.readAlarms')}: {eventsLabel(read.alarmEvents)}
       </Text>
+      <Text size="sm">
+        {ALARM_OPTIONS.filter((k) => read[k])
+          .map((k) => t(`expansion.${k}`))
+          .join(' · ') || t('expansion.noAlarmOptions')}
+      </Text>
       {!readOnly && (
         <Button mt="sm" variant="light" onClick={onUse}>
           {t('expansion.readUse')}
@@ -303,6 +311,9 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
       ...x,
       doorOpenTooLong: r.doorOpenTooLong,
       duressCode: r.duressCode,
+      openTooLongAlarm: r.openTooLongAlarm,
+      invalidCardAlarmAfter3: r.invalidCardAlarmAfter3,
+      duressAfterCard: r.duressAfterCard,
       relays: r.relays.map((rr, i) => (rr.active ? rr : { ...x.relays[i]!, active: false })),
     })
 
@@ -352,6 +363,22 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
               readOnly={readOnly}
             />
           </Group>
+          <Stack gap={6}>
+            <Text size="sm" fw={500}>
+              {t('expansion.alarmOptions')}
+            </Text>
+            {ALARM_OPTIONS.map((k) => (
+              <Switch
+                key={k}
+                size="sm"
+                label={t(`expansion.${k}`)}
+                description={t(`expansion.${k}Hint`)}
+                checked={x[k]}
+                disabled={readOnly}
+                onChange={(e) => setX({ ...x, [k]: e.currentTarget.checked })}
+              />
+            ))}
+          </Stack>
           <Group>
             <Button
               variant="default"

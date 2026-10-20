@@ -207,6 +207,12 @@ export const expansionBoardSchema = z.object({
   doorOpenTooLong: z.number().int().min(1).max(6553),
   /** Duress code for the keypad; null = not sent. */
   duressCode: pinSchema.nullable(),
+  /** "Door open too long" raises an alarm (vendor "Activate Open Too Long Warn", firmware V6.58+). */
+  openTooLongAlarm: z.boolean().default(false),
+  /** "Invalid card" alarm only after 3 invalid swipes (vendor "Activate Invalid 3 Cards Warn", V8.96+). */
+  invalidCardAlarmAfter3: z.boolean().default(false),
+  /** The duress code counts only after a registered card (vendor "Threat Code Valid After Card Swipe"). */
+  duressAfterCard: z.boolean().default(false),
 })
 export type ExpansionBoardSettings = z.infer<typeof expansionBoardSchema>
 
@@ -223,6 +229,9 @@ export const DEFAULT_EXPANSION_BOARD: ExpansionBoardSettings = {
   })),
   doorOpenTooLong: 25,
   duressCode: null,
+  openTooLongAlarm: false,
+  invalidCardAlarmAfter3: false,
+  duressAfterCard: false,
 }
 
 /** A byte of the parameter table that differs from what UHPPOTE Desk writes. */
@@ -237,6 +246,9 @@ export interface ExpansionBoardReadDto {
   relays: ExpansionRelaySettings[]
   doorOpenTooLong: number
   duressCode: number
+  openTooLongAlarm: boolean
+  invalidCardAlarmAfter3: boolean
+  duressAfterCard: boolean
   /** Alarm types handled by the controller (parameter 32). */
   alarmEvents: number
   recordAlarmEvents: boolean

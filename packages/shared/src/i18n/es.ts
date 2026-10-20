@@ -496,6 +496,16 @@ export const es: Messages = {
     notVerified: 'Guardada y enviada, pero no se pudo volver a leer del controlador para verificarla',
     verifyFailed:
       'Guardada y enviada, pero {{n}} byte(s) leídos del controlador son distintos: usa "Leer del controlador"',
+    alarmOptions: 'Opciones de alarma',
+    openTooLongAlarm: 'Puerta abierta demasiado tiempo genera una alarma',
+    openTooLongAlarmHint:
+      'Sin ella, una puerta abierta solo se registra; con ella es una alarma que puede activar las salidas (firmware V6.58 o posterior)',
+    invalidCardAlarmAfter3: 'Alarma de tarjeta no válida solo tras 3 intentos',
+    invalidCardAlarmAfter3Hint:
+      'La alarma "tarjeta no válida" se activa tras 3 pasadas no válidas seguidas en lugar de en cada una (firmware V8.96 o posterior)',
+    duressAfterCard: 'Código de coacción solo tras una tarjeta registrada',
+    duressAfterCardHint: 'El código de coacción solo se acepta justo después de pasar una tarjeta registrada',
+    noAlarmOptions: 'Ninguna opción de alarma activada',
   },
   doors: {
     title: 'Puertas',

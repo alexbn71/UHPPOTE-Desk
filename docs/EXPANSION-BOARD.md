@@ -31,6 +31,9 @@ UHPPOTE Desk configures it from *Controllers → (controller) → Expansion boar
 |---|---|
 | Door open too long after | seconds after which a door left open raises *Door open too long* (event 37). Default 25 s |
 | Duress code | code typed on the PIN keypad under threat: the door opens and the *duress* alarm is raised. Empty = the code stored in the controller is not changed |
+| Door open too long raises an alarm | without it a door left open is only recorded; with it, it is an alarm that can drive the outputs (vendor *Activate Open Too Long Warn*, firmware V6.58+) |
+| Invalid card alarm only after 3 attempts | the *invalid card* alarm after 3 invalid swipes in a row instead of every one (vendor *Activate Invalid 3 Cards Warn*, firmware V8.96+) |
+| Duress code only after a registered card | the duress code counts only right after the swipe of a registered card (vendor *Threat Code Valid After Registered Card Swipe*) |
 | Output N → Active | the relay is used; an inactive relay is written as all zeros |
 | Triggering source | door 1–4, or the burglar alarm (ARM, experimental) |
 | Output mode | see below |
@@ -130,6 +133,9 @@ writes them with `0xF2`):
 | 35 + 162 | door open too long, tenths of a second (low byte at 35, high byte at 162) | setting × 10 |
 | 45, 46, 47 | ARM control mode, arm delay, disarm delay | 126, 30, 30 — only if an output uses ARM |
 | 74, 75, 163 | duress code (24-bit: 74 low, 75 middle, 163 high) | only if set |
+| 32, bit 0x80 | the duress code counts only after a registered card | with *Duress code only after a registered card* |
+| 245 | invalid swipes in a row before the *invalid card* alarm (0 = every swipe) | 3 with *Invalid card alarm only after 3 attempts*, otherwise 0 |
+| 252 | *door open too long* is an alarm | `0xA5` with *Door open too long raises an alarm*, otherwise 0 |
 
 The code is in [packages/protocol/src/codec/expansion.ts](../packages/protocol/src/codec/expansion.ts); the
 encoder and its tests are in `encode.writeParameters` and
@@ -167,7 +173,7 @@ npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 6 --destructive
 | L6.3 | address mapping: writes the door 1 open delay in parameters 2–3 with `0xF2`, finds it in the table read back, restores it. A warning means `get-door-control` does not reflect it immediately | — |
 | L6.4 | the configuration (all outputs inactive) is written, read back identical, and doors, listener, anti-passback and network are unchanged | — |
 | L6.5 | output 1 on **forced open** of door 1 (event 38) | board, door sensor on door 1 |
-| L6.6 | output 2 on **door open too long** (5 s, *until reset*): on while open, off after closing | board, door sensor on door 1 |
+| L6.6 | output 2 on **door open too long** (5 s, *until reset*, with *Door open too long raises an alarm*): on while open, off after closing | board, door sensor on door 1 |
 | L6.7 | output 3 on an **invalid card** at door 1 | board, an unregistered card |
 | L6.8 | **fire input** of the board: fire flag/event 39, doors released, output 4, flag cleared afterwards | board |
 | L6.9 | **duress code** on the door 1 keypad (output 1); logs the events the controller sends | board, PIN keypad, `--destructive` |

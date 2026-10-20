@@ -438,9 +438,18 @@ describe('synchronisation', () => {
     const expansionBoard = { installed: true, relays, doorOpenTooLong: 12, duressCode: 889988 }
     const r = await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard })
     expect(r.statusCode).toBe(200)
-    expect((await api('GET', `/controllers/${controllerId}/settings`)).json().expansionBoard).toEqual(expansionBoard)
+    expect((await api('GET', `/controllers/${controllerId}/settings`)).json().expansionBoard).toMatchObject(
+      expansionBoard,
+    )
     const inactive = { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 }
-    const expected = { relays: [relays[0], relays[1], inactive, relays[3]], doorOpenTooLong: 12, duressCode: 889988 }
+    const expected = {
+      relays: [relays[0], relays[1], inactive, relays[3]],
+      doorOpenTooLong: 12,
+      duressCode: 889988,
+      openTooLongAlarm: false,
+      invalidCardAlarmAfter3: false,
+      duressAfterCard: false,
+    }
     expect(fake.expansionBoard()).toEqual(expected)
     // the full synchronisation writes it again
     fake.parameters.fill(0)
@@ -500,6 +509,27 @@ describe('synchronisation', () => {
       expansionBoard: { ...expansionBoard, installed: false },
     })
     expect((await api('GET', `/controllers/${controllerId}/expansion-board`)).json().mismatches).toBeNull()
+  })
+
+  it('expansion board: alarm options written, verified and read back', async () => {
+    const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    const expansionBoard = {
+      ...settings.expansionBoard,
+      installed: true,
+      openTooLongAlarm: true,
+      invalidCardAlarmAfter3: true,
+      duressAfterCard: true,
+    }
+    const r = await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard })
+    expect(r.json().expansion).toEqual({ verified: true, mismatches: [] })
+    expect([fake.parameters[252], fake.parameters[245], fake.parameters[32]! & 0x80]).toEqual([0xa5, 3, 0x80])
+    const read = (await api('GET', `/controllers/${controllerId}/expansion-board`)).json()
+    expect(read).toMatchObject({
+      openTooLongAlarm: true,
+      invalidCardAlarmAfter3: true,
+      duressAfterCard: true,
+      mismatches: [],
+    })
   })
 
   it('expansion board: invalid values are rejected (400)', async () => {

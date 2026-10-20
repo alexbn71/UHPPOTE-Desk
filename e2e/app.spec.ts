@@ -180,11 +180,13 @@ test.describe.serial('UHPPOTE Desk', () => {
     // vendor defaults preselected: threat, open too long, forced open, fire
     await expect(relay1.getByLabel('Forced open')).toBeChecked()
     await relay1.getByLabel('Fire alarm').uncheck({ force: true })
+    await page.getByLabel('Door open too long raises an alarm').check({ force: true })
     await page.getByRole('button', { name: 'Save and send to the controller' }).click()
     // written with 0xF2 and verified by reading the table back
     await expect(page.getByText('Saved, sent and verified')).toBeVisible({ timeout: 10_000 })
     const settings = await (await page.request.get('/api/controllers/1/settings')).json()
     expect(settings.expansionBoard.installed).toBe(true)
+    expect(settings.expansionBoard).toMatchObject({ openTooLongAlarm: true, invalidCardAlarmAfter3: false })
     expect(settings.expansionBoard.relays[0]).toMatchObject({
       active: true,
       source: 0,

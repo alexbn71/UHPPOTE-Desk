@@ -183,6 +183,8 @@ describe('expansion board parameters', () => {
       30,
       32,
       35,
+      245,
+      252,
       45,
       46,
       47,
@@ -240,11 +242,15 @@ describe('expansion board parameters', () => {
         fc.tuple(relayArb, relayArb, relayArb, relayArb),
         fc.integer({ min: 1, max: 6553 }),
         fc.integer({ min: 0, max: 999999 }),
-        (relays, ajar, duress) => {
+        fc.tuple(fc.boolean(), fc.boolean(), fc.boolean()),
+        (relays, ajar, duress, [openTooLongAlarm, invalidCardAlarmAfter3, duressAfterCard]) => {
           const cfg: ExpansionBoardConfig = {
             relays: relays as Quad<ExpansionRelay>,
             doorOpenTooLong: ajar,
             duressCode: duress,
+            openTooLongAlarm,
+            invalidCardAlarmAfter3,
+            duressAfterCard,
           }
           expect(decodeExpansionBoard(table(cfg))).toEqual(cfg)
         },
@@ -269,5 +275,21 @@ describe('compareExpansionBoard', () => {
     expect(compareExpansionBoard(cfg, t)).toEqual([])
     t[138] = 0x01
     expect(compareExpansionBoard(cfg, t)).toEqual([{ index: 138, expected: 0x04, actual: 0x01 }])
+  })
+})
+
+describe('alarm options (vendor "extended functions")', () => {
+  const base: ExpansionBoardConfig = { relays: allInactive(), doorOpenTooLong: 25, duressCode: null }
+
+  it('off by default: bytes 252 and 245 written as 0, bit 0x80 of 32 clear', () => {
+    const t = table(base)
+    expect([t[252], t[245], t[32]! & 0x80]).toEqual([0, 0, 0])
+  })
+
+  it('open too long alarm = 0xA5 in 252, invalid card after 3 swipes = 3 in 245, duress after card = bit 0x80', () => {
+    const t = table({ ...base, openTooLongAlarm: true, invalidCardAlarmAfter3: true, duressAfterCard: true })
+    expect(t[252]).toBe(0xa5)
+    expect(t[245]).toBe(3)
+    expect(t[32]).toBe(0x80 | 0x08 | 0x20)
   })
 })

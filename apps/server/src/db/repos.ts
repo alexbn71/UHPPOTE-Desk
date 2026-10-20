@@ -254,7 +254,10 @@ export class ControllerRepo {
       controllerId,
     ])
     const defaults = structuredClone(DEFAULT_SETTINGS)
-    return r ? { ...defaults, ...(JSON.parse(r.settings) as Partial<ControllerSettings>) } : defaults
+    if (!r) return defaults
+    const saved = JSON.parse(r.settings) as Partial<ControllerSettings>
+    // fields added to the expansion board later get their default
+    return { ...defaults, ...saved, expansionBoard: { ...defaults.expansionBoard, ...saved.expansionBoard } }
   }
 
   saveSettings(controllerId: number, s: ControllerSettings): void {

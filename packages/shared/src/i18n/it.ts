@@ -493,6 +493,16 @@ export const it: Messages = {
     verified: 'Salvata, inviata e verificata: il controller contiene esattamente questa configurazione',
     notVerified: 'Salvata e inviata, ma non è stato possibile rileggerla dal controller per verificarla',
     verifyFailed: 'Salvata e inviata, ma {{n}} byte riletti dal controller sono diversi: usa "Leggi dal controller"',
+    alarmOptions: 'Opzioni allarmi',
+    openTooLongAlarm: 'Porta aperta troppo a lungo genera un allarme',
+    openTooLongAlarmHint:
+      "Senza, una porta lasciata aperta viene solo registrata; con l'opzione è un allarme che può attivare le uscite (firmware V6.58 o successivo)",
+    invalidCardAlarmAfter3: 'Allarme tessera non valida solo dopo 3 tentativi',
+    invalidCardAlarmAfter3Hint:
+      'L\'allarme "tessera non valida" scatta dopo 3 passaggi non validi consecutivi invece che a ogni passaggio (firmware V8.96 o successivo)',
+    duressAfterCard: 'Codice coercizione solo dopo una tessera registrata',
+    duressAfterCardHint: 'Il codice di coercizione è accettato solo subito dopo il passaggio di una tessera registrata',
+    noAlarmOptions: 'Nessuna opzione allarmi attiva',
   },
   doors: {
     title: 'Porte',

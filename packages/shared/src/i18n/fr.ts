@@ -496,6 +496,16 @@ export const fr: Messages = {
     notVerified: "Enregistrée et envoyée, mais elle n'a pas pu être relue dans le contrôleur pour la vérifier",
     verifyFailed:
       'Enregistrée et envoyée, mais {{n}} octet(s) relu(s) dans le contrôleur sont différents : utilisez « Lire depuis le contrôleur »',
+    alarmOptions: "Options d'alarme",
+    openTooLongAlarm: 'Porte ouverte trop longtemps déclenche une alarme',
+    openTooLongAlarmHint:
+      "Sans cette option, une porte restée ouverte est seulement enregistrée ; avec, c'est une alarme qui peut activer les sorties (firmware V6.58 ou ultérieur)",
+    invalidCardAlarmAfter3: 'Alarme badge non valide seulement après 3 essais',
+    invalidCardAlarmAfter3Hint:
+      "L'alarme « badge non valide » se déclenche après 3 passages non valides consécutifs au lieu de chaque passage (firmware V8.96 ou ultérieur)",
+    duressAfterCard: 'Code de contrainte seulement après un badge enregistré',
+    duressAfterCardHint: "Le code de contrainte n'est accepté que juste après le passage d'un badge enregistré",
+    noAlarmOptions: "Aucune option d'alarme activée",
   },
   doors: {
     title: 'Portes',

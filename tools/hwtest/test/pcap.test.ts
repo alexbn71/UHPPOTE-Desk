@@ -21,6 +21,9 @@ const CONFIG: ExpansionBoardConfig = {
   ],
   doorOpenTooLong: 30,
   duressCode: null,
+  openTooLongAlarm: false,
+  invalidCardAlarmAfter3: false,
+  duressAfterCard: false,
 }
 
 let frame = 0

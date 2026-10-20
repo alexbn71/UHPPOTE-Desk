@@ -11,6 +11,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   the "door open too long" time and the duress code. The configuration is written with function `0xF2`
   (reconstructed from the manufacturer's software), only on controllers marked as having the board, and again by
   the full synchronisation — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).
+- Expansion board **alarm options** (the matching vendor "extended functions"): door open too long raises an alarm,
+  invalid card alarm only after 3 attempts, duress code only after a registered card.
 - **Read from the controller** on the *Expansion board* tab: the parameter table is read back with the vendor
   long-packet request (0x24/0x10, CRC-16/ARC), shown next to the saved configuration and copied into the form if
   wanted; every save is verified by reading the table back.

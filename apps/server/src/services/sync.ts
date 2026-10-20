@@ -22,6 +22,9 @@ function expansionConfig(x: ExpansionBoardSettings): ExpansionBoardConfig {
     relays: x.relays as Quad<ExpansionRelaySettings>,
     doorOpenTooLong: x.doorOpenTooLong,
     duressCode: x.duressCode,
+    openTooLongAlarm: x.openTooLongAlarm,
+    invalidCardAlarmAfter3: x.invalidCardAlarmAfter3,
+    duressAfterCard: x.duressAfterCard,
   }
 }
 
@@ -357,6 +360,9 @@ export class SyncService {
           relays: state.relays.map((r) => ({ ...r, source: r.source as ExpansionRelaySettings['source'] })),
           doorOpenTooLong: state.doorOpenTooLong,
           duressCode: state.duressCode,
+          openTooLongAlarm: state.openTooLongAlarm ?? false,
+          invalidCardAlarmAfter3: state.invalidCardAlarmAfter3 ?? false,
+          duressAfterCard: state.duressAfterCard ?? false,
           alarmEvents: state.alarmEvents,
           recordAlarmEvents: state.recordAlarmEvents,
           mismatches: x.installed ? compareExpansionBoard(expansionConfig(x), state.table) : null,

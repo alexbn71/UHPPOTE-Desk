@@ -494,6 +494,16 @@ export const en = {
     notVerified: 'Saved and sent, but the controller could not be read back to verify it',
     verifyFailed:
       'Saved and sent, but {{n}} byte(s) read back from the controller are different: use "Read from the controller"',
+    alarmOptions: 'Alarm options',
+    openTooLongAlarm: 'Door open too long raises an alarm',
+    openTooLongAlarmHint:
+      'Without it a door left open is only recorded; with it, it is an alarm that can drive the outputs (firmware V6.58 or later)',
+    invalidCardAlarmAfter3: 'Invalid card alarm only after 3 attempts',
+    invalidCardAlarmAfter3Hint:
+      'The "invalid card" alarm starts after 3 invalid swipes in a row instead of at every one (firmware V8.96 or later)',
+    duressAfterCard: 'Duress code only after a registered card',
+    duressAfterCardHint: 'The duress code is accepted only right after the swipe of a registered card',
+    noAlarmOptions: 'No alarm option enabled',
   },
   doors: {
     title: 'Doors',

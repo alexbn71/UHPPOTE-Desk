@@ -220,9 +220,14 @@ describe('expansion board (0xF2)', () => {
       duressCode: 889988,
     } as const
     await client.setExpansionBoard(target, structuredClone(config) as never)
-    expect(fake.expansionBoard()).toEqual(config)
-    // 24 relay bytes + 30, 32, 35, 162 + 74, 75, 163 = 31 bytes → 4 packets
-    expect(fake.parameterWrites - before).toBe(4)
+    expect(fake.expansionBoard()).toEqual({
+      ...config,
+      openTooLongAlarm: false,
+      invalidCardAlarmAfter3: false,
+      duressAfterCard: false,
+    })
+    // 24 relay bytes + 30, 32, 35, 162 + 74, 75, 163 + 245, 252 = 33 bytes → 5 packets
+    expect(fake.parameterWrites - before).toBe(5)
   })
 
   it('readParameters / readExpansionBoard read back what was written (unicast and broadcast)', async () => {

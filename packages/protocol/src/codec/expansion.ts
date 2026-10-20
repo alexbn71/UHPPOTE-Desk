@@ -34,6 +34,10 @@ export const Param = {
   DuressCode: 74,
   DoorOpenTooLongHigh: 162,
   DuressCodeHigh: 163,
+  /** Number of consecutive invalid swipes before the "invalid card" alarm (0 = every swipe; vendor: 3). */
+  InvalidCardAlarmCount: 245,
+  /** 0xA5 = "door open too long" is a real alarm (firmware V6.58+), 0 = only a "door left open" record. */
+  OpenTooLongAlarm: 252,
   /** First of the 4 relay blocks (6 bytes each). */
   ExpansionRelays: 136,
 } as const
@@ -97,6 +101,12 @@ export const ExpansionSignal = {
 
 /** Bit of Param.AlarmEvents set when a relay is driven by the burglar alarm. */
 export const ALARM_EVENTS_ARM = 0x40
+/** Bit of Param.AlarmEvents: the duress code counts only after the swipe of a registered card. */
+export const ALARM_EVENTS_DURESS_AFTER_CARD = 0x80
+/** Value of Param.OpenTooLongAlarm that enables the alarm. */
+export const OPEN_TOO_LONG_ALARM_ON = 0xa5
+/** Invalid swipes before the alarm when "invalid card after 3 swipes" is on (vendor value). */
+export const INVALID_CARD_ALARM_COUNT = 3
 /** Bits the vendor software always sets in Param.AlarmEvents (forced lock, fire). */
 export const ALARM_EVENTS_ALWAYS = ExpansionEvent.ForcedLock | ExpansionEvent.Fire
 
@@ -124,6 +134,12 @@ export interface ExpansionBoardConfig {
   doorOpenTooLong: number
   /** Duress code typed on the keypad (0-999999); null = left unchanged. */
   duressCode: number | null
+  /** "Door open too long" raises an alarm (firmware V6.58+). Default false. */
+  openTooLongAlarm?: boolean
+  /** The "invalid card" alarm only after 3 invalid swipes in a row (firmware V8.96+). Default false. */
+  invalidCardAlarmAfter3?: boolean
+  /** The duress code counts only after the swipe of a registered card. Default false. */
+  duressAfterCard?: boolean
 }
 
 export interface ParameterWrite {
@@ -176,8 +192,12 @@ export function expansionBoardParameters(cfg: ExpansionBoardConfig): ParameterWr
     alarmEvents |= events
     if (arm) alarmEvents |= ALARM_EVENTS_ARM
   })
+  if (cfg.duressAfterCard) alarmEvents |= ALARM_EVENTS_DURESS_AFTER_CARD
   put(Param.AlarmEvents, alarmEvents)
   put(Param.RecordAlarmEvents, 1)
+  // written every time, like the vendor software
+  put(Param.OpenTooLongAlarm, cfg.openTooLongAlarm ? OPEN_TOO_LONG_ALARM_ON : 0)
+  put(Param.InvalidCardAlarmCount, cfg.invalidCardAlarmAfter3 ? INVALID_CARD_ALARM_COUNT : 0)
   const ajar = cfg.doorOpenTooLong * 10
   put(Param.DoorOpenTooLong, ajar)
   put(Param.DoorOpenTooLongHigh, ajar >> 8)
@@ -215,6 +235,9 @@ export function decodeExpansionBoard(params: Uint8Array): ExpansionBoardConfig {
     relays,
     doorOpenTooLong: Math.round((params[Param.DoorOpenTooLong]! | (params[Param.DoorOpenTooLongHigh]! << 8)) / 10),
     duressCode: u16(Param.DuressCode) | (params[Param.DuressCodeHigh]! << 16),
+    openTooLongAlarm: params[Param.OpenTooLongAlarm] === OPEN_TOO_LONG_ALARM_ON,
+    invalidCardAlarmAfter3: params[Param.InvalidCardAlarmCount]! > 0,
+    duressAfterCard: (params[Param.AlarmEvents]! & ALARM_EVENTS_DURESS_AFTER_CARD) !== 0,
   }
 }
 

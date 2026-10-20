@@ -561,6 +561,7 @@
     <li><b>Door open too long after</b> — seconds after which a door left open raises the <i>Door open too long</i> alarm (default 25 s).</li>
     <li><b>Duress code</b> — a code typed on the PIN keypad under threat: the door opens as usual and the <i>duress</i> alarm is raised. Leave it empty to keep the code stored in the controller.</li>
     <li>For each <b>output</b>: the <b>triggering source</b> (one of the four doors, or the burglar alarm), the <b>output mode</b>, the <b>triggering events</b> and the <b>output duration</b>.</li>
+    <li><b>Alarm options</b> — <b>door open too long raises an alarm</b> (otherwise a door left open is only recorded; needed for the outputs to react to it), <b>invalid card alarm only after 3 attempts</b>, and <b>duress code only after a registered card</b>. They are the matching options of the manufacturer's <i>extended functions</i>.</li>
     <li><b>Read from the controller</b> — shows the configuration the controller really stores (read only, nothing is changed), with a badge saying whether it is the same as the saved one. <span class="ui">Copy into the form</span> takes it as a starting point, for example a configuration made with the manufacturer's software; save to apply it.</li>
   </ul>
   <table>

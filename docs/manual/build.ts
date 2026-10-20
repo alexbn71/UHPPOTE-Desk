@@ -384,6 +384,7 @@ await call('PUT', `/controllers/${controller.id}/settings`, {
   expansionBoard: {
     installed: true,
     doorOpenTooLong: 30,
+    openTooLongAlarm: true,
     duressCode: null,
     relays: [
       { active: true, source: 0, mode: 1, events: 0x04 | 0x10, signals: 0, duration: 20 },

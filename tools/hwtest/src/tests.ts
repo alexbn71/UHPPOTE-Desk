@@ -1159,7 +1159,7 @@ export const L6: TestCase[] = [
         ctx,
         2,
         { events: ExpansionEvent.OpenTooLong, mode: ExpansionOutputMode.UntilReset },
-        { doorOpenTooLong: 5 },
+        { doorOpenTooLong: 5, openTooLongAlarm: true },
       )
       const since = ctx.events.length
       await ctx.driver.perform(

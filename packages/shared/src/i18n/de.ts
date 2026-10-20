@@ -497,6 +497,16 @@ export const de: Messages = {
       'Gespeichert und gesendet, aber die Konfiguration konnte zur Prüfung nicht aus dem Controller gelesen werden',
     verifyFailed:
       'Gespeichert und gesendet, aber {{n}} aus dem Controller gelesene Byte(s) weichen ab: „Aus dem Controller lesen“ verwenden',
+    alarmOptions: 'Alarmoptionen',
+    openTooLongAlarm: 'Tür zu lange offen löst einen Alarm aus',
+    openTooLongAlarmHint:
+      'Ohne diese Option wird eine offen gelassene Tür nur protokolliert; mit ihr ist es ein Alarm, der die Ausgänge schalten kann (Firmware V6.58 oder neuer)',
+    invalidCardAlarmAfter3: 'Alarm ungültige Karte erst nach 3 Versuchen',
+    invalidCardAlarmAfter3Hint:
+      'Der Alarm „ungültige Karte“ wird erst nach 3 ungültigen Versuchen in Folge statt bei jedem ausgelöst (Firmware V8.96 oder neuer)',
+    duressAfterCard: 'Bedrohungscode nur nach einer registrierten Karte',
+    duressAfterCardHint: 'Der Bedrohungscode wird nur direkt nach dem Vorhalten einer registrierten Karte angenommen',
+    noAlarmOptions: 'Keine Alarmoption aktiviert',
   },
   doors: {
     title: 'Türen',

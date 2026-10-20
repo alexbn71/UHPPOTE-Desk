@@ -232,5 +232,12 @@ export function defaultTshark(): string {
 export function toConfig(json: unknown): ExpansionBoardConfig {
   const o = json as { expansionBoard?: unknown }
   const x = (o.expansionBoard ?? json) as ExpansionBoardConfig
-  return { relays: x.relays, doorOpenTooLong: x.doorOpenTooLong, duressCode: x.duressCode ?? null }
+  return {
+    relays: x.relays,
+    doorOpenTooLong: x.doorOpenTooLong,
+    duressCode: x.duressCode ?? null,
+    openTooLongAlarm: x.openTooLongAlarm ?? false,
+    invalidCardAlarmAfter3: x.invalidCardAlarmAfter3 ?? false,
+    duressAfterCard: x.duressAfterCard ?? false,
+  }
 }
