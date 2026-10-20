@@ -22,7 +22,7 @@ import {
 import { modals } from '@mantine/modals'
 import { IconAlertTriangle, IconClock, IconDownload, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import type { ControllerDto, ControllerSettings } from '@uhppote-desk/shared'
@@ -257,6 +257,20 @@ function Network({ c }: { c: ControllerDto }) {
   })
   const [ip, setIp] = useState({ address: c.host ?? '', netmask: '255.255.255.0', gateway: '' })
   const [listener, setListener] = useState({ address: '', port: 60001, interval: 0 })
+  // the forms start from the configuration read from the controller (same query as Diagnostics), once
+  const info = useQuery({
+    queryKey: ['controller-info', c.id],
+    queryFn: () => api.get<Info>(`/controllers/${c.id}/info`),
+    retry: false,
+  })
+  const prefilled = useRef(false)
+  useEffect(() => {
+    const d = info.data
+    if (!d || prefilled.current) return
+    prefilled.current = true
+    setIp({ address: d.device.address, netmask: d.device.netmask, gateway: d.device.gateway })
+    if (d.listener.address !== '0.0.0.0') setListener(d.listener)
+  }, [info.data])
 
   const save = async () => {
     try {
@@ -281,6 +295,7 @@ function Network({ c }: { c: ControllerDto }) {
             if (r.verified) notifyOk(t('controllerDetail.ipVerified'))
             else notifyError(new Error(t('controllerDetail.ipNotVerified')))
             void qc.invalidateQueries({ queryKey: ['controllers'] })
+            void qc.invalidateQueries({ queryKey: ['controller-info', c.id] })
           })
           .catch(notifyError),
     })

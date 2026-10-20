@@ -15,6 +15,10 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   tests of the board relays (forced open, open too long, invalid card, fire input, duress code).
 - FakeController: parameter table, simulated expansion relays, `raiseAlarm` and `setFireInput`.
 
+### Fixed
+- *Network and configuration*: the "send new IP" form and the listener form start from the configuration read
+  from the controller (address, netmask, gateway, listener) instead of a fixed netmask and an empty gateway.
+
 ## [1.1.0] - 2026-10-15
 
 ### Added

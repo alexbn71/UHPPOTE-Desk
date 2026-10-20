@@ -161,6 +161,14 @@ test.describe.serial('UHPPOTE Desk', () => {
     expect(errors).toEqual([])
   })
 
+  test('network tab: the IP form starts from the configuration read from the controller', async ({ page }) => {
+    await login(page, 'admin', ADMIN_PASSWORD)
+    await page.goto('/controllers/1')
+    await page.getByRole('tab', { name: 'Network and configuration' }).click()
+    await expect(page.getByLabel('Gateway')).toHaveValue('192.168.1.1', { timeout: 10_000 })
+    await expect(page.getByLabel('Netmask')).toHaveValue('255.255.255.0')
+  })
+
   test('expansion board: configure output 1 and save', async ({ page }) => {
     await login(page, 'admin', ADMIN_PASSWORD)
     await page.goto('/controllers/1')
