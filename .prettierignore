@@ -1,0 +1,21 @@
+# build output and generated files
+node_modules/
+dist/
+coverage/
+reports/
+test-results/
+playwright-report/
+package-lock.json
+
+# manufacturer material (not in git)
+Legacy/
+
+# official test vectors from uhppoted-codegen: kept byte-identical
+packages/protocol/test/fixtures/
+
+# documentation and configuration are formatted by hand (the manual HTML is rendered to PDF)
+*.md
+*.html
+*.yml
+*.yaml
+docs/manual/shots/
