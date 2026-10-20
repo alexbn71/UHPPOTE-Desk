@@ -9,6 +9,11 @@ import type { ParameterWrite } from './expansion.js'
 import type { Quad } from './messages.js'
 
 export const OptionParam = {
+  /**
+   * Multi-card doors: on a four-door controller the vendor software sets bit (door - 1) for every door with
+   * multi-card access (capture: 0x55 → 0x5D for door 4); the other bits are kept. Factory value 0x55.
+   */
+  MultiCardDoors: 40,
   /** Minimum gap between two swipes of the same card: uint16 LE in units of 2 s (0 = off; factory 0xFFFF = off). */
   SwipeGap: 52,
   /** Cards needed to open, per door (0 = multi-card off). */
@@ -26,6 +31,7 @@ export const OptionParam = {
 } as const
 
 export const SILENT_INVALID_CARD_ON = 0xa5
+export const MULTI_CARD_DOORS_FACTORY = 0x55
 export const MAX_SWIPE_GAP_SECONDS = 600
 export const MAX_MULTI_CARDS = 10
 /** Bits of the multi-card options byte managed here (the others are kept as read). */
@@ -86,6 +92,11 @@ export function controllerOptionsParameters(o: ControllerOptions, current?: Uint
   const gap = o.swipeGapSeconds / 2
   put(OptionParam.SwipeGap, gap)
   put(OptionParam.SwipeGap + 1, gap >> 8)
+  const multiDoors = o.multiCard.reduce((acc, n, i) => (n > 0 ? acc | (1 << i) : acc), 0)
+  put(
+    OptionParam.MultiCardDoors,
+    (current ? current[OptionParam.MultiCardDoors]! : MULTI_CARD_DOORS_FACTORY) | multiDoors,
+  )
   o.multiCard.forEach((n, i) => {
     put(OptionParam.MultiCardTotal + i, n)
     for (let g = 0; g < 8; g++) put(OptionParam.MultiCardGroups + i * 8 + g, 0)

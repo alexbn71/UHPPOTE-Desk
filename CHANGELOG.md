@@ -27,7 +27,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   for today or the last 8/24 hours, with CSV export.
 - **Reader and door options** in *Advanced settings* (the vendor "extended functions"): four swipes = normally
   open, silent reader on invalid cards, minimum gap between two swipes of the same card, door as switch and
-  multi-card access (cards needed per door). Written with `0xF2` only when *Managed by UHPPOTE Desk* is on,
+  multi-card access (cards needed per door). Multi-card access, door as switch and the swipe gap write the same
+  bytes as the vendor software (checked on captures). Written with `0xF2` only when *Managed by UHPPOTE Desk* is on,
   verified by reading the table back, with *Read from the controller*; hardware test level **L7** restores the
   original bytes exactly.
 - **Update notice**: a page opened before the server was updated shows *New version available* with a *Reload*

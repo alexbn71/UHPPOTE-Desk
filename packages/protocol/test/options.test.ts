@@ -37,6 +37,8 @@ describe('controller options', () => {
     expect([t[52], t[53]]).toEqual([5, 0])
     expect(t[222]).toBe(~0b0010 & 0xff)
     expect([...t.subarray(168, 172)]).toEqual([0, 0, 0, 3])
+    // door 4 bit on the factory value, like the vendor upload (0x55 → 0x5D)
+    expect(t[40]).toBe(0x5d)
     expect([...t.subarray(172, 204)].every((b) => b === 0)).toBe(true)
   })
 
@@ -52,6 +54,14 @@ describe('controller options', () => {
     t[205] = 0xff
     t[222] = 0xff
     expect(decodeControllerOptions(t)).toEqual(DEFAULT_CONTROLLER_OPTIONS)
+  })
+
+  it('multi-card doors byte 40: the bits of the read table are kept, the active doors added', () => {
+    const current = new Uint8Array(PARAMETER_TABLE_SIZE)
+    current[40] = 0x55
+    const w = (o: ControllerOptions) => controllerOptionsParameters(o, current).find((x) => x.index === 40)!.value
+    expect(w({ ...DEFAULT_CONTROLLER_OPTIONS, multiCard: [0, 0, 0, 3] })).toBe(0x5d)
+    expect(w(DEFAULT_CONTROLLER_OPTIONS)).toBe(0x55)
   })
 
   it('keeps the multi-card option bits it does not manage', () => {

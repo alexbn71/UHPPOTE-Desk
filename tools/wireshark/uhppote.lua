@@ -115,6 +115,9 @@ local function param_name(index, value)
   if index >= 2 and index <= 9 then return string.format('door %d open delay %s byte (tenths of a second)', (index - 2) // 2 + 1, index % 2 == 0 and 'low' or 'high') end
   if index >= 10 and index <= 13 then return string.format('door %d control (1 open, 2 closed, 3 controlled)', index - 9) end
   if index >= 14 and index <= 17 then return string.format('door %d interlock', index - 13) end
+  if index >= 168 and index <= 171 then return string.format('door %d multi-card: cards needed', index - 167) end
+  if index >= 172 and index <= 203 then return string.format('door %d multi-card group %d', (index - 172) // 8 + 1, (index - 172) % 8 + 1) end
+  if index >= 218 and index <= 221 then return string.format('door %d multi-card options', index - 217) end
   if index >= 22 and index <= 25 then return string.format('reader %d keypad', index - 21) end
   local names = {
     [26] = 'push button default state', [27] = 'door sensor default state', [28] = 'lock normal state',
@@ -124,6 +127,9 @@ local function param_name(index, value)
     [47] = 'disarm delay (s)', [56] = 'receive fire signal (network)', [57] = 'send fire signal (network)',
     [60] = 'ARM status', [74] = 'duress code, low byte', [75] = 'duress code, middle byte',
     [162] = 'door open too long, high byte', [163] = 'duress code, high byte',
+    [40] = 'multi-card doors (bit per door, factory 0x55)', [52] = 'swipe gap, low byte (units of 2 s)',
+    [53] = 'swipe gap, high byte', [205] = 'silent reader on invalid card (0xA5 = on)',
+    [222] = 'door as switch (inverted door bits)', [250] = 'four swipes = normally open (bits 0-3 readers, 4-7 time profile)',
     [245] = 'invalid card alarm after N swipes (0 = every swipe)',
     [252] = 'open too long alarm (0xA5 = on)',
   }
@@ -219,7 +225,7 @@ function p.dissector(tvb, pinfo, tree)
           end
           item:add(f.lflagged, tvb(1044, 128), flagged)
         end
-        local interesting = { 2, 4, 6, 8, 10, 11, 12, 13, 30, 32, 35, 74, 75, 162, 163, 245, 252 }
+        local interesting = { 2, 4, 6, 8, 10, 11, 12, 13, 30, 32, 35, 40, 52, 74, 75, 162, 163, 168, 169, 170, 171, 205, 222, 245, 250, 252 }
         for i = 136, 159 do interesting[#interesting + 1] = i end
         for _, i in ipairs(interesting) do
           local v = tvt(i, 1):uint()
