@@ -43,8 +43,9 @@ export function matchesConditions(
   }
   if (c.personIds.length > 0 || c.cards.length > 0) {
     const e = ctx.event?.event
-    const ok =
-      !!e && ((e.personId !== null && c.personIds.includes(e.personId)) || (e.card > 0 && c.cards.includes(e.card)))
+    // plate readings carry the person in their data
+    const personId = e?.personId ?? (typeof ctx.event?.data.personId === 'number' ? ctx.event.data.personId : null)
+    const ok = (personId !== null && c.personIds.includes(personId)) || (!!e && e.card > 0 && c.cards.includes(e.card))
     if (!ok) return false
   }
   const date = parseLocal(ctx.timestamp)
@@ -66,7 +67,9 @@ export function ruleText(rule: Pick<RuleDto, 'message' | 'trigger'>, ctx: RuleCo
     const m = eventMessage(ctx.event, lang)
     return [m.title, ...m.lines.map((l) => (typeof l === 'string' ? l : l.heading))].join('\n')
   }
-  const guest = typeof ctx.event?.data.guestName === 'string' ? ctx.event.data.guestName : null
+  const data = ctx.event?.data
+  const guest =
+    typeof data?.guestName === 'string' ? data.guestName : typeof data?.ownerName === 'string' ? data.ownerName : null
   const values: Record<string, string> = {
     person: e?.personName ?? (e?.card ? t.t('notify.unknownCard', { card: e.card }) : (guest ?? '—')),
     card: e?.card ? String(e.card) : '—',
@@ -76,6 +79,7 @@ export function ruleText(rule: Pick<RuleDto, 'message' | 'trigger'>, ctx: RuleCo
     date: ctx.timestamp.slice(0, 10),
     reason: e ? t.reason(e.reason) : '—',
     duration: duration || '—',
+    plate: typeof data?.plate === 'string' ? data.plate : '—',
   }
   return rule.message.replace(/\{(\w+)\}/g, (all, key: string) => values[key] ?? all)
 }
@@ -194,6 +198,7 @@ export class RuleEngine {
       title: rule.name,
       lines: text.split('\n'),
       door: ctx.door ? { id: ctx.door.id, name: ctx.door.name } : null,
+      photo: ctx.event?.photo ?? null,
     }
     for (const id of rule.actions.channelIds) {
       if (!this.deps.notifications().sendTo(id, message)) errors.push(t.t('notify.rule.channelMissing', { id }))

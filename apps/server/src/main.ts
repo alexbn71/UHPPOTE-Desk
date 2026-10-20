@@ -69,6 +69,7 @@ async function main(): Promise<void> {
   ctx.ruleEngine.start()
   ctx.push.start()
   ctx.backup.start()
+  ctx.plates.start()
   const collectTimer = setInterval(() => {
     for (const c of ctx.controllers.list().filter((x) => x.enabled && ctx.hub.state(x.id).online)) {
       ctx.eventService
@@ -86,6 +87,7 @@ async function main(): Promise<void> {
     clearInterval(collectTimer)
     ctx.health.stop()
     ctx.backup.stop()
+    ctx.plates.stop()
     await ctx.eventService.stopListener()
     await ctx.mqtt?.stop()
     ctx.webhookService.stop()

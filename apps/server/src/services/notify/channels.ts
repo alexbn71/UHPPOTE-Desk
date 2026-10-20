@@ -14,17 +14,18 @@ export interface SendOptions {
   telegramButton?: { text: string; data: string } | undefined
 }
 
-/** Telegram limit for a message text. */
+/** Telegram limits for a message text and for a photo caption. */
 const TELEGRAM_MAX = 4096
+const TELEGRAM_CAPTION_MAX = 1024
 
 const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-export function telegramText(m: NotifyMessage): string {
+export function telegramText(m: NotifyMessage, max = TELEGRAM_MAX): string {
   const body = m.lines
     .map((l, i) => (typeof l === 'string' ? escapeHtml(l) : `${i > 0 ? '\n' : ''}<b>${escapeHtml(l.heading)}</b>`))
     .join('\n')
   const text = `${m.emoji} <b>${escapeHtml(m.title)}</b>\n${body}`
-  return text.length <= TELEGRAM_MAX ? text : `${text.slice(0, TELEGRAM_MAX - 2)}…`
+  return text.length <= max ? text : `${text.slice(0, max - 2)}…`
 }
 
 /** Calls a Telegram Bot API method; throws with Telegram's description on failure. */
@@ -48,7 +49,29 @@ export async function telegramCall<T = unknown>(
   return json.result as T
 }
 
+/** Sends a photo with the message as caption (multipart upload). */
+async function sendTelegramPhoto(c: TelegramConfig, m: NotifyMessage, photo: Buffer, o: SendOptions): Promise<void> {
+  const form = new FormData()
+  form.append('chat_id', c.chatId)
+  form.append('caption', telegramText(m, TELEGRAM_CAPTION_MAX))
+  form.append('parse_mode', 'HTML')
+  form.append('photo', new Blob([new Uint8Array(photo)], { type: 'image/jpeg' }), 'photo.jpg')
+  if (o.telegramButton)
+    form.append(
+      'reply_markup',
+      JSON.stringify({ inline_keyboard: [[{ text: o.telegramButton.text, callback_data: o.telegramButton.data }]] }),
+    )
+  const res = await fetch(`${o.telegramApi}/bot${c.botToken}/sendPhoto`, {
+    method: 'POST',
+    body: form,
+    signal: AbortSignal.timeout(o.timeoutMs),
+  })
+  const json = (await res.json().catch(() => null)) as { ok?: boolean; description?: string } | null
+  if (!res.ok || !json?.ok) throw new Error(`Telegram sendPhoto: ${json?.description ?? `HTTP ${res.status}`}`)
+}
+
 async function sendTelegram(c: TelegramConfig, m: NotifyMessage, o: SendOptions): Promise<void> {
+  if (m.photo) return sendTelegramPhoto(c, m, m.photo, o)
   await telegramCall(
     o.telegramApi,
     c.botToken,
@@ -81,7 +104,13 @@ async function sendEmail(c: EmailConfig, m: NotifyMessage, o: SendOptions): Prom
     socketTimeout: o.timeoutMs,
   })
   try {
-    await transport.sendMail({ from: c.from, to: c.to, subject: `${m.emoji} ${m.title}`, text: plainText(m) })
+    await transport.sendMail({
+      from: c.from,
+      to: c.to,
+      subject: `${m.emoji} ${m.title}`,
+      text: plainText(m),
+      ...(m.photo ? { attachments: [{ filename: 'photo.jpg', content: m.photo, contentType: 'image/jpeg' }] } : {}),
+    })
   } finally {
     transport.close()
   }

@@ -65,6 +65,7 @@ In the examples the server has IP `192.168.1.10` and the controllers are on the 
 | `INITIAL_BACKFILL` | `5000` | Number of events already stored on a controller to import the first time it is connected. |
 | `BACKUP_HOUR` | `2` | Hour of the daily database backup (`-1` = disabled). |
 | `BACKUP_KEEP` | `14` | Number of backups to keep. |
+| `PLATE_PHOTO_DAYS` | `30` | Days the photos of [plate readings](PLATES.md) are kept (`0` = no photos). |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`. |
 
 ### Home Assistant (MQTT)

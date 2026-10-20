@@ -16,6 +16,7 @@ import { registerAuthRoutes } from './routes/auth.js'
 import { registerControllerRoutes } from './routes/controllers.js'
 import { registerEventRoutes } from './routes/events.js'
 import { registerGuestRoutes } from './routes/guests.js'
+import { registerPlateRoutes } from './routes/plates.js'
 import { registerPresenceRoutes } from './routes/presence.js'
 import { registerPeopleRoutes } from './routes/people.js'
 import { registerScheduleRoutes } from './routes/schedule.js'
@@ -116,6 +117,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerRuleRoutes(api, ctx)
       registerMobileRoutes(api, ctx)
       registerGuestRoutes(api, ctx)
+      registerPlateRoutes(api, ctx)
     },
     { prefix: '/api' },
   )

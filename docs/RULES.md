@@ -46,6 +46,7 @@ Empty = an automatic text (for example "Access denied — Gate / unknown card 10
 | `{time}` / `{date}` | Time and date of the event |
 | `{reason}` | Reason of the event (e.g. "No access rights") |
 | `{duration}` | How long the door has been open (door-open trigger) |
+| `{plate}` | The plate, for [plate readings](PLATES.md) (`{person}` is then the owner) |
 
 The *Language of the texts* sets the language of the automatic text and of `{reason}`.
 

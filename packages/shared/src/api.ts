@@ -9,11 +9,13 @@ import {
   type GuestOutcome,
   type GuestStatus,
   type OpenConfirmation,
+  type PlateOutcome,
   type RuleSeverity,
   type TokenAccess,
   type WebhookEvent,
 } from './labels.js'
 import { LANGUAGES, type ErrorInfo, type Language } from './i18n/index.js'
+import { MIN_PLATE_LENGTH, normalizePlate } from './plates.js'
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -330,6 +332,8 @@ export interface PresenceDto {
     name: string
     department: string | null
     card: number
+    /** Plate of the vehicle, when the last entry or exit was read by a plate reader (card 0). */
+    plate: string | null
     door: string
     timestamp: string
   }[]
@@ -703,6 +707,11 @@ export const guestPassInputSchema = z
     bindDevice: z.boolean().default(true),
     /** New PIN; null = no PIN; omitted when editing = keep the current one. */
     pin: guestPinSchema.nullable().optional(),
+    /** Plates of the guest's vehicle: plate readers open the doors of the pass for them. */
+    plates: z
+      .array(z.lazy(() => plateTextSchema))
+      .max(5)
+      .default([]),
   })
   .refine((g) => g.validFrom < g.validTo, { message: 'The start must precede the end', path: ['validTo'] })
   .refine((g) => (g.timeFrom === null) === (g.timeTo === null), {
@@ -735,6 +744,7 @@ export interface GuestPassDto {
   opens: number
   lastOpenAt: string | null
   status: GuestStatus
+  plates: string[]
 }
 
 /** A new link: returned only when the pass is created or its link regenerated. */
@@ -775,6 +785,93 @@ export interface GuestViewDto {
 
 export const guestOpenSchema = z.object({ pin: guestPinSchema.optional() })
 export const guestTokenParam = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/) })
+
+// ---------------------------------------------------------------------------
+// Licence plates (plate readers such as AgentDVR open doors for known vehicles)
+// ---------------------------------------------------------------------------
+
+/** A plate as typed: normalised to upper-case letters and digits. */
+export const plateTextSchema = z
+  .string()
+  .transform(normalizePlate)
+  .pipe(z.string().min(MIN_PLATE_LENGTH, `At least ${MIN_PLATE_LENGTH} letters or digits`).max(12))
+
+export const plateInputSchema = z.object({
+  plate: plateTextSchema,
+  personId: z.number().int().positive(),
+  note: z.string().trim().max(200).default(''),
+})
+
+export interface PlateDto {
+  id: number
+  plate: string
+  /** Owner: a person, or a guest pass. */
+  personId: number | null
+  personName: string | null
+  guestPassId: number | null
+  guestName: string | null
+  note: string
+  createdAt: string
+}
+
+export const plateReaderInputSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  /** Door opened for authorised plates. */
+  doorId: z.number().int().positive(),
+  /** Still image of the camera taken at every reading (e.g. AgentDVR grab.jpg); empty = no photo. */
+  snapshotUrl: z.union([z.literal(''), z.url({ protocol: /^https?$/ })]).default(''),
+  /** After an opening, readings of this camera are ignored for these seconds (the car is still there). */
+  debounceSeconds: z.number().int().min(0).max(600).default(30),
+  /** Off = readings are only recorded, the door is never opened (to test a new camera). */
+  openDoor: z.boolean().default(true),
+  enabled: z.boolean().default(true),
+})
+export type PlateReaderInput = z.infer<typeof plateReaderInputSchema>
+
+export interface PlateReaderDto extends PlateReaderInput {
+  id: number
+  /** First characters of the key, to recognise it (the key is shown only when created). */
+  keyPrefix: string
+  lastReadAt: string | null
+  createdAt: string
+}
+
+/** A new reader key: returned only when the reader is created or its key regenerated. */
+export interface PlateReaderKeyDto {
+  reader: PlateReaderDto
+  key: string
+}
+
+export interface PlateReadDto {
+  id: number
+  at: string
+  readerId: number | null
+  readerName: string
+  doorId: number | null
+  doorName: string | null
+  /** What the reader sent, unchanged. */
+  raw: string
+  /** The plate the outcome refers to (the matching reading, or the first one). */
+  plate: string
+  plateId: number | null
+  personId: number | null
+  guestPassId: number | null
+  ownerName: string | null
+  outcome: PlateOutcome
+  /** The door was opened (granted readings with the reader in "record only" mode are not). */
+  opened: boolean
+  hasPhoto: boolean
+}
+
+export const plateReadQuerySchema = z.object({
+  from: z.string().optional(),
+  to: z.string().optional(),
+  outcome: z.enum(['granted', 'denied']).optional(),
+  search: z.string().trim().max(50).optional(),
+  readerId: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+})
 
 // ---------------------------------------------------------------------------
 // Notifications (Telegram, email, ntfy, Gotify)

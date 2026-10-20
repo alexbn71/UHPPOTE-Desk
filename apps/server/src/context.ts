@@ -14,6 +14,7 @@ import { ControllerGateway, LiveHub } from './gateway/gateway.js'
 import { BackupService } from './services/backup.js'
 import { EventService } from './services/events.js'
 import { GuestService } from './services/guests.js'
+import { PlateService } from './services/plates.js'
 import { HealthService } from './services/health.js'
 import { MqttService } from './services/mqtt.js'
 import { SyncService } from './services/sync.js'
@@ -37,6 +38,7 @@ export interface AppContext {
   mobile: MobileService
   push: PushService
   guests: GuestService
+  plates: PlateService
   zones: TreeRepo
   departments: TreeRepo
   controllers: ControllerRepo
@@ -97,6 +99,12 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
     afterBackOnline: (id) => sync.restoreIfEmpty(id),
     logger,
   })
+  const guests = new GuestService(db, controllers, integrationEvents)
+  const plates = new PlateService(
+    db,
+    { controllers, schedule, gateway, guests, bus: integrationEvents },
+    { photoDir: path.join(config.dataDir, 'plates'), photoDays: config.platePhotoDays ?? 30, logger },
+  )
   const ctx: Omit<AppContext, 'ruleEngine'> & { ruleEngine?: RuleEngine } = {
     config,
     db,
@@ -112,7 +120,8 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
       logger,
     ),
     tokens: new ApiTokenService(db),
-    guests: new GuestService(db, controllers, integrationEvents),
+    guests,
+    plates,
     zones,
     departments: new TreeRepo(db, 'departments'),
     controllers,

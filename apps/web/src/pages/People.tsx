@@ -30,6 +30,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PersonDto } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
+import { PlatesEditor } from '../components/PlatesEditor'
 import i18n from '../i18n'
 import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -407,6 +408,9 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
           <Tabs.Tab value="permissions" disabled={!person}>
             {t('people.tabPermissions')}
           </Tabs.Tab>
+          <Tabs.Tab value="plates" disabled={!person}>
+            {t('people.tabPlates')}
+          </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="details">
           <Stack>
@@ -529,6 +533,7 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
         <Tabs.Panel value="permissions">
           {person && <PermissionsEditor personId={person.id} readOnly={readOnly} />}
         </Tabs.Panel>
+        <Tabs.Panel value="plates">{person && <PlatesEditor personId={person.id} readOnly={readOnly} />}</Tabs.Panel>
       </Tabs>
     </Drawer>
   )

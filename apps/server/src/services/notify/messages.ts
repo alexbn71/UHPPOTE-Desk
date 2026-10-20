@@ -25,6 +25,8 @@ export interface NotifyMessage {
   tags: string[]
   /** Door that a Telegram "open" button may open. */
   door: { id: number; name: string } | null
+  /** Photo (JPEG) sent with the message where the channel allows it (Telegram, email). */
+  photo?: Buffer | null
 }
 
 const STYLE: Record<WebhookEvent, { emoji: string; priority: NotifyMessage['priority']; tag: string }> = {
@@ -40,6 +42,8 @@ const STYLE: Record<WebhookEvent, { emoji: string; priority: NotifyMessage['prio
   'anomaly.repeated_denied': { emoji: '⛔', priority: 4, tag: 'no_entry_sign' },
   'guest.opened': { emoji: '🎫', priority: 3, tag: 'ticket' },
   'guest.refused': { emoji: '⚠️', priority: 4, tag: 'warning' },
+  'plate.granted': { emoji: '🚗', priority: 2, tag: 'car' },
+  'plate.denied': { emoji: '🚫', priority: 4, tag: 'no_entry' },
 }
 
 /** Explanation of an unusual access: the usual window, a non-working day, or a night access. */
@@ -81,6 +85,11 @@ export function eventMessage(ev: IntegrationEvent, lang: Language): NotifyMessag
     lines.push(t.t('notify.guest', { name: String(ev.data.guestName) }))
     const outcome = `${when(String(ev.data.timestamp))} · ${t.t(`codes.guestOutcome.${String(ev.data.outcome)}`)}`
     lines.push(outcome)
+  } else if (ev.type === 'plate.granted' || ev.type === 'plate.denied') {
+    const owner = ev.data.ownerName ? String(ev.data.ownerName) : t.t('notify.plateUnknown')
+    lines.push(`${owner} · ${String(ev.data.plate)}`)
+    lines.push(`${when(String(ev.data.timestamp))} · ${t.t(`codes.plateOutcome.${String(ev.data.outcome)}`)}`)
+    if (ev.data.outcome === 'granted' && !ev.data.opened) lines.push(t.t('notify.plateNotOpened'))
   } else if (ev.type === 'controller.offline') {
     if (ev.state?.lastSeenAt) lines.push(t.t('notify.lastSeen', { time: when(ev.state.lastSeenAt) }))
     if (ev.state?.lastError) lines.push(translateError(lang, ev.state.lastErrorInfo ?? ev.state.lastError))
@@ -94,6 +103,7 @@ export function eventMessage(ev: IntegrationEvent, lang: Language): NotifyMessag
     priority: style.priority,
     tags: [style.tag],
     door: ev.door ? { id: ev.door.id, name: ev.door.name } : null,
+    photo: ev.photo ?? null,
   }
 }
 

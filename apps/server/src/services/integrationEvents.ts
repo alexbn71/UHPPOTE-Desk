@@ -27,6 +27,8 @@ export interface IntegrationEvent {
   event: EventDto | null
   /** Live state, for door sensor changes and controller online/offline. */
   state: ControllerLiveState | null
+  /** Photo (JPEG) of the event, for plate readings: attached to Telegram and email notifications. */
+  photo?: Buffer | null
 }
 
 /**
@@ -169,6 +171,18 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
     if (c?.enabled) this.publish(type, c, doorNumber, data, null, null)
   }
 
+  /** Plate readings: published by the plate service, with the photo from the camera. */
+  publishPlate(
+    type: 'plate.granted' | 'plate.denied',
+    controllerId: number,
+    doorNumber: number,
+    data: Record<string, unknown>,
+    photo: Buffer | null,
+  ): void {
+    const c = this.controllers.get(controllerId)
+    if (c?.enabled) this.publish(type, c, doorNumber, data, null, null, photo)
+  }
+
   private publish(
     type: WebhookEvent,
     controller: ControllerRecord,
@@ -176,9 +190,10 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
     data: Record<string, unknown>,
     event: EventDto | null,
     state: ControllerLiveState | null,
+    photo: Buffer | null = null,
   ): void {
     const door = doorNumber === null ? null : (this.controllers.doorByNumber(controller.id, doorNumber) ?? null)
-    this.emit('event', { type, controller, door, data, event, state })
+    this.emit('event', { type, controller, door, data, event, state, photo })
   }
 }
 

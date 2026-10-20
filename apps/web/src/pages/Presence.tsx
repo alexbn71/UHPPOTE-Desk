@@ -106,7 +106,7 @@ export function PresencePage() {
               <Table.Tr key={r.personId}>
                 <Table.Td fw={500}>{r.name}</Table.Td>
                 <Table.Td>{r.department ?? '—'}</Table.Td>
-                <Table.Td>{cardLabel(r.card)}</Table.Td>
+                <Table.Td className={r.plate ? 'mono' : undefined}>{r.plate ?? cardLabel(r.card)}</Table.Td>
                 <Table.Td>
                   <Badge variant="light">{r.door}</Badge>
                 </Table.Td>

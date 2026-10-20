@@ -421,4 +421,58 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       CREATE INDEX guest_opens_pass ON guest_opens(pass_id, id);
     `,
   },
+  {
+    id: 10,
+    name: 'licence plates: plates of people and guests, plate readers, readings',
+    sql: /* sql */ `
+      -- a plate may be shared (a company car), so match_key is not unique
+      CREATE TABLE plates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plate TEXT NOT NULL,
+        match_key TEXT NOT NULL,
+        person_id INTEGER REFERENCES people(id) ON DELETE CASCADE,
+        guest_pass_id INTEGER REFERENCES guest_passes(id) ON DELETE CASCADE,
+        note TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        CHECK ((person_id IS NULL) <> (guest_pass_id IS NULL))
+      );
+      CREATE INDEX plates_match ON plates(match_key);
+      CREATE INDEX plates_person ON plates(person_id);
+      CREATE INDEX plates_guest ON plates(guest_pass_id);
+
+      CREATE TABLE plate_readers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        door_id INTEGER NOT NULL REFERENCES doors(id) ON DELETE CASCADE,
+        key_hash TEXT NOT NULL UNIQUE,
+        key_prefix TEXT NOT NULL,
+        snapshot_url TEXT NOT NULL DEFAULT '',
+        debounce_seconds INTEGER NOT NULL DEFAULT 30,
+        open_door INTEGER NOT NULL DEFAULT 1,
+        enabled INTEGER NOT NULL DEFAULT 1,
+        last_read_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      );
+
+      CREATE TABLE plate_reads (
+        id INTEGER PRIMARY KEY,
+        at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        reader_id INTEGER REFERENCES plate_readers(id) ON DELETE SET NULL,
+        reader_name TEXT NOT NULL,
+        door_id INTEGER REFERENCES doors(id) ON DELETE SET NULL,
+        door_name TEXT,
+        raw TEXT NOT NULL,
+        plate TEXT NOT NULL,
+        plate_id INTEGER REFERENCES plates(id) ON DELETE SET NULL,
+        person_id INTEGER REFERENCES people(id) ON DELETE SET NULL,
+        guest_pass_id INTEGER REFERENCES guest_passes(id) ON DELETE SET NULL,
+        owner_name TEXT,
+        outcome TEXT NOT NULL,
+        opened INTEGER NOT NULL DEFAULT 0,
+        photo TEXT
+      );
+      CREATE INDEX plate_reads_at ON plate_reads(at);
+      CREATE INDEX plate_reads_person ON plate_reads(person_id, at);
+    `,
+  },
 ]

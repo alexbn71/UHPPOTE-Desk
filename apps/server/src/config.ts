@@ -44,6 +44,8 @@ export interface AppConfig {
   mqtt: MqttConfig | null
   /** Public address of the app behind a reverse proxy (e.g. https://doors.example.com): fingerprint/Face ID and push use it. */
   publicUrl: string | null
+  /** Days the photos of plate readings are kept (0 = none are taken); 30 when not set. */
+  platePhotoDays?: number
 }
 
 export interface MqttConfig {
@@ -122,5 +124,6 @@ export function loadConfig(): AppConfig {
     backupKeep: int('BACKUP_KEEP', 14),
     mqtt: loadMqtt(),
     publicUrl: process.env.PUBLIC_URL ? process.env.PUBLIC_URL.replace(/\/+$/, '') : null,
+    platePhotoDays: int('PLATE_PHOTO_DAYS', 30),
   }
 }

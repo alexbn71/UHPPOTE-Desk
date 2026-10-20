@@ -6,6 +6,14 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 ## [Unreleased]
 
 ### Added
+- **Licence plates**: plate-reading cameras (tested with AgentDVR) open doors for known vehicles, replacing the
+  Node-RED glue. Plates belong to people (*Plates* tab: their permissions and time profiles apply, evaluated by the
+  server) or to guest passes (new *Vehicle plates* field). Cameras (*Operations → Licence plates → Cameras*,
+  administrators) have a door, a secret key used in the two AgentDVR addresses (list of known plates and "Call URL"),
+  a photo address (AgentDVR `grab.jpg`), a pause after an opening and a "record only" mode. Every reading is stored
+  with its photo (kept `PLATE_PHOTO_DAYS`, default 30) and published as `plate.granted` / `plate.denied`; Telegram
+  and email notifications include the photo; rules match the owner and have `{plate}`; persons inside counts vehicles
+  — see [docs/PLATES.md](docs/PLATES.md).
 - **Guests**: links that open some doors without a card or an app (*Registry → Guests*, operators and
   administrators). A pass has a validity period, optionally only some days and hours (e.g. every Tuesday
   09:00–12:00), a maximum number of openings, is bound to the first phone that opens a door with it and can require

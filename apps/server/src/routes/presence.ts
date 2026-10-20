@@ -17,6 +17,7 @@ interface Row {
   name: string
   department: string | null
   card: number
+  plate: string | null
   door: string
   timestamp: string
   inside: number
@@ -31,22 +32,31 @@ export function presence(ctx: AppContext, period: 'today' | number, now = new Da
   const since =
     period === 'today' ? `${localDate(now)} 00:00:00` : localDateTime(new Date(now.getTime() - period * 3_600_000))
   const rows = ctx.db.all<Row>(
-    `WITH last AS (
-       SELECT e.person_id, e.card, e.timestamp, e.direction, d.presence, d.name AS door_name,
-              ROW_NUMBER() OVER (PARTITION BY e.person_id ORDER BY e.timestamp DESC, e.id DESC) AS rn
+    `WITH accesses AS (
+       SELECT e.person_id, e.card, NULL AS plate, e.timestamp, e.direction, d.presence, d.name AS door_name, e.id
        FROM events e
        JOIN doors d ON d.controller_id = e.controller_id AND d.door = e.door
        WHERE e.person_id IS NOT NULL AND e.granted = 1 AND e.type = 1 AND e.timestamp >= ? AND d.presence != 'none'
+       UNION ALL
+       -- vehicles let in by a plate reader (the reader direction is the door's)
+       SELECT r.person_id, 0, r.plate, r.at, 1, d.presence, d.name, r.id
+       FROM plate_reads r
+       JOIN doors d ON d.id = r.door_id
+       WHERE r.person_id IS NOT NULL AND r.opened = 1 AND r.at >= ? AND d.presence != 'none'
+     ),
+     last AS (
+       SELECT a.*, ROW_NUMBER() OVER (PARTITION BY a.person_id ORDER BY a.timestamp DESC, a.id DESC) AS rn
+       FROM accesses a
      )
      SELECT p.id AS personId, TRIM(p.last_name || ' ' || p.first_name) AS name, dep.name AS department,
-            l.card, l.door_name AS door, l.timestamp,
+            l.card, l.plate, l.door_name AS door, l.timestamp,
             CASE WHEN l.presence = 'entry' AND l.direction != 2 THEN 1 ELSE 0 END AS inside
      FROM last l
      JOIN people p ON p.id = l.person_id AND p.active = 1
      LEFT JOIN departments dep ON dep.id = p.department_id
      WHERE l.rn = 1
      ORDER BY name`,
-    [since],
+    [since, since],
   )
   const doors = ctx.db.get<{ entry: number; exit: number }>(
     `SELECT COALESCE(SUM(presence = 'entry'), 0) AS entry, COALESCE(SUM(presence = 'exit'), 0) AS exit
@@ -73,7 +83,7 @@ export function registerPresenceRoutes(app: FastifyInstance, ctx: AppContext): v
     const h = (k: string) => tr.t(`csv.presence.${k}`)
     const csv = toCsv([
       ['person', 'department', 'card', 'door', 'since'].map(h),
-      ...p.inside.map((r) => [r.name, r.department ?? '', r.card, r.door, r.timestamp]),
+      ...p.inside.map((r) => [r.name, r.department ?? '', r.plate ?? r.card, r.door, r.timestamp]),
     ])
     ctx.audit.log(req.user, 'export-presence', null, { rows: p.inside.length })
     return reply

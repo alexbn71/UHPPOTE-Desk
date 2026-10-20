@@ -34,6 +34,8 @@ export const WEBHOOK_EVENTS = [
   'anomaly.repeated_denied',
   'guest.opened',
   'guest.refused',
+  'plate.granted',
+  'plate.denied',
 ] as const
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]
 
@@ -86,3 +88,24 @@ export const GUEST_OUTCOMES = [
   'revoked',
 ] as const
 export type GuestOutcome = (typeof GUEST_OUTCOMES)[number]
+
+/**
+ * Outcome of a plate reading (labels under `codes.plateOutcome`): granted, unknown plate, owner not active or
+ * outside its validity, no permission on the door, outside the time profile, the guest pass not usable now
+ * (its status), or a controller error while opening.
+ */
+export const PLATE_OUTCOMES = [
+  'granted',
+  'unknown',
+  'personInactive',
+  'noPermission',
+  'outsideProfile',
+  'notYet',
+  'outsideHours',
+  'expired',
+  'used',
+  'locked',
+  'revoked',
+  'error',
+] as const
+export type PlateOutcome = (typeof PLATE_OUTCOMES)[number]

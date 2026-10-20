@@ -25,6 +25,7 @@ The **Send test** button sends a `webhook.test` request right away (also to a di
 | `anomaly.unusual_time` | A granted access at an unusual time for the person (see [ANOMALIES.md](ANOMALIES.md)) |
 | `anomaly.repeated_denied` | Repeated denied attempts with the same card reached the threshold (see [ANOMALIES.md](ANOMALIES.md)) |
 | `guest.opened` / `guest.refused` | A door was opened with a guest link / a guest link was refused (see [GUESTS.md](GUESTS.md)) |
+| `plate.granted` / `plate.denied` | A plate reader let a vehicle in / refused it (see [PLATES.md](PLATES.md)) |
 
 Events from the controller older than 10 minutes (stored events downloaded when a controller comes back online) are saved in the history but are not sent.
 
@@ -65,7 +66,7 @@ X-UHPPOTE-Signature: sha256=8f2b…
 - `id` (also in `X-UHPPOTE-Delivery`) is the same at every retry of the same delivery: use it to ignore duplicates.
 - `door` is `null` for `controller.*` events and for events without a door.
 - A webhook can also be called by an [automation rule](RULES.md): the request has type `rule.triggered`, whatever events the webhook subscribes to.
-- `data` depends on the type: the fields above for `access.*`, `door.event` and `alarm`; `{ open, unlocked }` for `door.opened`/`door.closed`; `{ lastSeenAt, error }` for `controller.*`; `{ passId, guestName, outcome, createdBy, timestamp }` for `guest.*`; `{ message }` for `webhook.test`.
+- `data` depends on the type: the fields above for `access.*`, `door.event` and `alarm`; `{ open, unlocked }` for `door.opened`/`door.closed`; `{ lastSeenAt, error }` for `controller.*`; `{ passId, guestName, outcome, createdBy, timestamp }` for `guest.*`; `{ readId, plate, ownerName, personId, guestPassId, outcome, opened, reader, timestamp, photoPath }` for `plate.*`; `{ message }` for `webhook.test`.
 - `data.timestamp` is the controller's local time; `occurredAt` is when UHPPOTE Desk sent the event (UTC).
 
 ## Responses and retries

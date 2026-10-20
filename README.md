@@ -44,6 +44,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Guests**: links that open some doors for a while, without a card or an app, sent via WhatsApp, SMS or email — valid in a period, optionally only on some days and hours, with a maximum number of openings, bound to the first phone that uses them and optionally protected by a PIN; openings and refused attempts reach notifications, webhooks and rules — see [docs/GUESTS.md](docs/GUESTS.md).
 
+**Licence plates**: cameras with plate recognition (e.g. AgentDVR) open the gate for the vehicles of people (with their permissions and time profiles) and guests, with a photo of every reading, notifications with the photo on Telegram and email, and a "record only" mode to test a camera — see [docs/PLATES.md](docs/PLATES.md).
+
 **Persons inside**: who is inside now, from the last swipe on entry and exit doors, with CSV export. **Reader and door options** from the manufacturer's extended functions (four swipes = normally open, silent reader on invalid cards, minimum gap between swipes, door as switch, multi-card access), verified by reading them back from the controller.
 
 **Alarm expansion board** (UT0311-01A, experimental): four alarm relays and the fire input, driven by duress code, door open too long, forced open, invalid card and fire — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).

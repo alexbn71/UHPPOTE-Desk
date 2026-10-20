@@ -18,6 +18,7 @@ Passes are managed in *Registry → Guests* by operators and administrators. Ope
 | **Maximum openings** | After that many openings the link stops working; empty = unlimited |
 | **Only on the first phone that uses it** | On by default: see [Bound to one phone](#bound-to-one-phone) |
 | **Require a PIN** | 4–8 digits the guest must type; *Generate* proposes a random one |
+| **Vehicle plates** | Up to 5 plates: [plate readers](PLATES.md) open the doors of the pass for these vehicles, while the pass is active |
 
 After saving, UHPPOTE Desk shows the message to send, with the buttons **Share** (the phone's share menu, when the browser has one), **WhatsApp**, **Copy message** and **Copy link**. Give the PIN separately, by voice or on another channel, not in the same message as the link.
 

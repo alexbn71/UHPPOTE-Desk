@@ -13,6 +13,7 @@ import {
   Stack,
   Switch,
   Table,
+  TagsInput,
   Text,
   TextInput,
   Textarea,
@@ -35,6 +36,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { GuestLinkDto, GuestOpenDto, GuestPassDto, GuestStatus, MobileDoorDto } from '@uhppote-desk/shared'
+import { MIN_PLATE_LENGTH, normalizePlate } from '@uhppote-desk/shared'
 import { IconButton, PageHeader, WeekdaysInput } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useCodes } from '../lib/codes'
@@ -57,6 +59,7 @@ interface Form {
   pin: string
   /** Editing a pass that already has a PIN: an empty field keeps it. */
   hadPin: boolean
+  plates: string[]
 }
 
 /** The link just created, to send to the guest. */
@@ -101,6 +104,7 @@ const emptyForm = (): Form => ({
   pinOn: false,
   pin: '',
   hadPin: false,
+  plates: [],
 })
 
 const formOf = (p: GuestPassDto): Form => ({
@@ -119,6 +123,7 @@ const formOf = (p: GuestPassDto): Form => ({
   pinOn: p.hasPin,
   pin: '',
   hadPin: p.hasPin,
+  plates: p.plates,
 })
 
 /** Guest passes: links that open some doors for a while, without card or app. */
@@ -162,6 +167,7 @@ export function GuestsPage() {
         timeTo: form.repeat && form.timeTo ? form.timeTo : null,
         maxOpens: form.maxOpens === '' ? null : form.maxOpens,
         bindDevice: form.bindDevice,
+        plates: form.plates,
         // PIN: null = none; omitted = keep the current one
         ...(!form.pinOn ? { pin: null } : form.pin ? { pin: form.pin } : {}),
       }
@@ -275,7 +281,14 @@ export function GuestsPage() {
                       </Text>
                     )}
                   </Table.Td>
-                  <Table.Td>{p.doorIds.map(doorName).join(', ')}</Table.Td>
+                  <Table.Td>
+                    {p.doorIds.map(doorName).join(', ')}
+                    {p.plates.length > 0 && (
+                      <Text size="xs" c="dimmed" className="mono">
+                        {p.plates.join(' · ')}
+                      </Text>
+                    )}
+                  </Table.Td>
                   <Table.Td>
                     {validity(p).map((line) => (
                       <Text key={line} size="sm">
@@ -452,6 +465,21 @@ export function GuestsPage() {
                 </Group>
               </SimpleGrid>
             )}
+            <TagsInput
+              label={t('guests.plates')}
+              description={t('guests.platesHint')}
+              placeholder={t('plates.platePlaceholder')}
+              value={form.plates}
+              onChange={(v) =>
+                setForm({
+                  ...form,
+                  plates: [...new Set(v.map(normalizePlate).filter((x) => x.length >= MIN_PLATE_LENGTH))],
+                })
+              }
+              maxTags={5}
+              splitChars={[',', ';']}
+              styles={{ pill: { fontFamily: 'var(--mantine-font-family-monospace)' } }}
+            />
             <NumberInput
               label={t('guests.maxOpens')}
               description={t('guests.maxOpensHint')}

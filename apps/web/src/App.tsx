@@ -21,6 +21,7 @@ import {
   IconBell,
   IconApi,
   IconCalendarTime,
+  IconCar,
   IconChevronDown,
   IconDeviceMobile,
   IconChecklist,
@@ -72,6 +73,7 @@ import { NotificationsPage } from './pages/Notifications'
 import { OperatorsPage } from './pages/Operators'
 import { PeoplePage } from './pages/People'
 import { PermissionsPage } from './pages/Permissions'
+import { PlatesPage } from './pages/Plates'
 import { PresencePage } from './pages/Presence'
 import { RulesPage } from './pages/Rules'
 import { StructurePage } from './pages/Structure'
@@ -86,6 +88,7 @@ type NavKey =
   | 'monitor'
   | 'events'
   | 'presence'
+  | 'plates'
   | 'attendance'
   | 'anomalies'
   | 'people'
@@ -122,6 +125,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
       { to: '/monitor', label: 'monitor', icon: <IconActivity size={18} />, role: 'viewer' },
       { to: '/events', label: 'events', icon: <IconHistory size={18} />, role: 'viewer' },
       { to: '/presence', label: 'presence', icon: <IconUserCheck size={18} />, role: 'viewer' },
+      { to: '/plates', label: 'plates', icon: <IconCar size={18} />, role: 'viewer' },
       { to: '/attendance', label: 'attendance', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
       { to: '/anomalies', label: 'anomalies', icon: <IconAlertTriangle size={18} />, role: 'viewer' },
     ],
@@ -348,6 +352,7 @@ export function App() {
                     <Route path="/monitor" element={<MonitorPage />} />
                     <Route path="/events" element={<EventsPage />} />
                     <Route path="/presence" element={<PresencePage />} />
+                    <Route path="/plates" element={<PlatesPage />} />
                     <Route path="/attendance" element={<AttendancePage />} />
                     <Route path="/anomalies" element={<AnomaliesPage />} />
                     <Route path="/people" element={<PeoplePage />} />

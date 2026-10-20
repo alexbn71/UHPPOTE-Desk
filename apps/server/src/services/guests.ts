@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
+import { plateMatchKey } from '@uhppote-desk/shared'
 import type {
   GuestOpenDto,
   GuestOutcome,
@@ -44,12 +45,15 @@ interface PassRow {
   created_at: string
   opens: number
   last_open_at: string | null
+  plates: string
 }
 
 const SELECT = `
   SELECT g.*,
          (SELECT COUNT(*) FROM guest_opens o WHERE o.pass_id = g.id AND o.outcome = 'ok') AS opens,
-         (SELECT MAX(o.at) FROM guest_opens o WHERE o.pass_id = g.id AND o.outcome = 'ok') AS last_open_at
+         (SELECT MAX(o.at) FROM guest_opens o WHERE o.pass_id = g.id AND o.outcome = 'ok') AS last_open_at,
+         (SELECT json_group_array(p.plate) FROM (SELECT plate FROM plates WHERE guest_pass_id = g.id ORDER BY id) p)
+           AS plates
   FROM guest_passes g`
 
 const hash = (s: string) => createHash('sha256').update(s).digest('hex')
@@ -97,6 +101,7 @@ function map(r: PassRow): GuestPassDto {
     createdAt: r.created_at,
     opens: r.opens,
     lastOpenAt: r.last_open_at,
+    plates: JSON.parse(r.plates) as string[],
   }
   return { ...dto, status: guestStatus(dto) }
 }
@@ -131,32 +136,49 @@ export class GuestService {
     return r && map(r)
   }
 
+  /** Replaces the plates of the guest's vehicles. */
+  private setPlates(id: number, plates: string[]): void {
+    this.db.run('DELETE FROM plates WHERE guest_pass_id = ?', [id])
+    for (const plate of plates)
+      this.db.run('INSERT INTO plates (plate, match_key, guest_pass_id) VALUES (?, ?, ?)', [
+        plate,
+        plateMatchKey(plate),
+        id,
+      ])
+  }
+
   async create(input: GuestPassInput, createdBy: string): Promise<{ pass: GuestPassDto; token: string }> {
     const token = newGuestToken()
-    const id = this.db.run(
-      `INSERT INTO guest_passes (name, note, token_hash, door_ids, valid_from, valid_to, weekdays, time_from, time_to,
+    const pinHash = input.pin ? await hashPassword(input.pin) : null
+    const id = this.db.tx(() => {
+      const passId = this.db.run(
+        `INSERT INTO guest_passes (name, note, token_hash, door_ids, valid_from, valid_to, weekdays, time_from, time_to,
          max_opens, pin_hash, bind_device, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        input.name,
-        input.note,
-        hash(token),
-        JSON.stringify(input.doorIds),
-        input.validFrom,
-        input.validTo,
-        weekdaysToString(input.weekdays),
-        input.timeFrom,
-        input.timeTo,
-        input.maxOpens,
-        input.pin ? await hashPassword(input.pin) : null,
-        fromBool(input.bindDevice),
-        createdBy,
-      ],
-    ).lastInsertRowid
+        [
+          input.name,
+          input.note,
+          hash(token),
+          JSON.stringify(input.doorIds),
+          input.validFrom,
+          input.validTo,
+          weekdaysToString(input.weekdays),
+          input.timeFrom,
+          input.timeTo,
+          input.maxOpens,
+          pinHash,
+          fromBool(input.bindDevice),
+          createdBy,
+        ],
+      ).lastInsertRowid
+      this.setPlates(passId, input.plates)
+      return passId
+    })
     return { pass: this.get(id)!, token }
   }
 
   /** Updates the settings; the link stays the same. A changed PIN also unlocks the pass. */
   async update(id: number, input: GuestPassInput): Promise<void> {
+    this.setPlates(id, input.plates)
     this.db.run(
       `UPDATE guest_passes SET name = ?, note = ?, door_ids = ?, valid_from = ?, valid_to = ?, weekdays = ?,
          time_from = ?, time_to = ?, max_opens = ?, bind_device = ? WHERE id = ?`,
@@ -331,8 +353,12 @@ export class GuestService {
     return { pass, door }
   }
 
-  /** Records an attempt; refused ones and successful openings also reach the integrations. */
-  record(pass: GuestPassDto, door: GuestGrant['door'], outcome: GuestOutcome, ip: string): void {
+  /**
+   * Records an attempt; refused ones and successful openings also reach the integrations, unless `publish` is
+   * false (openings by a plate reader, which publishes its own event). `ip` is the address of the guest's phone,
+   * or `plate:<plate>` for a plate reader.
+   */
+  record(pass: GuestPassDto, door: GuestGrant['door'], outcome: GuestOutcome, ip: string, publish = true): void {
     this.db.run('INSERT INTO guest_opens (pass_id, door_id, door_name, outcome, ip) VALUES (?, ?, ?, ?, ?)', [
       pass.id,
       door.id,
@@ -340,7 +366,7 @@ export class GuestService {
       outcome,
       ip,
     ])
-    if (outcome === 'error') return
+    if (outcome === 'error' || !publish) return
     this.bus.publishGuest(outcome === 'ok' ? 'guest.opened' : 'guest.refused', door.controllerId, door.door, {
       passId: pass.id,
       guestName: pass.name,
