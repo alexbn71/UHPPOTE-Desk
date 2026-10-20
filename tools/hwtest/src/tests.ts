@@ -4,7 +4,13 @@ import net from 'node:net'
 import os from 'node:os'
 import { promisify } from 'node:util'
 import {
+  DEFAULT_DOOR_OPEN_TOO_LONG,
   EventOverwrittenError,
+  ExpansionEvent,
+  ExpansionOutputMode,
+  ExpansionSource,
+  hexdump,
+  INACTIVE_RELAY,
   isValidWiegand26,
   NotFoundError,
   Reason,
@@ -13,6 +19,8 @@ import {
   parseEndpoint,
   type Card,
   type ControllerStatus,
+  type ExpansionBoardConfig,
+  type ExpansionRelay,
   type Quad,
 } from '@uhppote-desk/protocol'
 import type { Context, TestCase, TestHelpers } from './framework.js'
@@ -761,7 +769,228 @@ export const L4: TestCase[] = [
   },
 ]
 
-/** Restores the state saved during the tests (listener, bookmark). */
+// ===========================================================================
+// L6 — UT0311-01A alarm expansion board (0xF2, reverse-engineered)
+// ===========================================================================
+
+/** All outputs off, vendor default open-too-long time: the state left by the L6 tests. */
+const EXPANSION_OFF: ExpansionBoardConfig = {
+  relays: [{ ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }],
+  doorOpenTooLong: DEFAULT_DOOR_OPEN_TOO_LONG,
+  duressCode: null,
+}
+
+/** Writes an expansion configuration with only `relay` active on output `n` (1-4). */
+async function expansionWith(ctx: Context, n: number, relay: Partial<ExpansionRelay>, extra: Partial<ExpansionBoardConfig> = {}): Promise<void> {
+  const relays = structuredClone(EXPANSION_OFF.relays)
+  relays[n - 1] = { active: true, source: ExpansionSource.Door1, mode: ExpansionOutputMode.Timed, events: 0, signals: 0, duration: 5, ...relay }
+  ctx.backup.expansionTouched = true
+  await ctx.client.setExpansionBoard(ctx.target, { ...EXPANSION_OFF, ...extra, relays })
+}
+
+/** Relay/input bytes of the status: the board outputs may (or may not) be reported there. */
+function statusBits(s: ControllerStatus | null): string {
+  if (!s) return 'n/a'
+  return `relays=0x${s.relays.toString(16).padStart(2, '0')} inputs=0x${s.inputs.toString(16).padStart(2, '0')} fire=${s.fireAlarm} special=0x${s.specialInfo.toString(16)}`
+}
+
+async function requireBoard(ctx: Context, t: TestHelpers): Promise<void> {
+  if (ctx.facts.expansionBoard === undefined) {
+    ctx.facts.expansionBoard = await ctx.driver.confirm('Is the UT0311-01A expansion board connected to the controller, with something on its relays (LED, buzzer, tester)?')
+  }
+  if (!ctx.facts.expansionBoard) t.skip('expansion board not connected')
+}
+
+async function waitReason(ctx: Context, since: number, reasons: number[], timeoutMs: number): Promise<ControllerStatus | null> {
+  return ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && s.event !== null && reasons.includes(s.event.reason), timeoutMs)
+}
+
+export const L6: TestCase[] = [
+  {
+    id: 'L6.1',
+    level: 6,
+    name: 'Probe 0xC2 get-alarm-status (experimental, read-only)',
+    async run(ctx: Context, t: TestHelpers) {
+      const packet = Buffer.alloc(64)
+      packet[0] = 0x17
+      packet[1] = 0xc2
+      packet.writeUInt32LE(ctx.opts.serial, 4)
+      const reply = await ctx.client.probe(ctx.target, packet)
+      if (!reply) t.warn('no reply: function 0xC2 not supported by this firmware (not needed by UHPPOTE Desk)')
+      t.log(`reply ${reply.length} bytes, function 0x${reply[1]!.toString(16)}`)
+      t.log(hexdump(reply).replaceAll('\n', '<br>'))
+      t.data({ reply: reply.toString('hex') })
+    },
+  },
+  {
+    id: 'L6.2',
+    level: 6,
+    name: '0xF2 address mapping (index + 16) via the door 1 open delay',
+    async run(ctx: Context, t: TestHelpers) {
+      const original = await ctx.client.getDoorControl(ctx.target, 1)
+      const delay = original.delay >= 250 ? original.delay - 1 : original.delay + 1
+      t.log(`door 1: mode ${original.mode}, delay ${original.delay} s → writing ${delay} s in parameters 2-3 (tenths of a second)`)
+      try {
+        const tenths = delay * 10
+        await ctx.client.writeParameters(ctx.target, [
+          { index: 2, value: tenths & 0xff },
+          { index: 3, value: tenths >> 8 },
+        ])
+        const after = await ctx.client.getDoorControl(ctx.target, 1)
+        t.data({ original, written: delay, readBack: after })
+        t.assert(after.mode === original.mode, `door 1 mode changed (${original.mode} → ${after.mode}): wrong address mapping!`)
+        if (after.delay !== delay) {
+          t.warn(`0xF2 accepted but get-door-control still reports ${after.delay} s: the controller may apply the table only after 0x80 or a restart (the vendor software sends 0x80 after these bytes)`)
+        }
+        t.log('mapping confirmed: parameter index + 16 = address')
+      } finally {
+        await ctx.client.setDoorControl(ctx.target, original)
+      }
+    },
+  },
+  {
+    id: 'L6.3',
+    level: 6,
+    name: 'Expansion configuration accepted, other settings untouched',
+    async run(ctx: Context, t: TestHelpers) {
+      const doors = []
+      for (let d = 1; d <= 4; d++) doors.push(await ctx.client.getDoorControl(ctx.target, d))
+      const listener = await ctx.client.getListener(ctx.target)
+      const antipassback = await ctx.client.getAntiPassback(ctx.target)
+      const device = await ctx.client.getController(ctx.target)
+      ctx.backup.expansionTouched = true
+      const started = Date.now()
+      await ctx.client.setExpansionBoard(ctx.target, EXPANSION_OFF)
+      t.log(`all outputs inactive written in ${Date.now() - started} ms`)
+      const doorsAfter = []
+      for (let d = 1; d <= 4; d++) doorsAfter.push(await ctx.client.getDoorControl(ctx.target, d))
+      t.assert(JSON.stringify(doorsAfter) === JSON.stringify(doors), `door configuration changed: ${JSON.stringify(doors)} → ${JSON.stringify(doorsAfter)}`)
+      t.assert(JSON.stringify(await ctx.client.getListener(ctx.target)) === JSON.stringify(listener), 'listener changed')
+      t.assert((await ctx.client.getAntiPassback(ctx.target)) === antipassback, 'anti-passback changed')
+      const deviceAfter = await ctx.client.getController(ctx.target)
+      t.assert(deviceAfter.address === device.address && deviceAfter.netmask === device.netmask && deviceAfter.gateway === device.gateway, 'network configuration changed')
+      t.log(`status after the write: ${statusBits(await ctx.client.getStatus(ctx.target))}`)
+    },
+  },
+  {
+    id: 'L6.4',
+    level: 6,
+    name: 'Output 1 on forced open of door 1',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await requireBoard(ctx, t)
+      if (!(await ctx.driver.confirm('Does door 1 have a door sensor connected (needed to detect a forced opening)?'))) t.skip('no door sensor on door 1')
+      await ensureSpecialEvents(ctx)
+      await attachListener(ctx, t)
+      await expansionWith(ctx, 1, { events: ExpansionEvent.ForcedOpen, duration: 5 })
+      const since = ctx.events.length
+      await ctx.driver.perform({ kind: 'force-door', door: 1 }, 'Open door 1 WITHOUT card or exit button (with the key, or a door left unlatched)')
+      const ev = await waitReason(ctx, since, [Reason.ForcedOpen], 20_000)
+      t.assert(ev, 'forced-open event (reason 38) not received')
+      t.log(`event: reason ${ev.event!.reason}, ${statusBits(ev)}`)
+      const on = await ctx.driver.confirm('Did OUTPUT 1 of the expansion board switch on for about 5 seconds?', { kind: 'observe-relay', door: 1 })
+      await ctx.driver.perform({ kind: 'door-sensor', door: 1, open: false }, 'Close door 1 again')
+      t.assert(on, 'output 1 did not switch on')
+    },
+  },
+  {
+    id: 'L6.5',
+    level: 6,
+    name: 'Output 2 on door 1 open too long (until reset)',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await requireBoard(ctx, t)
+      if (!(await ctx.driver.confirm('Does door 1 have a door sensor connected?'))) t.skip('no door sensor on door 1')
+      await ensureSpecialEvents(ctx)
+      await attachListener(ctx, t)
+      await expansionWith(ctx, 2, { events: ExpansionEvent.OpenTooLong, mode: ExpansionOutputMode.UntilReset }, { doorOpenTooLong: 5 })
+      const since = ctx.events.length
+      await ctx.driver.perform({ kind: 'hold-door-open', door: 1, seconds: 10 }, 'Open door 1 normally (card or exit button) and KEEP IT OPEN for at least 10 seconds')
+      const ev = await waitReason(ctx, since, [Reason.DoorOpenTooLong], 30_000)
+      t.assert(ev, 'open-too-long event (reason 37) not received within 30 s')
+      t.log(`event: ${statusBits(ev)}`)
+      const on = await ctx.driver.confirm('Is OUTPUT 2 of the expansion board on now?', { kind: 'observe-relay', door: 2 })
+      await ctx.driver.perform({ kind: 'door-sensor', door: 1, open: false }, 'Close door 1')
+      t.assert(on, 'output 2 did not switch on')
+      if (!(await ctx.driver.confirm('Did OUTPUT 2 switch off after closing the door?'))) t.warn('output 2 stays on after the reset (mode "until reset" behaves differently)')
+    },
+  },
+  {
+    id: 'L6.6',
+    level: 6,
+    name: 'Output 3 on invalid card at door 1',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await requireBoard(ctx, t)
+      await attachListener(ctx, t)
+      await expansionWith(ctx, 3, { events: ExpansionEvent.InvalidCard, duration: 3 })
+      const since = ctx.events.length
+      await ctx.driver.perform({ kind: 'swipe', card: null, door: 1 }, 'Swipe on door 1 a card that is NOT registered on the controller')
+      const ev = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && !s.event.granted, 20_000)
+      t.assert(ev, 'denied swipe not received')
+      t.log(`card ${ev.event!.card}, reason ${ev.event!.reason}, ${statusBits(ev)}`)
+      const on = await ctx.driver.confirm('Did OUTPUT 3 of the expansion board switch on for about 3 seconds?', { kind: 'observe-relay', door: 3 })
+      t.assert(on, 'output 3 did not switch on')
+    },
+  },
+  {
+    id: 'L6.7',
+    level: 6,
+    name: 'Fire input of the board: event, doors unlocked, output 4',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await requireBoard(ctx, t)
+      await attachListener(ctx, t)
+      await expansionWith(ctx, 4, { events: ExpansionEvent.Fire, duration: 5 })
+      const since = ctx.events.length
+      await ctx.driver.perform({ kind: 'fire-input', active: true }, 'ACTIVATE the fire input of the expansion board (close the fire contact)')
+      try {
+        const ev = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && (s.fireAlarm || s.event?.reason === Reason.Fire), 20_000)
+        const status = ev ?? (await ctx.client.getStatus(ctx.target))
+        t.log(`fire: ${statusBits(status)}`)
+        t.data({ status: { relays: status.relays, inputs: status.inputs, fireAlarm: status.fireAlarm, reason: status.event?.reason } })
+        t.assert(ev, 'fire alarm not reported by the controller (status bit or event 39)')
+        const on = await ctx.driver.confirm('Did OUTPUT 4 of the expansion board switch on, and did the door locks release?', { kind: 'observe-relay', door: 4 })
+        t.assert(on, 'output 4 / door release not observed')
+      } finally {
+        await ctx.driver.perform({ kind: 'fire-input', active: false }, 'DEACTIVATE the fire input of the expansion board (open the fire contact)')
+      }
+      await sleep(2000)
+      const after = await ctx.client.getStatus(ctx.target)
+      if (after.fireAlarm) t.warn('the fire flag is still set after releasing the input (manual reset needed?)')
+    },
+  },
+  {
+    id: 'L6.8',
+    level: 6,
+    name: 'Duress code on the door 1 keypad (output 1)',
+    physical: true,
+    destructive: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await requireBoard(ctx, t)
+      if (!(await ctx.driver.confirm('Does the door 1 reader have a PIN keypad?'))) t.skip('reader without keypad')
+      await attachListener(ctx, t)
+      const code = 975310
+      await ctx.client.activateKeypads(ctx.target, [true, false, false, false])
+      try {
+        await expansionWith(ctx, 1, { events: ExpansionEvent.Threat, duration: 5 }, { duressCode: code })
+        const since = ctx.events.length
+        await ctx.driver.perform({ kind: 'keypad-code', door: 1, code }, `On the door 1 keypad type the duress code ${code} followed by #`)
+        await sleep(3000)
+        const events = ctx.events.slice(since).filter((s) => s.event).map((s) => ({ reason: s.event!.reason, granted: s.event!.granted, type: s.event!.type }))
+        t.log(`events after the code: ${JSON.stringify(events)}`)
+        t.data({ events })
+        const on = await ctx.driver.confirm('Did OUTPUT 1 of the expansion board switch on?', { kind: 'observe-relay', door: 1 })
+        t.assert(on, 'output 1 did not switch on with the duress code')
+        t.log(`the duress code stays ${code} on the controller: change it from UHPPOTE Desk (Expansion board tab)`)
+      } finally {
+        await ctx.client.activateKeypads(ctx.target, [false, false, false, false])
+      }
+    },
+  },
+]
+
+/** Restores the state saved during the tests (listener, bookmark, expansion board outputs off). */
 export async function restore(ctx: Context): Promise<string[]> {
   const log: string[] = []
   try {
@@ -770,10 +999,18 @@ export async function restore(ctx: Context): Promise<string[]> {
   } catch (err) {
     log.push(`listener restore failed: ${(err as Error).message}`)
   }
+  if (ctx.backup.expansionTouched) {
+    try {
+      await ctx.client.setExpansionBoard(ctx.target, EXPANSION_OFF)
+      log.push('expansion board: all outputs left inactive — save the Expansion board tab in UHPPOTE Desk (or run a full synchronisation) to restore your configuration')
+    } catch (err) {
+      log.push(`expansion board reset failed: ${(err as Error).message}`)
+    }
+  }
   return log
 }
 
-export const ALL_LEVELS: Record<number, TestCase[]> = { 0: L0, 1: L1, 2: L2, 3: L3, 4: L4 }
+export const ALL_LEVELS: Record<number, TestCase[]> = { 0: L0, 1: L1, 2: L2, 3: L3, 4: L4, 6: L6 }
 
 function ipToInt(ip: string): number {
   return ip.split('.').reduce((acc, p) => ((acc << 8) | Number(p)) >>> 0, 0)

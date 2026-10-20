@@ -9,6 +9,15 @@ import {
   PACKET_SIZE,
   Reason,
 } from '../codec/constants.js'
+import {
+  ExpansionEvent,
+  ExpansionSource,
+  PARAMETER_ADDRESS_OFFSET,
+  PARAMETER_TABLE_SIZE,
+  PARAMETERS_PER_PACKET,
+  decodeExpansionBoard,
+  type ExpansionBoardConfig,
+} from '../codec/expansion.js'
 import { DELETED_CARD, validatePacket, type Card, type ControllerEvent, type Quad, type Task, type TimeProfile, type Weekdays } from '../codec/messages.js'
 
 export interface FakeControllerOptions {
@@ -72,6 +81,18 @@ export interface FakeControllerState {
   keypads: Quad<boolean>
   antipassback: number
   firstCard: [number, FirstCardSetting][]
+  /** Parameter table written with 0xF2 (absent in snapshots of older versions). */
+  parameters?: number[]
+}
+
+/** Event reason → ExpansionEvent bit that can trigger a relay of the expansion board. */
+const ALARM_EVENT_BITS: Record<number, number> = {
+  [Reason.PushButtonThreat]: ExpansionEvent.Threat,
+  [Reason.DoorOpenTooLong]: ExpansionEvent.OpenTooLong,
+  [Reason.ForcedOpen]: ExpansionEvent.ForcedOpen,
+  [Reason.ForcedClosed]: ExpansionEvent.ForcedLock,
+  [Reason.NoAccessRights]: ExpansionEvent.InvalidCard,
+  [Reason.Fire]: ExpansionEvent.Fire,
 }
 
 export class FakeController {
@@ -120,6 +141,13 @@ export class FakeController {
   keypads: Quad<boolean> = [false, false, false, false]
   antipassback = 0
   firstCard = new Map<number, FirstCardSetting>()
+  /** Parameter table (0xF2 writes); not readable with short packets on the real controller. */
+  parameters = new Uint8Array(PARAMETER_TABLE_SIZE)
+  /** Simulated state of the 4 relays of the expansion board (not reported by the real controller). */
+  expansionOutputs: Quad<boolean> = [false, false, false, false]
+  private readonly expansionTimers: (NodeJS.Timeout | null)[] = [null, null, null, null]
+  /** Number of 0xF2 packets received. */
+  parameterWrites = 0
 
   // --- knobs for tests --------------------------------------------------------
   /** Reply latency (ms). */
@@ -254,6 +282,7 @@ export class FakeController {
       keypads: this.keypads,
       antipassback: this.antipassback,
       firstCard: [...this.firstCard.entries()],
+      parameters: [...this.parameters],
     }
   }
 
@@ -277,6 +306,12 @@ export class FakeController {
     this.keypads = s.keypads
     this.antipassback = s.antipassback
     this.firstCard = new Map(s.firstCard)
+    this.parameters = s.parameters ? Uint8Array.from(s.parameters) : new Uint8Array(PARAMETER_TABLE_SIZE)
+  }
+
+  /** Expansion board configuration decoded from the parameter table. */
+  expansionBoard(): ExpansionBoardConfig {
+    return decodeExpansionBoard(this.parameters)
   }
 
   private findCardSlot(card: number): number {
@@ -292,7 +327,46 @@ export class FakeController {
     const reason = this.authorise(card, door, pin)
     const granted = reason === Reason.Swipe
     if (granted) this.pulseRelay(door)
-    return this.event(EventType.Swipe, granted, door, direction, card, reason)
+    const ev = this.event(EventType.Swipe, granted, door, direction, card, reason)
+    this.triggerExpansion(door, reason)
+    return ev
+  }
+
+  /**
+   * Simulates an alarm detected by the controller on a door (forced open, open too long, threat, forced lock):
+   * records the event and drives the expansion relays configured for it.
+   */
+  raiseAlarm(door: number, reason: number): ControllerEvent {
+    const ev = this.event(EventType.Alarm, false, door, Direction.In, 0, reason)
+    this.triggerExpansion(door, reason)
+    return ev
+  }
+
+  /** Simulates the fire input (controller or expansion board): status bit, event, relays. */
+  setFireInput(active: boolean): void {
+    if (active) {
+      this.inputs |= 0x02
+      this.event(EventType.Alarm, true, 1, Direction.In, 0, Reason.Fire, false)
+      this.triggerExpansion(null, Reason.Fire)
+    } else {
+      this.inputs &= ~0x02
+    }
+    this.pushStatus()
+  }
+
+  private triggerExpansion(door: number | null, reason: number): void {
+    const bit = ALARM_EVENT_BITS[reason]
+    if (!bit) return
+    this.expansionBoard().relays.forEach((r, i) => {
+      if (!r.active || r.source === ExpansionSource.Arm || !(r.events & bit)) return
+      // fire is global; the other events only for the source door
+      if (bit !== ExpansionEvent.Fire && door !== r.source + 1) return
+      // a new trigger restarts the output time
+      this.expansionOutputs[i] = true
+      if (this.expansionTimers[i]) clearTimeout(this.expansionTimers[i])
+      this.expansionTimers[i] = setTimeout(() => (this.expansionOutputs[i] = false), Math.min(r.duration, 5) * 1000)
+      this.expansionTimers[i].unref()
+    })
   }
 
   /** Simulates the door sensor opening/closing. */
@@ -688,6 +762,20 @@ export class FakeController {
         this.antipassback = 0
         this.passcodes = [[], [], [], []]
         return this.ok(fc)
+      case F.WriteParameters: {
+        if (!this.magicOk(r)) return this.ok(fc, false)
+        const writes: [number, number][] = []
+        for (let i = 0; i < PARAMETERS_PER_PACKET; i++) {
+          const address = r.u16(12 + 3 * i)
+          if (address === 0) continue
+          const index = address - PARAMETER_ADDRESS_OFFSET
+          if (index < 0 || index >= PARAMETER_TABLE_SIZE) return this.ok(fc, false)
+          writes.push([index, r.u8(14 + 3 * i)])
+        }
+        for (const [index, value] of writes) this.parameters[index] = value
+        this.parameterWrites++
+        return this.ok(fc)
+      }
       default:
         return null
     }

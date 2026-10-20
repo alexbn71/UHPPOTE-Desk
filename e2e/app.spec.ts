@@ -142,7 +142,7 @@ test.describe.serial('UHPPOTE Desk', () => {
     }
     // tabs of the controller detail and attendance pages
     await page.goto('/controllers/1')
-    for (const tab of ['Network and configuration', 'Advanced settings', 'Maintenance', 'Diagnostics']) {
+    for (const tab of ['Network and configuration', 'Advanced settings', 'Expansion board', 'Maintenance', 'Diagnostics']) {
       await page.getByRole('tab', { name: tab }).click()
     }
     await expect(page.getByText('Serial number')).toBeVisible({ timeout: 10_000 })
@@ -151,6 +151,25 @@ test.describe.serial('UHPPOTE Desk', () => {
       await page.getByRole('tab', { name: tab }).click()
     }
     expect(errors).toEqual([])
+  })
+
+  test('expansion board: configure output 1 and save', async ({ page }) => {
+    await login(page, 'admin', ADMIN_PASSWORD)
+    await page.goto('/controllers/1')
+    await page.getByRole('tab', { name: 'Expansion board' }).click()
+    await expect(page.getByText('Alarm expansion board (UT0311-01A)')).toBeVisible()
+    await page.getByLabel('Expansion board connected').check({ force: true })
+    const relay1 = page.getByTestId('expansion-relay-1')
+    await relay1.getByLabel('Output 1').check({ force: true })
+    // vendor defaults preselected: threat, open too long, forced open, fire
+    await expect(relay1.getByLabel('Forced open')).toBeChecked()
+    await relay1.getByLabel('Fire alarm').uncheck({ force: true })
+    await page.getByRole('button', { name: 'Save and send to the controller' }).click()
+    await expect(page.getByText('Settings saved')).toBeVisible({ timeout: 10_000 })
+    const settings = await (await page.request.get('/api/controllers/1/settings')).json()
+    expect(settings.expansionBoard.installed).toBe(true)
+    expect(settings.expansionBoard.relays[0]).toMatchObject({ active: true, source: 0, mode: 1, events: 0x07, duration: 10 })
+    expect(settings.expansionBoard.relays.slice(1).every((r: { active: boolean }) => !r.active)).toBe(true)
   })
 
   test('synchronisation: comparison without differences', async ({ page }) => {

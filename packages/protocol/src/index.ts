@@ -1,5 +1,6 @@
 export * from './codec/constants.js'
 export * from './codec/messages.js'
+export * from './codec/expansion.js'
 export type { DateString, DateTimeString, TimeString } from './codec/bytes.js'
 export * from './errors.js'
 export * from './client.js'

@@ -51,6 +51,8 @@ export const FunctionCode = {
   SetEventIndex: 0xb2,
   GetEventIndex: 0xb4,
   RestoreDefaultParameters: 0xc8,
+  /** Raw write of the controller parameter table (reverse-engineered from the vendor software). */
+  WriteParameters: 0xf2,
 } as const
 
 export type FunctionCode = (typeof FunctionCode)[keyof typeof FunctionCode]

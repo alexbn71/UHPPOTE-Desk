@@ -22,6 +22,9 @@ Levels (--level, e.g. 0,1,2 or 0-4; default 0,1):
   3  Guided physical tests: relays, granted/denied swipe, time profile, sensor, button, PIN
   4  Robustness: 100 requests, card load (--bulk), network unplugged, restart, burst of swipes
   5  Deployment: runs L0-L2 (to be started inside the container on the NAS)
+  6  UT0311-01A expansion board (experimental 0xF2): mapping check, configuration write, guided relay tests
+     (forced open, open too long, invalid card, fire input; duress code with --destructive).
+     WARNING: overwrites the expansion board configuration and leaves all its outputs inactive.
 
 Options:
   --serial <n>        controller serial number (required)

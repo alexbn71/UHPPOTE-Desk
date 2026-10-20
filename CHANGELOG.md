@@ -3,6 +3,18 @@
 All notable changes to UHPPOTE Desk. Versions follow [Semantic Versioning](https://semver.org); every release is
 also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see [docs/DOCKER.md](docs/DOCKER.md)).
 
+## [Unreleased]
+
+### Added
+- **Alarm expansion board (UT0311-01A), experimental**: new *Expansion board* tab on the controller page to
+  configure the four alarm outputs (source door or burglar alarm, output mode, triggering events, signals, duration),
+  the "door open too long" time and the duress code. The configuration is written with function `0xF2`
+  (reconstructed from the manufacturer's software), only on controllers marked as having the board, and again by
+  the full synchronisation — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).
+- Hardware test level **L6** (`npm run hw -- --level 6`): address mapping check, configuration write and guided
+  tests of the board relays (forced open, open too long, invalid card, fire input, duress code).
+- FakeController: parameter table, simulated expansion relays, `raiseAlarm` and `setFireInput`.
+
 ## [1.1.0] - 2026-10-15
 
 ### Added

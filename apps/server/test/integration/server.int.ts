@@ -345,6 +345,61 @@ describe('synchronisation', () => {
     expect(fake.tasksActive).toHaveLength(1)
     expect(fake.recordSpecialEvents).toBe(true)
   })
+
+  it('expansion board: default not installed, never written to the controller', async () => {
+    const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    expect(settings.expansionBoard).toMatchObject({ installed: false, doorOpenTooLong: 25, duressCode: null })
+    expect(settings.expansionBoard.relays).toHaveLength(4)
+    const before = fake.parameterWrites
+    expect((await api('PUT', `/controllers/${controllerId}/settings`, settings)).statusCode).toBe(200)
+    expect(fake.parameterWrites).toBe(before)
+  })
+
+  it('expansion board: saved, pushed with the settings and by the full synchronisation', async () => {
+    const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    const relays = [
+      { active: true, source: 0, mode: 1, events: 0x04, signals: 0, duration: 5 },
+      { active: true, source: 0, mode: 3, events: 0x02, signals: 0, duration: 0 },
+      { active: false, source: 2, mode: 1, events: 0x27, signals: 0, duration: 10 },
+      { active: true, source: 1, mode: 4, events: 0, signals: 0x82, duration: 30 },
+    ]
+    const expansionBoard = { installed: true, relays, doorOpenTooLong: 12, duressCode: 889988 }
+    const r = await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard })
+    expect(r.statusCode).toBe(200)
+    expect((await api('GET', `/controllers/${controllerId}/settings`)).json().expansionBoard).toEqual(expansionBoard)
+    const inactive = { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 }
+    const expected = { relays: [relays[0], relays[1], inactive, relays[3]], doorOpenTooLong: 12, duressCode: 889988 }
+    expect(fake.expansionBoard()).toEqual(expected)
+    // the full synchronisation writes it again
+    fake.parameters.fill(0)
+    expect((await api('POST', `/controllers/${controllerId}/sync/all`)).statusCode).toBe(200)
+    expect(fake.expansionBoard()).toEqual(expected)
+    // uninstalled: kept in the database but no longer written
+    const before = fake.parameterWrites
+    await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard: { ...expansionBoard, installed: false } })
+    expect(fake.parameterWrites).toBe(before)
+  })
+
+  it('expansion board: invalid values are rejected (400)', async () => {
+    const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    const bad = (patch: object) =>
+      api('PUT', `/controllers/${controllerId}/settings?push=false`, {
+        ...settings,
+        expansionBoard: { ...settings.expansionBoard, ...patch },
+      })
+    expect((await bad({ doorOpenTooLong: 0 })).statusCode).toBe(400)
+    expect((await bad({ duressCode: 1_000_000 })).statusCode).toBe(400)
+    expect((await bad({ relays: settings.expansionBoard.relays.slice(0, 3) })).statusCode).toBe(400)
+    const relays = structuredClone(settings.expansionBoard.relays)
+    relays[0].source = 5
+    expect((await bad({ relays })).statusCode).toBe(400)
+  })
+
+  it('settings saved without expansionBoard (older clients) get the default', async () => {
+    const { expansionBoard: _drop, ...settings } = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    expect((await api('PUT', `/controllers/${controllerId}/settings?push=false`, settings)).statusCode).toBe(200)
+    expect((await api('GET', `/controllers/${controllerId}/settings`)).json().expansionBoard.installed).toBe(false)
+  })
 })
 
 describe('roles and audit', () => {

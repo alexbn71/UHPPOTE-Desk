@@ -208,7 +208,24 @@ await call('POST', '/tasks', { controllerId: controller.id, door: 2, task: 0, va
 await call('POST', '/tasks', { controllerId: controller.id, door: 3, task: 7, validFrom: `${year}-01-01`, validTo: `${year + 1}-12-31`, weekdays: [true, true, true, true, true, true, true], startTime: '20:00', moreCards: 0, enabled: true })
 
 const settings = await call<Record<string, unknown>>('GET', `/controllers/${controller.id}/settings`)
-await call('PUT', `/controllers/${controller.id}/settings`, { ...settings, recordSpecialEvents: true, interlock: 0, keypads: [false, false, true, false], passcodes: [[], [], [135790], []] })
+await call('PUT', `/controllers/${controller.id}/settings`, {
+  ...settings,
+  recordSpecialEvents: true,
+  interlock: 0,
+  keypads: [false, false, true, false],
+  passcodes: [[], [], [135790], []],
+  expansionBoard: {
+    installed: true,
+    doorOpenTooLong: 30,
+    duressCode: null,
+    relays: [
+      { active: true, source: 0, mode: 1, events: 0x04 | 0x10, signals: 0, duration: 20 },
+      { active: true, source: 0, mode: 3, events: 0x02, signals: 0, duration: 10 },
+      { active: false, source: 2, mode: 1, events: 0x27, signals: 0, duration: 10 },
+      { active: true, source: 1, mode: 1, events: 0x20, signals: 0, duration: 300 },
+    ],
+  },
+})
 
 await call('POST', `/holidays/italian/${year}`)
 
@@ -430,6 +447,9 @@ await page.getByRole('tab', { name: 'Network and configuration' }).click()
 await shot('controller-network', { maxHeight: 1600 })
 await page.getByRole('tab', { name: 'Advanced settings' }).click()
 await shot('controller-advanced', { maxHeight: 1600 })
+await page.getByRole('tab', { name: 'Expansion board' }).click()
+await page.getByText('Alarm expansion board (UT0311-01A)').waitFor()
+await shot('controller-expansion', { maxHeight: 1600 })
 await page.getByRole('tab', { name: 'Maintenance' }).click()
 await shot('controller-maintenance', { maxHeight: 1600 })
 

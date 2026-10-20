@@ -187,6 +187,41 @@ export const firstCardDoorSchema = z.object({
   weekdays: weekdaysSchema,
 })
 
+/** One relay of the UT0311-01A alarm expansion board (see protocol ExpansionRelay). */
+export const expansionRelaySchema = z.object({
+  active: z.boolean(),
+  /** 0-3 = door 1-4, 16 = burglar alarm (ARM) */
+  source: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(16)]),
+  /** 1 timed, 2 timed + until reset, 3 until reset, 4 any signal, 5 all signals */
+  mode: z.number().int().min(1).max(5),
+  /** bitmask: 0x01 threat, 0x02 open too long, 0x04 forced open, 0x08 forced lock, 0x10 invalid card, 0x20 fire */
+  events: z.number().int().min(0).max(0x3f),
+  /** bitmask of the signals for modes 4/5 */
+  signals: z.number().int().min(0).max(0xff),
+  /** output duration in seconds */
+  duration: z.number().int().min(0).max(6553),
+})
+export type ExpansionRelaySettings = z.infer<typeof expansionRelaySchema>
+
+export const expansionBoardSchema = z.object({
+  /** The board is connected: only then its configuration is sent to the controller. */
+  installed: z.boolean(),
+  relays: z.array(expansionRelaySchema).length(4),
+  /** Seconds after which an open door raises "open too long". */
+  doorOpenTooLong: z.number().int().min(1).max(6553),
+  /** Duress code for the keypad; null = not sent. */
+  duressCode: pinSchema.nullable(),
+})
+export type ExpansionBoardSettings = z.infer<typeof expansionBoardSchema>
+
+/** Vendor defaults: relay N follows door N on threat, open too long, forced open and fire, for 10 s. */
+export const DEFAULT_EXPANSION_BOARD: ExpansionBoardSettings = {
+  installed: false,
+  relays: ([0, 1, 2, 3] as const).map((source) => ({ active: false, source, mode: 1, events: 0x27, signals: 0, duration: 10 })),
+  doorOpenTooLong: 25,
+  duressCode: null,
+}
+
 export const controllerSettingsSchema = z.object({
   interlock: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(8)]),
   antipassback: z.number().int().min(0).max(4),
@@ -196,6 +231,7 @@ export const controllerSettingsSchema = z.object({
   recordSpecialEvents: z.boolean(),
   pcControl: z.boolean(),
   listenerInterval: z.number().int().min(0).max(255),
+  expansionBoard: expansionBoardSchema.default(() => structuredClone(DEFAULT_EXPANSION_BOARD)),
 })
 export type ControllerSettings = z.infer<typeof controllerSettingsSchema>
 

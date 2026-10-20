@@ -34,6 +34,7 @@ import { useCodes } from '../lib/codes'
 import { fmtDate, fmtDateTime } from '../lib/format'
 import { useLive } from '../lib/live'
 import { ControllerFormFields, controllerBody, type ControllerForm } from './Controllers'
+import { ExpansionBoardPanel } from './ExpansionBoard'
 
 interface Info {
   device: { controller: number; address: string; netmask: string; gateway: string; mac: string; version: string; date: string | null }
@@ -348,7 +349,9 @@ function AdvancedSettings({ id }: { id: number }) {
   const save = async () => {
     setBusy(true)
     try {
-      await api.put(`/controllers/${id}/settings`, s)
+      // the expansion board is edited in its own tab: keep the saved copy
+      const current = await api.get<ControllerSettings>(`/controllers/${id}/settings`)
+      await api.put(`/controllers/${id}/settings`, { ...s, expansionBoard: current.expansionBoard })
       notifyOk(t('controllerDetail.settingsSaved'))
     } catch (err) {
       notifyError(err)
@@ -574,6 +577,7 @@ export function ControllerDetailPage() {
           <Tabs.Tab value="diagnostics">{t('controllerDetail.tabDiagnostics')}</Tabs.Tab>
           {can('admin') && <Tabs.Tab value="network">{t('controllerDetail.tabNetwork')}</Tabs.Tab>}
           <Tabs.Tab value="advanced">{t('controllerDetail.tabAdvanced')}</Tabs.Tab>
+          <Tabs.Tab value="expansion">{t('controllerDetail.tabExpansion')}</Tabs.Tab>
           {can('admin') && <Tabs.Tab value="maintenance">{t('controllerDetail.tabMaintenance')}</Tabs.Tab>}
         </Tabs.List>
         <Tabs.Panel value="diagnostics">
@@ -584,6 +588,9 @@ export function ControllerDetailPage() {
         </Tabs.Panel>
         <Tabs.Panel value="advanced">
           <AdvancedSettings id={cid} />
+        </Tabs.Panel>
+        <Tabs.Panel value="expansion">
+          <ExpansionBoardPanel id={cid} />
         </Tabs.Panel>
         <Tabs.Panel value="maintenance">
           <Maintenance c={c} />

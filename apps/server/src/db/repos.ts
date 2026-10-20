@@ -8,6 +8,7 @@ import type {
   EventStatsDto,
   PersonDto,
 } from '@uhppote-desk/shared'
+import { DEFAULT_EXPANSION_BOARD } from '@uhppote-desk/shared'
 import { HttpError } from '../auth/auth.js'
 import type { Db } from './database.js'
 import { fromBool, toBool, weekdaysFromString, weekdaysToString } from './database.js'
@@ -109,6 +110,7 @@ export const DEFAULT_SETTINGS: ControllerSettings = {
   recordSpecialEvents: true,
   pcControl: false,
   listenerInterval: 0,
+  expansionBoard: DEFAULT_EXPANSION_BOARD,
 }
 
 function mapController(r: ControllerRow): ControllerRecord {
@@ -243,7 +245,8 @@ export class ControllerRepo {
 
   settings(controllerId: number): ControllerSettings {
     const r = this.db.get<{ settings: string }>('SELECT settings FROM controller_settings WHERE controller_id = ?', [controllerId])
-    return r ? { ...DEFAULT_SETTINGS, ...(JSON.parse(r.settings) as Partial<ControllerSettings>) } : { ...DEFAULT_SETTINGS }
+    const defaults = structuredClone(DEFAULT_SETTINGS)
+    return r ? { ...defaults, ...(JSON.parse(r.settings) as Partial<ControllerSettings>) } : defaults
   }
 
   saveSettings(controllerId: number, s: ControllerSettings): void {

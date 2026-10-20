@@ -22,6 +22,14 @@ export type PhysicalAction =
   | { kind: 'replug' }
   | { kind: 'power-cycle' }
   | { kind: 'swipe-burst'; card: number | null; door: number; count: number }
+  /** Open the door by hand without a valid access (key, unlatched door): forced open. */
+  | { kind: 'force-door'; door: number }
+  /** Open the door with a valid access and keep it open for `seconds`. */
+  | { kind: 'hold-door-open'; door: number; seconds: number }
+  /** Close/open the fire input of the expansion board. */
+  | { kind: 'fire-input'; active: boolean }
+  /** Type a code on the PIN keypad of the door reader. */
+  | { kind: 'keypad-code'; door: number; code: number }
 
 export interface Driver {
   /** Asks the operator to perform an action; resolves when the operator confirms it is done. */

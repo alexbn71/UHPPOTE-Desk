@@ -16,6 +16,7 @@ import {
   type TimeProfile,
 } from './codec/messages.js'
 import type { DateTimeString } from './codec/bytes.js'
+import { chunkParameters, expansionBoardParameters, type ExpansionBoardConfig, type ParameterWrite } from './codec/expansion.js'
 import { EventOverwrittenError, NotFoundError, OperationFailedError, TimeoutError, TransportError } from './errors.js'
 import type { Logger } from './logger.js'
 import { tcpExchange } from './transport/tcp.js'
@@ -409,6 +410,35 @@ export class UhppoteClient {
 
   setFirstCard(t: ControllerTarget, fc: FirstCardConfig): Promise<void> {
     return this.callOk(t, 'set-first-card', encode.setFirstCard(t.id, fc), decode.setFirstCard, true)
+  }
+
+  // -------------------------------------------------------------------------
+  // Parameter table and expansion board (reverse-engineered, write-only)
+  // -------------------------------------------------------------------------
+
+  /** Writes raw bytes of the parameter table (0xF2, 8 per packet). Idempotent: the same bytes can be rewritten. */
+  async writeParameters(t: ControllerTarget, writes: ParameterWrite[]): Promise<void> {
+    for (const chunk of chunkParameters(writes)) {
+      await this.callOk(t, 'write-parameters', encode.writeParameters(t.id, chunk), decode.writeParameters, true)
+    }
+  }
+
+  /** Configures the UT0311-01A alarm expansion board (relays, alarm types, open-too-long time, duress code). */
+  setExpansionBoard(t: ControllerTarget, config: ExpansionBoardConfig): Promise<void> {
+    return this.writeParameters(t, expansionBoardParameters(config))
+  }
+
+  /**
+   * Diagnostics: sends a raw request and returns the raw reply, or null if the controller does not answer.
+   * Not retried. Used to probe undocumented function codes.
+   */
+  async probe(t: ControllerTarget, packet: Buffer): Promise<Buffer | null> {
+    try {
+      return await this.exchange(t, `probe-0x${packet[1]!.toString(16)}`, packet, { idempotent: false })
+    } catch (err) {
+      if (err instanceof TimeoutError) return null
+      throw err
+    }
   }
 
   /** WARNING: resets the controller configuration. */

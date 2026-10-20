@@ -42,6 +42,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Mobile app** (PWA at `/m`, installable on the home screen): doors with live state, opening with *hold to open* or fingerprint/Face ID, push notifications with an *Open* action, remembered devices revocable by the administrator — see [docs/MOBILE.md](docs/MOBILE.md).
 
+**Alarm expansion board** (UT0311-01A, experimental): four alarm relays and the fire input, driven by duress code, door open too long, forced open, invalid card and fire — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).
+
 **API tokens** for machine-to-machine access (`Authorization: Bearer`): read-only, door opening only (optionally limited to specific doors), operator or administrator, with zone restrictions, expiry and audit — see [docs/API-TOKENS.md](docs/API-TOKENS.md).
 
 The user interface is available in **English** (base language), **Italian**, **Spanish**, **French** and **German** — see [Languages](#languages).
@@ -74,7 +76,7 @@ The screenshots use demonstration data and a simulated controller; they are rege
 | [packages/shared](packages/shared) | zod API schemas, DTOs, translations (`src/i18n`) |
 | [apps/server](apps/server) | Fastify backend: SQLite (`node:sqlite`), authentication and roles, synchronisation, event collection, monitoring, attendance, WebSocket |
 | [apps/web](apps/web) | React + Mantine frontend |
-| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L5) and a development simulator |
+| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L6) and a development simulator |
 | [e2e](e2e) | Playwright end-to-end tests |
 | [docker](docker) | Docker image, compose files, Unraid template |
 | [homeassistant-addon](homeassistant-addon) | Home Assistant add-on (with [repository.yaml](repository.yaml) at the root) |
@@ -138,6 +140,10 @@ Recommended procedure when the controller arrives:
 8. **Deployment** (L5): on the server, inside the container:
    ```bash
    docker exec -it uhppote-desk node hwtest/cli.js --serial 423187757 --ip 192.168.1.100 --level 5
+   ```
+9. **Alarm expansion board** (L6, only with a UT0311-01A board): address mapping, configuration write and guided relay tests. It overwrites the board configuration — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md#hardware-tests-level-6).
+   ```bash
+   npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 6
    ```
 
 ## Languages

@@ -1,5 +1,6 @@
 import { CodecError } from '../errors.js'
 import { Reader, Writer, type DateString, type DateTimeString, type TimeString } from './bytes.js'
+import { PARAMETER_ADDRESS_OFFSET, PARAMETER_TABLE_SIZE, PARAMETERS_PER_PACKET, type ParameterWrite } from './expansion.js'
 import {
   FunctionCode as F,
   INTERLOCK_VALUES,
@@ -383,6 +384,21 @@ export const encode = {
   restoreDefaultParameters(controller: number): Buffer {
     return new Writer(F.RestoreDefaultParameters, controller).u32(8, MAGIC).buf
   },
+
+  /** 0xF2: magic, then up to 8 triplets [address u16][value] from offset 12 (address = index + 16). */
+  writeParameters(controller: number, writes: ParameterWrite[]): Buffer {
+    if (writes.length < 1 || writes.length > PARAMETERS_PER_PACKET) {
+      throw new CodecError(`write parameters: 1-${PARAMETERS_PER_PACKET} values per packet (got ${writes.length})`)
+    }
+    const w = new Writer(F.WriteParameters, controller).u32(8, MAGIC)
+    writes.forEach((p, i) => {
+      if (!Number.isInteger(p.index) || p.index < 0 || p.index >= PARAMETER_TABLE_SIZE) {
+        throw new CodecError(`parameter index out of range (0-${PARAMETER_TABLE_SIZE - 1}): ${p.index}`)
+      }
+      w.u16(12 + 3 * i, p.index + PARAMETER_ADDRESS_OFFSET).u8(14 + 3 * i, p.value, `parameter ${p.index}`)
+    })
+    return w.buf
+  },
 }
 
 // ---------------------------------------------------------------------------
@@ -571,6 +587,7 @@ export const decode = {
   setAntiPassback: ok(F.SetAntiPassback),
   setFirstCard: ok(F.SetFirstCard),
   restoreDefaultParameters: ok(F.RestoreDefaultParameters),
+  writeParameters: ok(F.WriteParameters),
 }
 
 /**

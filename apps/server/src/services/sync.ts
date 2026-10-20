@@ -1,5 +1,5 @@
 import type { Card, Logger, Quad } from '@uhppote-desk/protocol'
-import { errorInfo, type SyncDiffDto } from '@uhppote-desk/shared'
+import { errorInfo, type ExpansionRelaySettings, type SyncDiffDto } from '@uhppote-desk/shared'
 import type { Db } from '../db/database.js'
 import type { ControllerRepo, PeopleRepo, ScheduleRepo } from '../db/repos.js'
 import type { Actor, ControllerGateway } from '../gateway/gateway.js'
@@ -254,6 +254,15 @@ export class SyncService {
       }
       await client.recordSpecialEvents(t, s.recordSpecialEvents)
       await client.setPCControl(t, s.pcControl)
+      // only with the board connected: the parameter table of other controllers is never touched
+      const x = s.expansionBoard
+      if (x.installed) {
+        await client.setExpansionBoard(t, {
+          relays: x.relays as Quad<ExpansionRelaySettings>,
+          doorOpenTooLong: x.doorOpenTooLong,
+          duressCode: x.duressCode,
+        })
+      }
     })
   }
 

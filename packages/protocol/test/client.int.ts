@@ -188,6 +188,67 @@ describe('time profiles, tasks, advanced', () => {
   })
 })
 
+describe('expansion board (0xF2)', () => {
+  it('setExpansionBoard writes the parameter table in packets of 8 and is decoded back', async () => {
+    const before = fake.parameterWrites
+    const config = {
+      relays: [
+        { active: true, source: 0, mode: 1, events: 0x04, signals: 0, duration: 5 },
+        { active: true, source: 0, mode: 1, events: 0x02, signals: 0, duration: 10 },
+        { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 },
+        { active: true, source: 1, mode: 3, events: 0x20, signals: 0, duration: 0 },
+      ],
+      doorOpenTooLong: 8,
+      duressCode: 889988,
+    } as const
+    await client.setExpansionBoard(target, structuredClone(config) as never)
+    expect(fake.expansionBoard()).toEqual(config)
+    // 24 relay bytes + 30, 32, 35, 162 + 74, 75, 163 = 31 bytes → 4 packets
+    expect(fake.parameterWrites - before).toBe(4)
+  })
+
+  it('a refused write raises OperationFailedError', async () => {
+    fake.failOps.add(0xf2)
+    try {
+      await expect(client.writeParameters(target, [{ index: 136, value: 0 }])).rejects.toBeInstanceOf(OperationFailedError)
+    } finally {
+      fake.failOps.delete(0xf2)
+    }
+  })
+
+  it('simulated alarms drive the configured relays (FakeController model)', async () => {
+    await client.setExpansionBoard(target, {
+      relays: [
+        { active: true, source: 0, mode: 1, events: 0x04, signals: 0, duration: 1 },
+        { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 },
+        { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 },
+        { active: true, source: 2, mode: 1, events: 0x20, signals: 0, duration: 1 },
+      ],
+      doorOpenTooLong: 25,
+      duressCode: null,
+    })
+    fake.raiseAlarm(2, Reason.ForcedOpen)
+    expect(fake.expansionOutputs).toEqual([false, false, false, false])
+    fake.raiseAlarm(1, Reason.ForcedOpen)
+    expect(fake.expansionOutputs[0]).toBe(true)
+    fake.setFireInput(true)
+    expect(fake.expansionOutputs[3]).toBe(true)
+    expect((await client.getStatus(target)).fireAlarm).toBe(true)
+    fake.setFireInput(false)
+    expect((await client.getStatus(target)).fireAlarm).toBe(false)
+  })
+
+  it('probe returns the raw reply, or null without an answer', async () => {
+    const reply = await client.probe(target, (await import('../src/index.js')).encode.getStatus(ID))
+    expect(reply?.[1]).toBe(0x20)
+    const unknown = Buffer.alloc(64)
+    unknown[0] = 0x17
+    unknown[1] = 0xc2
+    unknown.writeUInt32LE(ID, 4)
+    expect(await client.probe(target, unknown)).toBeNull()
+  })
+})
+
 describe('events', () => {
   it('granted / denied swipe and read by index', async () => {
     await client.deleteAllCards(target)
