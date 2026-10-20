@@ -103,13 +103,15 @@ export const it: Messages = {
     tooShort: 'La password deve avere almeno 8 caratteri',
     updated: 'Password aggiornata',
     logout: 'Esci',
-    managedInfo: "La password di questo utente è impostata dalla variabile d'ambiente ADMIN_PASSWORD del server: modificala lì e riavvia il server.",
+    managedInfo:
+      "La password di questo utente è impostata dalla variabile d'ambiente ADMIN_PASSWORD del server: modificala lì e riavvia il server.",
   },
   dashboard: {
     title: 'Panoramica',
     description: 'Stato dei controller, attività e ultimi eventi',
     noControllersTitle: 'Nessun controller configurato',
-    noControllersAdmin: 'Aggiungi il primo controller dalla pagina Controller (ricerca automatica in rete disponibile).',
+    noControllersAdmin:
+      'Aggiungi il primo controller dalla pagina Controller (ricerca automatica in rete disponibile).',
     noControllersUser: 'Chiedi a un amministratore di configurare i controller.',
     goToControllers: 'Controller',
     fireAlarm: 'Allarme incendio',
@@ -225,10 +227,12 @@ export const it: Messages = {
     addCardHint: 'Numero a 8 cifre: codice impianto (facility) × 100000 + codice',
     cardAssigned: 'Tessera {{n}} assegnata',
     readerTitle: 'Acquisizione da lettore',
-    readerHint: 'Passa la tessera su un lettore qualsiasi: le tessere non registrate lette negli ultimi 10 minuti compaiono qui.',
+    readerHint:
+      'Passa la tessera su un lettore qualsiasi: le tessere non registrate lette negli ultimi 10 minuti compaiono qui.',
     readerNone: 'Nessuna tessera sconosciuta letta di recente.',
     replaceTitle: 'Tessera smarrita {{n}}',
-    replaceInfo: 'La tessera verrà disattivata e rimossa dai controller; la nuova tessera riceverà gli stessi permessi.',
+    replaceInfo:
+      'La tessera verrà disattivata e rimossa dai controller; la nuova tessera riceverà gli stessi permessi.',
     replaceNewNumber: 'Numero nuova tessera',
     replaceConfirm: 'Sostituisci',
     replaced: 'Tessera sostituita',
@@ -242,7 +246,7 @@ export const it: Messages = {
   cards: {
     title: 'Tessere',
     description: 'Tutte le tessere registrate, libere o assegnate',
-    unknownTitle: "Tessere lette ma non registrate (ultima ora)",
+    unknownTitle: 'Tessere lette ma non registrate (ultima ora)',
     unknownHint: 'Passa una tessera nuova su un lettore: comparirà qui e potrai registrarla.',
     batchTitle: 'Inserimento in serie',
     batchFrom: 'Dal numero',
@@ -309,13 +313,15 @@ export const it: Messages = {
     broadcast: 'broadcast',
     none: 'Nessun controller. Usa «Cerca in rete» per trovarli automaticamente.',
     discoveryTitle: 'Ricerca controller in rete',
-    discoveryInfo: 'La ricerca invia un broadcast UDP sulla porta 60000 e attende le risposte per qualche secondo. Funziona solo se il server è nello stesso segmento di rete delle schede.',
+    discoveryInfo:
+      'La ricerca invia un broadcast UDP sulla porta 60000 e attende le risposte per qualche secondo. Funziona solo se il server è nello stesso segmento di rete delle schede.',
     broadcastAddress: 'Indirizzo di broadcast (opzionale)',
     startSearch: 'Avvia ricerca',
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Già configurato',
-    noneFound: 'Nessun risultato (avvia la ricerca). Se la scheda non risponde verifica cavo, subnet, firewall (UDP 60000) e, in Docker, la rete «host».',
+    noneFound:
+      'Nessun risultato (avvia la ricerca). Se la scheda non risponde verifica cavo, subnet, firewall (UDP 60000) e, in Docker, la rete «host».',
     newTitle: 'Nuovo controller',
     added: 'Controller aggiunto',
     serial: 'Numero di serie',
@@ -378,12 +384,14 @@ export const it: Messages = {
     netmask: 'Netmask',
     sendIp: 'Invia nuovo IP alla scheda',
     sendIpTitle: 'Cambio indirizzo IP del controller',
-    sendIpConfirm: "Il controller verrà riconfigurato con IP {{address}}/{{netmask}}, gateway {{gateway}}. Se l'indirizzo non è raggiungibile da questo server la scheda non sarà più contattabile finché non verrà riconfigurata (dalla stessa rete, via broadcast). Continuare?",
+    sendIpConfirm:
+      "Il controller verrà riconfigurato con IP {{address}}/{{netmask}}, gateway {{gateway}}. Se l'indirizzo non è raggiungibile da questo server la scheda non sarà più contattabile finché non verrà riconfigurata (dalla stessa rete, via broadcast). Continuare?",
     sendIpButton: 'Cambia IP',
     ipVerified: 'IP impostato e verificato',
     ipNotVerified: 'Comando inviato ma il controller non risponde sul nuovo IP: verificare con la ricerca in rete',
     listenerTitle: 'Destinazione eventi (ricevitore)',
-    listenerInfo: 'La scheda invia ogni evento a un solo indirizzo. Normalmente viene configurato in automatico (variabile UHPPOTE_LISTENER_PUBLIC).',
+    listenerInfo:
+      'La scheda invia ogni evento a un solo indirizzo. Normalmente viene configurato in automatico (variabile UHPPOTE_LISTENER_PUBLIC).',
     listenerAuto: 'Configura automaticamente',
     listenerUpdated: 'Ricevitore aggiornato',
     listenerAlreadyOk: 'Ricevitore già corretto',
@@ -411,21 +419,27 @@ export const it: Messages = {
     settingsSaved: 'Impostazioni salvate e inviate al controller',
     syncHistory: 'Storico sincronizzazioni',
     resetTitle: 'Ripristino parametri di fabbrica',
-    resetInfo: "Azzera rete, ricevitore eventi, tessere ed eventi della scheda. Le tessere presenti vengono salvate prima dell'operazione e possono essere reinviate con una sincronizzazione. Digitare il numero di serie {{serial}} per confermare.",
+    resetInfo:
+      "Azzera rete, ricevitore eventi, tessere ed eventi della scheda. Le tessere presenti vengono salvate prima dell'operazione e possono essere reinviate con una sincronizzazione. Digitare il numero di serie {{serial}} per confermare.",
     resetPlaceholder: 'Numero di serie',
     resetButton: 'Ripristina',
     resetDone: 'Parametri ripristinati: {{n}} tessere salvate in {{file}} (cartella backup del server)',
   },
   expansion: {
     title: 'Scheda di espansione allarmi (UT0311-01A)',
-    intro: 'Quattro relè di allarme e un ingresso incendio collegati al controller. La configurazione viene inviata insieme alle impostazioni avanzate e dalla sincronizzazione completa.',
-    experimental: 'Sperimentale: il protocollo è stato ricostruito dal software del produttore e non è ancora verificato su tutti i firmware. Il controller non sa restituire questa configurazione: UHPPOTE Desk conserva la copia che invia.',
+    intro:
+      'Quattro relè di allarme e un ingresso incendio collegati al controller. La configurazione viene inviata insieme alle impostazioni avanzate e dalla sincronizzazione completa.',
+    experimental:
+      'Sperimentale: il protocollo è stato ricostruito dal software del produttore e non è ancora verificato su tutti i firmware. Il controller non sa restituire questa configurazione: UHPPOTE Desk conserva la copia che invia.',
     installed: 'Scheda di espansione collegata',
-    installedHint: 'La configurazione viene scritta nel controller solo con questa opzione attiva. Prima di scollegare la scheda disattiva le uscite e salva.',
+    installedHint:
+      'La configurazione viene scritta nel controller solo con questa opzione attiva. Prima di scollegare la scheda disattiva le uscite e salva.',
     doorOpenTooLong: 'Porta aperta troppo a lungo dopo (s)',
-    doorOpenTooLongHint: 'Tempo dopo il quale una porta lasciata aperta genera l\'allarme "aperta troppo a lungo" (predefinito 25 s)',
+    doorOpenTooLongHint:
+      'Tempo dopo il quale una porta lasciata aperta genera l\'allarme "aperta troppo a lungo" (predefinito 25 s)',
     duressCode: 'Codice coercizione',
-    duressCodeHint: 'Codice digitato sul tastierino sotto minaccia: apre la porta e genera l\'allarme "coercizione". Vuoto = non modificato',
+    duressCodeHint:
+      'Codice digitato sul tastierino sotto minaccia: apre la porta e genera l\'allarme "coercizione". Vuoto = non modificato',
     relayN: 'Uscita {{n}}',
     active: 'Attiva',
     source: 'Sorgente',
@@ -482,7 +496,8 @@ export const it: Messages = {
   },
   timeProfiles: {
     title: 'Fasce orarie',
-    description: "Intervalli di tempo (ID 2-254) in cui un permesso è valido. Una fascia può concatenarne un'altra per aggiungere giorni/orari.",
+    description:
+      "Intervalli di tempo (ID 2-254) in cui un permesso è valido. Una fascia può concatenarne un'altra per aggiungere giorni/orari.",
     new: 'Nuova fascia',
     colId: 'ID',
     colName: 'Nome',
@@ -507,7 +522,8 @@ export const it: Messages = {
   },
   tasks: {
     title: 'Attività pianificate',
-    description: 'Azioni eseguite automaticamente dal controller a un orario (es. porta aperta di giorno, chiusa la notte)',
+    description:
+      'Azioni eseguite automaticamente dal controller a un orario (es. porta aperta di giorno, chiusa la notte)',
     new: 'Nuova attività',
     colController: 'Controller',
     colDoor: 'Porta',
@@ -531,12 +547,14 @@ export const it: Messages = {
   },
   sync: {
     title: 'Sincronizzazione',
-    description: "Il database dell'applicazione è la fonte di verità: le modifiche vengono inviate subito ai controller online; qui puoi verificare e riallineare (es. dopo che un controller è rimasto offline).",
+    description:
+      "Il database dell'applicazione è la fonte di verità: le modifiche vengono inviate subito ai controller online; qui puoi verificare e riallineare (es. dopo che un controller è rimasto offline).",
     compare: 'Confronta',
     syncCards: 'Allinea tessere',
     syncAll: 'Sincronizzazione completa',
     syncAllTitle: 'Sincronizzazione completa di {{name}}',
-    syncAllInfo: "Verranno reinviati configurazione porte, fasce orarie, attività pianificate, impostazioni avanzate e tutte le tessere. L'operazione può richiedere qualche minuto.",
+    syncAllInfo:
+      "Verranno reinviati configurazione porte, fasce orarie, attività pianificate, impostazioni avanzate e tutte le tessere. L'operazione può richiedere qualche minuto.",
     syncAllConfirm: 'Sincronizza',
     syncAllDone: '{{name}}: sincronizzazione completa eseguita',
     cardsDone: '{{name}}: {{added}} aggiunte, {{updated}} aggiornate, {{deleted}} rimosse',
@@ -581,7 +599,8 @@ export const it: Messages = {
     colLateShort: 'Ritardo',
     colPunches: 'Timbrature',
     lateMinutes: '{{n}} min',
-    footnote: '* timbratura inserita manualmente. Sono considerati solo i passaggi consentiti sui lettori marcati «presenze» (pagina Porte).',
+    footnote:
+      '* timbratura inserita manualmente. Sono considerati solo i passaggi consentiti sui lettori marcati «presenze» (pagina Porte).',
     shiftsHint: "Il turno si assegna nella scheda della persona. I turni con fine inferiore all'inizio sono notturni.",
     newShift: 'Nuovo turno',
     colShiftName: 'Nome',
@@ -606,7 +625,8 @@ export const it: Messages = {
   },
   operators: {
     title: 'Operatori',
-    description: "Utenti dell'applicazione. Amministratore: tutto; Operatore: anagrafica, permessi, apertura porte, sincronizzazione; Sola lettura: consultazione.",
+    description:
+      "Utenti dell'applicazione. Amministratore: tutto; Operatore: anagrafica, permessi, apertura porte, sincronizzazione; Sola lettura: consultazione.",
     new: 'Nuovo operatore',
     tempPasswordTitle: 'Password temporanea',
     tempPassword: "Utente {{user}}: {{password}} — comunicarla all'interessato; dovrà cambiarla al primo accesso.",
@@ -635,7 +655,8 @@ export const it: Messages = {
   },
   webhooks: {
     title: 'Webhook',
-    description: 'Richieste HTTP inviate ad altri sistemi (n8n, Node-RED, Home Assistant, servizi tuoi) quando succede qualcosa',
+    description:
+      'Richieste HTTP inviate ad altri sistemi (n8n, Node-RED, Home Assistant, servizi tuoi) quando succede qualcosa',
     new: 'Nuovo webhook',
     colName: 'Nome',
     colUrl: 'URL',
@@ -651,13 +672,15 @@ export const it: Messages = {
     urlHint: 'Riceve una richiesta POST con corpo JSON',
     events: 'Eventi',
     doors: 'Solo queste porte',
-    doorsHint: 'Vuoto = tutte le porte. Gli eventi del controller sono inviati se il controller ha una delle porte selezionate.',
+    doorsHint:
+      'Vuoto = tutte le porte. Gli eventi del controller sono inviati se il controller ha una delle porte selezionate.',
     headers: 'Header aggiuntivi',
     headersHint: 'Uno per riga, "Nome: valore" (es. Authorization: Bearer …)',
     headersInvalid: 'Riga di header non valida: {{line}}',
     enabledSwitch: 'Attivo',
     secret: 'Chiave di firma',
-    secretHint: 'Ogni richiesta contiene X-UHPPOTE-Signature: sha256=HMAC-SHA256(chiave, timestamp + "." + corpo), con il timestamp in X-UHPPOTE-Timestamp.',
+    secretHint:
+      'Ogni richiesta contiene X-UHPPOTE-Signature: sha256=HMAC-SHA256(chiave, timestamp + "." + corpo), con il timestamp in X-UHPPOTE-Timestamp.',
     secretAfterSave: 'La chiave di firma viene generata al salvataggio del webhook.',
     copy: 'Copia',
     copied: 'Copiato',
@@ -681,7 +704,8 @@ export const it: Messages = {
   },
   apiTokens: {
     title: 'Token API',
-    description: 'Accesso per altri sistemi e script (n8n, Home Assistant, CasaAuto, servizi tuoi) tramite Authorization: Bearer',
+    description:
+      'Accesso per altri sistemi e script (n8n, Home Assistant, CasaAuto, servizi tuoi) tramite Authorization: Bearer',
     new: 'Nuovo token',
     colName: 'Nome',
     colToken: 'Token',
@@ -700,7 +724,8 @@ export const it: Messages = {
     name: 'Nome',
     nameHint: 'Il sistema che lo usa, es. CasaAuto o n8n',
     access: 'Livello di accesso',
-    accessHint: 'Sola lettura: dati, eventi e stato in tempo reale. Lettura + apertura porte: può anche aprire le porte consentite. Operatore e Amministratore: come i ruoli degli operatori (tranne la gestione di operatori e token).',
+    accessHint:
+      'Sola lettura: dati, eventi e stato in tempo reale. Lettura + apertura porte: può anche aprire le porte consentite. Operatore e Amministratore: come i ruoli degli operatori (tranne la gestione di operatori e token).',
     zones: 'Limita alle zone',
     zonesHint: 'Vuoto = tutti i controller. Vale per apertura porte e sincronizzazione.',
     doors: 'Porte apribili',
@@ -709,7 +734,8 @@ export const it: Messages = {
     expiresHint: 'Ultimo giorno valido; vuoto = nessuna scadenza',
     activeSwitch: 'Attivo',
     createdTitle: 'Copia il token adesso',
-    createdInfo: "Non verrà più mostrato. Inseriscilo nella configurazione dell'altro sistema; se lo perdi, crea un nuovo token ed elimina questo.",
+    createdInfo:
+      "Non verrà più mostrato. Inseriscilo nella configurazione dell'altro sistema; se lo perdi, crea un nuovo token ed elimina questo.",
     copy: 'Copia',
     copied: 'Copiato',
     usage: 'Esempio: curl -H "Authorization: Bearer <token>" {{url}}/api/doors',
@@ -719,7 +745,8 @@ export const it: Messages = {
   },
   notifications: {
     title: 'Notifiche',
-    description: 'Messaggi su Telegram, email, ntfy e Gotify quando succede qualcosa alle porte, e un resoconto giornaliero',
+    description:
+      'Messaggi su Telegram, email, ntfy e Gotify quando succede qualcosa alle porte, e un resoconto giornaliero',
     new: 'Nuovo canale',
     colName: 'Nome',
     colType: 'Canale',
@@ -735,7 +762,8 @@ export const it: Messages = {
     type: 'Canale',
     language: 'Lingua dei messaggi',
     events: 'Eventi',
-    eventsHint: 'Ogni evento invia un messaggio: "Accesso consentito" può voler dire molti messaggi, sceglilo solo per poche porte.',
+    eventsHint:
+      'Ogni evento invia un messaggio: "Accesso consentito" può voler dire molti messaggi, sceglilo solo per poche porte.',
     doors: 'Solo queste porte',
     doorsHint: 'Vuoto = tutte le porte.',
     dailyReport: 'Resoconto giornaliero',
@@ -836,7 +864,8 @@ export const it: Messages = {
   },
   anomalies: {
     title: 'Anomalie',
-    description: 'Accessi in orari insoliti, tentativi negati ripetuti e tessere inutilizzate da mesi, dallo storico eventi',
+    description:
+      'Accessi in orari insoliti, tentativi negati ripetuti e tessere inutilizzate da mesi, dallo storico eventi',
     tabUnusual: 'Orari insoliti',
     tabDenied: 'Tentativi negati ripetuti',
     tabInactive: 'Tessere inattive',
@@ -861,7 +890,8 @@ export const it: Messages = {
     days: '{{n}} giorni',
     disableSelected: 'Disattiva selezionate ({{n}})',
     disableTitle: 'Disattiva {{n}} tessere',
-    disableInfo: 'Le tessere passano a "disattivata" e vengono rimosse dai controller. Si possono riattivare da Tessere.',
+    disableInfo:
+      'Le tessere passano a "disattivata" e vengono rimosse dai controller. Si possono riattivare da Tessere.',
     disabledOk: '{{n}} tessere disattivate',
     none: 'Nessuna anomalia in questo periodo',
     noneInactive: 'Nessuna tessera attiva inutilizzata da {{n}} giorni o più',
@@ -876,11 +906,13 @@ export const it: Messages = {
     deniedWindow: 'entro (minuti)',
     inactiveDays: 'Tessera inattiva dopo (giorni)',
     saved: 'Impostazioni salvate',
-    notifyHint: 'Per essere avvisato in tempo reale, scegli gli eventi "Accesso in orario insolito" e "Tentativi negati ripetuti" in Notifiche o Webhook.',
+    notifyHint:
+      'Per essere avvisato in tempo reale, scegli gli eventi "Accesso in orario insolito" e "Tentativi negati ripetuti" in Notifiche o Webhook.',
   },
   rules: {
     title: 'Regole',
-    description: 'Automazioni: quando succede qualcosa e le condizioni sono vere, invia notifiche, chiama webhook o apri porte',
+    description:
+      'Automazioni: quando succede qualcosa e le condizioni sono vere, invia notifiche, chiama webhook o apri porte',
     new: 'Nuova regola',
     colName: 'Nome',
     colTrigger: 'Quando',
@@ -916,7 +948,8 @@ export const it: Messages = {
     webhooks: 'Chiama i webhook',
     openDoors: 'Apri le porte',
     message: 'Messaggio',
-    messageHint: 'Vuoto = testo automatico. Segnaposto: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
+    messageHint:
+      'Vuoto = testo automatico. Segnaposto: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
     cooldown: 'Pausa dopo lo scatto (secondi)',
     cooldownHint: '0 = scatta ogni volta',
     enabledSwitch: 'Attiva',
@@ -954,7 +987,8 @@ export const it: Messages = {
     offline: 'offline',
     noDoors: 'Nessuna porta',
     bioSetupTitle: 'Impronta / Face ID richiesti',
-    bioSetupText: 'L’amministratore richiede impronta o Face ID per aprire le porte dall’app. Attivali su questo telefono.',
+    bioSetupText:
+      'L’amministratore richiede impronta o Face ID per aprire le porte dall’app. Attivali su questo telefono.',
     bioOptionalTitle: 'Impronta / Face ID',
     bioOptionalText: 'Con impronta / Face ID questo telefono resta collegato senza scadenza.',
     bioActivate: 'Attiva impronta / Face ID',
@@ -962,7 +996,8 @@ export const it: Messages = {
     bioRemove: 'Disattiva',
     bioUnsupported: 'Questo browser non può usare impronta / Face ID (serve HTTPS).',
     bioDone: 'Impronta / Face ID attivati',
-    notRemembered: 'Questo browser non è un dispositivo ricordato: esci e accedi con "Ricorda questo dispositivo" per usare notifiche push e impronta / Face ID.',
+    notRemembered:
+      'Questo browser non è un dispositivo ricordato: esci e accedi con "Ricorda questo dispositivo" per usare notifiche push e impronta / Face ID.',
     deviceTitle: 'Questo dispositivo',
     deviceName: 'Nome',
     since: 'Collegato dal',
@@ -970,9 +1005,11 @@ export const it: Messages = {
     neverExpires: 'senza scadenza (impronta / Face ID)',
     pushTitle: 'Notifiche push',
     pushEnable: 'Notifiche su questo telefono',
-    pushUnsupported: 'Notifiche non disponibili qui: su iPhone aggiungi prima l’app alla schermata Home (iOS 16.4 o successivo); serve HTTPS.',
+    pushUnsupported:
+      'Notifiche non disponibili qui: su iPhone aggiungi prima l’app alla schermata Home (iOS 16.4 o successivo); serve HTTPS.',
     pushDenied: 'Le notifiche per questo sito sono bloccate nelle impostazioni del browser.',
-    pushDeniedApp: 'Le notifiche sono disattivate per l’app installata: consentile nelle impostazioni di Android (App → UHPPOTE Desk → Notifiche), poi riapri l’app.',
+    pushDeniedApp:
+      'Le notifiche sono disattivate per l’app installata: consentile nelle impostazioni di Android (App → UHPPOTE Desk → Notifiche), poi riapri l’app.',
     pushEvents: 'Eventi',
     pushDoors: 'Solo queste porte',
     pushAllDoors: 'Tutte le porte',
@@ -1010,9 +1047,11 @@ export const it: Messages = {
     noExpiry: 'nessuna',
     revoke: 'Revoca',
     revokeTitle: 'Revoca {{name}} ({{operator}})',
-    revokeInfo: 'Il dispositivo viene disconnesso subito; le sue notifiche push e l’impronta / Face ID registrata vengono eliminate.',
+    revokeInfo:
+      'Il dispositivo viene disconnesso subito; le sue notifiche push e l’impronta / Face ID registrata vengono eliminate.',
     noDevices: 'Nessun dispositivo ricordato',
-    httpsHint: 'L’app richiede HTTPS (reverse proxy) per essere installata e per notifiche push e impronta / Face ID. Imposta PUBLIC_URL con l’indirizzo pubblico.',
+    httpsHint:
+      'L’app richiede HTTPS (reverse proxy) per essere installata e per notifiche push e impronta / Face ID. Imposta PUBLIC_URL con l’indirizzo pubblico.',
     link: 'Indirizzo dell’app: {{url}}',
   },
   audit: {
@@ -1045,7 +1084,8 @@ export const it: Messages = {
     listenerPublic: 'Ricevitore programmato',
     notSet: 'non impostato',
     timeout: 'Timeout',
-    listenerWarning: "Imposta UHPPOTE_LISTENER_PUBLIC con l'IP del server raggiungibile dalle schede (es. 192.168.1.10:60001) per ricevere gli eventi in tempo reale.",
+    listenerWarning:
+      "Imposta UHPPOTE_LISTENER_PUBLIC con l'IP del server raggiungibile dalle schede (es. 192.168.1.10:60001) per ricevere gli eventi in tempo reale.",
     backups: 'Backup database',
     backupsInfo: 'Backup automatico giornaliero nella cartella dati del server (sottocartella backups).',
     backupNow: 'Crea backup ora',
@@ -1340,7 +1380,8 @@ export const it: Messages = {
     inUse: "Impossibile completare l'operazione: l'elemento è in uso",
     controllerError: 'Errore del controller: {{detail}}',
     internal: 'Errore interno del server',
-    passwordManagedByEnv: "La password di questo utente è impostata dalla variabile ADMIN_PASSWORD e non può essere modificata qui",
+    passwordManagedByEnv:
+      'La password di questo utente è impostata dalla variabile ADMIN_PASSWORD e non può essere modificata qui',
     importEmptyCode: 'matricola vuota',
     importInvalidCard: 'tessera non valida: {{card}}',
     importCardTaken: 'tessera {{card}} già assegnata a {{person}}',

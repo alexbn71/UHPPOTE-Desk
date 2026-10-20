@@ -59,7 +59,8 @@ class FakeDriver implements Driver {
   }
   async confirm(question: string, action?: PhysicalAction): Promise<boolean> {
     // questions about the expansion board outputs are answered from the simulated relays
-    if (action?.kind === 'observe-relay' && /expansion board/i.test(question)) return this.f.expansionOutputs[action.door - 1]!
+    if (action?.kind === 'observe-relay' && /expansion board/i.test(question))
+      return this.f.expansionOutputs[action.door - 1]!
     return true
   }
   async ask(): Promise<string> {
@@ -88,7 +89,14 @@ beforeAll(async () => {
     cliPath: null,
   }
   // some cards and an initial "production" state to preserve
-  fake.cardSlots.push({ card: 10000001, from: '2020-01-01', to: '2099-12-31', doors: [1, 1, 1, 1], pin: 0, firstCard: [false, false, false, false] })
+  fake.cardSlots.push({
+    card: 10000001,
+    from: '2020-01-01',
+    to: '2099-12-31',
+    doors: [1, 1, 1, 1],
+    pin: 0,
+    firstCard: [false, false, false, false],
+  })
   fake.listener = { address: '10.0.0.5', port: 60001, interval: 0 }
 })
 

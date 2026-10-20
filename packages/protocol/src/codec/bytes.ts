@@ -9,7 +9,7 @@ export type DateTimeString = string
 export type TimeString = string
 
 function bcdByte(n: number): number {
-  return ((Math.floor(n / 10) % 10) << 4) | n % 10
+  return (Math.floor(n / 10) % 10 << 4) | n % 10
 }
 
 function bcdDigits(buf: Buffer, offset: number, length: number): string | null {
@@ -41,7 +41,10 @@ export function parseDate(value: DateString, field = 'date'): [number, number, n
   return [y, mo, d]
 }
 
-export function parseDateTime(value: DateTimeString, field = 'datetime'): [number, number, number, number, number, number] {
+export function parseDateTime(
+  value: DateTimeString,
+  field = 'datetime',
+): [number, number, number, number, number, number] {
   const m = DATETIME_RE.exec(value)
   if (!m) throw new CodecError(`${field}: invalid date/time '${value}' (expected YYYY-MM-DD HH:mm:ss)`)
   const v = m.slice(1).map(Number) as [number, number, number, number, number, number]
@@ -85,7 +88,8 @@ export class Writer {
   }
 
   u16(offset: number, v: number, field = 'uint16'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 0xffff) throw new CodecError(`${field}: value out of range (0-65535): ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 0xffff)
+      throw new CodecError(`${field}: value out of range (0-65535): ${v}`)
     this.buf.writeUInt16LE(v, offset)
     return this
   }
@@ -110,7 +114,8 @@ export class Writer {
 
   /** 4-byte little-endian PIN (door passcodes). */
   pin32(offset: number, v: number, field = 'passcode'): this {
-    if (!Number.isInteger(v) || v < 0 || v > 999999) throw new CodecError(`${field}: passcode out of range (0-999999): ${v}`)
+    if (!Number.isInteger(v) || v < 0 || v > 999999)
+      throw new CodecError(`${field}: passcode out of range (0-999999): ${v}`)
     this.buf.writeUInt32LE(v, offset)
     return this
   }

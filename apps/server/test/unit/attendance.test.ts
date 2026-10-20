@@ -133,7 +133,14 @@ describe('computeAttendance', () => {
       holidays: new Map(),
       leaves: [],
     })
-    expect(d).toMatchObject({ status: 'presente', firstIn: '21:58', lastOut: '06:02', expectedMinutes: 450, lateMinutes: 0, earlyLeaveMinutes: 0 })
+    expect(d).toMatchObject({
+      status: 'presente',
+      firstIn: '21:58',
+      lastOut: '06:02',
+      expectedMinutes: 450,
+      lateMinutes: 0,
+      earlyLeaveMinutes: 0,
+    })
     expect(d!.workedMinutes).toBe(484 - 30)
   })
 

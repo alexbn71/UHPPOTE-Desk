@@ -140,10 +140,9 @@ export class AnomalyService {
   private nonWorkingDays(from: string, to: string): (date: string) => boolean {
     const holidays = new Set(
       this.db
-        .all<{ date: string }>('SELECT date FROM holidays WHERE date BETWEEN ? AND ?', [
-          from.slice(0, 10),
-          to.slice(0, 10),
-        ])
+        .all<{
+          date: string
+        }>('SELECT date FROM holidays WHERE date BETWEEN ? AND ?', [from.slice(0, 10), to.slice(0, 10)])
         .map((h) => h.date),
     )
     return (date) => isWeekend(date) || holidays.has(date)

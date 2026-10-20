@@ -1,4 +1,19 @@
-import { Alert, Badge, Button, Card, Group, Modal, NumberInput, Select, SimpleGrid, Stack, Switch, Table, Text, TextInput } from '@mantine/core'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Modal,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core'
 import { IconPlus, IconRadar } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -32,16 +47,47 @@ export interface ControllerForm {
   enabled: boolean
 }
 
-export function ControllerFormFields({ form, setForm }: { form: ControllerForm; setForm: (f: ControllerForm) => void }) {
+export function ControllerFormFields({
+  form,
+  setForm,
+}: {
+  form: ControllerForm
+  setForm: (f: ControllerForm) => void
+}) {
   const { t } = useTranslation()
   const zones = useZones()
   return (
     <Stack>
-      <NumberInput label={t('controllers.serial')} description={t('controllers.serialHint')} value={form.serial} onChange={(v) => setForm({ ...form, serial: v })} hideControls allowDecimal={false} required />
-      <TextInput label={t('controllers.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} required />
+      <NumberInput
+        label={t('controllers.serial')}
+        description={t('controllers.serialHint')}
+        value={form.serial}
+        onChange={(v) => setForm({ ...form, serial: v })}
+        hideControls
+        allowDecimal={false}
+        required
+      />
+      <TextInput
+        label={t('controllers.name')}
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.currentTarget.value })}
+        required
+      />
       <SimpleGrid cols={2}>
-        <TextInput label={t('controllers.ip')} description={t('controllers.ipHint')} value={form.host} onChange={(e) => setForm({ ...form, host: e.currentTarget.value.trim() })} />
-        <NumberInput label={t('controllers.port')} value={form.port} onChange={(v) => setForm({ ...form, port: v })} min={1} max={65535} hideControls />
+        <TextInput
+          label={t('controllers.ip')}
+          description={t('controllers.ipHint')}
+          value={form.host}
+          onChange={(e) => setForm({ ...form, host: e.currentTarget.value.trim() })}
+        />
+        <NumberInput
+          label={t('controllers.port')}
+          value={form.port}
+          onChange={(v) => setForm({ ...form, port: v })}
+          min={1}
+          max={65535}
+          hideControls
+        />
       </SimpleGrid>
       <SimpleGrid cols={2}>
         <Select
@@ -53,9 +99,19 @@ export function ControllerFormFields({ form, setForm }: { form: ControllerForm; 
           value={form.transport}
           onChange={(v) => setForm({ ...form, transport: (v as 'udp' | 'tcp') ?? 'udp' })}
         />
-        <Select label={t('controllers.zone')} clearable data={treeOptions(zones.data)} value={form.zoneId} onChange={(v) => setForm({ ...form, zoneId: v })} />
+        <Select
+          label={t('controllers.zone')}
+          clearable
+          data={treeOptions(zones.data)}
+          value={form.zoneId}
+          onChange={(v) => setForm({ ...form, zoneId: v })}
+        />
       </SimpleGrid>
-      <Switch label={t('controllers.enabledSwitch')} checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })} />
+      <Switch
+        label={t('controllers.enabledSwitch')}
+        checked={form.enabled}
+        onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })}
+      />
     </Stack>
   )
 }
@@ -87,7 +143,9 @@ export function ControllersPage() {
   const discover = async () => {
     setDiscovering(true)
     try {
-      setFound(await api.get<Discovered[]>(`/discover${broadcast ? `?broadcast=${encodeURIComponent(broadcast)}` : ''}`))
+      setFound(
+        await api.get<Discovered[]>(`/discover${broadcast ? `?broadcast=${encodeURIComponent(broadcast)}` : ''}`),
+      )
     } catch (err) {
       notifyError(err)
     } finally {
@@ -121,7 +179,20 @@ export function ControllersPage() {
               <Button variant="default" leftSection={<IconRadar size={16} />} onClick={() => setFound([])}>
                 {t('controllers.search')}
               </Button>
-              <Button leftSection={<IconPlus size={16} />} onClick={() => setForm({ serial: '', name: '', host: '', port: 60000, transport: 'udp', zoneId: null, enabled: true })}>
+              <Button
+                leftSection={<IconPlus size={16} />}
+                onClick={() =>
+                  setForm({
+                    serial: '',
+                    name: '',
+                    host: '',
+                    port: 60000,
+                    transport: 'udp',
+                    zoneId: null,
+                    enabled: true,
+                  })
+                }
+              >
                 {t('controllers.add')}
               </Button>
             </>
@@ -150,7 +221,8 @@ export function ControllersPage() {
                     <Table.Td fw={600}>{c.name}</Table.Td>
                     <Table.Td className="mono">{c.serial}</Table.Td>
                     <Table.Td className="mono">
-                      {c.host ? `${c.host}:${c.port}` : t('controllers.broadcast')} {c.transport === 'tcp' && <Badge size="xs">TCP</Badge>}
+                      {c.host ? `${c.host}:${c.port}` : t('controllers.broadcast')}{' '}
+                      {c.transport === 'tcp' && <Badge size="xs">TCP</Badge>}
                     </Table.Td>
                     <Table.Td>{c.firmware ?? '—'}</Table.Td>
                     <Table.Td>
@@ -176,7 +248,12 @@ export function ControllersPage() {
             {t('controllers.discoveryInfo')}
           </Text>
           <Group align="flex-end">
-            <TextInput label={t('controllers.broadcastAddress')} placeholder="192.168.1.255:60000" value={broadcast} onChange={(e) => setBroadcast(e.currentTarget.value)} />
+            <TextInput
+              label={t('controllers.broadcastAddress')}
+              placeholder="192.168.1.255:60000"
+              value={broadcast}
+              onChange={(e) => setBroadcast(e.currentTarget.value)}
+            />
             <Button onClick={() => void discover()} loading={discovering} leftSection={<IconRadar size={16} />}>
               {t('controllers.startSearch')}
             </Button>

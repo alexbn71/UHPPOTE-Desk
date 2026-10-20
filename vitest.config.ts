@@ -18,7 +18,11 @@ export default defineConfig({
       {
         test: {
           name: 'integration',
-          include: ['packages/**/test/**/*.int.ts', 'apps/server/test/integration/**/*.int.ts', 'tools/**/test/**/*.int.ts'],
+          include: [
+            'packages/**/test/**/*.int.ts',
+            'apps/server/test/integration/**/*.int.ts',
+            'tools/**/test/**/*.int.ts',
+          ],
           environment: 'node',
           testTimeout: 30_000,
           hookTimeout: 30_000,

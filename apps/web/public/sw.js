@@ -24,7 +24,13 @@ self.addEventListener('activate', (event) => {
 // The API is never cached.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
-  if (event.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/__')) return
+  if (
+    event.request.method !== 'GET' ||
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/__')
+  )
+    return
   event.respondWith(
     fetch(event.request)
       .then((res) => {
@@ -34,7 +40,11 @@ self.addEventListener('fetch', (event) => {
         }
         return res
       })
-      .catch(async () => (await caches.match(event.request)) ?? (event.request.mode === 'navigate' ? caches.match('/') : Response.error())),
+      .catch(
+        async () =>
+          (await caches.match(event.request)) ??
+          (event.request.mode === 'navigate' ? caches.match('/') : Response.error()),
+      ),
   )
 })
 
@@ -74,13 +84,25 @@ self.addEventListener('notificationclick', (event) => {
   if (event.action === 'open' && p.door && p.confirmation === 'press') {
     // "hold to open" mode: the action itself is the confirmation
     event.waitUntil(
-      fetch(`/api/doors/${p.door.id}/open`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', credentials: 'same-origin' })
+      fetch(`/api/doors/${p.door.id}/open`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+        credentials: 'same-origin',
+      })
         .then(async (res) => {
           const body = res.ok ? null : await res.json().catch(() => null)
           // the administrator now requires fingerprint/Face ID: confirm in the app, on that door
-          if (body && (body.code === 'biometricRequired' || body.code === 'biometricNotRegistered')) return focusOrOpen(p.url)
-          const text = res.ok ? p.texts.opened : p.texts.failed.replace('{{error}}', (body && body.error) || `HTTP ${res.status}`)
-          return self.registration.showNotification(text, { tag: `${p.tag}-result`, icon: '/icon-192.png', badge: '/badge-96.png' })
+          if (body && (body.code === 'biometricRequired' || body.code === 'biometricNotRegistered'))
+            return focusOrOpen(p.url)
+          const text = res.ok
+            ? p.texts.opened
+            : p.texts.failed.replace('{{error}}', (body && body.error) || `HTTP ${res.status}`)
+          return self.registration.showNotification(text, {
+            tag: `${p.tag}-result`,
+            icon: '/icon-192.png',
+            badge: '/badge-96.png',
+          })
         })
         .catch(() => focusOrOpen(p.url)),
     )

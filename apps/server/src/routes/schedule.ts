@@ -30,7 +30,8 @@ export function registerScheduleRoutes(app: FastifyInstance, ctx: AppContext): v
     const { id } = idParam.parse(req.params)
     const b = timeProfileInputSchema.parse({ ...(req.body as object), id })
     if (b.validFrom > b.validTo) throw new HttpError(400, 'dateOrder')
-    for (const s of b.segments) if (s.start >= s.end) throw new HttpError(400, 'invalidSegment', { start: s.start, end: s.end })
+    for (const s of b.segments)
+      if (s.start >= s.end) throw new HttpError(400, 'invalidSegment', { start: s.start, end: s.end })
     if (b.linkedTo !== null) {
       if (b.linkedTo === id) throw new HttpError(400, 'selfLink')
       if (!ctx.schedule.profile(b.linkedTo)) throw new HttpError(400, 'linkedMissing', { id: b.linkedTo })

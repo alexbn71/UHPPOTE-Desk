@@ -56,10 +56,20 @@ function config(dir: string): AppConfig {
   }
 }
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 async function api(method: string, url: string, body?: unknown, cookie = adminCookie): Promise<LightMyRequestResponse> {
-  return app.inject({ method: method as 'GET', url: `/api${url}`, headers: cookie ? { cookie } : {}, ...(body !== undefined ? { payload: body as object } : {}) })
+  return app.inject({
+    method: method as 'GET',
+    url: `/api${url}`,
+    headers: cookie ? { cookie } : {},
+    ...(body !== undefined ? { payload: body as object } : {}),
+  })
 }
 
 async function login(username: string, password: string): Promise<string> {
@@ -106,7 +116,16 @@ describe('authentication', () => {
   it('forces a password change at first login', async () => {
     const cookie = await login('admin', generatedPassword)
     expect((await api('GET', '/controllers', undefined, cookie)).statusCode).toBe(403)
-    expect((await api('POST', '/auth/password', { currentPassword: generatedPassword, newPassword: 'nuova-password-1' }, cookie)).statusCode).toBe(200)
+    expect(
+      (
+        await api(
+          'POST',
+          '/auth/password',
+          { currentPassword: generatedPassword, newPassword: 'nuova-password-1' },
+          cookie,
+        )
+      ).statusCode,
+    ).toBe(200)
     adminCookie = await login('admin', 'nuova-password-1')
     expect((await api('GET', '/controllers')).statusCode).toBe(200)
   })
@@ -114,7 +133,12 @@ describe('authentication', () => {
 
 describe('controller', () => {
   it('registers the controller, brings it online and configures the listener', async () => {
-    const r = await api('POST', '/controllers', { serial: SERIAL, name: 'Ingresso', host: fake.endpoint.host, port: fake.endpoint.port })
+    const r = await api('POST', '/controllers', {
+      serial: SERIAL,
+      name: 'Ingresso',
+      host: fake.endpoint.host,
+      port: fake.endpoint.port,
+    })
     expect(r.statusCode).toBe(200)
     controllerId = r.json().id
     await ctx.health.check(controllerId)
@@ -141,7 +165,13 @@ describe('controller', () => {
 
   it('door change sent to the controller', async () => {
     const door = (await api('GET', '/doors')).json().find((d: { door: number }) => d.door === 2)
-    const r = await api('PUT', `/doors/${door.id}`, { name: 'Magazzino', active: true, attendance: false, mode: 2, delay: 7 })
+    const r = await api('PUT', `/doors/${door.id}`, {
+      name: 'Magazzino',
+      active: true,
+      attendance: false,
+      mode: 2,
+      delay: 7,
+    })
     expect(r.json()).toMatchObject({ ok: true, pushError: null })
     expect(fake.doors[1]).toEqual({ mode: 2, delay: 7 })
     await api('PUT', `/doors/${door.id}`, { name: 'Magazzino', active: true, attendance: false, mode: 3, delay: 5 })
@@ -192,7 +222,14 @@ describe('people, cards and permissions', () => {
   })
 
   it('person + card + permissions → card on the controller', async () => {
-    const p = await api('POST', '/people', { code: 'E001', lastName: 'Rossi', firstName: 'Mario', validFrom: '2020-01-01', validTo: '2099-12-31', pin: 1234 })
+    const p = await api('POST', '/people', {
+      code: 'E001',
+      lastName: 'Rossi',
+      firstName: 'Mario',
+      validFrom: '2020-01-01',
+      validTo: '2099-12-31',
+      pin: 1234,
+    })
     expect(p.statusCode).toBe(200)
     personId = p.json().id
     expect((await api('POST', '/cards', { number: CARD, personId })).statusCode).toBe(200)
@@ -205,7 +242,14 @@ describe('people, cards and permissions', () => {
     })
     expect(r.json()).toMatchObject({ ok: true, pushErrors: [] })
     expect(fake.cards).toEqual([
-      { card: CARD, from: '2020-01-01', to: '2099-12-31', doors: [1, 10, 0, 0], pin: 1234, firstCard: [false, true, false, false] },
+      {
+        card: CARD,
+        from: '2020-01-01',
+        to: '2099-12-31',
+        doors: [1, 10, 0, 0],
+        pin: 1234,
+        firstCard: [false, true, false, false],
+      },
     ])
   })
 
@@ -239,7 +283,14 @@ describe('people, cards and permissions', () => {
   it('a different card count is only reported, nothing is deleted automatically', async () => {
     fake.offline = true
     await ctx.health.check(controllerId)
-    fake.cardSlots.push({ card: 10012345, from: '2020-01-01', to: '2099-12-31', doors: [1, 0, 0, 0], pin: 0, firstCard: [false, false, false, false] })
+    fake.cardSlots.push({
+      card: 10012345,
+      from: '2020-01-01',
+      to: '2099-12-31',
+      doors: [1, 0, 0, 0],
+      pin: 0,
+      firstCard: [false, false, false, false],
+    })
     fake.offline = false
     await ctx.health.check(controllerId)
     expect(fake.cards.map((c) => c.card).sort()).toEqual([10012345, CARD].sort())
@@ -256,7 +307,10 @@ describe('events', () => {
       const ev = fake.swipe(CARD, 1)
       expect(ev.granted).toBe(true)
       await waitFor(() => messages.some((m) => m.type === 'event' && m.event.index === ev.index))
-      const msg = messages.find((m) => m.type === 'event' && m.event.index === ev.index) as Extract<WsMessage, { type: 'event' }>
+      const msg = messages.find((m) => m.type === 'event' && m.event.index === ev.index) as Extract<
+        WsMessage,
+        { type: 'event' }
+      >
       expect(msg.event).toMatchObject({ card: CARD, personId, personName: 'Rossi Mario', granted: true, door: 1 })
       const list = (await api('GET', `/events?personId=${personId}`)).json()
       expect(list.rows.some((e: { index: number }) => e.index === ev.index)).toBe(true)
@@ -282,7 +336,9 @@ describe('events', () => {
 
   it('unknown card offered for registration', async () => {
     fake.swipe(10077777, 1)
-    await waitFor(async () => (await api('GET', '/cards/unknown')).json().some((c: { card: number }) => c.card === 10077777))
+    await waitFor(async () =>
+      (await api('GET', '/cards/unknown')).json().some((c: { card: number }) => c.card === 10077777),
+    )
   })
 
   it('export CSV in the requested language', async () => {
@@ -305,14 +361,25 @@ describe('events', () => {
       linkedTo: null,
     })
     expect(r.statusCode).toBe(400)
-    expect(r.json()).toEqual({ error: 'Invalid interval: 10:00-09:00', code: 'invalidSegment', params: { start: '10:00', end: '09:00' } })
+    expect(r.json()).toEqual({
+      error: 'Invalid interval: 10:00-09:00',
+      code: 'invalidSegment',
+      params: { start: '10:00', end: '09:00' },
+    })
     expect((await api('GET', '/people/999999')).json()).toMatchObject({ code: 'personNotFound' })
   })
 })
 
 describe('synchronisation', () => {
   it('detects and removes foreign cards on the controller', async () => {
-    fake.cardSlots.push({ card: 10011111, from: '2020-01-01', to: '2099-12-31', doors: [1, 1, 1, 1], pin: 0, firstCard: [false, false, false, false] })
+    fake.cardSlots.push({
+      card: 10011111,
+      from: '2020-01-01',
+      to: '2099-12-31',
+      doors: [1, 1, 1, 1],
+      pin: 0,
+      firstCard: [false, false, false, false],
+    })
     const diff = (await api('GET', `/controllers/${controllerId}/sync/diff`)).json()
     expect(diff).toMatchObject({ toAdd: [], toUpdate: [], toDelete: [10011111], unchanged: 1 })
     const r = await api('POST', `/controllers/${controllerId}/sync/cards`)
@@ -322,7 +389,12 @@ describe('synchronisation', () => {
 
   it('full synchronisation: settings and tasks', async () => {
     const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
-    const r1 = await api('PUT', `/controllers/${controllerId}/settings?push=false`, { ...settings, interlock: 3, antipassback: 2, keypads: [true, false, false, false] })
+    const r1 = await api('PUT', `/controllers/${controllerId}/settings?push=false`, {
+      ...settings,
+      interlock: 3,
+      antipassback: 2,
+      keypads: [true, false, false, false],
+    })
     expect(r1.statusCode).toBe(200)
     expect(
       (
@@ -376,7 +448,10 @@ describe('synchronisation', () => {
     expect(fake.expansionBoard()).toEqual(expected)
     // uninstalled: kept in the database but no longer written
     const before = fake.parameterWrites
-    await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard: { ...expansionBoard, installed: false } })
+    await api('PUT', `/controllers/${controllerId}/settings`, {
+      ...settings,
+      expansionBoard: { ...expansionBoard, installed: false },
+    })
     expect(fake.parameterWrites).toBe(before)
   })
 
@@ -404,10 +479,22 @@ describe('synchronisation', () => {
 
 describe('roles and audit', () => {
   it('a read-only user cannot open doors', async () => {
-    const created = (await api('POST', '/operators', { username: 'lettore', displayName: 'Lettore', role: 'viewer', password: 'password-lettore' })).json()
+    const created = (
+      await api('POST', '/operators', {
+        username: 'lettore',
+        displayName: 'Lettore',
+        role: 'viewer',
+        password: 'password-lettore',
+      })
+    ).json()
     expect(created.id).toBeGreaterThan(0)
     let cookie = await login('lettore', 'password-lettore')
-    await api('POST', '/auth/password', { currentPassword: 'password-lettore', newPassword: 'password-lettore-2' }, cookie)
+    await api(
+      'POST',
+      '/auth/password',
+      { currentPassword: 'password-lettore', newPassword: 'password-lettore-2' },
+      cookie,
+    )
     cookie = await login('lettore', 'password-lettore-2')
     const door = (await api('GET', '/doors', undefined, cookie)).json()[0]
     expect((await api('POST', `/doors/${door.id}/open`, undefined, cookie)).statusCode).toBe(403)
@@ -446,15 +533,30 @@ describe('attendance', () => {
     const doors = (await api('GET', '/doors')).json() as { id: number; door: number; name: string }[]
     const d1 = doors.find((d) => d.door === 1)!
     await api('PUT', `/doors/${d1.id}`, { name: d1.name, active: true, attendance: true, mode: 3, delay: 5 })
-    const p = (await api('POST', '/people', { code: 'E002', lastName: 'Verdi', firstName: 'Anna', validFrom: '2020-01-01', validTo: '2099-12-31' })).json()
+    const p = (
+      await api('POST', '/people', {
+        code: 'E002',
+        lastName: 'Verdi',
+        firstName: 'Anna',
+        validFrom: '2020-01-01',
+        validTo: '2099-12-31',
+      })
+    ).json()
     await api('POST', '/cards', { number: 10058402, personId: p.id })
-    await api('PUT', `/people/${p.id}/permissions`, { permissions: [{ doorId: d1.id, profileId: null, firstCard: false }] })
+    await api('PUT', `/people/${p.id}/permissions`, {
+      permissions: [{ doorId: d1.id, profileId: null, firstCard: false }],
+    })
     const a = fake.swipe(10058402, 1, 1)
     const b = fake.swipe(10058402, 1, 2)
     await waitFor(async () => (await api('GET', `/events?personId=${p.id}`)).json().total >= 2)
     const today = localDate()
     const report = (await api('GET', `/attendance/report?from=${today}&to=${today}&personId=${p.id}`)).json()
     expect(report).toHaveLength(1)
-    expect(report[0]).toMatchObject({ personName: 'Verdi Anna', status: 'presente', firstIn: a.timestamp!.slice(11, 16), lastOut: b.timestamp!.slice(11, 16) })
+    expect(report[0]).toMatchObject({
+      personName: 'Verdi Anna',
+      status: 'presente',
+      firstIn: a.timestamp!.slice(11, 16),
+      lastOut: b.timestamp!.slice(11, 16),
+    })
   })
 })

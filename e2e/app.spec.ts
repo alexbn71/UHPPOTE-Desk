@@ -18,7 +18,9 @@ async function login(page: Page, username: string, password: string) {
   await page.getByRole('textbox', { name: 'Password', exact: true }).fill(password)
   await page.getByRole('button', { name: 'Log in' }).click()
   // wait for the outcome (app loaded or mandatory password change)
-  await expect(page.getByRole('heading', { name: 'Dashboard' }).or(page.getByRole('heading', { name: 'Change password' }))).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Dashboard' }).or(page.getByRole('heading', { name: 'Change password' })),
+  ).toBeVisible()
 }
 
 test.describe.serial('UHPPOTE Desk', () => {
@@ -142,7 +144,13 @@ test.describe.serial('UHPPOTE Desk', () => {
     }
     // tabs of the controller detail and attendance pages
     await page.goto('/controllers/1')
-    for (const tab of ['Network and configuration', 'Advanced settings', 'Expansion board', 'Maintenance', 'Diagnostics']) {
+    for (const tab of [
+      'Network and configuration',
+      'Advanced settings',
+      'Expansion board',
+      'Maintenance',
+      'Diagnostics',
+    ]) {
       await page.getByRole('tab', { name: tab }).click()
     }
     await expect(page.getByText('Serial number')).toBeVisible({ timeout: 10_000 })
@@ -168,7 +176,13 @@ test.describe.serial('UHPPOTE Desk', () => {
     await expect(page.getByText('Settings saved')).toBeVisible({ timeout: 10_000 })
     const settings = await (await page.request.get('/api/controllers/1/settings')).json()
     expect(settings.expansionBoard.installed).toBe(true)
-    expect(settings.expansionBoard.relays[0]).toMatchObject({ active: true, source: 0, mode: 1, events: 0x07, duration: 10 })
+    expect(settings.expansionBoard.relays[0]).toMatchObject({
+      active: true,
+      source: 0,
+      mode: 1,
+      events: 0x07,
+      duration: 10,
+    })
     expect(settings.expansionBoard.relays.slice(1).every((r: { active: boolean }) => !r.active)).toBe(true)
   })
 
@@ -219,7 +233,9 @@ test.describe.serial('UHPPOTE Desk', () => {
   test('read-only operator: no door opening and no administration', async ({ page, request }) => {
     const r = await request.post('/api/auth/login', { data: { username: 'admin', password: ADMIN_PASSWORD } })
     expect(r.ok()).toBeTruthy()
-    await request.post('/api/operators', { data: { username: 'reader', displayName: 'Reader', role: 'viewer', password: 'Reader-Password-1' } })
+    await request.post('/api/operators', {
+      data: { username: 'reader', displayName: 'Reader', role: 'viewer', password: 'Reader-Password-1' },
+    })
     await login(page, 'reader', 'Reader-Password-1')
     await page.getByRole('textbox', { name: 'Current password', exact: true }).fill('Reader-Password-1')
     await page.getByRole('textbox', { name: 'New password', exact: true }).fill('Reader-Password-2')

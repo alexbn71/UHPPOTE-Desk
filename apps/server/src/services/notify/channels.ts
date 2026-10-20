@@ -20,13 +20,22 @@ const TELEGRAM_MAX = 4096
 const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 export function telegramText(m: NotifyMessage): string {
-  const body = m.lines.map((l, i) => (typeof l === 'string' ? escapeHtml(l) : `${i > 0 ? '\n' : ''}<b>${escapeHtml(l.heading)}</b>`)).join('\n')
+  const body = m.lines
+    .map((l, i) => (typeof l === 'string' ? escapeHtml(l) : `${i > 0 ? '\n' : ''}<b>${escapeHtml(l.heading)}</b>`))
+    .join('\n')
   const text = `${m.emoji} <b>${escapeHtml(m.title)}</b>\n${body}`
   return text.length <= TELEGRAM_MAX ? text : `${text.slice(0, TELEGRAM_MAX - 2)}…`
 }
 
 /** Calls a Telegram Bot API method; throws with Telegram's description on failure. */
-export async function telegramCall<T = unknown>(api: string, token: string, method: string, body: object, timeoutMs: number, signal?: AbortSignal): Promise<T> {
+export async function telegramCall<T = unknown>(
+  api: string,
+  token: string,
+  method: string,
+  body: object,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<T> {
   const timeout = AbortSignal.timeout(timeoutMs)
   const res = await fetch(`${api}/bot${token}/${method}`, {
     method: 'POST',
@@ -49,7 +58,13 @@ async function sendTelegram(c: TelegramConfig, m: NotifyMessage, o: SendOptions)
       text: telegramText(m),
       parse_mode: 'HTML',
       link_preview_options: { is_disabled: true },
-      ...(o.telegramButton ? { reply_markup: { inline_keyboard: [[{ text: o.telegramButton.text, callback_data: o.telegramButton.data }]] } } : {}),
+      ...(o.telegramButton
+        ? {
+            reply_markup: {
+              inline_keyboard: [[{ text: o.telegramButton.text, callback_data: o.telegramButton.data }]],
+            },
+          }
+        : {}),
     },
     o.timeoutMs,
   )
@@ -90,7 +105,12 @@ async function sendNtfy(c: NtfyConfig, m: NotifyMessage, o: SendOptions): Promis
   if (c.token) headers.Authorization = `Bearer ${c.token}`
   else if (c.username) headers.Authorization = `Basic ${Buffer.from(`${c.username}:${c.password}`).toString('base64')}`
   // JSON publishing (POST to the server root) supports non-ASCII titles, unlike the Title header
-  await postJson(c.serverUrl.replace(/\/+$/, ''), headers, { topic: c.topic, title: m.title, message: plainText(m), priority: m.priority, tags: m.tags }, o.timeoutMs)
+  await postJson(
+    c.serverUrl.replace(/\/+$/, ''),
+    headers,
+    { topic: c.topic, title: m.title, message: plainText(m), priority: m.priority, tags: m.tags },
+    o.timeoutMs,
+  )
 }
 
 async function sendGotify(c: GotifyConfig, m: NotifyMessage, o: SendOptions): Promise<void> {

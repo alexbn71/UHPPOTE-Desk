@@ -9,7 +9,21 @@ import { api, notifyError } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { treeOptions, treePath, useDepartments, useZones, type TreeNode } from '../lib/queries'
 
-function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: { title: string; description: string; endpoint: string; queryKey: string; nodes: TreeNode[]; canEdit: boolean }) {
+function TreeEditor({
+  title,
+  description,
+  endpoint,
+  queryKey,
+  nodes,
+  canEdit,
+}: {
+  title: string
+  description: string
+  endpoint: string
+  queryKey: string
+  nodes: TreeNode[]
+  canEdit: boolean
+}) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [edit, setEdit] = useState<{ id: number | null; name: string; parentId: string | null } | null>(null)
@@ -52,7 +66,11 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
           </Text>
         </div>
         {canEdit && (
-          <Button size="xs" leftSection={<IconPlus size={14} />} onClick={() => setEdit({ id: null, name: '', parentId: null })}>
+          <Button
+            size="xs"
+            leftSection={<IconPlus size={14} />}
+            onClick={() => setEdit({ id: null, name: '', parentId: null })}
+          >
             {t('common.add')}
           </Button>
         )}
@@ -65,7 +83,12 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
               <Table.Td w={80}>
                 {canEdit && (
                   <Group gap={0} justify="flex-end">
-                    <IconButton label={t('common.edit')} onClick={() => setEdit({ id: n.id, name: n.name, parentId: n.parentId ? String(n.parentId) : null })}>
+                    <IconButton
+                      label={t('common.edit')}
+                      onClick={() =>
+                        setEdit({ id: n.id, name: n.name, parentId: n.parentId ? String(n.parentId) : null })
+                      }
+                    >
                       <IconEdit size={16} />
                     </IconButton>
                     <IconButton label={t('common.delete')} color="red" onClick={() => remove(n)}>
@@ -83,10 +106,19 @@ function TreeEditor({ title, description, endpoint, queryKey, nodes, canEdit }: 
           {t('structure.none')}
         </Text>
       )}
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.id ? t('structure.editItem') : t('structure.newItem')}>
+      <Modal
+        opened={!!edit}
+        onClose={() => setEdit(null)}
+        title={edit?.id ? t('structure.editItem') : t('structure.newItem')}
+      >
         {edit && (
           <Stack>
-            <TextInput label={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} autoFocus />
+            <TextInput
+              label={t('common.name')}
+              value={edit.name}
+              onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })}
+              autoFocus
+            />
             <Select
               label={t('structure.parent')}
               clearable

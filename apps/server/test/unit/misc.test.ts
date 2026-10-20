@@ -36,7 +36,9 @@ describe('diffCards', () => {
 
 describe('CSV', () => {
   it('parsing with ; separator and quotes', () => {
-    const rows = parseCsv('﻿matricola;cognome;reparto\r\n001;"Rossi; Mario";Vendite\\Estero\r\n\r\n002;"Bianchi ""Gigi""";\n')
+    const rows = parseCsv(
+      '﻿matricola;cognome;reparto\r\n001;"Rossi; Mario";Vendite\\Estero\r\n\r\n002;"Bianchi ""Gigi""";\n',
+    )
     expect(rows).toEqual([
       ['matricola', 'cognome', 'reparto'],
       ['001', 'Rossi; Mario', 'Vendite\\Estero'],

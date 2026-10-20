@@ -19,7 +19,13 @@ export class ApiError extends Error {
 /** Message of an error in the current language (server error codes are translated under errors.*). */
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) {
-    const base = err.code ? i18n.t(`errors.${err.code}` as 'errors.generic', { ...err.params, status: err.status, defaultValue: err.message }) : err.message
+    const base = err.code
+      ? i18n.t(`errors.${err.code}` as 'errors.generic', {
+          ...err.params,
+          status: err.status,
+          defaultValue: err.message,
+        })
+      : err.message
     const detail = err.issues?.length ? `: ${err.issues.map((i) => `${i.path} ${i.message}`).join('; ')}` : ''
     return base + detail
   }
@@ -32,7 +38,11 @@ export function errorText(err: ErrorInfo | string): string {
 }
 
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
-  const init: RequestInit = { method, credentials: 'same-origin', headers: { 'Accept-Language': i18n.resolvedLanguage ?? 'en' } }
+  const init: RequestInit = {
+    method,
+    credentials: 'same-origin',
+    headers: { 'Accept-Language': i18n.resolvedLanguage ?? 'en' },
+  }
   if (body instanceof FormData) {
     init.body = body
   } else if (body !== undefined) {
@@ -46,8 +56,16 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   const text = await res.text()
   const data = text ? (JSON.parse(text) as unknown) : undefined
   if (!res.ok) {
-    const err = data as { error?: string; code?: string; params?: Params; issues?: { path: string; message: string }[] } | undefined
-    throw new ApiError(res.status, err?.error ?? `Error ${res.status}`, err?.code ?? (err?.error ? undefined : 'generic'), err?.params ?? { status: res.status }, err?.issues)
+    const err = data as
+      | { error?: string; code?: string; params?: Params; issues?: { path: string; message: string }[] }
+      | undefined
+    throw new ApiError(
+      res.status,
+      err?.error ?? `Error ${res.status}`,
+      err?.code ?? (err?.error ? undefined : 'generic'),
+      err?.params ?? { status: res.status },
+      err?.issues,
+    )
   }
   return data as T
 }
@@ -73,13 +91,21 @@ export function notifyOk(message: string): void {
 }
 
 /** Warns when a change was saved but could not be sent to some controllers. */
-export function notifyPush(result: { pushErrors?: { controllerId: number; error: string }[]; pushError?: string | null }, controllerName?: (id: number) => string): void {
+export function notifyPush(
+  result: { pushErrors?: { controllerId: number; error: string }[]; pushError?: string | null },
+  controllerName?: (id: number) => string,
+): void {
   const errors = result.pushErrors ?? (result.pushError ? [{ controllerId: 0, error: result.pushError }] : [])
   if (errors.length === 0) return
   notifications.show({
     color: 'orange',
     title: i18n.t('push.title'),
-    message: errors.map((e) => `${e.controllerId && controllerName ? controllerName(e.controllerId) + ': ' : ''}${e.error}`).join('\n') + '\n' + i18n.t('push.later'),
+    message:
+      errors
+        .map((e) => `${e.controllerId && controllerName ? controllerName(e.controllerId) + ': ' : ''}${e.error}`)
+        .join('\n') +
+      '\n' +
+      i18n.t('push.later'),
     autoClose: 12000,
   })
 }

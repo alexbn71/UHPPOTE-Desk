@@ -23,7 +23,11 @@ export function SystemPage() {
   const { t } = useTranslation()
   const { can } = useAuth()
   const info = useQuery({ queryKey: ['system'], queryFn: () => api.get<SystemInfo>('/system/info') })
-  const backups = useQuery({ queryKey: ['backups'], queryFn: () => api.get<{ name: string; size: number; createdAt: string }[]>('/system/backups'), enabled: can('admin') })
+  const backups = useQuery({
+    queryKey: ['backups'],
+    queryFn: () => api.get<{ name: string; size: number; createdAt: string }[]>('/system/backups'),
+    enabled: can('admin'),
+  })
   const d = info.data
 
   const row = (label: string, value: ReactNode, mono = false) => (
@@ -46,8 +50,18 @@ export function SystemPage() {
               <Table.Tbody>
                 {row(t('system.version'), d.version)}
                 {row(t('system.host'), `${d.hostname} (Node ${d.node})`)}
-                {row(t('system.uptime'), t('system.uptimeValue', { h: Math.floor(d.uptimeSec / 3600), m: Math.floor((d.uptimeSec % 3600) / 60) }))}
-                {row(t('system.interfaces'), d.interfaces.map((i) => `${i.name}: ${i.address}/${i.netmask}`).join('\n'), true)}
+                {row(
+                  t('system.uptime'),
+                  t('system.uptimeValue', {
+                    h: Math.floor(d.uptimeSec / 3600),
+                    m: Math.floor((d.uptimeSec % 3600) / 60),
+                  }),
+                )}
+                {row(
+                  t('system.interfaces'),
+                  d.interfaces.map((i) => `${i.name}: ${i.address}/${i.netmask}`).join('\n'),
+                  true,
+                )}
                 {row(t('system.data'), t('system.dataValue', d.counts))}
               </Table.Tbody>
             </Table>
@@ -61,7 +75,15 @@ export function SystemPage() {
                 {row(t('system.bind'), d.uhppote.bindAddress, true)}
                 {row(t('system.broadcast'), d.uhppote.broadcast, true)}
                 {row(t('system.listen'), d.uhppote.listen, true)}
-                {row(t('system.listenerPublic'), d.uhppote.listenerPublic ?? <Text span c="orange">{t('system.notSet')}</Text>, true)}
+                {row(
+                  t('system.listenerPublic'),
+                  d.uhppote.listenerPublic ?? (
+                    <Text span c="orange">
+                      {t('system.notSet')}
+                    </Text>
+                  ),
+                  true,
+                )}
                 {row(t('system.timeout'), `${d.uhppote.timeoutMs} ms`)}
               </Table.Tbody>
             </Table>
@@ -86,7 +108,10 @@ export function SystemPage() {
                     </Text>,
                   )}
                   {row(t('system.mqttTopics'), `${d.mqtt.baseTopic}/#`, true)}
-                  {row(t('system.mqttDoorControl'), t(d.mqtt.doorControl ? 'system.mqttAllowed' : 'system.mqttNotAllowed'))}
+                  {row(
+                    t('system.mqttDoorControl'),
+                    t(d.mqtt.doorControl ? 'system.mqttAllowed' : 'system.mqttNotAllowed'),
+                  )}
                 </Table.Tbody>
               </Table>
             ) : (

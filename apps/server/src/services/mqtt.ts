@@ -1,6 +1,12 @@
 import mqtt, { type MqttClient } from 'mqtt'
 import type { Logger } from '@uhppote-desk/protocol'
-import { ALARM_REASONS, translator, type ControllerLiveState, type EventDto, type WsMessage } from '@uhppote-desk/shared'
+import {
+  ALARM_REASONS,
+  translator,
+  type ControllerLiveState,
+  type EventDto,
+  type WsMessage,
+} from '@uhppote-desk/shared'
 import type { MqttConfig } from '../config.js'
 import type { ControllerRecord, ControllerRepo } from '../db/repos.js'
 import type { ControllerGateway } from '../gateway/gateway.js'
@@ -78,7 +84,9 @@ export class MqttService {
     this.client.on('connect', () => void this.onConnect())
     this.client.on('message', (topic, payload) => this.onMessage(topic, payload))
     this.client.on('error', (err) => this.opts.logger?.warn?.(`MQTT: ${err.message}`))
-    this.client.on('offline', () => this.opts.logger?.warn?.(`MQTT: broker ${redactUrl(this.config.url)} unreachable, retrying`))
+    this.client.on('offline', () =>
+      this.opts.logger?.warn?.(`MQTT: broker ${redactUrl(this.config.url)} unreachable, retrying`),
+    )
     this.gateway.hub.on('message', this.onHub)
   }
 
@@ -89,7 +97,10 @@ export class MqttService {
     const client = this.client
     this.client = null
     if (!client) return
-    if (client.connected) await client.publishAsync(`${this.config.baseTopic}/status`, 'offline', { retain: true, qos: 1 }).catch(() => undefined)
+    if (client.connected)
+      await client
+        .publishAsync(`${this.config.baseTopic}/status`, 'offline', { retain: true, qos: 1 })
+        .catch(() => undefined)
     await client.endAsync().catch(() => undefined)
   }
 
@@ -109,7 +120,9 @@ export class MqttService {
     const base = this.config.baseTopic
     const prefix = this.config.discoveryPrefix
     try {
-      await client.subscribeAsync([`${prefix}/+/${NODE_ID}/+/config`, `${prefix}/status`, `${base}/+/door/+/open`], { qos: 1 })
+      await client.subscribeAsync([`${prefix}/+/${NODE_ID}/+/config`, `${prefix}/status`, `${base}/+/door/+/open`], {
+        qos: 1,
+      })
     } catch (err) {
       this.opts.logger?.warn?.(`MQTT: subscribe failed: ${(err as Error).message}`)
     }
@@ -146,7 +159,13 @@ export class MqttService {
       return
     }
     try {
-      await this.gateway.run(null, c.id, 'open-door', { door: door.door, name: door.name, source: 'mqtt' }, (client, t) => client.openDoor(t, door.door))
+      await this.gateway.run(
+        null,
+        c.id,
+        'open-door',
+        { door: door.door, name: door.name, source: 'mqtt' },
+        (client, t) => client.openDoor(t, door.door),
+      )
       log?.info?.(`MQTT: door "${door.name}" opened`)
     } catch (err) {
       log?.warn?.(`MQTT: opening door "${door.name}" failed: ${(err as Error).message}`)
@@ -194,7 +213,9 @@ export class MqttService {
         forceLock: s.forceLock,
         fireAlarm: s.fireAlarm,
         systemError: s.systemError,
-        doors: Object.fromEntries(s.doors.map((d) => [String(d.door), { open: d.open, unlocked: d.unlocked, button: d.button }])),
+        doors: Object.fromEntries(
+          s.doors.map((d) => [String(d.door), { open: d.open, unlocked: d.unlocked, button: d.button }]),
+        ),
       },
       true,
     )
@@ -245,7 +266,11 @@ export class MqttService {
     const base = `${this.config.baseTopic}/${c.serial}`
     const prefix = this.config.discoveryPrefix
     const id = `${NODE_ID}_${c.serial}`
-    const origin = { name: 'UHPPOTE Desk', sw_version: this.opts.version, support_url: 'https://github.com/alexbn71/UHPPOTE-Desk' }
+    const origin = {
+      name: 'UHPPOTE Desk',
+      sw_version: this.opts.version,
+      support_url: 'https://github.com/alexbn71/UHPPOTE-Desk',
+    }
     const bridge = { topic: `${this.config.baseTopic}/status` }
     const availability = { availability: [bridge, { topic: `${base}/availability` }], availability_mode: 'all' }
     const controllerDevice = {
@@ -314,7 +339,13 @@ export class MqttService {
       const n = door.door
       const did = `${id}_door${n}`
       const doorTopic = `${base}/door/${n}`
-      const device = { identifiers: [did], name: door.name, manufacturer: 'UHPPOTE', model: 'UT0311-L0x door', via_device: id }
+      const device = {
+        identifiers: [did],
+        name: door.name,
+        manufacturer: 'UHPPOTE',
+        model: 'UT0311-L0x door',
+        via_device: id,
+      }
       const doorState = (field: string) => `{{ 'ON' if value_json.doors['${n}'].${field} else 'OFF' }}`
 
       add('binary_sensor', `${did}_open`, {

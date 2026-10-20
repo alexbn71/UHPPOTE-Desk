@@ -10,7 +10,8 @@ import { useAuth } from '../lib/auth'
 import { useLive } from '../lib/live'
 import { useControllers } from '../lib/queries'
 
-const preview = (list: number[]) => (list.length > 0 ? ` (${list.slice(0, 10).join(', ')}${list.length > 10 ? '…' : ''})` : '')
+const preview = (list: number[]) =>
+  list.length > 0 ? ` (${list.slice(0, 10).join(', ')}${list.length > 10 ? '…' : ''})` : ''
 
 function SyncCard({ c }: { c: ControllerDto }) {
   const { t } = useTranslation()
@@ -36,7 +37,14 @@ function SyncCard({ c }: { c: ControllerDto }) {
   const syncCards = () =>
     run('cards', async () => {
       const r = await api.post<SyncDiffDto>(`/controllers/${c.id}/sync/cards`)
-      notifyOk(t('sync.cardsDone', { name: c.name, added: r.toAdd.length, updated: r.toUpdate.length, deleted: r.toDelete.length }))
+      notifyOk(
+        t('sync.cardsDone', {
+          name: c.name,
+          added: r.toAdd.length,
+          updated: r.toUpdate.length,
+          deleted: r.toDelete.length,
+        }),
+      )
       setDiff(null)
     })
   const syncAll = () =>
@@ -66,7 +74,10 @@ function SyncCard({ c }: { c: ControllerDto }) {
           </Group>
         )}
         {diff && (
-          <Alert color={diff.toAdd.length + diff.toUpdate.length + diff.toDelete.length === 0 ? 'green' : 'orange'} variant="light">
+          <Alert
+            color={diff.toAdd.length + diff.toUpdate.length + diff.toDelete.length === 0 ? 'green' : 'orange'}
+            variant="light"
+          >
             <Text size="sm">{t('sync.diffCards', { total: diff.controllerCards, unchanged: diff.unchanged })}</Text>
             <Text size="sm">{t('sync.diffAdd', { n: diff.toAdd.length }) + preview(diff.toAdd)}</Text>
             <Text size="sm">{t('sync.diffUpdate', { n: diff.toUpdate.length })}</Text>
@@ -74,14 +85,31 @@ function SyncCard({ c }: { c: ControllerDto }) {
           </Alert>
         )}
         <Group>
-          <Button variant="default" leftSection={<IconSearch size={16} />} loading={busy === 'diff'} disabled={!online || !!busy} onClick={() => void check()}>
+          <Button
+            variant="default"
+            leftSection={<IconSearch size={16} />}
+            loading={busy === 'diff'}
+            disabled={!online || !!busy}
+            onClick={() => void check()}
+          >
             {t('sync.compare')}
           </Button>
-          <Button leftSection={<IconUpload size={16} />} loading={busy === 'cards'} disabled={!online || !!busy} onClick={() => void syncCards()}>
+          <Button
+            leftSection={<IconUpload size={16} />}
+            loading={busy === 'cards'}
+            disabled={!online || !!busy}
+            onClick={() => void syncCards()}
+          >
             {t('sync.syncCards')}
           </Button>
           {can('admin') && (
-            <Button variant="light" leftSection={<IconRefresh size={16} />} loading={busy === 'all'} disabled={!online || !!busy} onClick={syncAll}>
+            <Button
+              variant="light"
+              leftSection={<IconRefresh size={16} />}
+              loading={busy === 'all'}
+              disabled={!online || !!busy}
+              onClick={syncAll}
+            >
               {t('sync.syncAll')}
             </Button>
           )}
@@ -98,7 +126,11 @@ export function SyncPage() {
     <>
       <PageHeader title={t('sync.title')} description={t('sync.description')} />
       <SimpleGrid cols={{ base: 1, lg: 2 }}>
-        {(controllers.data ?? []).filter((c) => c.enabled).map((c) => <SyncCard key={c.id} c={c} />)}
+        {(controllers.data ?? [])
+          .filter((c) => c.enabled)
+          .map((c) => (
+            <SyncCard key={c.id} c={c} />
+          ))}
       </SimpleGrid>
     </>
   )

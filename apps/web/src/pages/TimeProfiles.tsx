@@ -1,4 +1,18 @@
-import { ActionIcon, Alert, Button, Card, Group, Modal, NumberInput, Select, SimpleGrid, Stack, Table, Text, TextInput } from '@mantine/core'
+import {
+  ActionIcon,
+  Alert,
+  Button,
+  Card,
+  Group,
+  Modal,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { modals } from '@mantine/modals'
 import { IconEdit, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
@@ -131,31 +145,91 @@ export function TimeProfilesPage() {
           </Text>
         )}
       </Card>
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.isNew ? t('timeProfiles.newTitle') : t('timeProfiles.editTitle', { id: edit?.id })} size="lg">
+      <Modal
+        opened={!!edit}
+        onClose={() => setEdit(null)}
+        title={edit?.isNew ? t('timeProfiles.newTitle') : t('timeProfiles.editTitle', { id: edit?.id })}
+        size="lg"
+      >
         {edit && (
           <Stack>
             <SimpleGrid cols={2}>
-              <NumberInput label={t('timeProfiles.id')} min={2} max={254} value={edit.id} onChange={(v) => setEdit({ ...edit, id: Number(v) })} disabled={!edit.isNew} />
-              <TextInput label={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} />
-              <DateInput label={t('timeProfiles.validFrom')} valueFormat={DATE_INPUT_FORMAT} value={edit.validFrom} onChange={(v) => v && setEdit({ ...edit, validFrom: v })} />
-              <DateInput label={t('timeProfiles.validTo')} valueFormat={DATE_INPUT_FORMAT} value={edit.validTo} onChange={(v) => v && setEdit({ ...edit, validTo: v })} />
+              <NumberInput
+                label={t('timeProfiles.id')}
+                min={2}
+                max={254}
+                value={edit.id}
+                onChange={(v) => setEdit({ ...edit, id: Number(v) })}
+                disabled={!edit.isNew}
+              />
+              <TextInput
+                label={t('common.name')}
+                value={edit.name}
+                onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })}
+              />
+              <DateInput
+                label={t('timeProfiles.validFrom')}
+                valueFormat={DATE_INPUT_FORMAT}
+                value={edit.validFrom}
+                onChange={(v) => v && setEdit({ ...edit, validFrom: v })}
+              />
+              <DateInput
+                label={t('timeProfiles.validTo')}
+                valueFormat={DATE_INPUT_FORMAT}
+                value={edit.validTo}
+                onChange={(v) => v && setEdit({ ...edit, validTo: v })}
+              />
             </SimpleGrid>
-            <WeekdaysInput label={t('common.days')} value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
+            <WeekdaysInput
+              label={t('common.days')}
+              value={edit.weekdays}
+              onChange={(w) => setEdit({ ...edit, weekdays: w })}
+            />
             <Text size="sm" fw={500}>
               {t('timeProfiles.segments')}
             </Text>
             {edit.segments.map((s, i) => (
               <Group key={i}>
-                <TextInput placeholder="08:00" value={s.start} onChange={(e) => setEdit({ ...edit, segments: edit.segments.map((x, j) => (j === i ? { ...x, start: e.currentTarget.value } : x)) })} w={100} />
+                <TextInput
+                  placeholder="08:00"
+                  value={s.start}
+                  onChange={(e) =>
+                    setEdit({
+                      ...edit,
+                      segments: edit.segments.map((x, j) => (j === i ? { ...x, start: e.currentTarget.value } : x)),
+                    })
+                  }
+                  w={100}
+                />
                 <Text>–</Text>
-                <TextInput placeholder="12:00" value={s.end} onChange={(e) => setEdit({ ...edit, segments: edit.segments.map((x, j) => (j === i ? { ...x, end: e.currentTarget.value } : x)) })} w={100} />
-                <ActionIcon variant="subtle" color="red" onClick={() => setEdit({ ...edit, segments: edit.segments.filter((_, j) => j !== i) })} aria-label={t('common.remove')}>
+                <TextInput
+                  placeholder="12:00"
+                  value={s.end}
+                  onChange={(e) =>
+                    setEdit({
+                      ...edit,
+                      segments: edit.segments.map((x, j) => (j === i ? { ...x, end: e.currentTarget.value } : x)),
+                    })
+                  }
+                  w={100}
+                />
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  onClick={() => setEdit({ ...edit, segments: edit.segments.filter((_, j) => j !== i) })}
+                  aria-label={t('common.remove')}
+                >
                   <IconX size={16} />
                 </ActionIcon>
               </Group>
             ))}
             {edit.segments.length < 3 && (
-              <Button variant="subtle" size="xs" w="fit-content" onClick={() => setEdit({ ...edit, segments: [...edit.segments, { start: '13:00', end: '17:00' }] })}>
+              <Button
+                variant="subtle"
+                size="xs"
+                w="fit-content"
+                onClick={() => setEdit({ ...edit, segments: [...edit.segments, { start: '13:00', end: '17:00' }] })}
+              >
                 {t('timeProfiles.addSegment')}
               </Button>
             )}
@@ -163,7 +237,9 @@ export function TimeProfilesPage() {
               label={t('timeProfiles.linkTo')}
               description={t('timeProfiles.linkHint')}
               clearable
-              data={(profiles.data ?? []).filter((p) => p.id !== edit.id).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))}
+              data={(profiles.data ?? [])
+                .filter((p) => p.id !== edit.id)
+                .map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))}
               value={edit.linkedTo ? String(edit.linkedTo) : null}
               onChange={(v) => setEdit({ ...edit, linkedTo: v ? Number(v) : null })}
             />

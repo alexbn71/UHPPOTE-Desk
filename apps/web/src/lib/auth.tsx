@@ -31,7 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient()
   const me = useQuery({
     queryKey: ['me'],
-    queryFn: () => api.get<{ user: CurrentUser }>('/auth/me').then((r) => r.user).catch(() => null),
+    queryFn: () =>
+      api
+        .get<{ user: CurrentUser }>('/auth/me')
+        .then((r) => r.user)
+        .catch(() => null),
     staleTime: 60_000,
   })
 

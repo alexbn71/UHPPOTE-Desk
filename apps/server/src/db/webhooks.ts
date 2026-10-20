@@ -52,7 +52,10 @@ const mapWebhook = (r: WebhookRow): WebhookDto => ({
   headers: JSON.parse(r.headers) as Record<string, string>,
   secret: r.secret,
   createdAt: r.created_at,
-  lastDelivery: r.last_at === null ? null : { at: r.last_at, ok: toBool(r.last_ok), statusCode: r.last_status, error: r.last_error },
+  lastDelivery:
+    r.last_at === null
+      ? null
+      : { at: r.last_at, ok: toBool(r.last_ok), statusCode: r.last_status, error: r.last_error },
 })
 
 const mapDelivery = (r: DeliveryRow): WebhookDeliveryDto => ({
@@ -89,28 +92,34 @@ export class WebhookRepo {
   }
 
   create(w: WebhookInput): number {
-    return this.db.run('INSERT INTO webhooks (name, url, secret, enabled, events, door_ids, headers) VALUES (?, ?, ?, ?, ?, ?, ?)', [
-      w.name,
-      w.url,
-      newWebhookSecret(),
-      fromBool(w.enabled),
-      JSON.stringify(w.events),
-      JSON.stringify(w.doorIds),
-      JSON.stringify(w.headers),
-    ]).lastInsertRowid
-  }
-
-  update(id: number, w: WebhookInput): boolean {
-    return (
-      this.db.run('UPDATE webhooks SET name = ?, url = ?, enabled = ?, events = ?, door_ids = ?, headers = ? WHERE id = ?', [
+    return this.db.run(
+      'INSERT INTO webhooks (name, url, secret, enabled, events, door_ids, headers) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
         w.name,
         w.url,
+        newWebhookSecret(),
         fromBool(w.enabled),
         JSON.stringify(w.events),
         JSON.stringify(w.doorIds),
         JSON.stringify(w.headers),
-        id,
-      ]).changes > 0
+      ],
+    ).lastInsertRowid
+  }
+
+  update(id: number, w: WebhookInput): boolean {
+    return (
+      this.db.run(
+        'UPDATE webhooks SET name = ?, url = ?, enabled = ?, events = ?, door_ids = ?, headers = ? WHERE id = ?',
+        [
+          w.name,
+          w.url,
+          fromBool(w.enabled),
+          JSON.stringify(w.events),
+          JSON.stringify(w.doorIds),
+          JSON.stringify(w.headers),
+          id,
+        ],
+      ).changes > 0
     )
   }
 
@@ -129,7 +138,17 @@ export class WebhookRepo {
       if (!this.db.get('SELECT 1 FROM webhooks WHERE id = ?', [d.webhookId])) return
       this.db.run(
         'INSERT INTO webhook_deliveries (webhook_id, delivery_id, event, ok, status_code, error, duration_ms, attempts, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [d.webhookId, d.deliveryId, d.event, fromBool(d.ok), d.statusCode, d.error, d.durationMs, d.attempts, d.payload],
+        [
+          d.webhookId,
+          d.deliveryId,
+          d.event,
+          fromBool(d.ok),
+          d.statusCode,
+          d.error,
+          d.durationMs,
+          d.attempts,
+          d.payload,
+        ],
       )
       this.db.run(
         `DELETE FROM webhook_deliveries WHERE webhook_id = ? AND id <= (
@@ -140,6 +159,11 @@ export class WebhookRepo {
   }
 
   deliveries(webhookId: number, limit = KEEP_DELIVERIES): WebhookDeliveryDto[] {
-    return this.db.all<DeliveryRow>('SELECT * FROM webhook_deliveries WHERE webhook_id = ? ORDER BY id DESC LIMIT ?', [webhookId, limit]).map(mapDelivery)
+    return this.db
+      .all<DeliveryRow>('SELECT * FROM webhook_deliveries WHERE webhook_id = ? ORDER BY id DESC LIMIT ?', [
+        webhookId,
+        limit,
+      ])
+      .map(mapDelivery)
   }
 }

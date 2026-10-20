@@ -63,7 +63,9 @@ function parseLevels(s: string): number[] {
 }
 
 function guessPublicIp(controllerIp: string | null): string | null {
-  const ifs = Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal) as os.NetworkInterfaceInfoIPv4[]
+  const ifs = Object.values(os.networkInterfaces())
+    .flat()
+    .filter((i) => i && i.family === 'IPv4' && !i.internal) as os.NetworkInterfaceInfoIPv4[]
   if (controllerIp) {
     const toInt = (ip: string) => ip.split('.').reduce((a, p) => ((a << 8) | Number(p)) >>> 0, 0)
     const same = ifs.find((i) => (toInt(i.address) & toInt(i.netmask)) === (toInt(controllerIp) & toInt(i.netmask)))
@@ -151,7 +153,9 @@ async function main(): Promise<void> {
   const driver = new ConsoleDriver(values.yes!)
   const icon: Record<Status, string> = { pass: '✅', fail: '❌', warn: '⚠️ ', skip: '⏭️ ' }
 
-  console.log(`\nUHPPOTE Desk — hardware test of controller ${opts.serial} (${opts.host ?? 'broadcast'}, ${opts.transport.toUpperCase()}), levels ${levels.join(', ')}`)
+  console.log(
+    `\nUHPPOTE Desk — hardware test of controller ${opts.serial} (${opts.host ?? 'broadcast'}, ${opts.transport.toUpperCase()}), levels ${levels.join(', ')}`,
+  )
   console.log(`IP of this host for events: ${opts.publicIp ?? 'not detected'} (${opts.listen})\n`)
 
   const { results, reportFiles } = await runSuite(opts, levels, driver, {
@@ -165,7 +169,9 @@ async function main(): Promise<void> {
   driver.close()
 
   const failed = results.filter((r) => r.status === 'fail').length
-  console.log(`\nResult: ${results.filter((r) => r.status === 'pass').length} passed, ${failed} failed, ${results.filter((r) => r.status === 'warn').length} warnings, ${results.filter((r) => r.status === 'skip').length} skipped`)
+  console.log(
+    `\nResult: ${results.filter((r) => r.status === 'pass').length} passed, ${failed} failed, ${results.filter((r) => r.status === 'warn').length} warnings, ${results.filter((r) => r.status === 'skip').length} skipped`,
+  )
   for (const f of reportFiles) console.log(`Report: ${f}`)
   process.exit(failed ? 1 : 0)
 }

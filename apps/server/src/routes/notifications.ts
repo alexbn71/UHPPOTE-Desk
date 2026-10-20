@@ -13,7 +13,14 @@ export function registerNotificationRoutes(app: FastifyInstance, ctx: AppContext
     return c
   }
   // the configuration holds credentials: only the channel type and the non-secret settings are audited
-  const auditDetails = (b: { name: string; enabled: boolean; events: string[]; doorIds: number[]; dailyReport: boolean; config: { type: string } }) => ({
+  const auditDetails = (b: {
+    name: string
+    enabled: boolean
+    events: string[]
+    doorIds: number[]
+    dailyReport: boolean
+    config: { type: string }
+  }) => ({
     name: b.name,
     type: b.config.type,
     enabled: b.enabled,

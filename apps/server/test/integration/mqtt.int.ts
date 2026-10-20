@@ -29,7 +29,12 @@ let dataDir = ''
 const seen = new Map<string, string>()
 const received: { topic: string; payload: string }[] = []
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 function config(dir: string): AppConfig {
   return {
@@ -78,7 +83,8 @@ async function waitFor(cond: () => boolean, timeoutMs = 5000): Promise<void> {
 }
 
 const json = (topic: string) => JSON.parse(seen.get(topic)!) as Record<string, any>
-const configTopic = (component: string, objectId: string) => `homeassistant/${component}/uhppote_desk/uhppote_desk_${SERIAL}_${objectId}/config`
+const configTopic = (component: string, objectId: string) =>
+  `homeassistant/${component}/uhppote_desk/uhppote_desk_${SERIAL}_${objectId}/config`
 
 beforeAll(async () => {
   broker = await Aedes.createBroker()
@@ -103,7 +109,15 @@ beforeAll(async () => {
   await fake.start()
   ctx = createContext(config(dataDir), quiet, ':memory:')
   await ctx.eventService.startListener()
-  controllerId = ctx.controllers.create({ serial: SERIAL, name: 'Ingresso', host: fake.endpoint.host, port: fake.endpoint.port, transport: 'udp', zoneId: null, enabled: true })
+  controllerId = ctx.controllers.create({
+    serial: SERIAL,
+    name: 'Ingresso',
+    host: fake.endpoint.host,
+    port: fake.endpoint.port,
+    transport: 'udp',
+    zoneId: null,
+    enabled: true,
+  })
   await ctx.health.check(controllerId)
   ctx.mqtt!.start()
 })
@@ -129,18 +143,32 @@ describe('Home Assistant discovery', () => {
     expect(connectivity).toMatchObject({
       device_class: 'connectivity',
       state_topic: `uhd/${SERIAL}/availability`,
-      device: { identifiers: [`uhppote_desk_${SERIAL}`], name: 'Ingresso', manufacturer: 'UHPPOTE', sw_version: 'v8.92' },
+      device: {
+        identifiers: [`uhppote_desk_${SERIAL}`],
+        name: 'Ingresso',
+        manufacturer: 'UHPPOTE',
+        sw_version: 'v8.92',
+      },
     })
 
     const open = json(configTopic('button', 'door1_open_door'))
     expect(open).toMatchObject({
       name: 'Apri', // MQTT_LANGUAGE=it
       command_topic: `uhd/${SERIAL}/door/1/open`,
-      device: { identifiers: [`uhppote_desk_${SERIAL}_door1`], name: 'Ingresso - Door 1', via_device: `uhppote_desk_${SERIAL}` },
+      device: {
+        identifiers: [`uhppote_desk_${SERIAL}_door1`],
+        name: 'Ingresso - Door 1',
+        via_device: `uhppote_desk_${SERIAL}`,
+      },
       availability_mode: 'all',
     })
-    expect(json(configTopic('binary_sensor', 'door2_open'))).toMatchObject({ device_class: 'door', state_topic: `uhd/${SERIAL}/state` })
-    expect(json(configTopic('event', 'door3_access'))).toMatchObject({ event_types: ['granted', 'denied', 'door', 'alarm'] })
+    expect(json(configTopic('binary_sensor', 'door2_open'))).toMatchObject({
+      device_class: 'door',
+      state_topic: `uhd/${SERIAL}/state`,
+    })
+    expect(json(configTopic('event', 'door3_access'))).toMatchObject({
+      event_types: ['granted', 'denied', 'door', 'alarm'],
+    })
   })
 
   it('removes stale configs left on the broker', async () => {
@@ -149,14 +177,22 @@ describe('Home Assistant discovery', () => {
 
   it('publishes availability and state', async () => {
     await waitFor(() => seen.get(`uhd/${SERIAL}/availability`) === 'online')
-    expect(json(`uhd/${SERIAL}/state`)).toMatchObject({ online: true, fireAlarm: false, doors: { '1': { open: false, unlocked: false } } })
+    expect(json(`uhd/${SERIAL}/state`)).toMatchObject({
+      online: true,
+      fireAlarm: false,
+      doors: { '1': { open: false, unlocked: false } },
+    })
   })
 
   it('removes the entities of a deactivated door', async () => {
     const door = ctx.controllers.doorByNumber(controllerId, 3)!
     ctx.controllers.updateDoor(door.id, { ...door, active: false })
     ctx.mqtt!.refresh(0)
-    await waitFor(() => seen.get(configTopic('button', 'door3_open_door')) === '' && seen.get(configTopic('event', 'door3_access')) === '')
+    await waitFor(
+      () =>
+        seen.get(configTopic('button', 'door3_open_door')) === '' &&
+        seen.get(configTopic('event', 'door3_access')) === '',
+    )
     expect(json(configTopic('button', 'door2_open_door')).name).toBe('Apri')
   })
 })
@@ -165,7 +201,10 @@ describe('events and commands', () => {
   it('forwards a denied swipe to the door event entity', async () => {
     fake.swipe(10058400, 1)
     // the event (QoS 0) and last_access (retained, QoS 1) may arrive in either order
-    await waitFor(() => received.some((m) => m.topic === `uhd/${SERIAL}/door/1/event`) && seen.has(`uhd/${SERIAL}/door/1/last_access`))
+    await waitFor(
+      () =>
+        received.some((m) => m.topic === `uhd/${SERIAL}/door/1/event`) && seen.has(`uhd/${SERIAL}/door/1/last_access`),
+    )
     const ev = JSON.parse(received.find((m) => m.topic === `uhd/${SERIAL}/door/1/event`)!.payload)
     expect(ev).toMatchObject({ event_type: 'denied', card: 10058400, granted: false, direction: 'in' })
     expect(json(`uhd/${SERIAL}/door/1/last_access`)).toMatchObject({ card: 10058400, granted: false })
@@ -176,8 +215,12 @@ describe('events and commands', () => {
     const before = fake.requestCount.get(OPEN_DOOR) ?? 0
     await ha.publishAsync(`uhd/${SERIAL}/door/2/open`, 'OPEN')
     await waitFor(() => (fake.requestCount.get(OPEN_DOOR) ?? 0) === before + 1)
-    await waitFor(() => received.some((m) => m.topic === `uhd/${SERIAL}/door/2/event` && JSON.parse(m.payload).event_type === 'door'))
-    const audit = ctx.db.get<{ details: string }>("SELECT details FROM audit_log WHERE action = 'open-door' ORDER BY id DESC LIMIT 1")
+    await waitFor(() =>
+      received.some((m) => m.topic === `uhd/${SERIAL}/door/2/event` && JSON.parse(m.payload).event_type === 'door'),
+    )
+    const audit = ctx.db.get<{ details: string }>(
+      "SELECT details FROM audit_log WHERE action = 'open-door' ORDER BY id DESC LIMIT 1",
+    )
     expect(JSON.parse(audit!.details)).toMatchObject({ door: 2, source: 'mqtt' })
   })
 

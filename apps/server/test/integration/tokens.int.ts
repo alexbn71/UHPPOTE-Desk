@@ -25,7 +25,12 @@ let cookie = ''
 let controllerId = 0
 let dataDir = ''
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 function config(dir: string): AppConfig {
   return {
@@ -37,7 +42,15 @@ function config(dir: string): AppConfig {
     adminPassword: PASSWORD,
     adminPasswordFromLegacyVariable: false,
     webDir: null,
-    uhppote: { bindAddress: '127.0.0.1', broadcast: '127.0.0.1:1', listen: '127.0.0.1:0', listenerPublic: null, timeoutMs: 400, retries: 1, debug: false },
+    uhppote: {
+      bindAddress: '127.0.0.1',
+      broadcast: '127.0.0.1:1',
+      listen: '127.0.0.1:0',
+      listenerPublic: null,
+      timeoutMs: 400,
+      retries: 1,
+      debug: false,
+    },
     healthIntervalSec: 3600,
     collectIntervalSec: 3600,
     timeSyncThresholdSec: 30,
@@ -52,7 +65,12 @@ function config(dir: string): AppConfig {
 /** Request with the admin session (default) or with a Bearer token. */
 async function api(method: string, url: string, body?: unknown, token?: string): Promise<LightMyRequestResponse> {
   const headers = token ? { authorization: `Bearer ${token}` } : { cookie }
-  return app.inject({ method: method as 'GET', url: `/api${url}`, headers, ...(body !== undefined ? { payload: body as object } : {}) })
+  return app.inject({
+    method: method as 'GET',
+    url: `/api${url}`,
+    headers,
+    ...(body !== undefined ? { payload: body as object } : {}),
+  })
 }
 
 async function createToken(body: Record<string, unknown>): Promise<{ token: string; apiToken: ApiTokenDto }> {
@@ -71,9 +89,21 @@ beforeAll(async () => {
   ctx = createContext(config(dataDir), quiet, ':memory:')
   await ctx.auth.ensureAdmin(PASSWORD)
   app = await buildApp(ctx)
-  const login = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { username: 'admin', password: PASSWORD } })
+  const login = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { username: 'admin', password: PASSWORD },
+  })
   cookie = `uhd_session=${login.cookies.find((c) => c.name === 'uhd_session')!.value}`
-  controllerId = ctx.controllers.create({ serial: SERIAL, name: 'Gate', host: fake.endpoint.host, port: fake.endpoint.port, transport: 'udp', zoneId: null, enabled: true })
+  controllerId = ctx.controllers.create({
+    serial: SERIAL,
+    name: 'Gate',
+    host: fake.endpoint.host,
+    port: fake.endpoint.port,
+    transport: 'udp',
+    zoneId: null,
+    enabled: true,
+  })
 })
 
 afterAll(async () => {
@@ -87,7 +117,14 @@ describe('token management', () => {
   it('returns the token once and stores only its hash', async () => {
     const { token, apiToken } = await createToken({ name: 'CasaAuto', access: 'read' })
     expect(token).toMatch(/^uhd_[A-Za-z0-9_-]{43}$/)
-    expect(apiToken).toMatchObject({ name: 'CasaAuto', access: 'read', prefix: token.slice(0, 10), active: true, createdBy: 'admin', lastUsedAt: null })
+    expect(apiToken).toMatchObject({
+      name: 'CasaAuto',
+      access: 'read',
+      prefix: token.slice(0, 10),
+      active: true,
+      createdBy: 'admin',
+      lastUsedAt: null,
+    })
     const listed = (await api('GET', '/tokens')).json() as ApiTokenDto[]
     expect(JSON.stringify(listed)).not.toContain(token)
     const row = ctx.db.get<{ token_hash: string }>('SELECT token_hash FROM api_tokens WHERE id = ?', [apiToken.id])!
@@ -100,7 +137,9 @@ describe('token management', () => {
     expect((await api('GET', '/tokens', undefined, token)).statusCode).toBe(403)
     expect((await api('POST', '/tokens', { name: 'x', access: 'admin' }, token)).json().code).toBe('tokenNotAllowed')
     expect((await api('GET', '/operators', undefined, token)).statusCode).toBe(403)
-    expect((await api('POST', '/auth/password', { currentPassword: 'a', newPassword: 'abcdefgh' }, token)).json().code).toBe('tokenNotAllowed')
+    expect(
+      (await api('POST', '/auth/password', { currentPassword: 'a', newPassword: 'abcdefgh' }, token)).json().code,
+    ).toBe('tokenNotAllowed')
     // everything else works like an administrator
     expect((await api('GET', '/webhooks', undefined, token)).statusCode).toBe(200)
   })
@@ -110,7 +149,13 @@ describe('Bearer authentication', () => {
   it('authenticates, records the last use and refuses unknown, inactive or expired tokens', async () => {
     const { token, apiToken } = await createToken({ name: 'Reader', access: 'read' })
     const me = await api('GET', '/auth/me', undefined, token)
-    expect(me.json().user).toMatchObject({ id: null, tokenId: apiToken.id, username: 'token:Reader', role: 'viewer', canOpenDoors: false })
+    expect(me.json().user).toMatchObject({
+      id: null,
+      tokenId: apiToken.id,
+      username: 'token:Reader',
+      role: 'viewer',
+      canOpenDoors: false,
+    })
     expect((await api('GET', '/doors', undefined, token)).statusCode).toBe(200)
     expect(ctx.tokens.get(apiToken.id)!.lastUsedAt).not.toBeNull()
     expect(ctx.tokens.get(apiToken.id)!.lastUsedIp).toBe('127.0.0.1')
@@ -132,7 +177,11 @@ describe('Bearer authentication', () => {
   })
 
   it('a Bearer header takes precedence over the session cookie', async () => {
-    const r = await app.inject({ method: 'GET', url: '/api/doors', headers: { cookie, authorization: 'Bearer uhd_wrong' } })
+    const r = await app.inject({
+      method: 'GET',
+      url: '/api/doors',
+      headers: { cookie, authorization: 'Bearer uhd_wrong' },
+    })
     expect(r.statusCode).toBe(401)
   })
 })
@@ -170,9 +219,19 @@ describe('access levels and restrictions', () => {
 
   it('operator: can change data, and actions without an operator id work', async () => {
     const { token } = await createToken({ name: 'HR sync', access: 'operator' })
-    const person = await api('POST', '/people', { code: 'HR1', lastName: 'Verdi', validFrom: '2026-01-01', validTo: '2030-12-31' }, token)
+    const person = await api(
+      'POST',
+      '/people',
+      { code: 'HR1', lastName: 'Verdi', validFrom: '2026-01-01', validTo: '2030-12-31' },
+      token,
+    )
     expect(person.statusCode, person.body).toBe(200)
-    const punch = await api('POST', '/punches', { personId: person.json().id, timestamp: '2026-10-12 08:00', direction: 1, reason: 'forgot card' }, token)
+    const punch = await api(
+      'POST',
+      '/punches',
+      { personId: person.json().id, timestamp: '2026-10-12 08:00', direction: 1, reason: 'forgot card' },
+      token,
+    )
     expect(punch.statusCode, punch.body).toBe(200)
     expect((await api('POST', `/doors/${doorId(3)}/open`, undefined, token)).statusCode).toBe(200)
   })

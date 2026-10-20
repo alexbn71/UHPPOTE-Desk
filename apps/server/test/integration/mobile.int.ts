@@ -38,7 +38,12 @@ let pushBase = ''
 const pushes: { path: string; body: Buffer }[] = []
 let pushStatus = 201
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 function config(dir: string): AppConfig {
   return {
@@ -71,15 +76,32 @@ function config(dir: string): AppConfig {
 }
 
 async function api(method: string, url: string, cookie: string, body?: unknown): Promise<LightMyRequestResponse> {
-  return app.inject({ method: method as 'GET', url: `/api${url}`, headers: { cookie }, ...(body !== undefined ? { payload: body as object } : {}) })
+  return app.inject({
+    method: method as 'GET',
+    url: `/api${url}`,
+    headers: { cookie },
+    ...(body !== undefined ? { payload: body as object } : {}),
+  })
 }
 
 /** Logs in; with `remember` the device cookie is returned instead of the session cookie. */
-async function login(username: string, password: string, remember = false): Promise<{ cookie: string; names: string[]; user: Record<string, unknown> }> {
-  const r = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { username, password, remember, deviceName: 'Pixel 9' } })
+async function login(
+  username: string,
+  password: string,
+  remember = false,
+): Promise<{ cookie: string; names: string[]; user: Record<string, unknown> }> {
+  const r = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { username, password, remember, deviceName: 'Pixel 9' },
+  })
   expect(r.statusCode, r.body).toBe(200)
   const set = r.cookies.filter((c) => c.value !== '')
-  return { cookie: set.map((c) => `${c.name}=${c.value}`).join('; '), names: set.map((c) => c.name), user: r.json().user }
+  return {
+    cookie: set.map((c) => `${c.name}=${c.value}`).join('; '),
+    names: set.map((c) => c.name),
+    user: r.json().user,
+  }
 }
 
 async function waitFor(cond: () => boolean, timeoutMs = 5000): Promise<void> {
@@ -92,7 +114,8 @@ async function waitFor(cond: () => boolean, timeoutMs = 5000): Promise<void> {
 
 const doorId = (n: number) => ctx.controllers.doorByNumber(controllerId, n)!.id
 const opens = () => fake.requestCount.get(OPEN_DOOR) ?? 0
-const setMode = (openConfirmation: 'press' | 'biometric', sessionDays = 90) => ctx.mobile.saveSettings({ openConfirmation, sessionDays })
+const setMode = (openConfirmation: 'press' | 'biometric', sessionDays = 90) =>
+  ctx.mobile.saveSettings({ openConfirmation, sessionDays })
 
 // --- software WebAuthn authenticator (platform authenticator with user verification) --------------
 
@@ -101,7 +124,11 @@ const b64u = (b: Buffer | Uint8Array) => Buffer.from(b).toString('base64url')
 /** Minimal CBOR encoder: maps, byte strings, text strings, small integers. */
 function cbor(v: unknown): Buffer {
   const head = (major: number, n: number) =>
-    n < 24 ? Buffer.from([(major << 5) | n]) : n < 256 ? Buffer.from([(major << 5) | 24, n]) : Buffer.from([(major << 5) | 25, n >> 8, n & 255])
+    n < 24
+      ? Buffer.from([(major << 5) | n])
+      : n < 256
+        ? Buffer.from([(major << 5) | 24, n])
+        : Buffer.from([(major << 5) | 25, n >> 8, n & 255])
   if (typeof v === 'number') return v >= 0 ? head(0, v) : head(1, -1 - v)
   if (typeof v === 'string') return Buffer.concat([head(3, Buffer.byteLength(v)), Buffer.from(v)])
   if (Buffer.isBuffer(v)) return Buffer.concat([head(2, v.length), v])
@@ -114,7 +141,10 @@ class SoftAuthenticator {
   readonly credentialId = randomBytes(16)
   private counter = 0
 
-  constructor(private readonly rpID: string, private readonly origin: string) {
+  constructor(
+    private readonly rpID: string,
+    private readonly origin: string,
+  ) {
     this.key = generateKeyPairSync('ec', { namedCurve: 'P-256' })
   }
 
@@ -130,16 +160,34 @@ class SoftAuthenticator {
 
   register(options: { challenge: string }) {
     const jwk = this.key.publicKey.export({ format: 'jwk' })
-    const cose = cbor(new Map<number, unknown>([[1, 2], [3, -7], [-1, 1], [-2, Buffer.from(jwk.x!, 'base64url')], [-3, Buffer.from(jwk.y!, 'base64url')]]))
+    const cose = cbor(
+      new Map<number, unknown>([
+        [1, 2],
+        [3, -7],
+        [-1, 1],
+        [-2, Buffer.from(jwk.x!, 'base64url')],
+        [-3, Buffer.from(jwk.y!, 'base64url')],
+      ]),
+    )
     const idLen = Buffer.alloc(2)
     idLen.writeUInt16BE(this.credentialId.length)
     const authData = this.authData(0x45, Buffer.concat([Buffer.alloc(16), idLen, this.credentialId, cose])) // UP + UV + AT
-    const attestation = cbor(new Map<string, unknown>([['fmt', 'none'], ['attStmt', new Map()], ['authData', authData]]))
+    const attestation = cbor(
+      new Map<string, unknown>([
+        ['fmt', 'none'],
+        ['attStmt', new Map()],
+        ['authData', authData],
+      ]),
+    )
     return {
       id: b64u(this.credentialId),
       rawId: b64u(this.credentialId),
       type: 'public-key',
-      response: { clientDataJSON: b64u(this.clientData('webauthn.create', options.challenge)), attestationObject: b64u(attestation), transports: ['internal'] },
+      response: {
+        clientDataJSON: b64u(this.clientData('webauthn.create', options.challenge)),
+        attestationObject: b64u(attestation),
+        transports: ['internal'],
+      },
       clientExtensionResults: {},
       authenticatorAttachment: 'platform',
     }
@@ -148,7 +196,11 @@ class SoftAuthenticator {
   authenticate(options: { challenge: string }, userVerified = true) {
     const authData = this.authData(userVerified ? 0x05 : 0x01)
     const clientData = this.clientData('webauthn.get', options.challenge)
-    const signature = sign('sha256', Buffer.concat([authData, createHash('sha256').update(clientData).digest()]), this.key.privateKey)
+    const signature = sign(
+      'sha256',
+      Buffer.concat([authData, createHash('sha256').update(clientData).digest()]),
+      this.key.privateKey,
+    )
     return {
       id: b64u(this.credentialId),
       rawId: b64u(this.credentialId),
@@ -180,12 +232,31 @@ beforeAll(async () => {
   await ctx.eventService.startListener()
   app = await buildApp(ctx)
   adminCookie = (await login('admin', PASSWORD)).cookie
-  controllerId = ctx.controllers.create({ serial: SERIAL, name: 'Villa', host: fake.endpoint.host, port: fake.endpoint.port, transport: 'udp', zoneId: null, enabled: true })
+  controllerId = ctx.controllers.create({
+    serial: SERIAL,
+    name: 'Villa',
+    host: fake.endpoint.host,
+    port: fake.endpoint.port,
+    transport: 'udp',
+    zoneId: null,
+    enabled: true,
+  })
   await ctx.health.check(controllerId)
   // an operator, and a second one restricted to a zone without controllers
-  await api('POST', '/operators', adminCookie, { username: 'mario', displayName: 'Mario', role: 'operator', password: 'Mario-pass-1' })
+  await api('POST', '/operators', adminCookie, {
+    username: 'mario',
+    displayName: 'Mario',
+    role: 'operator',
+    password: 'Mario-pass-1',
+  })
   const zone = (await api('POST', '/zones', adminCookie, { name: 'Elsewhere', parentId: null })).json().id as number
-  await api('POST', '/operators', adminCookie, { username: 'luca', displayName: 'Luca', role: 'operator', password: 'Luca-pass-11', zoneIds: [zone] })
+  await api('POST', '/operators', adminCookie, {
+    username: 'luca',
+    displayName: 'Luca',
+    role: 'operator',
+    password: 'Luca-pass-11',
+    zoneIds: [zone],
+  })
   for (const u of ['mario', 'luca']) ctx.db.run('UPDATE operators SET must_change_password = 0 WHERE username = ?', [u])
   ctx.push.start()
 })
@@ -212,7 +283,11 @@ describe('remembered devices', () => {
     expect(s.names).toEqual(['uhd_device'])
     expect(s.user).toMatchObject({ username: 'mario', deviceId: expect.any(Number) })
     const config = (await api('GET', '/mobile/config', s.cookie)).json() as MobileConfigDto
-    expect(config).toMatchObject({ openConfirmation: 'press', sessionDays: 90, device: { name: 'Pixel 9', biometric: false, push: null } })
+    expect(config).toMatchObject({
+      openConfirmation: 'press',
+      sessionDays: 90,
+      device: { name: 'Pixel 9', biometric: false, push: null },
+    })
     expect(config.vapidPublicKey).toMatch(/^[A-Za-z0-9_-]{87}$/)
     const devices = (await api('GET', '/mobile/devices', adminCookie)).json()
     expect(devices).toEqual([expect.objectContaining({ operatorName: 'mario', name: 'Pixel 9', biometric: false })])
@@ -222,15 +297,23 @@ describe('remembered devices', () => {
   it('expires after the configured days, unless fingerprint/Face ID is registered', async () => {
     const s = await login('mario', 'Mario-pass-1', true)
     const deviceId = s.user.deviceId as number
-    ctx.db.run('UPDATE devices SET created_at = ? WHERE id = ?', [`${addDays(localDateTime().slice(0, 10), -100)} 10:00:00`, deviceId])
+    ctx.db.run('UPDATE devices SET created_at = ? WHERE id = ?', [
+      `${addDays(localDateTime().slice(0, 10), -100)} 10:00:00`,
+      deviceId,
+    ])
     setMode('press', 90)
     expect((await api('GET', '/auth/me', s.cookie)).statusCode).toBe(401)
     setMode('press', 120)
     expect((await api('GET', '/auth/me', s.cookie)).statusCode).toBe(200)
-    expect((await api('PUT', '/mobile/settings', adminCookie, { openConfirmation: 'press', sessionDays: 45 })).statusCode).toBe(400)
+    expect(
+      (await api('PUT', '/mobile/settings', adminCookie, { openConfirmation: 'press', sessionDays: 45 })).statusCode,
+    ).toBe(400)
 
     // with a registered credential the device never expires
-    ctx.db.run('UPDATE devices SET created_at = ? WHERE id = ?', [`${addDays(localDateTime().slice(0, 10), -400)} 10:00:00`, deviceId])
+    ctx.db.run('UPDATE devices SET created_at = ? WHERE id = ?', [
+      `${addDays(localDateTime().slice(0, 10), -400)} 10:00:00`,
+      deviceId,
+    ])
     expect((await api('GET', '/auth/me', s.cookie)).statusCode).toBe(401)
     ctx.db.run("INSERT INTO webauthn_credentials (id, device_id, public_key) VALUES ('x', ?, x'00')", [deviceId])
     expect((await api('GET', '/auth/me', s.cookie)).statusCode).toBe(200)
@@ -243,7 +326,14 @@ describe('remembered devices', () => {
 
     const phone = await login('mario', 'Mario-pass-1', true)
     const tablet = await login('mario', 'Mario-pass-1', true)
-    expect((await api('POST', '/auth/password', phone.cookie, { currentPassword: 'Mario-pass-1', newPassword: 'Mario-pass-2' })).statusCode).toBe(200)
+    expect(
+      (
+        await api('POST', '/auth/password', phone.cookie, {
+          currentPassword: 'Mario-pass-1',
+          newPassword: 'Mario-pass-2',
+        })
+      ).statusCode,
+    ).toBe(200)
     expect((await api('GET', '/auth/me', phone.cookie)).statusCode).toBe(200)
     expect((await api('GET', '/auth/me', tablet.cookie)).statusCode).toBe(401)
     await api('POST', '/auth/password', phone.cookie, { currentPassword: 'Mario-pass-2', newPassword: 'Mario-pass-1' })
@@ -263,7 +353,9 @@ describe('doors and opening', () => {
     const doors = (await api('GET', '/mobile/doors', mario.cookie)).json() as MobileDoorDto[]
     expect(doors).toHaveLength(4)
     expect(doors.every((d) => d.canOpen)).toBe(true)
-    expect(((await api('GET', '/mobile/doors', luca.cookie)).json() as MobileDoorDto[]).some((d) => d.canOpen)).toBe(false)
+    expect(((await api('GET', '/mobile/doors', luca.cookie)).json() as MobileDoorDto[]).some((d) => d.canOpen)).toBe(
+      false,
+    )
   })
 
   it('press mode: a remembered device opens with a simple request', async () => {
@@ -283,10 +375,16 @@ describe('doors and opening', () => {
 
     const auth = new SoftAuthenticator('doors.example.com', PUBLIC_URL)
     const regOptions = (await api('POST', '/mobile/biometric/options', s.cookie)).json()
-    expect(regOptions).toMatchObject({ rp: { id: 'doors.example.com' }, authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' } })
+    expect(regOptions).toMatchObject({
+      rp: { id: 'doors.example.com' },
+      authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
+    })
     const reg = await api('POST', '/mobile/biometric', s.cookie, { response: auth.register(regOptions) })
     expect(reg.statusCode, reg.body).toBe(200)
-    expect(((await api('GET', '/mobile/config', s.cookie)).json() as MobileConfigDto).device).toMatchObject({ biometric: true, expiresAt: null })
+    expect(((await api('GET', '/mobile/config', s.cookie)).json() as MobileConfigDto).device).toMatchObject({
+      biometric: true,
+      expiresAt: null,
+    })
 
     expect((await open(1)).json().code).toBe('biometricRequired')
 
@@ -332,13 +430,19 @@ describe('push notifications', () => {
       ...body,
     })
     expect(r.statusCode, r.body).toBe(200)
-    return (b: Buffer) => JSON.parse(ece.decrypt(b, { version: 'aes128gcm', privateKey: ecdh, authSecret: b64u(auth) }).toString()) as PushPayload
+    return (b: Buffer) =>
+      JSON.parse(
+        ece.decrypt(b, { version: 'aes128gcm', privateKey: ecdh, authSecret: b64u(auth) }).toString(),
+      ) as PushPayload
   }
 
   it('sends the chosen events, encrypted, with the open action', async () => {
     const s = await login('mario', 'Mario-pass-1', true)
     const decrypt = await subscribe(s.cookie, '/mario', { events: ['access.denied'] })
-    expect(((await api('GET', '/mobile/config', s.cookie)).json() as MobileConfigDto).device?.push).toMatchObject({ events: ['access.denied'], rules: true })
+    expect(((await api('GET', '/mobile/config', s.cookie)).json() as MobileConfigDto).device?.push).toMatchObject({
+      events: ['access.denied'],
+      rules: true,
+    })
 
     fake.swipe(10058400, 1)
     await waitFor(() => pushes.some((p) => p.path === '/mario'))
@@ -362,10 +466,20 @@ describe('push notifications', () => {
     expect(decrypt(pushes.find((p) => p.path === '/luca')!.body)).toMatchObject({ canOpen: false })
 
     pushes.length = 0
-    ctx.hub.publishRule({ ruleId: 1, name: 'Porta aperta', severity: 'alarm', text: 'Cancello aperto da 2 min', at: localDateTime() })
+    ctx.hub.publishRule({
+      ruleId: 1,
+      name: 'Porta aperta',
+      severity: 'alarm',
+      text: 'Cancello aperto da 2 min',
+      at: localDateTime(),
+    })
     // every subscription with rules receives it (also the one of the previous test)
     await waitFor(() => pushes.some((p) => p.path === '/luca'))
-    expect(decrypt(pushes.find((p) => p.path === '/luca')!.body)).toMatchObject({ title: '🚨 Porta aperta', body: 'Cancello aperto da 2 min', door: null })
+    expect(decrypt(pushes.find((p) => p.path === '/luca')!.body)).toMatchObject({
+      title: '🚨 Porta aperta',
+      body: 'Cancello aperto da 2 min',
+      door: null,
+    })
 
     expect((await api('POST', '/mobile/push/test', luca.cookie)).json()).toEqual({ ok: true, error: null })
   })

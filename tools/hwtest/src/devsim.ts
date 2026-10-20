@@ -56,7 +56,9 @@ const fake = new FakeController({
   tcp: true,
   ...(lan && { address: lan.address, netmask: lan.netmask, gateway }),
 })
-const statePath = path.resolve(values.state ?? path.join(process.env.DATA_DIR ?? 'data', `devsim-${values.serial}.json`))
+const statePath = path.resolve(
+  values.state ?? path.join(process.env.DATA_DIR ?? 'data', `devsim-${values.serial}.json`),
+)
 if (!values.fresh && fs.existsSync(statePath)) {
   fake.restore(JSON.parse(fs.readFileSync(statePath, 'utf8')) as FakeControllerState)
   console.log(`Memory restored from ${statePath}: ${fake.cards.length} cards, ${fake.lastEventIndex} events`)
@@ -80,7 +82,9 @@ setInterval(save, 1000)
 
 const ep = await fake.start()
 console.log(`Simulated controller ${fake.id} listening on ${ep.host}:${ep.port} (UDP+TCP), reported IP ${fake.address}`)
-console.log(`Commands: s <card> [door] = swipe   |  o <door> / c <door> = door sensor open/closed  |  b <door> = exit button`)
+console.log(
+  `Commands: s <card> [door] = swipe   |  o <door> / c <door> = door sensor open/closed  |  b <door> = exit button`,
+)
 console.log(`          l = list cards   |  e = last events   |  off / on = unplug/replug network   |  q = quit`)
 console.log(`Memory saved to ${statePath}`)
 
@@ -89,7 +93,10 @@ if (auto > 0) {
   setInterval(() => {
     const cards = fake.cards
     // 80% a registered card; otherwise one of five unregistered (but valid Wiegand-26) cards, 10065001-10065005
-    const card = cards.length && Math.random() < 0.8 ? cards[Math.floor(Math.random() * cards.length)]!.card : 10065001 + Math.floor(Math.random() * 5)
+    const card =
+      cards.length && Math.random() < 0.8
+        ? cards[Math.floor(Math.random() * cards.length)]!.card
+        : 10065001 + Math.floor(Math.random() * 5)
     const e = fake.swipe(card, 1 + Math.floor(Math.random() * 4), Math.random() < 0.5 ? 1 : 2)
     console.log(`[auto] swipe ${card} door ${e.door}: ${e.granted ? 'granted' : 'denied'} (reason ${e.reason})`)
   }, auto * 1000)

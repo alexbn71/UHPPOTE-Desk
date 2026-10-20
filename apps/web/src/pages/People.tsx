@@ -35,7 +35,14 @@ import { api, notifyError, notifyOk, notifyPush } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
 import { DATE_INPUT_FORMAT, addDays, cardLabel, fmtDate, isValidCard, today } from '../lib/format'
-import { treeOptions, useControllers, useDepartments, useShifts, useTimeProfiles, type Permission } from '../lib/queries'
+import {
+  treeOptions,
+  useControllers,
+  useDepartments,
+  useShifts,
+  useTimeProfiles,
+  type Permission,
+} from '../lib/queries'
 
 type PersonForm = Omit<PersonDto, 'id' | 'departmentName' | 'hasPhoto' | 'cards'>
 type PushResult = { pushErrors: { controllerId: number; error: string }[] }
@@ -60,7 +67,10 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
   const qc = useQueryClient()
   const controllers = useControllers()
   const profiles = useTimeProfiles()
-  const person = useQuery({ queryKey: ['person', personId], queryFn: () => api.get<PersonDto & { permissions: Permission[] }>(`/people/${personId}`) })
+  const person = useQuery({
+    queryKey: ['person', personId],
+    queryFn: () => api.get<PersonDto & { permissions: Permission[] }>(`/people/${personId}`),
+  })
   const [perms, setPerms] = useState<Map<number, Permission>>(new Map())
   const [busy, setBusy] = useState(false)
   const controllerName = (id: number) => controllers.data?.find((c) => c.id === id)?.name ?? `#${id}`
@@ -69,13 +79,20 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
     if (person.data) setPerms(new Map(person.data.permissions.map((p) => [p.doorId, p])))
   }, [person.data])
 
-  const profileOptions = [{ value: 'always', label: t('people.permAlways') }, ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))]
+  const profileOptions = [
+    { value: 'always', label: t('people.permAlways') },
+    ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` })),
+  ]
 
   const save = async () => {
     setBusy(true)
     try {
       const r = await api.put<PushResult>(`/people/${personId}/permissions`, {
-        permissions: [...perms.values()].map((p) => ({ doorId: p.doorId, profileId: p.profileId, firstCard: p.firstCard })),
+        permissions: [...perms.values()].map((p) => ({
+          doorId: p.doorId,
+          profileId: p.profileId,
+          firstCard: p.firstCard,
+        })),
       })
       notifyOk(t('people.permissionsSaved'))
       notifyPush(r, controllerName)
@@ -108,7 +125,8 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
                         disabled={readOnly}
                         onChange={(e) => {
                           const next = new Map(perms)
-                          if (e.currentTarget.checked) next.set(d.id, { personId, doorId: d.id, profileId: null, firstCard: false })
+                          if (e.currentTarget.checked)
+                            next.set(d.id, { personId, doorId: d.id, profileId: null, firstCard: false })
                           else next.delete(d.id)
                           setPerms(next)
                         }}
@@ -121,7 +139,11 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
                           data={profileOptions}
                           value={p.profileId === null ? 'always' : String(p.profileId)}
                           disabled={readOnly}
-                          onChange={(v) => setPerms(new Map(perms).set(d.id, { ...p, profileId: !v || v === 'always' ? null : Number(v) }))}
+                          onChange={(v) =>
+                            setPerms(
+                              new Map(perms).set(d.id, { ...p, profileId: !v || v === 'always' ? null : Number(v) }),
+                            )
+                          }
                         />
                       )}
                     </Table.Td>
@@ -132,7 +154,9 @@ function PermissionsEditor({ personId, readOnly }: { personId: number; readOnly:
                           label={t('people.firstCard')}
                           checked={p.firstCard}
                           disabled={readOnly}
-                          onChange={(e) => setPerms(new Map(perms).set(d.id, { ...p, firstCard: e.currentTarget.checked }))}
+                          onChange={(e) =>
+                            setPerms(new Map(perms).set(d.id, { ...p, firstCard: e.currentTarget.checked }))
+                          }
                         />
                       )}
                     </Table.Td>
@@ -256,7 +280,15 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
       {!readOnly && (
         <>
           <Group align="flex-end">
-            <NumberInput label={t('people.addCard')} description={t('people.addCardHint')} value={number} onChange={setNumber} hideControls allowDecimal={false} w={260} />
+            <NumberInput
+              label={t('people.addCard')}
+              description={t('people.addCardHint')}
+              value={number}
+              onChange={setNumber}
+              hideControls
+              allowDecimal={false}
+              w={260}
+            />
             <Button disabled={!number} onClick={() => void add(Number(number))}>
               {t('common.add')}
             </Button>
@@ -271,13 +303,23 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
                   </Button>
                 ) : (
                   <Tooltip key={u.card} label={t('errors.invalidWiegand')} multiline w={260}>
-                    <Button size="compact-sm" variant="outline" color="gray" data-disabled onClick={(e) => e.preventDefault()}>
+                    <Button
+                      size="compact-sm"
+                      variant="outline"
+                      color="gray"
+                      data-disabled
+                      onClick={(e) => e.preventDefault()}
+                    >
                       {cardLabel(u.card)}
                     </Button>
                   </Tooltip>
                 ),
               )}
-              {unknown.data?.length === 0 && <Text size="sm" c="dimmed">{t('people.readerNone')}</Text>}
+              {unknown.data?.length === 0 && (
+                <Text size="sm" c="dimmed">
+                  {t('people.readerNone')}
+                </Text>
+              )}
             </Group>
           </Alert>
         </>
@@ -349,7 +391,13 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
 
   const p = current.data ?? person
   return (
-    <Drawer opened={opened} onClose={onClose} position="right" size="xl" title={person ? `${person.lastName} ${person.firstName}` : t('people.new')}>
+    <Drawer
+      opened={opened}
+      onClose={onClose}
+      position="right"
+      size="xl"
+      title={person ? `${person.lastName} ${person.firstName}` : t('people.new')}
+    >
       <Tabs defaultValue="details">
         <Tabs.List mb="md">
           <Tabs.Tab value="details">{t('people.tabDetails')}</Tabs.Tab>
@@ -379,7 +427,13 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
               </Group>
             )}
             <SimpleGrid cols={2}>
-              <TextInput label={t('people.code')} required value={form.code} onChange={(e) => set('code', e.currentTarget.value)} readOnly={readOnly} />
+              <TextInput
+                label={t('people.code')}
+                required
+                value={form.code}
+                onChange={(e) => set('code', e.currentTarget.value)}
+                readOnly={readOnly}
+              />
               <Select
                 label={t('people.department')}
                 clearable
@@ -389,12 +443,45 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
                 onChange={(v) => set('departmentId', v ? Number(v) : null)}
                 readOnly={readOnly}
               />
-              <TextInput label={t('people.lastName')} required value={form.lastName} onChange={(e) => set('lastName', e.currentTarget.value)} readOnly={readOnly} />
-              <TextInput label={t('people.firstName')} value={form.firstName} onChange={(e) => set('firstName', e.currentTarget.value)} readOnly={readOnly} />
-              <TextInput label={t('people.email')} value={form.email} onChange={(e) => set('email', e.currentTarget.value)} readOnly={readOnly} />
-              <TextInput label={t('people.phone')} value={form.phone} onChange={(e) => set('phone', e.currentTarget.value)} readOnly={readOnly} />
-              <DateInput label={t('people.validFrom')} valueFormat={DATE_INPUT_FORMAT} value={form.validFrom} onChange={(v) => v && set('validFrom', v)} readOnly={readOnly} />
-              <DateInput label={t('people.validTo')} valueFormat={DATE_INPUT_FORMAT} value={form.validTo} onChange={(v) => v && set('validTo', v)} readOnly={readOnly} />
+              <TextInput
+                label={t('people.lastName')}
+                required
+                value={form.lastName}
+                onChange={(e) => set('lastName', e.currentTarget.value)}
+                readOnly={readOnly}
+              />
+              <TextInput
+                label={t('people.firstName')}
+                value={form.firstName}
+                onChange={(e) => set('firstName', e.currentTarget.value)}
+                readOnly={readOnly}
+              />
+              <TextInput
+                label={t('people.email')}
+                value={form.email}
+                onChange={(e) => set('email', e.currentTarget.value)}
+                readOnly={readOnly}
+              />
+              <TextInput
+                label={t('people.phone')}
+                value={form.phone}
+                onChange={(e) => set('phone', e.currentTarget.value)}
+                readOnly={readOnly}
+              />
+              <DateInput
+                label={t('people.validFrom')}
+                valueFormat={DATE_INPUT_FORMAT}
+                value={form.validFrom}
+                onChange={(v) => v && set('validFrom', v)}
+                readOnly={readOnly}
+              />
+              <DateInput
+                label={t('people.validTo')}
+                valueFormat={DATE_INPUT_FORMAT}
+                value={form.validTo}
+                onChange={(v) => v && set('validTo', v)}
+                readOnly={readOnly}
+              />
               <NumberInput
                 label={t('people.pin')}
                 description={t('people.pinHint')}
@@ -408,14 +495,29 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
               <Select
                 label={t('people.shift')}
                 clearable
-                data={(shifts.data ?? []).map((s) => ({ value: String(s.id), label: `${s.name} (${s.startTime}-${s.endTime})` }))}
+                data={(shifts.data ?? []).map((s) => ({
+                  value: String(s.id),
+                  label: `${s.name} (${s.startTime}-${s.endTime})`,
+                }))}
                 value={form.shiftId ? String(form.shiftId) : null}
                 onChange={(v) => set('shiftId', v ? Number(v) : null)}
                 readOnly={readOnly}
               />
             </SimpleGrid>
-            <Textarea label={t('people.notes')} value={form.notes} onChange={(e) => set('notes', e.currentTarget.value)} readOnly={readOnly} autosize minRows={2} />
-            <Switch label={t('people.activeSwitch')} checked={form.active} onChange={(e) => set('active', e.currentTarget.checked)} disabled={readOnly} />
+            <Textarea
+              label={t('people.notes')}
+              value={form.notes}
+              onChange={(e) => set('notes', e.currentTarget.value)}
+              readOnly={readOnly}
+              autosize
+              minRows={2}
+            />
+            <Switch
+              label={t('people.activeSwitch')}
+              checked={form.active}
+              onChange={(e) => set('active', e.currentTarget.checked)}
+              disabled={readOnly}
+            />
             {!readOnly && (
               <Button onClick={save} loading={busy}>
                 {person ? t('people.saveChanges') : t('people.create')}
@@ -424,7 +526,9 @@ function PersonDrawer({ person, opened, onClose }: { person: PersonDto | null; o
           </Stack>
         </Tabs.Panel>
         <Tabs.Panel value="cards">{p && <CardsEditor person={p} readOnly={readOnly} onChange={refresh} />}</Tabs.Panel>
-        <Tabs.Panel value="permissions">{person && <PermissionsEditor personId={person.id} readOnly={readOnly} />}</Tabs.Panel>
+        <Tabs.Panel value="permissions">
+          {person && <PermissionsEditor personId={person.id} readOnly={readOnly} />}
+        </Tabs.Panel>
       </Tabs>
     </Drawer>
   )
@@ -436,7 +540,10 @@ export function PeoplePage() {
   const { can } = useAuth()
   const [search, setSearch] = useState('')
   const [debounced] = useDebouncedValue(search, 300)
-  const people = useQuery({ queryKey: ['people', debounced], queryFn: () => api.get<PersonDto[]>(`/people${debounced ? `?search=${encodeURIComponent(debounced)}` : ''}`) })
+  const people = useQuery({
+    queryKey: ['people', debounced],
+    queryFn: () => api.get<PersonDto[]>(`/people${debounced ? `?search=${encodeURIComponent(debounced)}` : ''}`),
+  })
   const [selected, setSelected] = useState<PersonDto | null>(null)
   const [opened, setOpened] = useState(false)
 
@@ -460,7 +567,9 @@ export function PeoplePage() {
                   <Text size="sm" key={e.row}>
                     {t('people.importRow', {
                       row: e.row,
-                      error: e.code ? t(`errors.${e.code}` as 'errors.generic', { ...e.params, defaultValue: e.error }) : e.error,
+                      error: e.code
+                        ? t(`errors.${e.code}` as 'errors.generic', { ...e.params, defaultValue: e.error })
+                        : e.error,
                     })}
                   </Text>
                 ))}
@@ -523,7 +632,13 @@ export function PeoplePage() {
         }
       />
       <Card withBorder>
-        <TextInput leftSection={<IconSearch size={16} />} placeholder={t('people.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.currentTarget.value)} mb="md" />
+        <TextInput
+          leftSection={<IconSearch size={16} />}
+          placeholder={t('people.searchPlaceholder')}
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          mb="md"
+        />
         <Table.ScrollContainer minWidth={700}>
           <Table highlightOnHover>
             <Table.Thead>
@@ -555,7 +670,12 @@ export function PeoplePage() {
                   <Table.Td>
                     <Group gap={4}>
                       {p.cards.map((c) => (
-                        <Badge key={c.id} variant="light" color={c.status === 'active' ? 'blue' : 'gray'} className="mono">
+                        <Badge
+                          key={c.id}
+                          variant="light"
+                          color={c.status === 'active' ? 'blue' : 'gray'}
+                          className="mono"
+                        >
                           {c.number}
                         </Badge>
                       ))}
@@ -571,7 +691,12 @@ export function PeoplePage() {
                   </Table.Td>
                   <Table.Td onClick={(e) => e.stopPropagation()}>
                     {can('operator') && (
-                      <ActionIcon variant="subtle" color="red" onClick={() => remove(p)} aria-label={t('common.delete')}>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        onClick={() => remove(p)}
+                        aria-label={t('common.delete')}
+                      >
                         <IconTrash size={16} />
                       </ActionIcon>
                     )}

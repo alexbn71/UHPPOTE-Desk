@@ -1,7 +1,16 @@
-import { SECRET_MASK, type Language, type NotificationChannelDto, type NotificationConfig, type WebhookEvent } from '@uhppote-desk/shared'
+import {
+  SECRET_MASK,
+  type Language,
+  type NotificationChannelDto,
+  type NotificationConfig,
+  type WebhookEvent,
+} from '@uhppote-desk/shared'
 import { fromBool, toBool, type Db } from './database.js'
 
-export type NotificationInput = Pick<NotificationChannelDto, 'name' | 'enabled' | 'events' | 'doorIds' | 'language' | 'dailyReport' | 'reportHour' | 'config'>
+export type NotificationInput = Pick<
+  NotificationChannelDto,
+  'name' | 'enabled' | 'events' | 'doorIds' | 'language' | 'dailyReport' | 'reportHour' | 'config'
+>
 
 /** A channel with its real secrets (server side only). */
 export type NotificationChannel = NotificationChannelDto
@@ -79,7 +88,17 @@ export class NotificationRepo {
   create(n: NotificationInput): number {
     return this.db.run(
       'INSERT INTO notification_channels (name, type, enabled, events, door_ids, language, config, daily_report, report_hour) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [n.name, n.config.type, fromBool(n.enabled), JSON.stringify(n.events), JSON.stringify(n.doorIds), n.language, JSON.stringify(unmask(n.config, undefined)), fromBool(n.dailyReport), n.reportHour],
+      [
+        n.name,
+        n.config.type,
+        fromBool(n.enabled),
+        JSON.stringify(n.events),
+        JSON.stringify(n.doorIds),
+        n.language,
+        JSON.stringify(unmask(n.config, undefined)),
+        fromBool(n.dailyReport),
+        n.reportHour,
+      ],
     ).lastInsertRowid
   }
 
@@ -88,7 +107,18 @@ export class NotificationRepo {
     if (!prev) return false
     this.db.run(
       'UPDATE notification_channels SET name = ?, type = ?, enabled = ?, events = ?, door_ids = ?, language = ?, config = ?, daily_report = ?, report_hour = ? WHERE id = ?',
-      [n.name, n.config.type, fromBool(n.enabled), JSON.stringify(n.events), JSON.stringify(n.doorIds), n.language, JSON.stringify(unmask(n.config, prev.config)), fromBool(n.dailyReport), n.reportHour, id],
+      [
+        n.name,
+        n.config.type,
+        fromBool(n.enabled),
+        JSON.stringify(n.events),
+        JSON.stringify(n.doorIds),
+        n.language,
+        JSON.stringify(unmask(n.config, prev.config)),
+        fromBool(n.dailyReport),
+        n.reportHour,
+        id,
+      ],
     )
     return true
   }

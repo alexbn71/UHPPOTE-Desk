@@ -1,4 +1,18 @@
-import { Alert, Button, Card, Checkbox, Group, NumberInput, Select, SimpleGrid, Stack, Switch, Text, TextInput, Title } from '@mantine/core'
+import {
+  Alert,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
@@ -31,15 +45,31 @@ const SIGNALS = [
 const ARM = 16
 const MODES = [1, 2, 3, 4, 5] as const
 
-function RelayCard({ n, relay, onChange, readOnly }: { n: number; relay: ExpansionRelaySettings; onChange: (r: ExpansionRelaySettings) => void; readOnly: boolean }) {
+function RelayCard({
+  n,
+  relay,
+  onChange,
+  readOnly,
+}: {
+  n: number
+  relay: ExpansionRelaySettings
+  onChange: (r: ExpansionRelaySettings) => void
+  readOnly: boolean
+}) {
   const { t } = useTranslation()
   const arm = relay.source === ARM
   const usesSignals = relay.mode === 4 || relay.mode === 5
   const usesDuration = relay.mode === 1 || relay.mode === 2
-  const toggle = (field: 'events' | 'signals', bit: number, on: boolean) => onChange({ ...relay, [field]: on ? relay[field] | bit : relay[field] & ~bit })
+  const toggle = (field: 'events' | 'signals', bit: number, on: boolean) =>
+    onChange({ ...relay, [field]: on ? relay[field] | bit : relay[field] & ~bit })
   return (
     <Card withBorder padding="sm" data-testid={`expansion-relay-${n}`}>
-      <Switch label={t('expansion.relayN', { n })} checked={relay.active} disabled={readOnly} onChange={(e) => onChange({ ...relay, active: e.currentTarget.checked })} />
+      <Switch
+        label={t('expansion.relayN', { n })}
+        checked={relay.active}
+        disabled={readOnly}
+        onChange={(e) => onChange({ ...relay, active: e.currentTarget.checked })}
+      />
       {relay.active && (
         <Stack mt="xs" gap="xs">
           <Group grow>
@@ -130,7 +160,10 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
   const { t } = useTranslation()
   const { can } = useAuth()
   const qc = useQueryClient()
-  const settings = useQuery({ queryKey: ['settings', id], queryFn: () => api.get<ControllerSettings>(`/controllers/${id}/settings`) })
+  const settings = useQuery({
+    queryKey: ['settings', id],
+    queryFn: () => api.get<ControllerSettings>(`/controllers/${id}/settings`),
+  })
   const [x, setX] = useState<ExpansionBoardSettings | null>(null)
   const [busy, setBusy] = useState(false)
   const readOnly = !can('admin')
@@ -154,7 +187,8 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
     }
   }
 
-  const setRelay = (i: number, r: ExpansionRelaySettings) => setX({ ...x, relays: x.relays.map((old, j) => (j === i ? r : old)) })
+  const setRelay = (i: number, r: ExpansionRelaySettings) =>
+    setX({ ...x, relays: x.relays.map((old, j) => (j === i ? r : old)) })
 
   return (
     <Stack>

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { anomalySettingsSchema } from '@uhppote-desk/shared'
-import { circularDistance, classifyAccess, findBursts, inWindow, minuteOfDay, usualWindow } from '../../src/services/anomalies.js'
+import {
+  circularDistance,
+  classifyAccess,
+  findBursts,
+  inWindow,
+  minuteOfDay,
+  usualWindow,
+} from '../../src/services/anomalies.js'
 
 const s = anomalySettingsSchema.parse({})
 const at = (hhmm: string) => minuteOfDay(hhmm)
@@ -55,10 +62,13 @@ describe('classifyAccess', () => {
 
 describe('findBursts', () => {
   const ev = (key: string, hhmm: string) => ({ key, timestamp: `2026-10-12 ${hhmm}:00` })
-  const bursts = (events: ReturnType<typeof ev>[]) => findBursts(events, (e) => e.key, 3, 10).map((b) => b.map((e) => `${e.key}@${e.timestamp!.slice(11, 16)}`))
+  const bursts = (events: ReturnType<typeof ev>[]) =>
+    findBursts(events, (e) => e.key, 3, 10).map((b) => b.map((e) => `${e.key}@${e.timestamp!.slice(11, 16)}`))
 
   it('needs the threshold within the window, per key', () => {
-    expect(bursts([ev('a', '10:00'), ev('a', '10:04'), ev('a', '10:09'), ev('b', '10:01'), ev('b', '10:02')])).toEqual([['a@10:00', 'a@10:04', 'a@10:09']])
+    expect(bursts([ev('a', '10:00'), ev('a', '10:04'), ev('a', '10:09'), ev('b', '10:01'), ev('b', '10:02')])).toEqual([
+      ['a@10:00', 'a@10:04', 'a@10:09'],
+    ])
     expect(bursts([ev('a', '10:00'), ev('a', '10:06'), ev('a', '10:12')])).toEqual([])
   })
 

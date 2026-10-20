@@ -71,7 +71,8 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     }
     if (err instanceof HttpError) return send(fail(err.statusCode, err.code, err.params))
     if (err instanceof UhppoteError) {
-      const status = err instanceof TimeoutError ? 504 : err instanceof CodecError ? 400 : err instanceof NotFoundError ? 404 : 502
+      const status =
+        err instanceof TimeoutError ? 504 : err instanceof CodecError ? 400 : err instanceof NotFoundError ? 404 : 502
       return send(fail(status, err.code, err.params))
     }
     const e = err as Error & { statusCode?: number; code?: string }
@@ -79,13 +80,11 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     if (e.code === 'ERR_SQLITE_ERROR' && /FOREIGN KEY constraint failed/.test(e.message))
       return send(fail(409, 'inUse'))
     if (e.statusCode && e.statusCode < 500) {
-      return reply
-        .status(e.statusCode)
-        .send({
-          error: e.message,
-          code: e.statusCode === 404 ? 'notFound' : 'generic',
-          params: { status: e.statusCode },
-        })
+      return reply.status(e.statusCode).send({
+        error: e.message,
+        code: e.statusCode === 404 ? 'notFound' : 'generic',
+        params: { status: e.statusCode },
+      })
     }
     req.log.error(err)
     ctx.logger.error?.(`unhandled error on ${req.method} ${req.url}: ${e.stack ?? e.message}`)

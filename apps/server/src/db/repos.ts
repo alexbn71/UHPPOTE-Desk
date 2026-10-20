@@ -42,7 +42,9 @@ export class TreeRepo {
 
   update(id: number, name: string, parentId: number | null): boolean {
     if (parentId === id) throw new HttpError(400, 'selfParent')
-    return this.db.run(`UPDATE ${this.table} SET name = ?, parent_id = ? WHERE id = ?`, [name, parentId, id]).changes > 0
+    return (
+      this.db.run(`UPDATE ${this.table} SET name = ?, parent_id = ? WHERE id = ?`, [name, parentId, id]).changes > 0
+    )
   }
 
   delete(id: number): boolean {
@@ -169,23 +171,23 @@ export class ControllerRepo {
       for (let d = 1; d <= 4; d++) {
         this.db.run('INSERT INTO doors (controller_id, door, name) VALUES (?, ?, ?)', [id, d, `${c.name} - Door ${d}`])
       }
-      this.db.run('INSERT INTO controller_settings (controller_id, settings) VALUES (?, ?)', [id, JSON.stringify(DEFAULT_SETTINGS)])
+      this.db.run('INSERT INTO controller_settings (controller_id, settings) VALUES (?, ?)', [
+        id,
+        JSON.stringify(DEFAULT_SETTINGS),
+      ])
       return id
     })
   }
 
-  update(id: number, c: Pick<ControllerRecord, 'serial' | 'name' | 'host' | 'port' | 'transport' | 'zoneId' | 'enabled'>): boolean {
+  update(
+    id: number,
+    c: Pick<ControllerRecord, 'serial' | 'name' | 'host' | 'port' | 'transport' | 'zoneId' | 'enabled'>,
+  ): boolean {
     return (
-      this.db.run('UPDATE controllers SET serial = ?, name = ?, host = ?, port = ?, transport = ?, zone_id = ?, enabled = ? WHERE id = ?', [
-        c.serial,
-        c.name,
-        c.host,
-        c.port,
-        c.transport,
-        c.zoneId,
-        fromBool(c.enabled),
-        id,
-      ]).changes > 0
+      this.db.run(
+        'UPDATE controllers SET serial = ?, name = ?, host = ?, port = ?, transport = ?, zone_id = ?, enabled = ? WHERE id = ?',
+        [c.serial, c.name, c.host, c.port, c.transport, c.zoneId, fromBool(c.enabled), id],
+      ).changes > 0
     )
   }
 
@@ -203,7 +205,11 @@ export class ControllerRepo {
   }
 
   setCollectedIndex(id: number, index: number): void {
-    this.db.run('UPDATE controllers SET last_collected_index = ? WHERE id = ? AND last_collected_index < ?', [index, id, index])
+    this.db.run('UPDATE controllers SET last_collected_index = ? WHERE id = ? AND last_collected_index < ?', [
+      index,
+      id,
+      index,
+    ])
   }
 
   /** The controller restarted its event numbering: new epoch, index reset. */
@@ -244,7 +250,9 @@ export class ControllerRepo {
   }
 
   settings(controllerId: number): ControllerSettings {
-    const r = this.db.get<{ settings: string }>('SELECT settings FROM controller_settings WHERE controller_id = ?', [controllerId])
+    const r = this.db.get<{ settings: string }>('SELECT settings FROM controller_settings WHERE controller_id = ?', [
+      controllerId,
+    ])
     const defaults = structuredClone(DEFAULT_SETTINGS)
     return r ? { ...defaults, ...(JSON.parse(r.settings) as Partial<ControllerSettings>) } : defaults
   }
@@ -300,7 +308,14 @@ const CARD_SELECT = `
   FROM cards c LEFT JOIN people p ON p.id = c.person_id`
 
 function mapCard(r: CardRow): CardDto {
-  return { id: r.id, number: r.number, personId: r.person_id, personName: r.person_name, status: r.status, createdAt: r.created_at }
+  return {
+    id: r.id,
+    number: r.number,
+    personId: r.person_id,
+    personName: r.person_name,
+    status: r.status,
+    createdAt: r.created_at,
+  }
 }
 
 export interface PermissionRow {
@@ -334,11 +349,15 @@ export class PeopleRepo {
     }
   }
 
-  list(opts: { search?: string | undefined; departmentId?: number | undefined; active?: boolean | undefined } = {}): PersonDto[] {
+  list(
+    opts: { search?: string | undefined; departmentId?: number | undefined; active?: boolean | undefined } = {},
+  ): PersonDto[] {
     const where: string[] = []
     const params: (string | number)[] = []
     if (opts.search) {
-      where.push(`(p.code LIKE ? OR p.last_name LIKE ? OR p.first_name LIKE ? OR p.id IN (SELECT person_id FROM cards WHERE CAST(number AS TEXT) LIKE ?))`)
+      where.push(
+        `(p.code LIKE ? OR p.last_name LIKE ? OR p.first_name LIKE ? OR p.id IN (SELECT person_id FROM cards WHERE CAST(number AS TEXT) LIKE ?))`,
+      )
       const s = `%${opts.search}%`
       params.push(s, s, s, s)
     }
@@ -350,7 +369,10 @@ export class PeopleRepo {
       where.push('p.active = ?')
       params.push(fromBool(opts.active))
     }
-    const rows = this.db.all<PersonRow>(`${PERSON_SELECT} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY p.last_name, p.first_name`, params)
+    const rows = this.db.all<PersonRow>(
+      `${PERSON_SELECT} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY p.last_name, p.first_name`,
+      params,
+    )
     const cards = this.db.all<CardRow>(`${CARD_SELECT} WHERE c.person_id IS NOT NULL ORDER BY c.number`).map(mapCard)
     const byPerson = new Map<number, CardDto[]>()
     for (const c of cards) byPerson.set(c.personId!, [...(byPerson.get(c.personId!) ?? []), c])
@@ -371,7 +393,20 @@ export class PeopleRepo {
     return this.db.run(
       `INSERT INTO people (code, first_name, last_name, department_id, email, phone, notes, pin, valid_from, valid_to, active, shift_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [p.code, p.firstName, p.lastName, p.departmentId, p.email, p.phone, p.notes, p.pin, p.validFrom, p.validTo, fromBool(p.active), p.shiftId],
+      [
+        p.code,
+        p.firstName,
+        p.lastName,
+        p.departmentId,
+        p.email,
+        p.phone,
+        p.notes,
+        p.pin,
+        p.validFrom,
+        p.validTo,
+        fromBool(p.active),
+        p.shiftId,
+      ],
     ).lastInsertRowid
   }
 
@@ -380,7 +415,21 @@ export class PeopleRepo {
       this.db.run(
         `UPDATE people SET code = ?, first_name = ?, last_name = ?, department_id = ?, email = ?, phone = ?, notes = ?, pin = ?,
          valid_from = ?, valid_to = ?, active = ?, shift_id = ?, updated_at = datetime('now','localtime') WHERE id = ?`,
-        [p.code, p.firstName, p.lastName, p.departmentId, p.email, p.phone, p.notes, p.pin, p.validFrom, p.validTo, fromBool(p.active), p.shiftId, id],
+        [
+          p.code,
+          p.firstName,
+          p.lastName,
+          p.departmentId,
+          p.email,
+          p.phone,
+          p.notes,
+          p.pin,
+          p.validFrom,
+          p.validTo,
+          fromBool(p.active),
+          p.shiftId,
+          id,
+        ],
       ).changes > 0
     )
   }
@@ -394,7 +443,10 @@ export class PeopleRepo {
   }
 
   photo(id: number): { data: Buffer; type: string } | undefined {
-    const r = this.db.get<{ photo: Uint8Array | null; photo_type: string | null }>('SELECT photo, photo_type FROM people WHERE id = ?', [id])
+    const r = this.db.get<{ photo: Uint8Array | null; photo_type: string | null }>(
+      'SELECT photo, photo_type FROM people WHERE id = ?',
+      [id],
+    )
     return r?.photo ? { data: Buffer.from(r.photo), type: r.photo_type ?? 'image/jpeg' } : undefined
   }
 
@@ -412,7 +464,9 @@ export class PeopleRepo {
       where.push('CAST(c.number AS TEXT) LIKE ?')
       params.push(`%${opts.search}%`)
     }
-    return this.db.all<CardRow>(`${CARD_SELECT} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY c.number`, params).map(mapCard)
+    return this.db
+      .all<CardRow>(`${CARD_SELECT} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY c.number`, params)
+      .map(mapCard)
   }
 
   card(id: number): CardDto | undefined {
@@ -426,7 +480,8 @@ export class PeopleRepo {
   }
 
   createCard(number: number, personId: number | null, status: CardDto['status'] = 'active'): number {
-    return this.db.run('INSERT INTO cards (number, person_id, status) VALUES (?, ?, ?)', [number, personId, status]).lastInsertRowid
+    return this.db.run('INSERT INTO cards (number, person_id, status) VALUES (?, ?, ?)', [number, personId, status])
+      .lastInsertRowid
   }
 
   updateCard(id: number, personId: number | null, status: CardDto['status']): boolean {
@@ -442,12 +497,19 @@ export class PeopleRepo {
   permissions(personId?: number): PermissionRow[] {
     const rows =
       personId === undefined
-        ? this.db.all<{ person_id: number; door_id: number; profile_id: number | null; first_card: number }>('SELECT * FROM permissions')
+        ? this.db.all<{ person_id: number; door_id: number; profile_id: number | null; first_card: number }>(
+            'SELECT * FROM permissions',
+          )
         : this.db.all<{ person_id: number; door_id: number; profile_id: number | null; first_card: number }>(
             'SELECT * FROM permissions WHERE person_id = ?',
             [personId],
           )
-    return rows.map((r) => ({ personId: r.person_id, doorId: r.door_id, profileId: r.profile_id, firstCard: toBool(r.first_card) }))
+    return rows.map((r) => ({
+      personId: r.person_id,
+      doorId: r.door_id,
+      profileId: r.profile_id,
+      firstCard: toBool(r.first_card),
+    }))
   }
 
   setPermissions(personId: number, perms: Omit<PermissionRow, 'personId'>[]): void {
@@ -509,9 +571,15 @@ export class ScheduleRepo {
 
   profiles(): TimeProfileRecord[] {
     return this.db
-      .all<{ id: number; name: string; valid_from: string; valid_to: string; weekdays: string; segments: string; linked_to: number | null }>(
-        'SELECT * FROM time_profiles ORDER BY id',
-      )
+      .all<{
+        id: number
+        name: string
+        valid_from: string
+        valid_to: string
+        weekdays: string
+        segments: string
+        linked_to: number | null
+      }>('SELECT * FROM time_profiles ORDER BY id')
       .map((r) => ({
         id: r.id,
         name: r.name,
@@ -553,7 +621,9 @@ export class ScheduleRepo {
       more_cards: number
       enabled: number
     }>(
-      controllerId === undefined ? 'SELECT * FROM tasks ORDER BY controller_id, start_time' : 'SELECT * FROM tasks WHERE controller_id = ? ORDER BY start_time',
+      controllerId === undefined
+        ? 'SELECT * FROM tasks ORDER BY controller_id, start_time'
+        : 'SELECT * FROM tasks WHERE controller_id = ? ORDER BY start_time',
       controllerId === undefined ? [] : [controllerId],
     )
     return rows.map((r) => ({
@@ -571,7 +641,17 @@ export class ScheduleRepo {
   }
 
   saveTask(t: Omit<TaskRecord, 'id'>, id?: number): number {
-    const params = [t.controllerId, t.door, t.task, t.validFrom, t.validTo, weekdaysToString(t.weekdays), t.startTime, t.moreCards, fromBool(t.enabled)]
+    const params = [
+      t.controllerId,
+      t.door,
+      t.task,
+      t.validFrom,
+      t.validTo,
+      weekdaysToString(t.weekdays),
+      t.startTime,
+      t.moreCards,
+      fromBool(t.enabled),
+    ]
     if (id) {
       this.db.run(
         'UPDATE tasks SET controller_id = ?, door = ?, task = ?, valid_from = ?, valid_to = ?, weekdays = ?, start_time = ?, more_cards = ?, enabled = ? WHERE id = ?',
@@ -671,11 +751,26 @@ export class EventRepo {
 
   /** Inserts the event if not already present. Returns the full event if inserted, otherwise null. */
   insert(e: NewEvent): EventDto | null {
-    const person = e.card > 0 ? this.db.get<{ person_id: number | null }>('SELECT person_id FROM cards WHERE number = ?', [e.card]) : undefined
+    const person =
+      e.card > 0
+        ? this.db.get<{ person_id: number | null }>('SELECT person_id FROM cards WHERE number = ?', [e.card])
+        : undefined
     const r = this.db.run(
       `INSERT OR IGNORE INTO events (controller_id, epoch, idx, type, granted, door, direction, card, person_id, timestamp, reason)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [e.controllerId, e.epoch, e.index, e.type, fromBool(e.granted), e.door, e.direction, e.card, person?.person_id ?? null, e.timestamp, e.reason],
+      [
+        e.controllerId,
+        e.epoch,
+        e.index,
+        e.type,
+        fromBool(e.granted),
+        e.door,
+        e.direction,
+        e.card,
+        person?.person_id ?? null,
+        e.timestamp,
+        e.reason,
+      ],
     )
     if (r.changes === 0) return null
     const row = this.db.get<EventRow>(`${EVENT_SELECT} WHERE e.id = ?`, [r.lastInsertRowid])
@@ -683,7 +778,11 @@ export class EventRepo {
   }
 
   exists(controllerId: number, epoch: number, index: number): boolean {
-    return !!this.db.get('SELECT 1 FROM events WHERE controller_id = ? AND epoch = ? AND idx = ?', [controllerId, epoch, index])
+    return !!this.db.get('SELECT 1 FROM events WHERE controller_id = ? AND epoch = ? AND idx = ?', [
+      controllerId,
+      epoch,
+      index,
+    ])
   }
 
   query(f: EventFilter): { rows: EventDto[]; total: number } {
@@ -723,7 +822,13 @@ export class EventRepo {
     }
     const w = where.length ? `WHERE ${where.join(' AND ')}` : ''
     const total = this.db.get<{ n: number }>(`SELECT COUNT(*) n FROM events e ${w}`, params)!.n
-    const rows = this.db.all<EventRow>(`${EVENT_SELECT} ${w} ORDER BY e.timestamp DESC, e.id DESC LIMIT ? OFFSET ?`, [...params, f.limit, f.offset]).map(mapEvent)
+    const rows = this.db
+      .all<EventRow>(`${EVENT_SELECT} ${w} ORDER BY e.timestamp DESC, e.id DESC LIMIT ? OFFSET ?`, [
+        ...params,
+        f.limit,
+        f.offset,
+      ])
+      .map(mapEvent)
     return { rows, total }
   }
 
@@ -784,7 +889,9 @@ export class EventRepo {
   }
 
   /** Last denied swipe of an unknown card (for "swipe the card" enrolment). */
-  latestUnknownCards(sinceIso: string): { card: number; timestamp: string | null; controllerId: number; door: number }[] {
+  latestUnknownCards(
+    sinceIso: string,
+  ): { card: number; timestamp: string | null; controllerId: number; door: number }[] {
     return this.db.all(
       `SELECT card, MAX(timestamp) AS timestamp, controller_id AS controllerId, door FROM events
        WHERE type = 1 AND card > 0 AND received_at >= ? AND card NOT IN (SELECT number FROM cards)

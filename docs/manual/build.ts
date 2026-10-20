@@ -28,7 +28,9 @@ const SERIAL = 405419896
 const PASSWORD = 'manual-demo-pass'
 
 if (!fs.existsSync(path.join(ROOT, 'apps/web/dist/index.html'))) {
-  console.error('apps/web/dist not found: run "npm run build --workspace @uhppote-desk/web" first (or use "npm run manual")')
+  console.error(
+    'apps/web/dist not found: run "npm run build --workspace @uhppote-desk/web" first (or use "npm run manual")',
+  )
   process.exit(1)
 }
 fs.rmSync(SHOTS, { recursive: true, force: true })
@@ -36,7 +38,14 @@ fs.mkdirSync(SHOTS, { recursive: true })
 
 // --- application with a simulated controller ----------------------------------------------------------------
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uhppote-desk-manual-'))
-const fake = new FakeController({ id: SERIAL, host: '127.0.0.1', port: 60030, tcp: true, address: '192.168.1.50', gateway: '192.168.1.1' })
+const fake = new FakeController({
+  id: SERIAL,
+  host: '127.0.0.1',
+  port: 60030,
+  tcp: true,
+  address: '192.168.1.50',
+  gateway: '192.168.1.1',
+})
 await fake.start()
 const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m) }
 const ctx = createContext(
@@ -71,7 +80,11 @@ const ctx = createContext(
 )
 // admin with a normal (changeable) password, so that the Change password page shows its form
 await ctx.auth.ensureAdmin(null)
-await ctx.auth.setPassword(ctx.db.get<{ id: number }>("SELECT id FROM operators WHERE username = 'admin'")!.id, PASSWORD, false)
+await ctx.auth.setPassword(
+  ctx.db.get<{ id: number }>("SELECT id FROM operators WHERE username = 'admin'")!.id,
+  PASSWORD,
+  false,
+)
 await ctx.eventService.startListener()
 const app = await buildApp(ctx)
 await app.listen({ port: PORT, host: '127.0.0.1' })
@@ -86,7 +99,10 @@ async function call<T = unknown>(method: string, url: string, body?: unknown): P
   })
   if (!r.ok) throw new Error(`${method} ${url}: ${r.status} ${await r.text()}`)
   // login sets several cookies (session, and clears the device cookie): keep the ones with a value
-  const set = r.headers.getSetCookie().map((c) => c.split(';')[0]!).filter((c) => !c.endsWith('='))
+  const set = r.headers
+    .getSetCookie()
+    .map((c) => c.split(';')[0]!)
+    .filter((c) => !c.endsWith('='))
   if (set.length) cookie = set.join('; ')
   return (await r.json()) as T
 }
@@ -115,7 +131,15 @@ const production = await call<{ id: number }>('POST', '/departments', { name: 'P
 const assembly = await call<{ id: number }>('POST', '/departments', { name: 'Assembly', parentId: production.id })
 const logistics = await call<{ id: number }>('POST', '/departments', { name: 'Logistics', parentId: null })
 
-const controller = await call<{ id: number }>('POST', '/controllers', { serial: SERIAL, name: 'Main building', host: '127.0.0.1', port: 60030, transport: 'udp', zoneId: hq.id, enabled: true })
+const controller = await call<{ id: number }>('POST', '/controllers', {
+  serial: SERIAL,
+  name: 'Main building',
+  host: '127.0.0.1',
+  port: 60030,
+  transport: 'udp',
+  zoneId: hq.id,
+  enabled: true,
+})
 await ctx.health.check(controller.id)
 const doors = await call<{ id: number; door: number }[]>('GET', '/doors')
 const door = (n: number) => doors.find((d) => d.door === n)!.id
@@ -125,10 +149,19 @@ const doorSetup: [number, string, boolean][] = [
   [3, 'Server room', false],
   [4, 'Back office', false],
 ]
-for (const [n, name, attendance] of doorSetup) await call('PUT', `/doors/${door(n)}`, { name, active: true, attendance, mode: 3, delay: n === 2 ? 8 : 5 })
+for (const [n, name, attendance] of doorSetup)
+  await call('PUT', `/doors/${door(n)}`, { name, active: true, attendance, mode: 3, delay: n === 2 ? 8 : 5 })
 
 const weekdays = [true, true, true, true, true, false, false]
-await call('PUT', '/time-profiles/2', { id: 2, name: 'Office hours', validFrom: `${year}-01-01`, validTo: `${year + 1}-12-31`, weekdays, segments: [{ start: '07:30', end: '19:00' }], linkedTo: null })
+await call('PUT', '/time-profiles/2', {
+  id: 2,
+  name: 'Office hours',
+  validFrom: `${year}-01-01`,
+  validTo: `${year + 1}-12-31`,
+  weekdays,
+  segments: [{ start: '07:30', end: '19:00' }],
+  linkedTo: null,
+})
 await call('PUT', '/time-profiles/3', {
   id: 3,
   name: 'Warehouse shifts',
@@ -141,19 +174,102 @@ await call('PUT', '/time-profiles/3', {
   ],
   linkedTo: null,
 })
-await call('PUT', '/time-profiles/4', { id: 4, name: 'Saturday morning', validFrom: `${year}-01-01`, validTo: `${year + 1}-12-31`, weekdays: [false, false, false, false, false, true, false], segments: [{ start: '08:00', end: '12:30' }], linkedTo: 2 })
+await call('PUT', '/time-profiles/4', {
+  id: 4,
+  name: 'Saturday morning',
+  validFrom: `${year}-01-01`,
+  validTo: `${year + 1}-12-31`,
+  weekdays: [false, false, false, false, false, true, false],
+  segments: [{ start: '08:00', end: '12:30' }],
+  linkedTo: 2,
+})
 
-const office = await call<{ id: number }>('POST', '/shifts', { name: 'Office', startTime: '08:30', endTime: '17:30', breakMinutes: 60, toleranceMinutes: 10, weekdays })
-const early = await call<{ id: number }>('POST', '/shifts', { name: 'Warehouse early', startTime: '06:00', endTime: '14:00', breakMinutes: 30, toleranceMinutes: 5, weekdays })
-await call('POST', '/shifts', { name: 'Night security', startTime: '22:00', endTime: '06:00', breakMinutes: 0, toleranceMinutes: 15, weekdays: [true, true, true, true, true, true, true] })
+const office = await call<{ id: number }>('POST', '/shifts', {
+  name: 'Office',
+  startTime: '08:30',
+  endTime: '17:30',
+  breakMinutes: 60,
+  toleranceMinutes: 10,
+  weekdays,
+})
+const early = await call<{ id: number }>('POST', '/shifts', {
+  name: 'Warehouse early',
+  startTime: '06:00',
+  endTime: '14:00',
+  breakMinutes: 30,
+  toleranceMinutes: 5,
+  weekdays,
+})
+await call('POST', '/shifts', {
+  name: 'Night security',
+  startTime: '22:00',
+  endTime: '06:00',
+  breakMinutes: 0,
+  toleranceMinutes: 15,
+  weekdays: [true, true, true, true, true, true, true],
+})
 
 const peopleData = [
-  { code: 'E001', firstName: 'Maria', lastName: 'Rossi', departmentId: admin.id, shiftId: office.id, card: 10058400, email: 'maria.rossi@example.com', color: '#2b8ae6' },
-  { code: 'E002', firstName: 'Luca', lastName: 'Bianchi', departmentId: assembly.id, shiftId: early.id, card: 10058401, email: '', color: '#34c38f' },
-  { code: 'E003', firstName: 'Giulia', lastName: 'Ferrari', departmentId: admin.id, shiftId: office.id, card: 10058402, email: '', color: '#e8590c' },
-  { code: 'E004', firstName: 'John', lastName: 'Smith', departmentId: logistics.id, shiftId: early.id, card: 10058403, email: '', color: '#7048e8' },
-  { code: 'E005', firstName: 'Anna', lastName: 'Müller', departmentId: production.id, shiftId: null, card: 10058404, email: '', color: '#d6336c' },
-  { code: 'E006', firstName: 'Sofia', lastName: 'García', departmentId: logistics.id, shiftId: null, card: 10058405, email: '', color: '#0ca678' },
+  {
+    code: 'E001',
+    firstName: 'Maria',
+    lastName: 'Rossi',
+    departmentId: admin.id,
+    shiftId: office.id,
+    card: 10058400,
+    email: 'maria.rossi@example.com',
+    color: '#2b8ae6',
+  },
+  {
+    code: 'E002',
+    firstName: 'Luca',
+    lastName: 'Bianchi',
+    departmentId: assembly.id,
+    shiftId: early.id,
+    card: 10058401,
+    email: '',
+    color: '#34c38f',
+  },
+  {
+    code: 'E003',
+    firstName: 'Giulia',
+    lastName: 'Ferrari',
+    departmentId: admin.id,
+    shiftId: office.id,
+    card: 10058402,
+    email: '',
+    color: '#e8590c',
+  },
+  {
+    code: 'E004',
+    firstName: 'John',
+    lastName: 'Smith',
+    departmentId: logistics.id,
+    shiftId: early.id,
+    card: 10058403,
+    email: '',
+    color: '#7048e8',
+  },
+  {
+    code: 'E005',
+    firstName: 'Anna',
+    lastName: 'Müller',
+    departmentId: production.id,
+    shiftId: null,
+    card: 10058404,
+    email: '',
+    color: '#d6336c',
+  },
+  {
+    code: 'E006',
+    firstName: 'Sofia',
+    lastName: 'García',
+    departmentId: logistics.id,
+    shiftId: null,
+    card: 10058405,
+    email: '',
+    color: '#0ca678',
+  },
 ]
 const people: { id: number; card: number }[] = []
 for (const p of peopleData) {
@@ -174,7 +290,14 @@ for (const p of peopleData) {
   await call('POST', '/cards', { number: p.card, personId: created.id })
   people.push({ id: created.id, card: p.card })
 }
-const [rossi, bianchi, ferrari, smith, muller, garcia] = people as [typeof people[0], typeof people[0], typeof people[0], typeof people[0], typeof people[0], typeof people[0]]
+const [rossi, bianchi, ferrari, smith, muller, garcia] = people as [
+  (typeof people)[0],
+  (typeof people)[0],
+  (typeof people)[0],
+  (typeof people)[0],
+  (typeof people)[0],
+  (typeof people)[0],
+]
 await call('PUT', `/people/${rossi.id}/permissions`, {
   permissions: [
     { doorId: door(1), profileId: null, firstCard: true },
@@ -182,8 +305,18 @@ await call('PUT', `/people/${rossi.id}/permissions`, {
     { doorId: door(4), profileId: null, firstCard: false },
   ],
 })
-await call('POST', '/permissions/bulk', { personIds: [bianchi.id, smith.id, garcia.id], doorIds: [door(1), door(2)], action: 'grant', profileId: 3 })
-await call('POST', '/permissions/bulk', { personIds: [ferrari.id, muller.id], doorIds: [door(1), door(4)], action: 'grant', profileId: 2 })
+await call('POST', '/permissions/bulk', {
+  personIds: [bianchi.id, smith.id, garcia.id],
+  doorIds: [door(1), door(2)],
+  action: 'grant',
+  profileId: 3,
+})
+await call('POST', '/permissions/bulk', {
+  personIds: [ferrari.id, muller.id],
+  doorIds: [door(1), door(4)],
+  action: 'grant',
+  profileId: 2,
+})
 for (let n = 10058410; n <= 10058419; n++) await call('POST', '/cards', { number: n, personId: null })
 
 // photos: generated avatars with the initials
@@ -197,15 +330,49 @@ const browser = await chromium.launch()
     const png = await page.locator('#a').screenshot()
     const form = new FormData()
     form.append('file', new Blob([new Uint8Array(png)], { type: 'image/png' }), 'photo.png')
-    const r = await fetch(`${BASE}/api/people/${people[i]!.id}/photo`, { method: 'PUT', headers: { cookie }, body: form })
+    const r = await fetch(`${BASE}/api/people/${people[i]!.id}/photo`, {
+      method: 'PUT',
+      headers: { cookie },
+      body: form,
+    })
     if (!r.ok) throw new Error(`photo upload: ${r.status} ${await r.text()}`)
   }
   await page.close()
 }
 
-await call('POST', '/tasks', { controllerId: controller.id, door: 2, task: 1, validFrom: `${year}-01-01`, validTo: `${year + 1}-12-31`, weekdays, startTime: '07:00', moreCards: 0, enabled: true })
-await call('POST', '/tasks', { controllerId: controller.id, door: 2, task: 0, validFrom: `${year}-01-01`, validTo: `${year + 1}-12-31`, weekdays, startTime: '18:00', moreCards: 0, enabled: true })
-await call('POST', '/tasks', { controllerId: controller.id, door: 3, task: 7, validFrom: `${year}-01-01`, validTo: `${year + 1}-12-31`, weekdays: [true, true, true, true, true, true, true], startTime: '20:00', moreCards: 0, enabled: true })
+await call('POST', '/tasks', {
+  controllerId: controller.id,
+  door: 2,
+  task: 1,
+  validFrom: `${year}-01-01`,
+  validTo: `${year + 1}-12-31`,
+  weekdays,
+  startTime: '07:00',
+  moreCards: 0,
+  enabled: true,
+})
+await call('POST', '/tasks', {
+  controllerId: controller.id,
+  door: 2,
+  task: 0,
+  validFrom: `${year}-01-01`,
+  validTo: `${year + 1}-12-31`,
+  weekdays,
+  startTime: '18:00',
+  moreCards: 0,
+  enabled: true,
+})
+await call('POST', '/tasks', {
+  controllerId: controller.id,
+  door: 3,
+  task: 7,
+  validFrom: `${year}-01-01`,
+  validTo: `${year + 1}-12-31`,
+  weekdays: [true, true, true, true, true, true, true],
+  startTime: '20:00',
+  moreCards: 0,
+  enabled: true,
+})
 
 const settings = await call<Record<string, unknown>>('GET', `/controllers/${controller.id}/settings`)
 await call('PUT', `/controllers/${controller.id}/settings`, {
@@ -229,8 +396,22 @@ await call('PUT', `/controllers/${controller.id}/settings`, {
 
 await call('POST', `/holidays/italian/${year}`)
 
-await call('POST', '/operators', { username: 'reception', displayName: 'Reception desk', role: 'operator', active: true, password: 'reception-pass', zoneIds: [hq.id] })
-await call('POST', '/operators', { username: 'hr.office', displayName: 'HR office', role: 'viewer', active: true, password: 'hr-office-pass', zoneIds: [] })
+await call('POST', '/operators', {
+  username: 'reception',
+  displayName: 'Reception desk',
+  role: 'operator',
+  active: true,
+  password: 'reception-pass',
+  zoneIds: [hq.id],
+})
+await call('POST', '/operators', {
+  username: 'hr.office',
+  displayName: 'HR office',
+  role: 'viewer',
+  active: true,
+  password: 'hr-office-pass',
+  zoneIds: [],
+})
 
 // attendance swipes on the working days of the current month before today (at least the last 5 working days)
 const workDays: Date[] = []
@@ -268,8 +449,19 @@ for (const [i, day] of days.entries()) {
   swipeAt(day, jitter('15:20', 60), rossi.card, 4, 1)
   if (i % 2 === 0) swipeAt(day, jitter('19:45', 20), ferrari.card, 3, 1)
 }
-await call('POST', '/leaves', { personId: ferrari.id, fromDate: ymd(days[days.length - 2]!), toDate: ymd(days[days.length - 2]!), type: 'ferie', notes: '' })
-await call('POST', '/punches', { personId: smith.id, timestamp: `${ymd(days[days.length - 1]!)} 14:02`, direction: 2, reason: 'Forgot to swipe on exit' })
+await call('POST', '/leaves', {
+  personId: ferrari.id,
+  fromDate: ymd(days[days.length - 2]!),
+  toDate: ymd(days[days.length - 2]!),
+  type: 'ferie',
+  notes: '',
+})
+await call('POST', '/punches', {
+  personId: smith.id,
+  timestamp: `${ymd(days[days.length - 1]!)} 14:02`,
+  direction: 2,
+  reason: 'Forgot to swipe on exit',
+})
 
 // today: a few events for the dashboard and the history
 const today = new Date()
@@ -347,7 +539,13 @@ async function readmeScreenshots(): Promise<void> {
     await context.close()
   }
 
-  const { context, page } = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: 'dark' })
+  const { context, page } = await open({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+    colorScheme: 'dark',
+  })
   await page.goto(`${BASE}/m`)
   await page.getByText('Main entrance').first().waitFor({ timeout: 10_000 })
   await save(page, 'mobile')
@@ -356,7 +554,12 @@ async function readmeScreenshots(): Promise<void> {
 
 // --- screenshots ---------------------------------------------------------------------------------------------
 console.log('Taking screenshots…')
-const context = await browser.newContext({ viewport: { width: 1360, height: 850 }, deviceScaleFactor: 2, colorScheme: 'light', locale: 'en-GB' })
+const context = await browser.newContext({
+  viewport: { width: 1360, height: 850 },
+  deviceScaleFactor: 2,
+  colorScheme: 'light',
+  locale: 'en-GB',
+})
 const page = await context.newPage()
 
 /**
@@ -376,7 +579,11 @@ async function shot(name: string, opts: { whole?: boolean; maxHeight?: number } 
     const height = await page.evaluate(() => document.documentElement.scrollHeight)
     const x = 241
     const y = 62
-    await page.screenshot({ path: file, fullPage: true, clip: { x, y, width: 1360 - x, height: Math.min(height - y, opts.maxHeight ?? 1100) } })
+    await page.screenshot({
+      path: file,
+      fullPage: true,
+      clip: { x, y, width: 1360 - x, height: Math.min(height - y, opts.maxHeight ?? 1100) },
+    })
   }
   console.log(`  ${name}`)
 }
@@ -387,7 +594,10 @@ async function go(url: string, heading: string): Promise<void> {
 
 await page.goto(BASE)
 await page.getByRole('textbox', { name: 'Username', exact: true }).waitFor()
-await page.locator('form').first().screenshot({ path: path.join(SHOTS, 'login.png') })
+await page
+  .locator('form')
+  .first()
+  .screenshot({ path: path.join(SHOTS, 'login.png') })
 await page.getByRole('textbox', { name: 'Username', exact: true }).fill('admin')
 await page.getByRole('textbox', { name: 'Password', exact: true }).fill(PASSWORD)
 await page.getByRole('button', { name: 'Log in' }).click()
@@ -436,7 +646,10 @@ await go('/controllers', 'Controllers')
 await shot('controllers', { maxHeight: 420 })
 await page.getByRole('button', { name: 'Search network' }).click()
 await page.getByRole('button', { name: 'Start search' }).click()
-await page.getByRole('dialog').getByRole('cell', { name: String(SERIAL) }).waitFor({ timeout: 10_000 })
+await page
+  .getByRole('dialog')
+  .getByRole('cell', { name: String(SERIAL) })
+  .waitFor({ timeout: 10_000 })
 await shot('discovery')
 await page.keyboard.press('Escape')
 
@@ -457,7 +670,10 @@ await go('/doors', 'Doors')
 await shot('doors', { maxHeight: 480 })
 await go('/time-profiles', 'Time profiles')
 await shot('time-profiles', { maxHeight: 480 })
-await page.getByRole('row', { name: /Saturday morning/ }).getByRole('button', { name: 'Edit' }).click()
+await page
+  .getByRole('row', { name: /Saturday morning/ })
+  .getByRole('button', { name: 'Edit' })
+  .click()
 await page.getByRole('dialog').waitFor()
 await shot('time-profile-edit')
 await page.keyboard.press('Escape')
@@ -466,7 +682,10 @@ await shot('tasks', { maxHeight: 480 })
 
 await go('/sync', 'Synchronisation')
 await page.getByRole('button', { name: 'Compare' }).first().click()
-await page.getByText(/aligned/).first().waitFor({ timeout: 10_000 })
+await page
+  .getByText(/aligned/)
+  .first()
+  .waitFor({ timeout: 10_000 })
 await shot('sync', { maxHeight: 520 })
 
 await go('/attendance', 'Attendance')
@@ -500,7 +719,9 @@ await pdfPage.waitForLoadState('networkidle')
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version as string
 await pdfPage.evaluate((v) => {
   document.querySelectorAll('[data-version]').forEach((e) => (e.textContent = v))
-  document.querySelectorAll('[data-date]').forEach((e) => (e.textContent = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long' })))
+  document
+    .querySelectorAll('[data-date]')
+    .forEach((e) => (e.textContent = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long' })))
 }, version)
 await pdfPage.pdf({
   path: OUTPUT,

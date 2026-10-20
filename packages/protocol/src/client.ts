@@ -16,7 +16,12 @@ import {
   type TimeProfile,
 } from './codec/messages.js'
 import type { DateTimeString } from './codec/bytes.js'
-import { chunkParameters, expansionBoardParameters, type ExpansionBoardConfig, type ParameterWrite } from './codec/expansion.js'
+import {
+  chunkParameters,
+  expansionBoardParameters,
+  type ExpansionBoardConfig,
+  type ParameterWrite,
+} from './codec/expansion.js'
 import { EventOverwrittenError, NotFoundError, OperationFailedError, TimeoutError, TransportError } from './errors.js'
 import type { Logger } from './logger.js'
 import { tcpExchange } from './transport/tcp.js'
@@ -127,7 +132,13 @@ export class UhppoteClient {
         attempts++
         try {
           const reply = await this.send(target, packet, accept, expectReply)
-          this.onRequest?.({ controller: target.id, functionCode: fc, operation, durationMs: Date.now() - started, attempts })
+          this.onRequest?.({
+            controller: target.id,
+            functionCode: fc,
+            operation,
+            durationMs: Date.now() - started,
+            attempts,
+          })
           return reply
         } catch (err) {
           lastError = err as Error
@@ -160,7 +171,8 @@ export class UhppoteClient {
       return udpExchange(common, dest, packet, accept, expectReply, false)
     }
     if (target.transport === 'tcp') {
-      return Promise.reject(new TransportError(`TCP requires the IP address of controller ${target.id}`, {
+      return Promise.reject(
+        new TransportError(`TCP requires the IP address of controller ${target.id}`, {
           code: 'protocol.tcpNeedsAddress',
           params: { controller: target.id },
         }),
@@ -233,7 +245,13 @@ export class UhppoteClient {
   }
 
   async getListener(t: ControllerTarget): Promise<ListenerConfig> {
-    const { address, port, interval } = await this.call(t, 'get-listener', encode.getListener(t.id), decode.getListener, true)
+    const { address, port, interval } = await this.call(
+      t,
+      'get-listener',
+      encode.getListener(t.id),
+      decode.getListener,
+      true,
+    )
     return { address, port, interval }
   }
 
@@ -246,7 +264,13 @@ export class UhppoteClient {
   // -------------------------------------------------------------------------
 
   async getDoorControl(t: ControllerTarget, door: number): Promise<DoorControl> {
-    const { mode, delay } = await this.call(t, 'get-door-control', encode.getDoorControl(t.id, door), decode.getDoorControl, true)
+    const { mode, delay } = await this.call(
+      t,
+      'get-door-control',
+      encode.getDoorControl(t.id, door),
+      decode.getDoorControl,
+      true,
+    )
     return { door, mode, delay }
   }
 
@@ -256,7 +280,13 @@ export class UhppoteClient {
   }
 
   setDoorPasscodes(t: ControllerTarget, door: number, passcodes: number[]): Promise<void> {
-    return this.callOk(t, 'set-door-passcodes', encode.setDoorPasscodes(t.id, door, passcodes), decode.setDoorPasscodes, true)
+    return this.callOk(
+      t,
+      'set-door-passcodes',
+      encode.setDoorPasscodes(t.id, door, passcodes),
+      decode.setDoorPasscodes,
+      true,
+    )
   }
 
   /** Not idempotent: no automatic retry. */
@@ -293,7 +323,10 @@ export class UhppoteClient {
    * Reads all stored cards by walking the indexes (skips deleted records).
    * Stops when it has found `getCards()` cards or at the first empty slot.
    */
-  async listCards(t: ControllerTarget, onProgress?: (found: number, total: number, index: number) => void): Promise<Card[]> {
+  async listCards(
+    t: ControllerTarget,
+    onProgress?: (found: number, total: number, index: number) => void,
+  ): Promise<Card[]> {
     const total = await this.getCards(t)
     const cards: Card[] = []
     // safety limit: card table + deleted records
@@ -329,7 +362,8 @@ export class UhppoteClient {
   async getEvent(t: ControllerTarget, index: number): Promise<ControllerEvent> {
     const { event } = await this.call(t, 'get-event', encode.getEvent(t.id, index), decode.getEvent, true)
     if (event.type === EventType.Overwritten) throw new EventOverwrittenError(t.id, index)
-    if (event.index === 0) throw new NotFoundError(`event ${index} not present on controller ${t.id}`, {
+    if (event.index === 0)
+      throw new NotFoundError(`event ${index} not present on controller ${t.id}`, {
         code: 'protocol.eventMissing',
         params: { controller: t.id, index },
       })
@@ -352,7 +386,13 @@ export class UhppoteClient {
   }
 
   recordSpecialEvents(t: ControllerTarget, enabled: boolean): Promise<void> {
-    return this.callOk(t, 'record-special-events', encode.recordSpecialEvents(t.id, enabled), decode.recordSpecialEvents, true)
+    return this.callOk(
+      t,
+      'record-special-events',
+      encode.recordSpecialEvents(t.id, enabled),
+      decode.recordSpecialEvents,
+      true,
+    )
   }
 
   // -------------------------------------------------------------------------
@@ -360,7 +400,8 @@ export class UhppoteClient {
   // -------------------------------------------------------------------------
 
   async getTimeProfile(t: ControllerTarget, id: number): Promise<TimeProfile | null> {
-    return (await this.call(t, 'get-time-profile', encode.getTimeProfile(t.id, id), decode.getTimeProfile, true)).profile
+    return (await this.call(t, 'get-time-profile', encode.getTimeProfile(t.id, id), decode.getTimeProfile, true))
+      .profile
   }
 
   setTimeProfile(t: ControllerTarget, profile: TimeProfile): Promise<void> {
@@ -401,7 +442,8 @@ export class UhppoteClient {
   }
 
   async getAntiPassback(t: ControllerTarget): Promise<number> {
-    return (await this.call(t, 'get-antipassback', encode.getAntiPassback(t.id), decode.getAntiPassback, true)).antipassback
+    return (await this.call(t, 'get-antipassback', encode.getAntiPassback(t.id), decode.getAntiPassback, true))
+      .antipassback
   }
 
   setAntiPassback(t: ControllerTarget, mode: AntiPassback | number): Promise<void> {
@@ -443,6 +485,12 @@ export class UhppoteClient {
 
   /** WARNING: resets the controller configuration. */
   restoreDefaultParameters(t: ControllerTarget): Promise<void> {
-    return this.callOk(t, 'restore-default-parameters', encode.restoreDefaultParameters(t.id), decode.restoreDefaultParameters, false)
+    return this.callOk(
+      t,
+      'restore-default-parameters',
+      encode.restoreDefaultParameters(t.id),
+      decode.restoreDefaultParameters,
+      false,
+    )
   }
 }

@@ -1,4 +1,18 @@
-import { Badge, Button, Card, Group, NumberInput, SegmentedControl, Select, Stack, Table, Text, TextInput, Title, Tooltip } from '@mantine/core'
+import {
+  Badge,
+  Button,
+  Card,
+  Group,
+  NumberInput,
+  SegmentedControl,
+  Select,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+  Tooltip,
+} from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { IconSearch } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -23,17 +37,24 @@ export function CardsPage() {
   const people = usePeople()
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
-  const cards = useQuery({ queryKey: ['cards', filter, search], queryFn: () => api.get<CardDto[]>(`/cards?unassigned=${filter === 'free'}&search=${encodeURIComponent(search)}`) })
+  const cards = useQuery({
+    queryKey: ['cards', filter, search],
+    queryFn: () => api.get<CardDto[]>(`/cards?unassigned=${filter === 'free'}&search=${encodeURIComponent(search)}`),
+  })
   const unknown = useQuery({
     queryKey: ['cards-unknown', 'page'],
-    queryFn: () => api.get<{ card: number; timestamp: string; controllerId: number; door: number }[]>('/cards/unknown?minutes=60'),
+    queryFn: () =>
+      api.get<{ card: number; timestamp: string; controllerId: number; door: number }[]>('/cards/unknown?minutes=60'),
     refetchInterval: 5000,
     enabled: can('operator'),
   })
   const [batchFrom, setBatchFrom] = useState<number | string>('')
   const [batchTo, setBatchTo] = useState<number | string>('')
 
-  const personOptions = (people.data ?? []).map((p) => ({ value: String(p.id), label: `${p.lastName} ${p.firstName} (${p.code})` }))
+  const personOptions = (people.data ?? []).map((p) => ({
+    value: String(p.id),
+    label: `${p.lastName} ${p.firstName} (${p.code})`,
+  }))
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['cards'] })
     void qc.invalidateQueries({ queryKey: ['cards-unknown'] })
@@ -45,7 +66,14 @@ export function CardsPage() {
     modals.openConfirmModal({
       title: t('cards.registerTitle', { n: number }),
       children: (
-        <Select label={t('cards.registerAssign')} description={t('cards.registerAssignHint')} searchable clearable data={personOptions} onChange={(v) => (personId = v)} />
+        <Select
+          label={t('cards.registerAssign')}
+          description={t('cards.registerAssignHint')}
+          searchable
+          clearable
+          data={personOptions}
+          onChange={(v) => (personId = v)}
+        />
       ),
       labels: { confirm: t('cards.registerConfirm'), cancel: t('common.cancel') },
       onConfirm: () =>
@@ -62,7 +90,11 @@ export function CardsPage() {
 
   const assign = (c: CardDto, personId: string | null) =>
     api
-      .put<PushResult>(`/cards/${c.id}`, { number: c.number, personId: personId ? Number(personId) : null, status: c.status })
+      .put<PushResult>(`/cards/${c.id}`, {
+        number: c.number,
+        personId: personId ? Number(personId) : null,
+        status: c.status,
+      })
       .then((r) => {
         notifyPush(r)
         refresh()
@@ -112,7 +144,11 @@ export function CardsPage() {
                   </Tooltip>
                 ),
               )}
-              {unknown.data?.length === 0 && <Text size="sm" c="dimmed">{t('common.none')}</Text>}
+              {unknown.data?.length === 0 && (
+                <Text size="sm" c="dimmed">
+                  {t('common.none')}
+                </Text>
+              )}
             </Group>
           </Card>
           <Card withBorder>
@@ -120,8 +156,20 @@ export function CardsPage() {
               {t('cards.batchTitle')}
             </Title>
             <Group align="flex-end">
-              <NumberInput label={t('cards.batchFrom')} value={batchFrom} onChange={setBatchFrom} hideControls allowDecimal={false} />
-              <NumberInput label={t('cards.batchTo')} value={batchTo} onChange={setBatchTo} hideControls allowDecimal={false} />
+              <NumberInput
+                label={t('cards.batchFrom')}
+                value={batchFrom}
+                onChange={setBatchFrom}
+                hideControls
+                allowDecimal={false}
+              />
+              <NumberInput
+                label={t('cards.batchTo')}
+                value={batchTo}
+                onChange={setBatchTo}
+                hideControls
+                allowDecimal={false}
+              />
               <Button onClick={() => void batch()}>{t('cards.batchSubmit')}</Button>
             </Group>
           </Card>
@@ -137,7 +185,12 @@ export function CardsPage() {
               { value: 'free', label: t('cards.filterFree') },
             ]}
           />
-          <TextInput leftSection={<IconSearch size={16} />} placeholder={t('cards.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.currentTarget.value)} />
+          <TextInput
+            leftSection={<IconSearch size={16} />}
+            placeholder={t('cards.searchPlaceholder')}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+          />
         </Group>
         <Table.ScrollContainer minWidth={600}>
           <Table>
@@ -155,7 +208,15 @@ export function CardsPage() {
                   <Table.Td className="mono">{cardLabel(c.number)}</Table.Td>
                   <Table.Td w={320}>
                     {can('operator') ? (
-                      <Select size="xs" searchable clearable data={personOptions} value={c.personId ? String(c.personId) : null} onChange={(v) => void assign(c, v)} placeholder={t('cards.free')} />
+                      <Select
+                        size="xs"
+                        searchable
+                        clearable
+                        data={personOptions}
+                        value={c.personId ? String(c.personId) : null}
+                        onChange={(v) => void assign(c, v)}
+                        placeholder={t('cards.free')}
+                      />
                     ) : (
                       (c.personName ?? '—')
                     )}

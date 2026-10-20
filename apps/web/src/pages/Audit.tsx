@@ -25,7 +25,8 @@ export function AuditPage() {
   const [page, setPage] = useState(1)
   const audit = useQuery({
     queryKey: ['audit', action, page],
-    queryFn: () => api.get<{ rows: AuditEntry[]; total: number }>(`/audit${qs({ action, limit: PAGE, offset: (page - 1) * PAGE })}`),
+    queryFn: () =>
+      api.get<{ rows: AuditEntry[]; total: number }>(`/audit${qs({ action, limit: PAGE, offset: (page - 1) * PAGE })}`),
     placeholderData: keepPreviousData,
   })
   return (

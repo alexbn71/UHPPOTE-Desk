@@ -1,14 +1,7 @@
 import dgram from 'node:dgram'
 import net from 'node:net'
 import { Reader, Writer } from '../codec/bytes.js'
-import {
-  Direction,
-  EventType,
-  FunctionCode as F,
-  MAGIC,
-  PACKET_SIZE,
-  Reason,
-} from '../codec/constants.js'
+import { Direction, EventType, FunctionCode as F, MAGIC, PACKET_SIZE, Reason } from '../codec/constants.js'
 import {
   ExpansionEvent,
   ExpansionSource,
@@ -18,7 +11,16 @@ import {
   decodeExpansionBoard,
   type ExpansionBoardConfig,
 } from '../codec/expansion.js'
-import { DELETED_CARD, validatePacket, type Card, type ControllerEvent, type Quad, type Task, type TimeProfile, type Weekdays } from '../codec/messages.js'
+import {
+  DELETED_CARD,
+  validatePacket,
+  type Card,
+  type ControllerEvent,
+  type Quad,
+  type Task,
+  type TimeProfile,
+  type Weekdays,
+} from '../codec/messages.js'
 
 export interface FakeControllerOptions {
   id: number
@@ -393,9 +395,12 @@ export class FakeController {
     const bit = 1 << (door - 1)
     this.relays |= bit
     const delay = this.doors[door - 1]!.delay
-    setTimeout(() => {
-      if (this.doors[door - 1]!.mode !== 1) this.relays &= ~bit
-    }, Math.min(delay, 2) * 1000).unref()
+    setTimeout(
+      () => {
+        if (this.doors[door - 1]!.mode !== 1) this.relays &= ~bit
+      },
+      Math.min(delay, 2) * 1000,
+    ).unref()
   }
 
   private authorise(cardNo: number, door: number, pin?: number): number {
@@ -409,7 +414,8 @@ export class FakeController {
     const perm = card.doors[door - 1]!
     if (perm === 0) return Reason.NoAccessRights
     if (perm >= 2 && !this.inProfile(perm, this.now(), new Set())) return Reason.NotInAllowedTimePeriod
-    if (this.keypads[door - 1] && card.pin !== 0 && pin !== undefined && pin !== card.pin) return Reason.IncorrectPassword
+    if (this.keypads[door - 1] && card.pin !== 0 && pin !== undefined && pin !== card.pin)
+      return Reason.IncorrectPassword
     return Reason.Swipe
   }
 
@@ -427,7 +433,15 @@ export class FakeController {
   }
 
   /** Records an event and sends it to the listener. */
-  event(type: number, granted: boolean, door: number, direction: number, card: number, reason: number, push = true): ControllerEvent {
+  event(
+    type: number,
+    granted: boolean,
+    door: number,
+    direction: number,
+    card: number,
+    reason: number,
+    push = true,
+  ): ControllerEvent {
     const ev: StoredEvent = {
       index: this.nextEventIndex++,
       type,
@@ -508,7 +522,7 @@ export class FakeController {
     this.buttonPressed.forEach((v, i) => w.bool(32 + i, v))
     w.u8(36, this.systemError)
     const now = this.now()
-    const bcd = (n: number) => ((Math.floor(n / 10) % 10) << 4) | n % 10
+    const bcd = (n: number) => (Math.floor(n / 10) % 10 << 4) | n % 10
     w.buf[37] = bcd(now.getHours())
     w.buf[38] = bcd(now.getMinutes())
     w.buf[39] = bcd(now.getSeconds())
@@ -534,7 +548,10 @@ export class FakeController {
       w.date(12, c.from).date(16, c.to)
       c.doors.forEach((p, i) => w.u8(20 + i, p))
       w.pin24(24, c.pin)
-      w.u8(27, c.firstCard.reduce((acc, on, i) => (on ? acc | (1 << i) : acc), 0))
+      w.u8(
+        27,
+        c.firstCard.reduce((acc, on, i) => (on ? acc | (1 << i) : acc), 0),
+      )
     }
     return w
   }
@@ -579,7 +596,8 @@ export class FakeController {
         return this.reply(fc).datetime(8, fmtDateTime(this.now())).buf
       }
       case F.GetListener:
-        return this.reply(fc).ipv4(8, this.listener.address).u16(12, this.listener.port).u8(14, this.listener.interval).buf
+        return this.reply(fc).ipv4(8, this.listener.address).u16(12, this.listener.port).u8(14, this.listener.interval)
+          .buf
       case F.SetListener:
         this.listener = { address: r.ipv4(8), port: r.u16(12), interval: r.u8(14) }
         this.configureAutosend()
@@ -593,7 +611,10 @@ export class FakeController {
           if (r.u8(9) === 1) this.relays |= 1 << (d - 1)
           else this.relays &= ~(1 << (d - 1))
         }
-        return this.reply(fc).u8(8, d).u8(9, this.doors[d - 1]!.mode).u8(10, this.doors[d - 1]!.delay).buf
+        return this.reply(fc)
+          .u8(8, d)
+          .u8(9, this.doors[d - 1]!.mode)
+          .u8(10, this.doors[d - 1]!.delay).buf
       }
       case F.SetDoorPasscodes: {
         const d = r.u8(8)
@@ -620,9 +641,7 @@ export class FakeController {
         const index = r.u32(8)
         if (index < 1 || index > this.cardSlots.length) return this.reply(fc).buf
         const c = this.cardSlots[index - 1]
-        return c === null
-          ? this.reply(fc).u32(8, DELETED_CARD).buf
-          : this.writeCard(this.reply(fc), c!).buf
+        return c === null ? this.reply(fc).u32(8, DELETED_CARD).buf : this.writeCard(this.reply(fc), c!).buf
       }
       case F.PutCard: {
         const card = this.readCard(r)

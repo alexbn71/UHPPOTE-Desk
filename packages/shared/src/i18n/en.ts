@@ -105,7 +105,8 @@ export const en = {
     tooShort: 'The password must be at least 8 characters long',
     updated: 'Password updated',
     logout: 'Log out',
-    managedInfo: "The password of this user is set by the ADMIN_PASSWORD environment variable of the server: change it there and restart the server.",
+    managedInfo:
+      'The password of this user is set by the ADMIN_PASSWORD environment variable of the server: change it there and restart the server.',
   },
   dashboard: {
     title: 'Dashboard',
@@ -230,7 +231,8 @@ export const en = {
     readerHint: 'Swipe the card on any reader: unregistered cards read in the last 10 minutes appear here.',
     readerNone: 'No unknown card read recently.',
     replaceTitle: 'Lost card {{n}}',
-    replaceInfo: 'The card will be disabled and removed from the controllers; the new card receives the same permissions.',
+    replaceInfo:
+      'The card will be disabled and removed from the controllers; the new card receives the same permissions.',
     replaceNewNumber: 'New card number',
     replaceConfirm: 'Replace',
     replaced: 'Card replaced',
@@ -311,13 +313,15 @@ export const en = {
     broadcast: 'broadcast',
     none: 'No controllers. Use "Search network" to find them automatically.',
     discoveryTitle: 'Search for controllers on the network',
-    discoveryInfo: 'The search sends a UDP broadcast on port 60000 and waits a few seconds for replies. It only works if the server is on the same network segment as the controllers.',
+    discoveryInfo:
+      'The search sends a UDP broadcast on port 60000 and waits a few seconds for replies. It only works if the server is on the same network segment as the controllers.',
     broadcastAddress: 'Broadcast address (optional)',
     startSearch: 'Start search',
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Already configured',
-    noneFound: 'No results (start the search). If the controller does not reply check the cable, subnet, firewall (UDP 60000) and, with Docker, "host" networking.',
+    noneFound:
+      'No results (start the search). If the controller does not reply check the cable, subnet, firewall (UDP 60000) and, with Docker, "host" networking.',
     newTitle: 'New controller',
     added: 'Controller added',
     serial: 'Serial number',
@@ -375,17 +379,20 @@ export const en = {
     appConfig: 'Configuration in the application',
     updated: 'Controller updated',
     removeTitle: 'Remove controller',
-    removeInfo: 'The controller and its event history will be removed from the database (the controller itself is not changed).',
+    removeInfo:
+      'The controller and its event history will be removed from the database (the controller itself is not changed).',
     ipTitle: 'Controller IP address',
     netmask: 'Netmask',
     sendIp: 'Send new IP to the controller',
     sendIpTitle: 'Change the controller IP address',
-    sendIpConfirm: 'The controller will be reconfigured with IP {{address}}/{{netmask}}, gateway {{gateway}}. If the address is not reachable from this server the controller can no longer be contacted until it is reconfigured (from the same network, via broadcast). Continue?',
+    sendIpConfirm:
+      'The controller will be reconfigured with IP {{address}}/{{netmask}}, gateway {{gateway}}. If the address is not reachable from this server the controller can no longer be contacted until it is reconfigured (from the same network, via broadcast). Continue?',
     sendIpButton: 'Change IP',
     ipVerified: 'IP set and verified',
     ipNotVerified: 'Command sent but the controller does not reply on the new IP: check with a network search',
     listenerTitle: 'Event destination (listener)',
-    listenerInfo: 'The controller sends every event to a single address. It is normally configured automatically (UHPPOTE_LISTENER_PUBLIC variable).',
+    listenerInfo:
+      'The controller sends every event to a single address. It is normally configured automatically (UHPPOTE_LISTENER_PUBLIC variable).',
     listenerAuto: 'Configure automatically',
     listenerUpdated: 'Listener updated',
     listenerAlreadyOk: 'Listener already correct',
@@ -413,21 +420,26 @@ export const en = {
     settingsSaved: 'Settings saved and sent to the controller',
     syncHistory: 'Synchronisation history',
     resetTitle: 'Factory reset',
-    resetInfo: 'Clears the network settings, listener, cards and events of the controller. The stored cards are saved first and can be sent again with a synchronisation. Type the serial number {{serial}} to confirm.',
+    resetInfo:
+      'Clears the network settings, listener, cards and events of the controller. The stored cards are saved first and can be sent again with a synchronisation. Type the serial number {{serial}} to confirm.',
     resetPlaceholder: 'Serial number',
     resetButton: 'Reset',
     resetDone: 'Parameters reset: {{n}} cards saved in {{file}} (server backup folder)',
   },
   expansion: {
     title: 'Alarm expansion board (UT0311-01A)',
-    intro: 'Four alarm relays and a fire input connected to the controller. The configuration is sent together with the advanced settings and by the full synchronisation.',
-    experimental: 'Experimental: the protocol was reconstructed from the vendor software and has not yet been verified on every firmware. The controller cannot report this configuration back: UHPPOTE Desk keeps the copy it sends.',
+    intro:
+      'Four alarm relays and a fire input connected to the controller. The configuration is sent together with the advanced settings and by the full synchronisation.',
+    experimental:
+      'Experimental: the protocol was reconstructed from the vendor software and has not yet been verified on every firmware. The controller cannot report this configuration back: UHPPOTE Desk keeps the copy it sends.',
     installed: 'Expansion board connected',
-    installedHint: 'The configuration is written to the controller only when this is on. Before disconnecting the board, deactivate the outputs and save.',
+    installedHint:
+      'The configuration is written to the controller only when this is on. Before disconnecting the board, deactivate the outputs and save.',
     doorOpenTooLong: 'Door open too long after (s)',
     doorOpenTooLongHint: 'Time after which a door left open raises the "open too long" alarm (default 25 s)',
     duressCode: 'Duress code',
-    duressCodeHint: 'Code typed on the PIN keypad under threat: it opens the door and raises the "duress" alarm. Empty = not changed',
+    duressCodeHint:
+      'Code typed on the PIN keypad under threat: it opens the door and raises the "duress" alarm. Empty = not changed',
     relayN: 'Output {{n}}',
     active: 'Active',
     source: 'Triggering source',
@@ -484,7 +496,8 @@ export const en = {
   },
   timeProfiles: {
     title: 'Time profiles',
-    description: 'Time windows (ID 2-254) in which a permission is valid. A profile can link to another one to add days/hours.',
+    description:
+      'Time windows (ID 2-254) in which a permission is valid. A profile can link to another one to add days/hours.',
     new: 'New profile',
     colId: 'ID',
     colName: 'Name',
@@ -509,7 +522,8 @@ export const en = {
   },
   tasks: {
     title: 'Scheduled tasks',
-    description: 'Actions run automatically by the controller at a given time (e.g. door open during the day, locked at night)',
+    description:
+      'Actions run automatically by the controller at a given time (e.g. door open during the day, locked at night)',
     new: 'New task',
     colController: 'Controller',
     colDoor: 'Door',
@@ -533,12 +547,14 @@ export const en = {
   },
   sync: {
     title: 'Synchronisation',
-    description: "The application database is the source of truth: changes are sent immediately to online controllers; here you can check and realign them (e.g. after a controller has been offline).",
+    description:
+      'The application database is the source of truth: changes are sent immediately to online controllers; here you can check and realign them (e.g. after a controller has been offline).',
     compare: 'Compare',
     syncCards: 'Align cards',
     syncAll: 'Full synchronisation',
     syncAllTitle: 'Full synchronisation of {{name}}',
-    syncAllInfo: 'Door configuration, time profiles, tasks, advanced settings and all cards will be sent again. This may take a few minutes.',
+    syncAllInfo:
+      'Door configuration, time profiles, tasks, advanced settings and all cards will be sent again. This may take a few minutes.',
     syncAllConfirm: 'Synchronise',
     syncAllDone: '{{name}}: full synchronisation completed',
     cardsDone: '{{name}}: {{added}} added, {{updated}} updated, {{deleted}} removed',
@@ -608,7 +624,8 @@ export const en = {
   },
   operators: {
     title: 'Operators',
-    description: 'Application users. Administrator: everything; Operator: people, permissions, door opening, synchronisation; Read-only: viewing only.',
+    description:
+      'Application users. Administrator: everything; Operator: people, permissions, door opening, synchronisation; Read-only: viewing only.',
     new: 'New operator',
     tempPasswordTitle: 'Temporary password',
     tempPassword: 'User {{user}}: {{password}} — give it to the person concerned; it must be changed at first login.',
@@ -637,7 +654,8 @@ export const en = {
   },
   webhooks: {
     title: 'Webhooks',
-    description: 'HTTP requests sent to other systems (n8n, Node-RED, Home Assistant, your own services) when something happens',
+    description:
+      'HTTP requests sent to other systems (n8n, Node-RED, Home Assistant, your own services) when something happens',
     new: 'New webhook',
     colName: 'Name',
     colUrl: 'URL',
@@ -659,7 +677,8 @@ export const en = {
     headersInvalid: 'Invalid header line: {{line}}',
     enabledSwitch: 'Enabled',
     secret: 'Signing secret',
-    secretHint: 'Each request carries X-UHPPOTE-Signature: sha256=HMAC-SHA256(secret, timestamp + "." + body), with the timestamp in X-UHPPOTE-Timestamp.',
+    secretHint:
+      'Each request carries X-UHPPOTE-Signature: sha256=HMAC-SHA256(secret, timestamp + "." + body), with the timestamp in X-UHPPOTE-Timestamp.',
     secretAfterSave: 'The signing secret is generated when the webhook is saved.',
     copy: 'Copy',
     copied: 'Copied',
@@ -683,7 +702,8 @@ export const en = {
   },
   apiTokens: {
     title: 'API tokens',
-    description: 'Access for other systems and scripts (n8n, Home Assistant, CasaAuto, your own services) through Authorization: Bearer',
+    description:
+      'Access for other systems and scripts (n8n, Home Assistant, CasaAuto, your own services) through Authorization: Bearer',
     new: 'New token',
     colName: 'Name',
     colToken: 'Token',
@@ -702,7 +722,8 @@ export const en = {
     name: 'Name',
     nameHint: 'The system that uses it, e.g. CasaAuto or n8n',
     access: 'Access level',
-    accessHint: 'Read-only: data, events and live state. Read + door opening: can also open the allowed doors. Operator and Administrator: like the operator roles (except managing operators and tokens).',
+    accessHint:
+      'Read-only: data, events and live state. Read + door opening: can also open the allowed doors. Operator and Administrator: like the operator roles (except managing operators and tokens).',
     zones: 'Restrict to zones',
     zonesHint: 'Empty = all controllers. Applies to door opening and synchronisation.',
     doors: 'Doors that can be opened',
@@ -711,7 +732,8 @@ export const en = {
     expiresHint: 'Last valid day; empty = no expiry',
     activeSwitch: 'Active',
     createdTitle: 'Copy the token now',
-    createdInfo: 'It will not be shown again. Put it in the configuration of the other system; if it is lost, create a new token and delete this one.',
+    createdInfo:
+      'It will not be shown again. Put it in the configuration of the other system; if it is lost, create a new token and delete this one.',
     copy: 'Copy',
     copied: 'Copied',
     usage: 'Example: curl -H "Authorization: Bearer <token>" {{url}}/api/doors',
@@ -741,7 +763,8 @@ export const en = {
     doors: 'Only these doors',
     doorsHint: 'Empty = all doors.',
     dailyReport: 'Daily report',
-    dailyReportHint: 'Who came in and the anomalies (denied accesses, alarms, controllers offline) of the last 24 hours.',
+    dailyReportHint:
+      'Who came in and the anomalies (denied accesses, alarms, controllers offline) of the last 24 hours.',
     reportHour: 'Send at',
     enabledSwitch: 'Active',
     test: 'Send test',
@@ -838,7 +861,8 @@ export const en = {
   },
   anomalies: {
     title: 'Anomalies',
-    description: 'Accesses at unusual times, repeated denied attempts and cards unused for months, from the event history',
+    description:
+      'Accesses at unusual times, repeated denied attempts and cards unused for months, from the event history',
     tabUnusual: 'Unusual times',
     tabDenied: 'Repeated denied attempts',
     tabInactive: 'Inactive cards',
@@ -863,7 +887,8 @@ export const en = {
     days: '{{n}} days',
     disableSelected: 'Disable selected ({{n}})',
     disableTitle: 'Disable {{n}} cards',
-    disableInfo: 'The cards are set to "disabled" and removed from the controllers. They can be enabled again from Cards.',
+    disableInfo:
+      'The cards are set to "disabled" and removed from the controllers. They can be enabled again from Cards.',
     disabledOk: '{{n}} cards disabled',
     none: 'Nothing found in this period',
     noneInactive: 'No active card unused for {{n}} days or more',
@@ -878,11 +903,13 @@ export const en = {
     deniedWindow: 'within (minutes)',
     inactiveDays: 'Card inactive after (days)',
     saved: 'Settings saved',
-    notifyHint: 'To be alerted in real time, choose the events "Access at an unusual time" and "Repeated denied attempts" in Notifications or Webhooks.',
+    notifyHint:
+      'To be alerted in real time, choose the events "Access at an unusual time" and "Repeated denied attempts" in Notifications or Webhooks.',
   },
   rules: {
     title: 'Rules',
-    description: 'Automations: when something happens and the conditions match, send notifications, call webhooks or open doors',
+    description:
+      'Automations: when something happens and the conditions match, send notifications, call webhooks or open doors',
     new: 'New rule',
     colName: 'Name',
     colTrigger: 'When',
@@ -918,7 +945,8 @@ export const en = {
     webhooks: 'Call the webhooks',
     openDoors: 'Open the doors',
     message: 'Message',
-    messageHint: 'Empty = automatic text. Placeholders: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
+    messageHint:
+      'Empty = automatic text. Placeholders: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
     cooldown: 'Pause after firing (seconds)',
     cooldownHint: '0 = fire every time',
     enabledSwitch: 'Active',
@@ -956,7 +984,8 @@ export const en = {
     offline: 'offline',
     noDoors: 'No doors',
     bioSetupTitle: 'Fingerprint / Face ID required',
-    bioSetupText: 'The administrator requires fingerprint or Face ID to open doors from the app. Activate it on this phone.',
+    bioSetupText:
+      'The administrator requires fingerprint or Face ID to open doors from the app. Activate it on this phone.',
     bioOptionalTitle: 'Fingerprint / Face ID',
     bioOptionalText: 'With fingerprint / Face ID this phone stays logged in with no expiry.',
     bioActivate: 'Activate fingerprint / Face ID',
@@ -964,7 +993,8 @@ export const en = {
     bioRemove: 'Deactivate',
     bioUnsupported: 'This browser cannot use fingerprint / Face ID (HTTPS is required).',
     bioDone: 'Fingerprint / Face ID activated',
-    notRemembered: 'This browser is not a remembered device: log out and log in with "Remember this device" to use push notifications and fingerprint / Face ID.',
+    notRemembered:
+      'This browser is not a remembered device: log out and log in with "Remember this device" to use push notifications and fingerprint / Face ID.',
     deviceTitle: 'This device',
     deviceName: 'Name',
     since: 'Logged in since',
@@ -972,9 +1002,11 @@ export const en = {
     neverExpires: 'never (fingerprint / Face ID)',
     pushTitle: 'Push notifications',
     pushEnable: 'Notifications on this phone',
-    pushUnsupported: 'Notifications are not available here: on iPhone add the app to the Home screen first (iOS 16.4 or later); HTTPS is required.',
+    pushUnsupported:
+      'Notifications are not available here: on iPhone add the app to the Home screen first (iOS 16.4 or later); HTTPS is required.',
     pushDenied: 'Notifications are blocked for this site in the browser settings.',
-    pushDeniedApp: 'Notifications are off for the installed app: allow them in the Android settings (Apps → UHPPOTE Desk → Notifications), then open the app again.',
+    pushDeniedApp:
+      'Notifications are off for the installed app: allow them in the Android settings (Apps → UHPPOTE Desk → Notifications), then open the app again.',
     pushEvents: 'Events',
     pushDoors: 'Only these doors',
     pushAllDoors: 'All doors',
@@ -1014,7 +1046,8 @@ export const en = {
     revokeTitle: 'Revoke {{name}} ({{operator}})',
     revokeInfo: 'The device is logged out immediately; its push notifications and fingerprint / Face ID are deleted.',
     noDevices: 'No remembered devices',
-    httpsHint: 'The app needs HTTPS (reverse proxy) to be installed and for push notifications and fingerprint / Face ID. Set PUBLIC_URL to the public address.',
+    httpsHint:
+      'The app needs HTTPS (reverse proxy) to be installed and for push notifications and fingerprint / Face ID. Set PUBLIC_URL to the public address.',
     link: 'App address: {{url}}',
   },
   audit: {
@@ -1047,7 +1080,8 @@ export const en = {
     listenerPublic: 'Programmed listener',
     notSet: 'not set',
     timeout: 'Timeout',
-    listenerWarning: 'Set UHPPOTE_LISTENER_PUBLIC to the server IP reachable by the controllers (e.g. 192.168.1.10:60001) to receive events in real time.',
+    listenerWarning:
+      'Set UHPPOTE_LISTENER_PUBLIC to the server IP reachable by the controllers (e.g. 192.168.1.10:60001) to receive events in real time.',
     backups: 'Database backup',
     backupsInfo: 'Automatic daily backup in the server data folder (backups subfolder).',
     backupNow: 'Create backup now',
@@ -1342,7 +1376,7 @@ export const en = {
     inUse: 'Operation not possible: the item is in use',
     controllerError: 'Controller error: {{detail}}',
     internal: 'Internal server error',
-    passwordManagedByEnv: "The password of this user is set by the ADMIN_PASSWORD variable and cannot be changed here",
+    passwordManagedByEnv: 'The password of this user is set by the ADMIN_PASSWORD variable and cannot be changed here',
     importEmptyCode: 'empty employee code',
     importInvalidCard: 'invalid card: {{card}}',
     importCardTaken: 'card {{card}} already assigned to {{person}}',

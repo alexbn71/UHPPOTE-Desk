@@ -103,13 +103,15 @@ export const de: Messages = {
     tooShort: 'Das Passwort muss mindestens 8 Zeichen lang sein',
     updated: 'Passwort aktualisiert',
     logout: 'Abmelden',
-    managedInfo: "Das Passwort dieses Benutzers wird durch die Umgebungsvariable ADMIN_PASSWORD des Servers festgelegt: Ändern Sie es dort und starten Sie den Server neu.",
+    managedInfo:
+      'Das Passwort dieses Benutzers wird durch die Umgebungsvariable ADMIN_PASSWORD des Servers festgelegt: Ändern Sie es dort und starten Sie den Server neu.',
   },
   dashboard: {
     title: 'Übersicht',
     description: 'Controller-Status, Aktivität und letzte Ereignisse',
     noControllersTitle: 'Keine Controller konfiguriert',
-    noControllersAdmin: 'Fügen Sie den ersten Controller auf der Seite Controller hinzu (automatische Netzwerksuche verfügbar).',
+    noControllersAdmin:
+      'Fügen Sie den ersten Controller auf der Seite Controller hinzu (automatische Netzwerksuche verfügbar).',
     noControllersUser: 'Bitten Sie einen Administrator, die Controller zu konfigurieren.',
     goToControllers: 'Controller',
     fireAlarm: 'Feueralarm',
@@ -225,10 +227,12 @@ export const de: Messages = {
     addCardHint: '8-stellige Nummer: Anlagencode (Facility) × 100000 + Code',
     cardAssigned: 'Karte {{n}} zugewiesen',
     readerTitle: 'Erfassung über einen Leser',
-    readerHint: 'Halten Sie die Karte an einen beliebigen Leser: Nicht registrierte Karten der letzten 10 Minuten erscheinen hier.',
+    readerHint:
+      'Halten Sie die Karte an einen beliebigen Leser: Nicht registrierte Karten der letzten 10 Minuten erscheinen hier.',
     readerNone: 'In letzter Zeit wurde keine unbekannte Karte gelesen.',
     replaceTitle: 'Verlorene Karte {{n}}',
-    replaceInfo: 'Die Karte wird deaktiviert und von den Controllern entfernt; die neue Karte erhält dieselben Berechtigungen.',
+    replaceInfo:
+      'Die Karte wird deaktiviert und von den Controllern entfernt; die neue Karte erhält dieselben Berechtigungen.',
     replaceNewNumber: 'Nummer der neuen Karte',
     replaceConfirm: 'Ersetzen',
     replaced: 'Karte ersetzt',
@@ -309,13 +313,15 @@ export const de: Messages = {
     broadcast: 'Broadcast',
     none: 'Keine Controller. Verwenden Sie „Netzwerk durchsuchen“, um sie automatisch zu finden.',
     discoveryTitle: 'Controller im Netzwerk suchen',
-    discoveryInfo: 'Die Suche sendet einen UDP-Broadcast an Port 60000 und wartet einige Sekunden auf Antworten. Sie funktioniert nur, wenn sich der Server im selben Netzwerksegment wie die Controller befindet.',
+    discoveryInfo:
+      'Die Suche sendet einen UDP-Broadcast an Port 60000 und wartet einige Sekunden auf Antworten. Sie funktioniert nur, wenn sich der Server im selben Netzwerksegment wie die Controller befindet.',
     broadcastAddress: 'Broadcast-Adresse (optional)',
     startSearch: 'Suche starten',
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Bereits konfiguriert',
-    noneFound: 'Keine Ergebnisse (Suche starten). Wenn der Controller nicht antwortet, prüfen Sie Kabel, Subnetz, Firewall (UDP 60000) und bei Docker das „host“-Netzwerk.',
+    noneFound:
+      'Keine Ergebnisse (Suche starten). Wenn der Controller nicht antwortet, prüfen Sie Kabel, Subnetz, Firewall (UDP 60000) und bei Docker das „host“-Netzwerk.',
     newTitle: 'Neuer Controller',
     added: 'Controller hinzugefügt',
     serial: 'Seriennummer',
@@ -373,17 +379,21 @@ export const de: Messages = {
     appConfig: 'Konfiguration in der Anwendung',
     updated: 'Controller aktualisiert',
     removeTitle: 'Controller entfernen',
-    removeInfo: 'Der Controller und sein Ereignisverlauf werden aus der Datenbank entfernt (der Controller selbst wird nicht verändert).',
+    removeInfo:
+      'Der Controller und sein Ereignisverlauf werden aus der Datenbank entfernt (der Controller selbst wird nicht verändert).',
     ipTitle: 'IP-Adresse des Controllers',
     netmask: 'Netzmaske',
     sendIp: 'Neue IP an den Controller senden',
     sendIpTitle: 'IP-Adresse des Controllers ändern',
-    sendIpConfirm: 'Der Controller wird mit der IP {{address}}/{{netmask}} und dem Gateway {{gateway}} neu konfiguriert. Ist die Adresse von diesem Server aus nicht erreichbar, kann der Controller erst nach einer erneuten Konfiguration (aus demselben Netzwerk, per Broadcast) wieder angesprochen werden. Fortfahren?',
+    sendIpConfirm:
+      'Der Controller wird mit der IP {{address}}/{{netmask}} und dem Gateway {{gateway}} neu konfiguriert. Ist die Adresse von diesem Server aus nicht erreichbar, kann der Controller erst nach einer erneuten Konfiguration (aus demselben Netzwerk, per Broadcast) wieder angesprochen werden. Fortfahren?',
     sendIpButton: 'IP ändern',
     ipVerified: 'IP gesetzt und überprüft',
-    ipNotVerified: 'Befehl gesendet, aber der Controller antwortet nicht unter der neuen IP: Prüfen Sie dies mit einer Netzwerksuche',
+    ipNotVerified:
+      'Befehl gesendet, aber der Controller antwortet nicht unter der neuen IP: Prüfen Sie dies mit einer Netzwerksuche',
     listenerTitle: 'Ziel der Ereignisse (Empfänger)',
-    listenerInfo: 'Der Controller sendet jedes Ereignis an genau eine Adresse. Sie wird normalerweise automatisch konfiguriert (Variable UHPPOTE_LISTENER_PUBLIC).',
+    listenerInfo:
+      'Der Controller sendet jedes Ereignis an genau eine Adresse. Sie wird normalerweise automatisch konfiguriert (Variable UHPPOTE_LISTENER_PUBLIC).',
     listenerAuto: 'Automatisch konfigurieren',
     listenerUpdated: 'Empfänger aktualisiert',
     listenerAlreadyOk: 'Empfänger bereits korrekt',
@@ -411,21 +421,26 @@ export const de: Messages = {
     settingsSaved: 'Einstellungen gespeichert und an den Controller gesendet',
     syncHistory: 'Synchronisierungsverlauf',
     resetTitle: 'Werkseinstellungen',
-    resetInfo: 'Löscht Netzwerkeinstellungen, Empfänger, Karten und Ereignisse des Controllers. Die gespeicherten Karten werden vorher gesichert und können mit einer Synchronisierung erneut gesendet werden. Geben Sie zur Bestätigung die Seriennummer {{serial}} ein.',
+    resetInfo:
+      'Löscht Netzwerkeinstellungen, Empfänger, Karten und Ereignisse des Controllers. Die gespeicherten Karten werden vorher gesichert und können mit einer Synchronisierung erneut gesendet werden. Geben Sie zur Bestätigung die Seriennummer {{serial}} ein.',
     resetPlaceholder: 'Seriennummer',
     resetButton: 'Zurücksetzen',
     resetDone: 'Parameter zurückgesetzt: {{n}} Karten in {{file}} gesichert (Sicherungsordner des Servers)',
   },
   expansion: {
     title: 'Alarm-Erweiterungskarte (UT0311-01A)',
-    intro: 'Vier Alarmrelais und ein Feuereingang am Controller. Die Konfiguration wird zusammen mit den erweiterten Einstellungen und bei der vollständigen Synchronisierung gesendet.',
-    experimental: 'Experimentell: Das Protokoll wurde aus der Herstellersoftware rekonstruiert und ist noch nicht auf jeder Firmware geprüft. Der Controller kann diese Konfiguration nicht zurückmelden: UHPPOTE Desk speichert die gesendete Kopie.',
+    intro:
+      'Vier Alarmrelais und ein Feuereingang am Controller. Die Konfiguration wird zusammen mit den erweiterten Einstellungen und bei der vollständigen Synchronisierung gesendet.',
+    experimental:
+      'Experimentell: Das Protokoll wurde aus der Herstellersoftware rekonstruiert und ist noch nicht auf jeder Firmware geprüft. Der Controller kann diese Konfiguration nicht zurückmelden: UHPPOTE Desk speichert die gesendete Kopie.',
     installed: 'Erweiterungskarte angeschlossen',
-    installedHint: 'Die Konfiguration wird nur bei aktivierter Option in den Controller geschrieben. Vor dem Abklemmen der Karte die Ausgänge deaktivieren und speichern.',
+    installedHint:
+      'Die Konfiguration wird nur bei aktivierter Option in den Controller geschrieben. Vor dem Abklemmen der Karte die Ausgänge deaktivieren und speichern.',
     doorOpenTooLong: 'Tür zu lange offen nach (s)',
     doorOpenTooLongHint: 'Zeit, nach der eine offen gelassene Tür den Alarm „zu lange offen“ auslöst (Standard 25 s)',
     duressCode: 'Bedrohungscode',
-    duressCodeHint: 'Code, der unter Bedrohung auf der Tastatur eingegeben wird: öffnet die Tür und löst den Alarm „Bedrohung“ aus. Leer = unverändert',
+    duressCodeHint:
+      'Code, der unter Bedrohung auf der Tastatur eingegeben wird: öffnet die Tür und löst den Alarm „Bedrohung“ aus. Leer = unverändert',
     relayN: 'Ausgang {{n}}',
     active: 'Aktiv',
     source: 'Auslösequelle',
@@ -482,7 +497,8 @@ export const de: Messages = {
   },
   timeProfiles: {
     title: 'Zeitprofile',
-    description: 'Zeitfenster (ID 2-254), in denen eine Berechtigung gilt. Ein Profil kann mit einem anderen verknüpft werden, um Tage/Zeiten hinzuzufügen.',
+    description:
+      'Zeitfenster (ID 2-254), in denen eine Berechtigung gilt. Ein Profil kann mit einem anderen verknüpft werden, um Tage/Zeiten hinzuzufügen.',
     new: 'Neues Profil',
     colId: 'ID',
     colName: 'Name',
@@ -507,7 +523,8 @@ export const de: Messages = {
   },
   tasks: {
     title: 'Geplante Aufgaben',
-    description: 'Aktionen, die der Controller automatisch zu einer bestimmten Uhrzeit ausführt (z. B. Tür tagsüber offen, nachts verriegelt)',
+    description:
+      'Aktionen, die der Controller automatisch zu einer bestimmten Uhrzeit ausführt (z. B. Tür tagsüber offen, nachts verriegelt)',
     new: 'Neue Aufgabe',
     colController: 'Controller',
     colDoor: 'Tür',
@@ -531,12 +548,14 @@ export const de: Messages = {
   },
   sync: {
     title: 'Synchronisierung',
-    description: 'Die Datenbank der Anwendung ist maßgeblich: Änderungen werden sofort an erreichbare Controller gesendet; hier können Sie sie prüfen und neu abgleichen (z. B. nachdem ein Controller offline war).',
+    description:
+      'Die Datenbank der Anwendung ist maßgeblich: Änderungen werden sofort an erreichbare Controller gesendet; hier können Sie sie prüfen und neu abgleichen (z. B. nachdem ein Controller offline war).',
     compare: 'Vergleichen',
     syncCards: 'Karten abgleichen',
     syncAll: 'Vollständige Synchronisierung',
     syncAllTitle: 'Vollständige Synchronisierung von {{name}}',
-    syncAllInfo: 'Türkonfiguration, Zeitprofile, Aufgaben, erweiterte Einstellungen und alle Karten werden erneut gesendet. Dies kann einige Minuten dauern.',
+    syncAllInfo:
+      'Türkonfiguration, Zeitprofile, Aufgaben, erweiterte Einstellungen und alle Karten werden erneut gesendet. Dies kann einige Minuten dauern.',
     syncAllConfirm: 'Synchronisieren',
     syncAllDone: '{{name}}: vollständige Synchronisierung abgeschlossen',
     cardsDone: '{{name}}: {{added}} hinzugefügt, {{updated}} aktualisiert, {{deleted}} entfernt',
@@ -547,7 +566,8 @@ export const de: Messages = {
     progress: {
       readingCards: 'Karten werden vom Controller gelesen…',
       writingCards: 'Karten werden aktualisiert {{done}}/{{total}}',
-      cardsDone: 'Synchronisierung abgeschlossen: {{added}} hinzugefügt, {{updated}} aktualisiert, {{deleted}} entfernt',
+      cardsDone:
+        'Synchronisierung abgeschlossen: {{added}} hinzugefügt, {{updated}} aktualisiert, {{deleted}} entfernt',
       doors: 'Türkonfiguration wird gesendet…',
       profiles: 'Zeitprofile werden gesendet…',
       tasks: 'Aufgaben werden gesendet…',
@@ -556,7 +576,8 @@ export const de: Messages = {
   },
   attendance: {
     title: 'Anwesenheit',
-    description: 'Arbeitszeit, berechnet aus den Buchungen an Anwesenheitslesern, mit Schichten, Feiertagen und Abwesenheiten',
+    description:
+      'Arbeitszeit, berechnet aus den Buchungen an Anwesenheitslesern, mit Schichten, Feiertagen und Abwesenheiten',
     tabReport: 'Bericht',
     tabShifts: 'Schichten',
     tabHolidays: 'Feiertage',
@@ -581,8 +602,10 @@ export const de: Messages = {
     colLateShort: 'Verspätung',
     colPunches: 'Buchungen',
     lateMinutes: '{{n}} min',
-    footnote: '* manuell erfasste Buchung. Gezählt werden nur erlaubte Buchungen an Lesern, die als „Anwesenheit“ markiert sind (Seite Türen).',
-    shiftsHint: 'Die Schicht wird in den Stammdaten der Person zugewiesen. Schichten, die vor ihrem Beginn enden, sind Nachtschichten.',
+    footnote:
+      '* manuell erfasste Buchung. Gezählt werden nur erlaubte Buchungen an Lesern, die als „Anwesenheit“ markiert sind (Seite Türen).',
+    shiftsHint:
+      'Die Schicht wird in den Stammdaten der Person zugewiesen. Schichten, die vor ihrem Beginn enden, sind Nachtschichten.',
     newShift: 'Neue Schicht',
     colShiftName: 'Name',
     colShiftHours: 'Zeiten',
@@ -606,10 +629,12 @@ export const de: Messages = {
   },
   operators: {
     title: 'Bediener',
-    description: 'Benutzer der Anwendung. Administrator: alles; Bediener: Personen, Berechtigungen, Türöffnung, Synchronisierung; Nur Lesen: Ansicht.',
+    description:
+      'Benutzer der Anwendung. Administrator: alles; Bediener: Personen, Berechtigungen, Türöffnung, Synchronisierung; Nur Lesen: Ansicht.',
     new: 'Neuer Bediener',
     tempPasswordTitle: 'Temporäres Passwort',
-    tempPassword: 'Benutzer {{user}}: {{password}} — teilen Sie es der betreffenden Person mit; es muss bei der ersten Anmeldung geändert werden.',
+    tempPassword:
+      'Benutzer {{user}}: {{password}} — teilen Sie es der betreffenden Person mit; es muss bei der ersten Anmeldung geändert werden.',
     colUser: 'Benutzer',
     colName: 'Name',
     colRole: 'Rolle',
@@ -651,13 +676,15 @@ export const de: Messages = {
     urlHint: 'Empfängt eine POST-Anfrage mit JSON-Body',
     events: 'Ereignisse',
     doors: 'Nur diese Türen',
-    doorsHint: 'Leer = alle Türen. Controller-Ereignisse werden gesendet, wenn der Controller eine der ausgewählten Türen hat.',
+    doorsHint:
+      'Leer = alle Türen. Controller-Ereignisse werden gesendet, wenn der Controller eine der ausgewählten Türen hat.',
     headers: 'Zusätzliche Header',
     headersHint: 'Einer pro Zeile, "Name: Wert" (z. B. Authorization: Bearer …)',
     headersInvalid: 'Ungültige Header-Zeile: {{line}}',
     enabledSwitch: 'Aktiv',
     secret: 'Signaturschlüssel',
-    secretHint: 'Jede Anfrage enthält X-UHPPOTE-Signature: sha256=HMAC-SHA256(Schlüssel, Zeitstempel + "." + Body), mit dem Zeitstempel in X-UHPPOTE-Timestamp.',
+    secretHint:
+      'Jede Anfrage enthält X-UHPPOTE-Signature: sha256=HMAC-SHA256(Schlüssel, Zeitstempel + "." + Body), mit dem Zeitstempel in X-UHPPOTE-Timestamp.',
     secretAfterSave: 'Der Signaturschlüssel wird beim Speichern des Webhooks erzeugt.',
     copy: 'Kopieren',
     copied: 'Kopiert',
@@ -681,7 +708,8 @@ export const de: Messages = {
   },
   apiTokens: {
     title: 'API-Token',
-    description: 'Zugriff für andere Systeme und Skripte (n8n, Home Assistant, CasaAuto, eigene Dienste) über Authorization: Bearer',
+    description:
+      'Zugriff für andere Systeme und Skripte (n8n, Home Assistant, CasaAuto, eigene Dienste) über Authorization: Bearer',
     new: 'Neues Token',
     colName: 'Name',
     colToken: 'Token',
@@ -700,7 +728,8 @@ export const de: Messages = {
     name: 'Name',
     nameHint: 'Das System, das es verwendet, z. B. CasaAuto oder n8n',
     access: 'Zugriffsstufe',
-    accessHint: 'Nur lesen: Daten, Ereignisse und Live-Status. Lesen + Türöffnung: kann zusätzlich die erlaubten Türen öffnen. Bediener und Administrator: wie die Bedienerrollen (außer Verwaltung von Bedienern und Token).',
+    accessHint:
+      'Nur lesen: Daten, Ereignisse und Live-Status. Lesen + Türöffnung: kann zusätzlich die erlaubten Türen öffnen. Bediener und Administrator: wie die Bedienerrollen (außer Verwaltung von Bedienern und Token).',
     zones: 'Auf Zonen beschränken',
     zonesHint: 'Leer = alle Controller. Gilt für Türöffnung und Synchronisation.',
     doors: 'Türen, die geöffnet werden dürfen',
@@ -709,7 +738,8 @@ export const de: Messages = {
     expiresHint: 'Letzter gültiger Tag; leer = kein Ablauf',
     activeSwitch: 'Aktiv',
     createdTitle: 'Kopieren Sie das Token jetzt',
-    createdInfo: 'Es wird nicht noch einmal angezeigt. Tragen Sie es in die Konfiguration des anderen Systems ein; geht es verloren, erstellen Sie ein neues Token und löschen dieses.',
+    createdInfo:
+      'Es wird nicht noch einmal angezeigt. Tragen Sie es in die Konfiguration des anderen Systems ein; geht es verloren, erstellen Sie ein neues Token und löschen dieses.',
     copy: 'Kopieren',
     copied: 'Kopiert',
     usage: 'Beispiel: curl -H "Authorization: Bearer <token>" {{url}}/api/doors',
@@ -719,7 +749,8 @@ export const de: Messages = {
   },
   notifications: {
     title: 'Benachrichtigungen',
-    description: 'Nachrichten über Telegram, E-Mail, ntfy und Gotify, wenn an den Türen etwas passiert, und ein Tagesbericht',
+    description:
+      'Nachrichten über Telegram, E-Mail, ntfy und Gotify, wenn an den Türen etwas passiert, und ein Tagesbericht',
     new: 'Neuer Kanal',
     colName: 'Name',
     colType: 'Kanal',
@@ -735,11 +766,13 @@ export const de: Messages = {
     type: 'Kanal',
     language: 'Sprache der Nachrichten',
     events: 'Ereignisse',
-    eventsHint: 'Jedes Ereignis sendet eine Nachricht: „Zutritt gewährt“ kann viele Nachrichten bedeuten, wählen Sie es nur für wenige Türen.',
+    eventsHint:
+      'Jedes Ereignis sendet eine Nachricht: „Zutritt gewährt“ kann viele Nachrichten bedeuten, wählen Sie es nur für wenige Türen.',
     doors: 'Nur diese Türen',
     doorsHint: 'Leer = alle Türen.',
     dailyReport: 'Tagesbericht',
-    dailyReportHint: 'Wer eingetreten ist und die Auffälligkeiten (verweigerte Zutritte, Alarme, Controller offline) der letzten 24 Stunden.',
+    dailyReportHint:
+      'Wer eingetreten ist und die Auffälligkeiten (verweigerte Zutritte, Alarme, Controller offline) der letzten 24 Stunden.',
     reportHour: 'Senden um',
     enabledSwitch: 'Aktiv',
     test: 'Test senden',
@@ -753,9 +786,11 @@ export const de: Messages = {
     tgBotToken: 'Bot-Token',
     tgBotTokenHint: 'Erstellen Sie den Bot mit @BotFather (/newbot) und fügen Sie sein Token ein.',
     tgChatId: 'Chat-ID',
-    tgChatIdHint: 'Schreiben Sie /id an den Bot oder in die Gruppe, in die Sie ihn aufgenommen haben, um Chat-ID und User-ID zu sehen.',
+    tgChatIdHint:
+      'Schreiben Sie /id an den Bot oder in die Gruppe, in die Sie ihn aufgenommen haben, um Chat-ID und User-ID zu sehen.',
     tgOpenButton: 'Schaltfläche „Tür öffnen“',
-    tgOpenButtonHint: 'Unter den Benachrichtigungen einer Tür. 15 Minuten gültig, nur für die unten genannten Benutzer.',
+    tgOpenButtonHint:
+      'Unter den Benachrichtigungen einer Tür. 15 Minuten gültig, nur für die unten genannten Benutzer.',
     tgUsers: 'Telegram-Benutzer, die öffnen dürfen',
     tgUsersHint: 'Numerische User-IDs, durch Kommas getrennt (von /id angezeigt).',
     mailHost: 'SMTP-Server',
@@ -836,7 +871,8 @@ export const de: Messages = {
   },
   anomalies: {
     title: 'Auffälligkeiten',
-    description: 'Zutritte zu ungewöhnlichen Zeiten, wiederholte verweigerte Versuche und seit Monaten unbenutzte Karten, aus dem Ereignisverlauf',
+    description:
+      'Zutritte zu ungewöhnlichen Zeiten, wiederholte verweigerte Versuche und seit Monaten unbenutzte Karten, aus dem Ereignisverlauf',
     tabUnusual: 'Ungewöhnliche Zeiten',
     tabDenied: 'Wiederholte verweigerte Versuche',
     tabInactive: 'Inaktive Karten',
@@ -861,7 +897,8 @@ export const de: Messages = {
     days: '{{n}} Tagen',
     disableSelected: 'Auswahl deaktivieren ({{n}})',
     disableTitle: '{{n}} Karten deaktivieren',
-    disableInfo: 'Die Karten werden auf „deaktiviert“ gesetzt und von den Controllern entfernt. Sie können unter Karten wieder aktiviert werden.',
+    disableInfo:
+      'Die Karten werden auf „deaktiviert“ gesetzt und von den Controllern entfernt. Sie können unter Karten wieder aktiviert werden.',
     disabledOk: '{{n}} Karten deaktiviert',
     none: 'Nichts in diesem Zeitraum',
     noneInactive: 'Keine aktive Karte, die seit {{n}} Tagen oder länger unbenutzt ist',
@@ -876,11 +913,13 @@ export const de: Messages = {
     deniedWindow: 'innerhalb (Minuten)',
     inactiveDays: 'Karte inaktiv nach (Tagen)',
     saved: 'Einstellungen gespeichert',
-    notifyHint: 'Für Echtzeit-Warnungen wählen Sie die Ereignisse „Zutritt zu ungewöhnlicher Zeit“ und „Wiederholte verweigerte Versuche“ unter Benachrichtigungen oder Webhooks.',
+    notifyHint:
+      'Für Echtzeit-Warnungen wählen Sie die Ereignisse „Zutritt zu ungewöhnlicher Zeit“ und „Wiederholte verweigerte Versuche“ unter Benachrichtigungen oder Webhooks.',
   },
   rules: {
     title: 'Regeln',
-    description: 'Automatisierungen: wenn etwas passiert und die Bedingungen zutreffen, Benachrichtigungen senden, Webhooks aufrufen oder Türen öffnen',
+    description:
+      'Automatisierungen: wenn etwas passiert und die Bedingungen zutreffen, Benachrichtigungen senden, Webhooks aufrufen oder Türen öffnen',
     new: 'Neue Regel',
     colName: 'Name',
     colTrigger: 'Wenn',
@@ -894,13 +933,15 @@ export const de: Messages = {
     newTitle: 'Neue Regel',
     name: 'Name',
     severity: 'Schweregrad',
-    severityHint: 'Bestimmt die Priorität der Benachrichtigungen; Alarme erscheinen auch in der App, bis sie geschlossen werden',
+    severityHint:
+      'Bestimmt die Priorität der Benachrichtigungen; Alarme erscheinen auch in der App, bis sie geschlossen werden',
     language: 'Sprache der Texte',
     sectionWhen: 'Wenn',
     trigger: 'Ereignis',
     openFor: 'Tür länger offen als…',
     seconds: 'Sekunden',
-    secondsHint: 'z. B. 120 = 2 Minuten. Löst einmal pro Öffnung aus, wenn der Türsensor die Tür noch als offen meldet.',
+    secondsHint:
+      'z. B. 120 = 2 Minuten. Löst einmal pro Öffnung aus, wenn der Türsensor die Tür noch als offen meldet.',
     sectionIf: 'Nur wenn',
     doors: 'Türen',
     doorsHint: 'Leer = jede Tür',
@@ -916,7 +957,8 @@ export const de: Messages = {
     webhooks: 'Webhooks aufrufen',
     openDoors: 'Türen öffnen',
     message: 'Nachricht',
-    messageHint: 'Leer = automatischer Text. Platzhalter: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
+    messageHint:
+      'Leer = automatischer Text. Platzhalter: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
     cooldown: 'Pause nach dem Auslösen (Sekunden)',
     cooldownHint: '0 = jedes Mal auslösen',
     enabledSwitch: 'Aktiv',
@@ -954,7 +996,8 @@ export const de: Messages = {
     offline: 'offline',
     noDoors: 'Keine Türen',
     bioSetupTitle: 'Fingerabdruck / Face ID erforderlich',
-    bioSetupText: 'Der Administrator verlangt Fingerabdruck oder Face ID, um Türen aus der App zu öffnen. Aktivieren Sie es auf diesem Telefon.',
+    bioSetupText:
+      'Der Administrator verlangt Fingerabdruck oder Face ID, um Türen aus der App zu öffnen. Aktivieren Sie es auf diesem Telefon.',
     bioOptionalTitle: 'Fingerabdruck / Face ID',
     bioOptionalText: 'Mit Fingerabdruck / Face ID bleibt dieses Telefon ohne Ablauf angemeldet.',
     bioActivate: 'Fingerabdruck / Face ID aktivieren',
@@ -962,7 +1005,8 @@ export const de: Messages = {
     bioRemove: 'Deaktivieren',
     bioUnsupported: 'Dieser Browser kann Fingerabdruck / Face ID nicht verwenden (HTTPS erforderlich).',
     bioDone: 'Fingerabdruck / Face ID aktiviert',
-    notRemembered: 'Dieser Browser ist kein gemerktes Gerät: Melden Sie sich ab und mit „Dieses Gerät merken“ wieder an, um Push-Benachrichtigungen und Fingerabdruck / Face ID zu nutzen.',
+    notRemembered:
+      'Dieser Browser ist kein gemerktes Gerät: Melden Sie sich ab und mit „Dieses Gerät merken“ wieder an, um Push-Benachrichtigungen und Fingerabdruck / Face ID zu nutzen.',
     deviceTitle: 'Dieses Gerät',
     deviceName: 'Name',
     since: 'Angemeldet seit',
@@ -970,9 +1014,11 @@ export const de: Messages = {
     neverExpires: 'nie (Fingerabdruck / Face ID)',
     pushTitle: 'Push-Benachrichtigungen',
     pushEnable: 'Benachrichtigungen auf diesem Telefon',
-    pushUnsupported: 'Benachrichtigungen hier nicht verfügbar: Fügen Sie auf dem iPhone die App zuerst zum Home-Bildschirm hinzu (iOS 16.4 oder neuer); HTTPS ist erforderlich.',
+    pushUnsupported:
+      'Benachrichtigungen hier nicht verfügbar: Fügen Sie auf dem iPhone die App zuerst zum Home-Bildschirm hinzu (iOS 16.4 oder neuer); HTTPS ist erforderlich.',
     pushDenied: 'Benachrichtigungen für diese Website sind in den Browsereinstellungen blockiert.',
-    pushDeniedApp: 'Benachrichtigungen sind für die installierte App ausgeschaltet: Erlauben Sie sie in den Android-Einstellungen (Apps → UHPPOTE Desk → Benachrichtigungen) und öffnen Sie die App erneut.',
+    pushDeniedApp:
+      'Benachrichtigungen sind für die installierte App ausgeschaltet: Erlauben Sie sie in den Android-Einstellungen (Apps → UHPPOTE Desk → Benachrichtigungen) und öffnen Sie die App erneut.',
     pushEvents: 'Ereignisse',
     pushDoors: 'Nur diese Türen',
     pushAllDoors: 'Alle Türen',
@@ -1010,9 +1056,11 @@ export const de: Messages = {
     noExpiry: 'keiner',
     revoke: 'Widerrufen',
     revokeTitle: '{{name}} ({{operator}}) widerrufen',
-    revokeInfo: 'Das Gerät wird sofort abgemeldet; seine Push-Benachrichtigungen und sein Fingerabdruck / Face ID werden gelöscht.',
+    revokeInfo:
+      'Das Gerät wird sofort abgemeldet; seine Push-Benachrichtigungen und sein Fingerabdruck / Face ID werden gelöscht.',
     noDevices: 'Keine gemerkten Geräte',
-    httpsHint: 'Die App benötigt HTTPS (Reverse Proxy), um installiert zu werden, sowie für Push-Benachrichtigungen und Fingerabdruck / Face ID. Setzen Sie PUBLIC_URL auf die öffentliche Adresse.',
+    httpsHint:
+      'Die App benötigt HTTPS (Reverse Proxy), um installiert zu werden, sowie für Push-Benachrichtigungen und Fingerabdruck / Face ID. Setzen Sie PUBLIC_URL auf die öffentliche Adresse.',
     link: 'Adresse der App: {{url}}',
   },
   audit: {
@@ -1045,7 +1093,8 @@ export const de: Messages = {
     listenerPublic: 'Programmierter Empfänger',
     notSet: 'nicht gesetzt',
     timeout: 'Zeitlimit',
-    listenerWarning: 'Setzen Sie UHPPOTE_LISTENER_PUBLIC auf die für die Controller erreichbare Server-IP (z. B. 192.168.1.10:60001), um Ereignisse in Echtzeit zu empfangen.',
+    listenerWarning:
+      'Setzen Sie UHPPOTE_LISTENER_PUBLIC auf die für die Controller erreichbare Server-IP (z. B. 192.168.1.10:60001), um Ereignisse in Echtzeit zu empfangen.',
     backups: 'Datenbanksicherung',
     backupsInfo: 'Automatische tägliche Sicherung im Datenordner des Servers (Unterordner backups).',
     backupNow: 'Jetzt sichern',
@@ -1059,7 +1108,8 @@ export const de: Messages = {
     mqttDoorControl: 'Türöffnung aus Home Assistant',
     mqttAllowed: 'erlaubt',
     mqttNotAllowed: 'nicht erlaubt',
-    mqttDisabled: 'Setzen Sie MQTT_URL, um Türen, Zustände und Ereignisse in Home Assistant zu veröffentlichen (MQTT Discovery).',
+    mqttDisabled:
+      'Setzen Sie MQTT_URL, um Türen, Zustände und Ereignisse in Home Assistant zu veröffentlichen (MQTT Discovery).',
   },
   mqtt: {
     forceLock: 'Erzwungene Sperre',
@@ -1340,7 +1390,8 @@ export const de: Messages = {
     inUse: 'Vorgang nicht möglich: der Eintrag wird verwendet',
     controllerError: 'Controller-Fehler: {{detail}}',
     internal: 'Interner Serverfehler',
-    passwordManagedByEnv: "Das Passwort dieses Benutzers wird durch die Variable ADMIN_PASSWORD festgelegt und kann hier nicht geändert werden",
+    passwordManagedByEnv:
+      'Das Passwort dieses Benutzers wird durch die Variable ADMIN_PASSWORD festgelegt und kann hier nicht geändert werden',
     importEmptyCode: 'leere Personalnummer',
     importInvalidCard: 'ungültige Karte: {{card}}',
     importCardTaken: 'Karte {{card}} bereits zugewiesen an {{person}}',

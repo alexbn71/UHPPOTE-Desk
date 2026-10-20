@@ -41,7 +41,12 @@ const received: Received[] = []
 /** Status codes to answer with, in order (then 200). */
 let replies: number[] = []
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 function config(dir: string): AppConfig {
   return {
@@ -74,7 +79,12 @@ function config(dir: string): AppConfig {
 }
 
 async function api(method: string, url: string, body?: unknown): Promise<LightMyRequestResponse> {
-  return app.inject({ method: method as 'GET', url: `/api${url}`, headers: { cookie }, ...(body !== undefined ? { payload: body as object } : {}) })
+  return app.inject({
+    method: method as 'GET',
+    url: `/api${url}`,
+    headers: { cookie },
+    ...(body !== undefined ? { payload: body as object } : {}),
+  })
 }
 
 async function waitFor(cond: () => boolean, timeoutMs = 5000): Promise<void> {
@@ -112,13 +122,30 @@ beforeAll(async () => {
   await fake.start()
   ctx = createContext(config(dataDir), quiet, ':memory:')
   // short retry delays for the tests
-  ctx.webhookService = new WebhookService(ctx.webhooks, ctx.integrationEvents, { version: APP_VERSION, logger: quiet, retryDelaysMs: [50, 50], timeoutMs: 2000 })
+  ctx.webhookService = new WebhookService(ctx.webhooks, ctx.integrationEvents, {
+    version: APP_VERSION,
+    logger: quiet,
+    retryDelaysMs: [50, 50],
+    timeoutMs: 2000,
+  })
   await ctx.auth.ensureAdmin(PASSWORD)
   await ctx.eventService.startListener()
   app = await buildApp(ctx)
-  const login = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { username: 'admin', password: PASSWORD } })
+  const login = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { username: 'admin', password: PASSWORD },
+  })
   cookie = `uhd_session=${login.cookies.find((c) => c.name === 'uhd_session')!.value}`
-  controllerId = ctx.controllers.create({ serial: SERIAL, name: 'Gate', host: fake.endpoint.host, port: fake.endpoint.port, transport: 'udp', zoneId: null, enabled: true })
+  controllerId = ctx.controllers.create({
+    serial: SERIAL,
+    name: 'Gate',
+    host: fake.endpoint.host,
+    port: fake.endpoint.port,
+    transport: 'udp',
+    zoneId: null,
+    enabled: true,
+  })
   await ctx.health.check(controllerId)
   ctx.webhookService.start()
 })
@@ -149,7 +176,9 @@ describe('webhook API', () => {
 
     expect((await api('POST', '/webhooks', { name: 'x', url: 'ftp://host/x', events: ['alarm'] })).statusCode).toBe(400)
     expect((await api('POST', '/webhooks', { name: 'x', url: `${receiverUrl}/x`, events: [] })).statusCode).toBe(400)
-    expect((await api('POST', '/webhooks', { name: 'x', url: `${receiverUrl}/x`, events: ['nope'] })).statusCode).toBe(400)
+    expect((await api('POST', '/webhooks', { name: 'x', url: `${receiverUrl}/x`, events: ['nope'] })).statusCode).toBe(
+      400,
+    )
 
     const regenerated = (await api('POST', `/webhooks/${w.id}/secret`)).json() as WebhookDto
     expect(regenerated.secret).not.toBe(w.secret)
@@ -162,7 +191,9 @@ describe('webhook API', () => {
 
   it('does not write header values to the audit log', async () => {
     await createHook({ url: `${receiverUrl}/h`, events: ['alarm'], headers: { Authorization: 'Bearer very-secret' } })
-    const row = ctx.db.get<{ details: string }>("SELECT details FROM audit_log WHERE action = 'create-webhook' ORDER BY id DESC LIMIT 1")!
+    const row = ctx.db.get<{ details: string }>(
+      "SELECT details FROM audit_log WHERE action = 'create-webhook' ORDER BY id DESC LIMIT 1",
+    )!
     expect(row.details).toContain('Authorization')
     expect(row.details).not.toContain('very-secret')
   })
@@ -170,7 +201,11 @@ describe('webhook API', () => {
 
 describe('delivery', () => {
   it('sends a signed request on a card swipe, with the custom headers', async () => {
-    const w = await createHook({ url: `${receiverUrl}/swipe`, events: ['access.denied'], headers: { Authorization: 'Bearer abc' } })
+    const w = await createHook({
+      url: `${receiverUrl}/swipe`,
+      events: ['access.denied'],
+      headers: { Authorization: 'Bearer abc' },
+    })
     fake.swipe(10058400, 1)
     await waitFor(() => at('/swipe').length === 1)
     const r = at('/swipe')[0]!
@@ -190,7 +225,13 @@ describe('delivery', () => {
 
     await ctx.webhookService.idle()
     const deliveries = (await api('GET', `/webhooks/${w.id}/deliveries`)).json() as WebhookDeliveryDto[]
-    expect(deliveries[0]).toMatchObject({ event: 'access.denied', ok: true, statusCode: 200, attempts: 1, deliveryId: r.payload.id })
+    expect(deliveries[0]).toMatchObject({
+      event: 'access.denied',
+      ok: true,
+      statusCode: 200,
+      attempts: 1,
+      deliveryId: r.payload.id,
+    })
     expect((await api('GET', '/webhooks')).json()[0].lastDelivery).toMatchObject({ ok: true, statusCode: 200 })
   })
 
@@ -226,7 +267,12 @@ describe('delivery', () => {
     fake.swipe(10058400, 1)
     await waitFor(() => at('/bad').length === 1)
     await ctx.webhookService.idle()
-    expect(ctx.webhooks.deliveries(bad.id)[0]).toMatchObject({ ok: false, statusCode: 404, attempts: 1, error: 'HTTP 404: nope' })
+    expect(ctx.webhooks.deliveries(bad.id)[0]).toMatchObject({
+      ok: false,
+      statusCode: 404,
+      attempts: 1,
+      error: 'HTTP 404: nope',
+    })
     expect(ctx.webhooks.deliveries(down.id)[0]).toMatchObject({ ok: false, statusCode: null, attempts: 3 })
   })
 
@@ -260,6 +306,10 @@ describe('delivery', () => {
     expect(at('/test')[0]!.payload).toMatchObject({ type: 'webhook.test', controller: null })
 
     replies = [500]
-    expect((await api('POST', `/webhooks/${w.id}/test`)).json()).toMatchObject({ ok: false, statusCode: 500, attempts: 1 })
+    expect((await api('POST', `/webhooks/${w.id}/test`)).json()).toMatchObject({
+      ok: false,
+      statusCode: 500,
+      attempts: 1,
+    })
   })
 })

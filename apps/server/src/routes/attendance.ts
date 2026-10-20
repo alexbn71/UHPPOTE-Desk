@@ -56,15 +56,10 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
   app.put('/shifts/:id', operator, async (req) => {
     const { id } = idParam.parse(req.params)
     const b = shiftInputSchema.parse(req.body)
-    ctx.db.run('UPDATE shifts SET name = ?, start_time = ?, end_time = ?, break_minutes = ?, tolerance_minutes = ?, weekdays = ? WHERE id = ?', [
-      b.name,
-      b.startTime,
-      b.endTime,
-      b.breakMinutes,
-      b.toleranceMinutes,
-      weekdaysToString(b.weekdays),
-      id,
-    ])
+    ctx.db.run(
+      'UPDATE shifts SET name = ?, start_time = ?, end_time = ?, break_minutes = ?, tolerance_minutes = ?, weekdays = ? WHERE id = ?',
+      [b.name, b.startTime, b.endTime, b.breakMinutes, b.toleranceMinutes, weekdaysToString(b.weekdays), id],
+    )
     ctx.audit.log(req.user, 'update-shift', `shift:${id}`, b)
     return { ok: true }
   })
@@ -80,7 +75,10 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
   app.get('/holidays', viewer, async () => ctx.db.all('SELECT date, name FROM holidays ORDER BY date'))
   app.post('/holidays', operator, async (req) => {
     const b = holidayInputSchema.parse(req.body)
-    ctx.db.run('INSERT INTO holidays (date, name) VALUES (?, ?) ON CONFLICT(date) DO UPDATE SET name = excluded.name', [b.date, b.name])
+    ctx.db.run('INSERT INTO holidays (date, name) VALUES (?, ?) ON CONFLICT(date) DO UPDATE SET name = excluded.name', [
+      b.date,
+      b.name,
+    ])
     ctx.audit.log(req.user, 'save-holiday', `holiday:${b.date}`, b)
     return { ok: true }
   })
@@ -95,7 +93,8 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     const { year } = z.object({ year: z.coerce.number().int().min(2000).max(2100) }).parse(req.params)
     const tr = requestTranslator(req)
     const list = italianHolidays(year)
-    for (const h of list) ctx.db.run('INSERT OR IGNORE INTO holidays (date, name) VALUES (?, ?)', [h.date, tr.t(`holidays.${h.key}`)])
+    for (const h of list)
+      ctx.db.run('INSERT OR IGNORE INTO holidays (date, name) VALUES (?, ?)', [h.date, tr.t(`holidays.${h.key}`)])
     ctx.audit.log(req.user, 'import-holidays', `year:${year}`, { count: list.length })
     return { added: list.length }
   })
@@ -145,13 +144,10 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
   app.post('/punches', operator, async (req) => {
     const b = manualPunchInputSchema.parse(req.body)
     const ts = b.timestamp.length === 16 ? `${b.timestamp}:00` : b.timestamp
-    const id = ctx.db.run('INSERT INTO manual_punches (person_id, timestamp, direction, reason, operator_id) VALUES (?, ?, ?, ?, ?)', [
-      b.personId,
-      ts,
-      b.direction,
-      b.reason,
-      req.user!.id,
-    ]).lastInsertRowid
+    const id = ctx.db.run(
+      'INSERT INTO manual_punches (person_id, timestamp, direction, reason, operator_id) VALUES (?, ?, ?, ?, ?)',
+      [b.personId, ts, b.direction, b.reason, req.user!.id],
+    ).lastInsertRowid
     ctx.audit.log(req.user, 'create-punch', `punch:${id}`, b)
     return { id }
   })
@@ -172,7 +168,11 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     const people = ctx.people
       .list({ active: true, ...(q.departmentId ? { departmentId: q.departmentId } : {}) })
       .filter((p) => !q.personId || p.id === q.personId)
-      .map((p) => ({ id: p.id, name: `${p.lastName} ${p.firstName}`.trim(), shift: p.shiftId ? (shiftMap.get(p.shiftId) ?? null) : null }))
+      .map((p) => ({
+        id: p.id,
+        name: `${p.lastName} ${p.firstName}`.trim(),
+        shift: p.shiftId ? (shiftMap.get(p.shiftId) ?? null) : null,
+      }))
     const ids = new Set(people.map((p) => p.id))
     // window extended by one day for night shifts
     const from = `${q.from} 00:00:00`
@@ -180,14 +180,22 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     const punches: Punch[] = [
       ...ctx.events.attendancePunches(from, to).map((p) => ({ ...p, source: 'controller' as const })),
       ...ctx.db
-        .all<{ personId: number; timestamp: string; direction: number }>(
-          'SELECT person_id AS personId, timestamp, direction FROM manual_punches WHERE timestamp BETWEEN ? AND ?',
-          [from, to],
-        )
+        .all<{
+          personId: number
+          timestamp: string
+          direction: number
+        }>('SELECT person_id AS personId, timestamp, direction FROM manual_punches WHERE timestamp BETWEEN ? AND ?', [
+          from,
+          to,
+        ])
         .map((p) => ({ ...p, source: 'manuale' as const })),
     ].filter((p) => ids.has(p.personId))
-    const holidays = new Map(ctx.db.all<{ date: string; name: string }>('SELECT date, name FROM holidays').map((h) => [h.date, h.name]))
-    const leaves = ctx.db.all<Leave>('SELECT person_id AS personId, from_date AS fromDate, to_date AS toDate, type FROM leaves')
+    const holidays = new Map(
+      ctx.db.all<{ date: string; name: string }>('SELECT date, name FROM holidays').map((h) => [h.date, h.name]),
+    )
+    const leaves = ctx.db.all<Leave>(
+      'SELECT person_id AS personId, from_date AS fromDate, to_date AS toDate, type FROM leaves',
+    )
     return computeAttendance({ from: q.from, to: q.to, people, punches, holidays, leaves })
   }
 
@@ -203,9 +211,20 @@ export function registerAttendanceRoutes(app: FastifyInstance, ctx: AppContext):
     const tr = requestTranslator(req)
     const h = (m: number) => (m / 60).toFixed(2)
     const csv = toCsv([
-      ['person', 'date', 'status', 'in', 'out', 'worked', 'expected', 'late', 'earlyLeave', 'overtime', 'punches', 'anomalies'].map((k) =>
-        tr.t(`csv.attendance.${k}`),
-      ),
+      [
+        'person',
+        'date',
+        'status',
+        'in',
+        'out',
+        'worked',
+        'expected',
+        'late',
+        'earlyLeave',
+        'overtime',
+        'punches',
+        'anomalies',
+      ].map((k) => tr.t(`csv.attendance.${k}`)),
       ...rows.map((r) => [
         r.personName,
         r.date,

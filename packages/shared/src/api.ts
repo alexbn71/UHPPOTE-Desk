@@ -23,11 +23,7 @@ export const ipv4Schema = z.ipv4({ message: 'Invalid IPv4 address' })
 export const weekdaysSchema = z.array(z.boolean()).length(7)
 export const doorNumberSchema = z.number().int().min(1).max(4)
 export const pinSchema = z.number().int().min(0).max(999999)
-export const cardNumberSchema = z
-  .number()
-  .int()
-  .min(1)
-  .max(4294967294)
+export const cardNumberSchema = z.number().int().min(1).max(4294967294)
 export const roleSchema = z.enum(['admin', 'operator', 'viewer'])
 export type Role = z.infer<typeof roleSchema>
 export const idParam = z.object({ id: z.coerce.number().int().positive() })
@@ -217,7 +213,14 @@ export type ExpansionBoardSettings = z.infer<typeof expansionBoardSchema>
 /** Vendor defaults: relay N follows door N on threat, open too long, forced open and fire, for 10 s. */
 export const DEFAULT_EXPANSION_BOARD: ExpansionBoardSettings = {
   installed: false,
-  relays: ([0, 1, 2, 3] as const).map((source) => ({ active: false, source, mode: 1, events: 0x27, signals: 0, duration: 10 })),
+  relays: ([0, 1, 2, 3] as const).map((source) => ({
+    active: false,
+    source,
+    mode: 1,
+    events: 0x27,
+    signals: 0,
+    duration: 10,
+  })),
   doorOpenTooLong: 25,
   duressCode: null,
 }
@@ -418,7 +421,13 @@ export interface ControllerLiveState {
 export type WsMessage =
   | { type: 'event'; event: EventDto }
   | { type: 'status'; state: ControllerLiveState }
-  | { type: 'sync'; controllerId: number; status: 'running' | 'ok' | 'error'; code: string; params?: Record<string, string | number> }
+  | {
+      type: 'sync'
+      controllerId: number
+      status: 'running' | 'ok' | 'error'
+      code: string
+      params?: Record<string, string | number>
+    }
   | { type: 'rule'; ruleId: number; name: string; severity: RuleSeverity; text: string; at: string }
 
 export interface SyncDiffDto {
@@ -434,7 +443,17 @@ export interface AttendanceDayDto {
   personId: number
   personName: string
   date: string
-  status: 'presente' | 'assente' | 'festivo' | 'riposo' | 'ferie' | 'permesso' | 'malattia' | 'trasferta' | 'altro' | 'anomalia'
+  status:
+    | 'presente'
+    | 'assente'
+    | 'festivo'
+    | 'riposo'
+    | 'ferie'
+    | 'permesso'
+    | 'malattia'
+    | 'trasferta'
+    | 'altro'
+    | 'anomalia'
   firstIn: string | null
   lastOut: string | null
   punches: { time: string; direction: number | null; source: 'controller' | 'manuale' }[]
@@ -577,7 +596,10 @@ export const emailConfigSchema = z.object({
 export const ntfyConfigSchema = z.object({
   type: z.literal('ntfy'),
   serverUrl: httpUrlSchema.default('https://ntfy.sh'),
-  topic: z.string().trim().regex(/^[-_A-Za-z0-9]{1,64}$/, 'Letters, digits, - and _ only'),
+  topic: z
+    .string()
+    .trim()
+    .regex(/^[-_A-Za-z0-9]{1,64}$/, 'Letters, digits, - and _ only'),
   /** Access token (tk_…), or username and password. */
   token: z.string().max(200).default(''),
   username: z.string().max(200).default(''),
@@ -590,7 +612,12 @@ export const gotifyConfigSchema = z.object({
   appToken: z.string().trim().min(1).max(200),
 })
 
-export const notificationConfigSchema = z.discriminatedUnion('type', [telegramConfigSchema, emailConfigSchema, ntfyConfigSchema, gotifyConfigSchema])
+export const notificationConfigSchema = z.discriminatedUnion('type', [
+  telegramConfigSchema,
+  emailConfigSchema,
+  ntfyConfigSchema,
+  gotifyConfigSchema,
+])
 export type NotificationConfig = z.infer<typeof notificationConfigSchema>
 
 export const notificationInputSchema = z
@@ -609,7 +636,10 @@ export const notificationInputSchema = z
     reportHour: z.number().int().min(0).max(23).default(20),
     config: notificationConfigSchema,
   })
-  .refine((n) => n.events.length > 0 || n.dailyReport, { message: 'Choose at least one event or the daily report', path: ['events'] })
+  .refine((n) => n.events.length > 0 || n.dailyReport, {
+    message: 'Choose at least one event or the daily report',
+    path: ['events'],
+  })
   .refine((n) => n.config.type !== 'telegram' || !n.config.openButton || n.config.allowedUserIds.length > 0, {
     message: 'The open button needs at least one allowed Telegram user id',
     path: ['config', 'allowedUserIds'],
@@ -744,7 +774,14 @@ export const ruleInputSchema = z.object({
     .refine((l): l is Language => LANGUAGES.some((x) => x.code === l), 'Unknown language')
     .default('en'),
   trigger: ruleTriggerSchema,
-  conditions: ruleConditionsSchema.default({ doorIds: [], personIds: [], cards: [], timeFrom: null, timeTo: null, weekdays: [true, true, true, true, true, true, true] }),
+  conditions: ruleConditionsSchema.default({
+    doorIds: [],
+    personIds: [],
+    cards: [],
+    timeFrom: null,
+    timeTo: null,
+    weekdays: [true, true, true, true, true, true, true],
+  }),
   actions: ruleActionsSchema.default({ channelIds: [], webhookIds: [], openDoorIds: [] }),
   /** Message text with placeholders {person} {card} {door} {controller} {time} {date} {reason} {duration}; empty = automatic. */
   message: z.string().max(500).default(''),
@@ -815,7 +852,9 @@ export interface MobileConfigDto {
   sessionDays: number
   vapidPublicKey: string
   /** null when logged in without "remember this device". */
-  device: (Pick<DeviceDto, 'id' | 'name' | 'createdAt' | 'biometric' | 'expiresAt'> & { push: PushPreferencesDto | null }) | null
+  device:
+    | (Pick<DeviceDto, 'id' | 'name' | 'createdAt' | 'biometric' | 'expiresAt'> & { push: PushPreferencesDto | null })
+    | null
 }
 
 export interface MobileDoorDto {

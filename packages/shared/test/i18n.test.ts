@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { errorInfo, KNOWN_REASONS, LANGUAGES, normalizeLanguage, resources, translate, translateError, translator } from '../src/index.js'
+import {
+  errorInfo,
+  KNOWN_REASONS,
+  LANGUAGES,
+  normalizeLanguage,
+  resources,
+  translate,
+  translateError,
+  translator,
+} from '../src/index.js'
 
 function flatten(obj: unknown, prefix = ''): Map<string, string> {
   const out = new Map<string, string>()
@@ -38,7 +47,9 @@ describe('translations', () => {
 
   it('translate interpolates parameters and falls back to English, then to the key', () => {
     expect(translate('it', 'common.doorN', { n: 3 })).toBe('Porta 3')
-    expect(translate('de', 'errors.invalidSegment', { start: '08:00', end: '07:00' })).toBe('Ungültiges Intervall: 08:00-07:00')
+    expect(translate('de', 'errors.invalidSegment', { start: '08:00', end: '07:00' })).toBe(
+      'Ungültiges Intervall: 08:00-07:00',
+    )
     expect(translate('fr', 'does.not.exist')).toBe('does.not.exist')
   })
 
@@ -68,14 +79,20 @@ describe('translateError', () => {
       super(message)
     }
   }
-  const timeout = new CodedError('no reply from controller 405419896 (function 0x20) within 2500 ms', 'protocol.timeout', {
-    controller: 405419896,
-    function: '0x20',
-    timeoutMs: 2500,
-  })
+  const timeout = new CodedError(
+    'no reply from controller 405419896 (function 0x20) within 2500 ms',
+    'protocol.timeout',
+    {
+      controller: 405419896,
+      function: '0x20',
+      timeoutMs: 2500,
+    },
+  )
 
   it('translates errors with a code', () => {
-    expect(translateError('it', timeout)).toBe('Nessuna risposta dal controller 405419896 entro 2500 ms (funzione 0x20)')
+    expect(translateError('it', timeout)).toBe(
+      'Nessuna risposta dal controller 405419896 entro 2500 ms (funzione 0x20)',
+    )
     expect(translateError('en', timeout)).toBe('No reply from controller 405419896 within 2500 ms (function 0x20)')
   })
 

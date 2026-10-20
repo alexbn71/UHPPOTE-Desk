@@ -1,4 +1,18 @@
-import { Badge, Button, Card, Group, Modal, NumberInput, Select, SimpleGrid, Stack, Switch, Table, Text, TextInput } from '@mantine/core'
+import {
+  Badge,
+  Button,
+  Card,
+  Group,
+  Modal,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { modals } from '@mantine/modals'
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react'
@@ -42,7 +56,9 @@ export function TasksPage() {
     if (!edit) return
     try {
       const { id, ...body } = edit
-      const r = id ? await api.put<{ pushError: string | null }>(`/tasks/${id}`, body) : await api.post<{ pushError: string | null }>('/tasks', body)
+      const r = id
+        ? await api.put<{ pushError: string | null }>(`/tasks/${id}`, body)
+        : await api.post<{ pushError: string | null }>('/tasks', body)
       if (r.pushError) notifyError(new Error(t('tasks.savedNotSent', { error: r.pushError })))
       else notifyOk(t('tasks.saved'))
       setEdit(null)
@@ -55,7 +71,9 @@ export function TasksPage() {
   const remove = (task: Task) =>
     modals.openConfirmModal({
       title: t('tasks.deleteTitle'),
-      children: <Text size="sm">{t('tasks.deleteConfirm', { task: codes.task(task.task), time: task.startTime })}</Text>,
+      children: (
+        <Text size="sm">{t('tasks.deleteConfirm', { task: codes.task(task.task), time: task.startTime })}</Text>
+      ),
       labels: { confirm: t('common.delete'), cancel: t('common.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () =>
@@ -142,7 +160,11 @@ export function TasksPage() {
           </Text>
         )}
       </Card>
-      <Modal opened={!!edit} onClose={() => setEdit(null)} title={edit?.id ? t('tasks.editTitle') : t('tasks.newTitle')}>
+      <Modal
+        opened={!!edit}
+        onClose={() => setEdit(null)}
+        title={edit?.id ? t('tasks.editTitle') : t('tasks.newTitle')}
+      >
         {edit && (
           <Stack>
             <SimpleGrid cols={2}>
@@ -152,7 +174,12 @@ export function TasksPage() {
                 value={String(edit.controllerId)}
                 onChange={(v) => setEdit({ ...edit, controllerId: Number(v) })}
               />
-              <Select label={t('common.door')} data={['1', '2', '3', '4']} value={String(edit.door)} onChange={(v) => setEdit({ ...edit, door: Number(v) })} />
+              <Select
+                label={t('common.door')}
+                data={['1', '2', '3', '4']}
+                value={String(edit.door)}
+                onChange={(v) => setEdit({ ...edit, door: Number(v) })}
+              />
             </SimpleGrid>
             <Select
               label={t('tasks.action')}
@@ -161,15 +188,44 @@ export function TasksPage() {
               onChange={(v) => setEdit({ ...edit, task: Number(v) })}
             />
             {edit.task === 8 && (
-              <NumberInput label={t('tasks.moreCards')} min={0} max={255} value={edit.moreCards} onChange={(v) => setEdit({ ...edit, moreCards: Number(v) || 0 })} />
+              <NumberInput
+                label={t('tasks.moreCards')}
+                min={0}
+                max={255}
+                value={edit.moreCards}
+                onChange={(v) => setEdit({ ...edit, moreCards: Number(v) || 0 })}
+              />
             )}
-            <TextInput label={t('tasks.startTime')} value={edit.startTime} onChange={(e) => setEdit({ ...edit, startTime: e.currentTarget.value })} w={200} />
-            <WeekdaysInput label={t('common.days')} value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
+            <TextInput
+              label={t('tasks.startTime')}
+              value={edit.startTime}
+              onChange={(e) => setEdit({ ...edit, startTime: e.currentTarget.value })}
+              w={200}
+            />
+            <WeekdaysInput
+              label={t('common.days')}
+              value={edit.weekdays}
+              onChange={(w) => setEdit({ ...edit, weekdays: w })}
+            />
             <SimpleGrid cols={2}>
-              <DateInput label={t('common.from')} valueFormat={DATE_INPUT_FORMAT} value={edit.validFrom} onChange={(v) => v && setEdit({ ...edit, validFrom: v })} />
-              <DateInput label={t('common.to')} valueFormat={DATE_INPUT_FORMAT} value={edit.validTo} onChange={(v) => v && setEdit({ ...edit, validTo: v })} />
+              <DateInput
+                label={t('common.from')}
+                valueFormat={DATE_INPUT_FORMAT}
+                value={edit.validFrom}
+                onChange={(v) => v && setEdit({ ...edit, validFrom: v })}
+              />
+              <DateInput
+                label={t('common.to')}
+                valueFormat={DATE_INPUT_FORMAT}
+                value={edit.validTo}
+                onChange={(v) => v && setEdit({ ...edit, validTo: v })}
+              />
             </SimpleGrid>
-            <Switch label={t('tasks.activeSwitch')} checked={edit.enabled} onChange={(e) => setEdit({ ...edit, enabled: e.currentTarget.checked })} />
+            <Switch
+              label={t('tasks.activeSwitch')}
+              checked={edit.enabled}
+              onChange={(e) => setEdit({ ...edit, enabled: e.currentTarget.checked })}
+            />
             <Button onClick={() => void save()}>{t('tasks.saveAndSend')}</Button>
           </Stack>
         )}

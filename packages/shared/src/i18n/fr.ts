@@ -103,13 +103,15 @@ export const fr: Messages = {
     tooShort: 'Le mot de passe doit comporter au moins 8 caractères',
     updated: 'Mot de passe mis à jour',
     logout: 'Se déconnecter',
-    managedInfo: "Le mot de passe de cet utilisateur est défini par la variable d'environnement ADMIN_PASSWORD du serveur : modifiez-la à cet endroit puis redémarrez le serveur.",
+    managedInfo:
+      "Le mot de passe de cet utilisateur est défini par la variable d'environnement ADMIN_PASSWORD du serveur : modifiez-la à cet endroit puis redémarrez le serveur.",
   },
   dashboard: {
     title: 'Tableau de bord',
     description: 'État des contrôleurs, activité et derniers événements',
     noControllersTitle: 'Aucun contrôleur configuré',
-    noControllersAdmin: 'Ajoutez le premier contrôleur depuis la page Contrôleurs (recherche automatique sur le réseau disponible).',
+    noControllersAdmin:
+      'Ajoutez le premier contrôleur depuis la page Contrôleurs (recherche automatique sur le réseau disponible).',
     noControllersUser: 'Demandez à un administrateur de configurer les contrôleurs.',
     goToControllers: 'Contrôleurs',
     fireAlarm: 'Alarme incendie',
@@ -225,10 +227,12 @@ export const fr: Messages = {
     addCardHint: 'Numéro à 8 chiffres : code site (facility) × 100000 + code',
     cardAssigned: 'Badge {{n}} attribué',
     readerTitle: 'Saisie depuis un lecteur',
-    readerHint: 'Passez le badge sur un lecteur quelconque : les badges non enregistrés lus au cours des 10 dernières minutes apparaissent ici.',
-    readerNone: "Aucun badge inconnu lu récemment.",
+    readerHint:
+      'Passez le badge sur un lecteur quelconque : les badges non enregistrés lus au cours des 10 dernières minutes apparaissent ici.',
+    readerNone: 'Aucun badge inconnu lu récemment.',
     replaceTitle: 'Badge perdu {{n}}',
-    replaceInfo: 'Le badge sera désactivé et retiré des contrôleurs ; le nouveau badge recevra les mêmes autorisations.',
+    replaceInfo:
+      'Le badge sera désactivé et retiré des contrôleurs ; le nouveau badge recevra les mêmes autorisations.',
     replaceNewNumber: 'Numéro du nouveau badge',
     replaceConfirm: 'Remplacer',
     replaced: 'Badge remplacé',
@@ -309,13 +313,15 @@ export const fr: Messages = {
     broadcast: 'broadcast',
     none: 'Aucun contrôleur. Utilisez « Rechercher sur le réseau » pour les trouver automatiquement.',
     discoveryTitle: 'Rechercher des contrôleurs sur le réseau',
-    discoveryInfo: 'La recherche envoie un broadcast UDP sur le port 60000 et attend les réponses pendant quelques secondes. Elle ne fonctionne que si le serveur se trouve sur le même segment réseau que les contrôleurs.',
+    discoveryInfo:
+      'La recherche envoie un broadcast UDP sur le port 60000 et attend les réponses pendant quelques secondes. Elle ne fonctionne que si le serveur se trouve sur le même segment réseau que les contrôleurs.',
     broadcastAddress: 'Adresse de broadcast (facultative)',
     startSearch: 'Lancer la recherche',
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Déjà configuré',
-    noneFound: 'Aucun résultat (lancez la recherche). Si le contrôleur ne répond pas, vérifiez le câble, le sous-réseau, le pare-feu (UDP 60000) et, avec Docker, le réseau « host ».',
+    noneFound:
+      'Aucun résultat (lancez la recherche). Si le contrôleur ne répond pas, vérifiez le câble, le sous-réseau, le pare-feu (UDP 60000) et, avec Docker, le réseau « host ».',
     newTitle: 'Nouveau contrôleur',
     added: 'Contrôleur ajouté',
     serial: 'Numéro de série',
@@ -373,17 +379,21 @@ export const fr: Messages = {
     appConfig: "Configuration dans l'application",
     updated: 'Contrôleur mis à jour',
     removeTitle: 'Retirer le contrôleur',
-    removeInfo: "Le contrôleur et son historique d'événements seront retirés de la base de données (le contrôleur lui-même n'est pas modifié).",
+    removeInfo:
+      "Le contrôleur et son historique d'événements seront retirés de la base de données (le contrôleur lui-même n'est pas modifié).",
     ipTitle: 'Adresse IP du contrôleur',
     netmask: 'Masque de sous-réseau',
     sendIp: 'Envoyer la nouvelle IP au contrôleur',
     sendIpTitle: "Changer l'adresse IP du contrôleur",
-    sendIpConfirm: "Le contrôleur sera reconfiguré avec l'IP {{address}}/{{netmask}}, passerelle {{gateway}}. Si cette adresse n'est pas joignable depuis ce serveur, le contrôleur ne pourra plus être contacté tant qu'il n'aura pas été reconfiguré (depuis le même réseau, par broadcast). Continuer ?",
+    sendIpConfirm:
+      "Le contrôleur sera reconfiguré avec l'IP {{address}}/{{netmask}}, passerelle {{gateway}}. Si cette adresse n'est pas joignable depuis ce serveur, le contrôleur ne pourra plus être contacté tant qu'il n'aura pas été reconfiguré (depuis le même réseau, par broadcast). Continuer ?",
     sendIpButton: "Changer l'IP",
     ipVerified: 'IP définie et vérifiée',
-    ipNotVerified: 'Commande envoyée, mais le contrôleur ne répond pas sur la nouvelle IP : vérifiez par une recherche sur le réseau',
+    ipNotVerified:
+      'Commande envoyée, mais le contrôleur ne répond pas sur la nouvelle IP : vérifiez par une recherche sur le réseau',
     listenerTitle: 'Destination des événements (récepteur)',
-    listenerInfo: 'Le contrôleur envoie chaque événement à une seule adresse. Elle est normalement configurée automatiquement (variable UHPPOTE_LISTENER_PUBLIC).',
+    listenerInfo:
+      'Le contrôleur envoie chaque événement à une seule adresse. Elle est normalement configurée automatiquement (variable UHPPOTE_LISTENER_PUBLIC).',
     listenerAuto: 'Configurer automatiquement',
     listenerUpdated: 'Récepteur mis à jour',
     listenerAlreadyOk: 'Récepteur déjà correct',
@@ -411,21 +421,27 @@ export const fr: Messages = {
     settingsSaved: 'Paramètres enregistrés et envoyés au contrôleur',
     syncHistory: 'Historique des synchronisations',
     resetTitle: "Réinitialisation d'usine",
-    resetInfo: "Efface le réseau, le récepteur, les badges et les événements du contrôleur. Les badges enregistrés sont sauvegardés au préalable et peuvent être renvoyés par une synchronisation. Saisissez le numéro de série {{serial}} pour confirmer.",
+    resetInfo:
+      'Efface le réseau, le récepteur, les badges et les événements du contrôleur. Les badges enregistrés sont sauvegardés au préalable et peuvent être renvoyés par une synchronisation. Saisissez le numéro de série {{serial}} pour confirmer.',
     resetPlaceholder: 'Numéro de série',
     resetButton: 'Réinitialiser',
     resetDone: 'Paramètres réinitialisés : {{n}} badges sauvegardés dans {{file}} (dossier de sauvegarde du serveur)',
   },
   expansion: {
     title: "Carte d'extension d'alarmes (UT0311-01A)",
-    intro: "Quatre relais d'alarme et une entrée incendie reliés au contrôleur. La configuration est envoyée avec les paramètres avancés et lors de la synchronisation complète.",
-    experimental: "Expérimental : le protocole a été reconstitué à partir du logiciel du fabricant et n'est pas encore vérifié sur tous les firmwares. Le contrôleur ne peut pas renvoyer cette configuration : UHPPOTE Desk conserve la copie qu'il envoie.",
+    intro:
+      "Quatre relais d'alarme et une entrée incendie reliés au contrôleur. La configuration est envoyée avec les paramètres avancés et lors de la synchronisation complète.",
+    experimental:
+      "Expérimental : le protocole a été reconstitué à partir du logiciel du fabricant et n'est pas encore vérifié sur tous les firmwares. Le contrôleur ne peut pas renvoyer cette configuration : UHPPOTE Desk conserve la copie qu'il envoie.",
     installed: "Carte d'extension connectée",
-    installedHint: "La configuration n'est écrite dans le contrôleur que si cette option est active. Avant de débrancher la carte, désactivez les sorties et enregistrez.",
+    installedHint:
+      "La configuration n'est écrite dans le contrôleur que si cette option est active. Avant de débrancher la carte, désactivez les sorties et enregistrez.",
     doorOpenTooLong: 'Porte ouverte trop longtemps après (s)',
-    doorOpenTooLongHint: "Délai après lequel une porte restée ouverte déclenche l'alarme « ouverte trop longtemps » (25 s par défaut)",
+    doorOpenTooLongHint:
+      "Délai après lequel une porte restée ouverte déclenche l'alarme « ouverte trop longtemps » (25 s par défaut)",
     duressCode: 'Code de contrainte',
-    duressCodeHint: "Code tapé sur le clavier sous la menace : il ouvre la porte et déclenche l'alarme « contrainte ». Vide = inchangé",
+    duressCodeHint:
+      "Code tapé sur le clavier sous la menace : il ouvre la porte et déclenche l'alarme « contrainte ». Vide = inchangé",
     relayN: 'Sortie {{n}}',
     active: 'Active',
     source: 'Source',
@@ -482,7 +498,8 @@ export const fr: Messages = {
   },
   timeProfiles: {
     title: 'Plages horaires',
-    description: 'Intervalles de temps (ID 2-254) pendant lesquels une autorisation est valable. Une plage peut être liée à une autre pour ajouter des jours/horaires.',
+    description:
+      'Intervalles de temps (ID 2-254) pendant lesquels une autorisation est valable. Une plage peut être liée à une autre pour ajouter des jours/horaires.',
     new: 'Nouvelle plage',
     colId: 'ID',
     colName: 'Nom',
@@ -507,7 +524,8 @@ export const fr: Messages = {
   },
   tasks: {
     title: 'Tâches planifiées',
-    description: 'Actions exécutées automatiquement par le contrôleur à une heure donnée (ex. porte ouverte le jour, verrouillée la nuit)',
+    description:
+      'Actions exécutées automatiquement par le contrôleur à une heure donnée (ex. porte ouverte le jour, verrouillée la nuit)',
     new: 'Nouvelle tâche',
     colController: 'Contrôleur',
     colDoor: 'Porte',
@@ -531,12 +549,14 @@ export const fr: Messages = {
   },
   sync: {
     title: 'Synchronisation',
-    description: "La base de données de l'application fait foi : les modifications sont envoyées immédiatement aux contrôleurs en ligne ; ici vous pouvez les vérifier et les réaligner (par ex. après une période hors ligne d'un contrôleur).",
+    description:
+      "La base de données de l'application fait foi : les modifications sont envoyées immédiatement aux contrôleurs en ligne ; ici vous pouvez les vérifier et les réaligner (par ex. après une période hors ligne d'un contrôleur).",
     compare: 'Comparer',
     syncCards: 'Aligner les badges',
     syncAll: 'Synchronisation complète',
     syncAllTitle: 'Synchronisation complète de {{name}}',
-    syncAllInfo: "La configuration des portes, les plages horaires, les tâches, les paramètres avancés et tous les badges seront renvoyés. L'opération peut prendre quelques minutes.",
+    syncAllInfo:
+      "La configuration des portes, les plages horaires, les tâches, les paramètres avancés et tous les badges seront renvoyés. L'opération peut prendre quelques minutes.",
     syncAllConfirm: 'Synchroniser',
     syncAllDone: '{{name}} : synchronisation complète effectuée',
     cardsDone: '{{name}} : {{added}} ajoutés, {{updated}} mis à jour, {{deleted}} retirés',
@@ -556,7 +576,8 @@ export const fr: Messages = {
   },
   attendance: {
     title: 'Présences',
-    description: 'Heures travaillées calculées à partir des passages sur les lecteurs de présence, avec horaires, jours fériés et absences',
+    description:
+      'Heures travaillées calculées à partir des passages sur les lecteurs de présence, avec horaires, jours fériés et absences',
     tabReport: 'Rapport',
     tabShifts: 'Horaires',
     tabHolidays: 'Jours fériés',
@@ -581,8 +602,10 @@ export const fr: Messages = {
     colLateShort: 'Retard',
     colPunches: 'Pointages',
     lateMinutes: '{{n}} min',
-    footnote: '* pointage saisi manuellement. Seuls les passages autorisés sur les lecteurs marqués « présences » (page Portes) sont comptés.',
-    shiftsHint: "L'horaire est attribué dans la fiche de la personne. Les horaires qui se terminent avant de commencer sont des horaires de nuit.",
+    footnote:
+      '* pointage saisi manuellement. Seuls les passages autorisés sur les lecteurs marqués « présences » (page Portes) sont comptés.',
+    shiftsHint:
+      "L'horaire est attribué dans la fiche de la personne. Les horaires qui se terminent avant de commencer sont des horaires de nuit.",
     newShift: 'Nouvel horaire',
     colShiftName: 'Nom',
     colShiftHours: 'Horaire',
@@ -606,10 +629,12 @@ export const fr: Messages = {
   },
   operators: {
     title: 'Opérateurs',
-    description: "Utilisateurs de l'application. Administrateur : tout ; Opérateur : personnes, autorisations, ouverture des portes, synchronisation ; Lecture seule : consultation.",
+    description:
+      "Utilisateurs de l'application. Administrateur : tout ; Opérateur : personnes, autorisations, ouverture des portes, synchronisation ; Lecture seule : consultation.",
     new: 'Nouvel opérateur',
     tempPasswordTitle: 'Mot de passe temporaire',
-    tempPassword: "Utilisateur {{user}} : {{password}} — communiquez-le à l'intéressé ; il devra le changer lors de la première connexion.",
+    tempPassword:
+      "Utilisateur {{user}} : {{password}} — communiquez-le à l'intéressé ; il devra le changer lors de la première connexion.",
     colUser: 'Utilisateur',
     colName: 'Nom',
     colRole: 'Rôle',
@@ -635,7 +660,8 @@ export const fr: Messages = {
   },
   webhooks: {
     title: 'Webhooks',
-    description: "Requêtes HTTP envoyées à d'autres systèmes (n8n, Node-RED, Home Assistant, vos services) quand quelque chose se produit",
+    description:
+      "Requêtes HTTP envoyées à d'autres systèmes (n8n, Node-RED, Home Assistant, vos services) quand quelque chose se produit",
     new: 'Nouveau webhook',
     colName: 'Nom',
     colUrl: 'URL',
@@ -651,13 +677,15 @@ export const fr: Messages = {
     urlHint: 'Reçoit une requête POST avec un corps JSON',
     events: 'Événements',
     doors: 'Seulement ces portes',
-    doorsHint: "Vide = toutes les portes. Les événements du contrôleur sont envoyés si le contrôleur a l'une des portes sélectionnées.",
+    doorsHint:
+      "Vide = toutes les portes. Les événements du contrôleur sont envoyés si le contrôleur a l'une des portes sélectionnées.",
     headers: 'En-têtes supplémentaires',
     headersHint: 'Un par ligne, "Nom: valeur" (ex. Authorization: Bearer …)',
     headersInvalid: "Ligne d'en-tête invalide : {{line}}",
     enabledSwitch: 'Actif',
     secret: 'Clé de signature',
-    secretHint: 'Chaque requête porte X-UHPPOTE-Signature: sha256=HMAC-SHA256(clé, timestamp + "." + corps), avec le timestamp dans X-UHPPOTE-Timestamp.',
+    secretHint:
+      'Chaque requête porte X-UHPPOTE-Signature: sha256=HMAC-SHA256(clé, timestamp + "." + corps), avec le timestamp dans X-UHPPOTE-Timestamp.',
     secretAfterSave: "La clé de signature est générée à l'enregistrement du webhook.",
     copy: 'Copier',
     copied: 'Copié',
@@ -681,7 +709,8 @@ export const fr: Messages = {
   },
   apiTokens: {
     title: 'Jetons API',
-    description: "Accès pour d'autres systèmes et scripts (n8n, Home Assistant, CasaAuto, vos services) via Authorization: Bearer",
+    description:
+      "Accès pour d'autres systèmes et scripts (n8n, Home Assistant, CasaAuto, vos services) via Authorization: Bearer",
     new: 'Nouveau jeton',
     colName: 'Nom',
     colToken: 'Jeton',
@@ -700,7 +729,8 @@ export const fr: Messages = {
     name: 'Nom',
     nameHint: 'Le système qui l’utilise, ex. CasaAuto ou n8n',
     access: "Niveau d'accès",
-    accessHint: 'Lecture seule : données, événements et état en temps réel. Lecture + ouverture des portes : peut aussi ouvrir les portes autorisées. Opérateur et Administrateur : comme les rôles des opérateurs (sauf la gestion des opérateurs et des jetons).',
+    accessHint:
+      'Lecture seule : données, événements et état en temps réel. Lecture + ouverture des portes : peut aussi ouvrir les portes autorisées. Opérateur et Administrateur : comme les rôles des opérateurs (sauf la gestion des opérateurs et des jetons).',
     zones: 'Limiter aux zones',
     zonesHint: "Vide = tous les contrôleurs. S'applique à l'ouverture des portes et à la synchronisation.",
     doors: 'Portes pouvant être ouvertes',
@@ -709,7 +739,8 @@ export const fr: Messages = {
     expiresHint: 'Dernier jour valide ; vide = pas d’expiration',
     activeSwitch: 'Actif',
     createdTitle: 'Copiez le jeton maintenant',
-    createdInfo: "Il ne sera plus affiché. Mettez-le dans la configuration de l'autre système ; en cas de perte, créez un nouveau jeton et supprimez celui-ci.",
+    createdInfo:
+      "Il ne sera plus affiché. Mettez-le dans la configuration de l'autre système ; en cas de perte, créez un nouveau jeton et supprimez celui-ci.",
     copy: 'Copier',
     copied: 'Copié',
     usage: 'Exemple : curl -H "Authorization: Bearer <token>" {{url}}/api/doors',
@@ -719,7 +750,8 @@ export const fr: Messages = {
   },
   notifications: {
     title: 'Notifications',
-    description: 'Messages sur Telegram, e-mail, ntfy et Gotify quand quelque chose se produit aux portes, et un rapport quotidien',
+    description:
+      'Messages sur Telegram, e-mail, ntfy et Gotify quand quelque chose se produit aux portes, et un rapport quotidien',
     new: 'Nouveau canal',
     colName: 'Nom',
     colType: 'Canal',
@@ -735,11 +767,13 @@ export const fr: Messages = {
     type: 'Canal',
     language: 'Langue des messages',
     events: 'Événements',
-    eventsHint: 'Chaque événement envoie un message : « Accès autorisé » peut représenter beaucoup de messages, choisissez-le pour quelques portes seulement.',
+    eventsHint:
+      'Chaque événement envoie un message : « Accès autorisé » peut représenter beaucoup de messages, choisissez-le pour quelques portes seulement.',
     doors: 'Seulement ces portes',
     doorsHint: 'Vide = toutes les portes.',
     dailyReport: 'Rapport quotidien',
-    dailyReportHint: 'Qui est entré et les anomalies (accès refusés, alarmes, contrôleurs hors ligne) des dernières 24 heures.',
+    dailyReportHint:
+      'Qui est entré et les anomalies (accès refusés, alarmes, contrôleurs hors ligne) des dernières 24 heures.',
     reportHour: 'Envoyer à',
     enabledSwitch: 'Actif',
     test: 'Envoyer un test',
@@ -755,7 +789,8 @@ export const fr: Messages = {
     tgChatId: 'Chat ID',
     tgChatIdHint: "Écrivez /id au bot, ou dans le groupe où vous l'avez ajouté, pour voir le chat id et votre user id.",
     tgOpenButton: 'Bouton « Ouvrir la porte »',
-    tgOpenButtonHint: "Sous les notifications d'une porte. Valable 15 minutes, seulement pour les utilisateurs ci-dessous.",
+    tgOpenButtonHint:
+      "Sous les notifications d'une porte. Valable 15 minutes, seulement pour les utilisateurs ci-dessous.",
     tgUsers: 'Utilisateurs Telegram autorisés à ouvrir',
     tgUsersHint: 'User id numériques séparés par des virgules (affichés par /id).',
     mailHost: 'Serveur SMTP',
@@ -836,7 +871,8 @@ export const fr: Messages = {
   },
   anomalies: {
     title: 'Anomalies',
-    description: "Accès à des heures inhabituelles, tentatives refusées répétées et badges inutilisés depuis des mois, d'après l'historique",
+    description:
+      "Accès à des heures inhabituelles, tentatives refusées répétées et badges inutilisés depuis des mois, d'après l'historique",
     tabUnusual: 'Heures inhabituelles',
     tabDenied: 'Tentatives refusées répétées',
     tabInactive: 'Badges inactifs',
@@ -861,7 +897,8 @@ export const fr: Messages = {
     days: '{{n}} jours',
     disableSelected: 'Désactiver la sélection ({{n}})',
     disableTitle: 'Désactiver {{n}} badges',
-    disableInfo: 'Les badges passent à « désactivé » et sont retirés des contrôleurs. Ils peuvent être réactivés depuis Badges.',
+    disableInfo:
+      'Les badges passent à « désactivé » et sont retirés des contrôleurs. Ils peuvent être réactivés depuis Badges.',
     disabledOk: '{{n}} badges désactivés',
     none: 'Rien sur cette période',
     noneInactive: 'Aucun badge actif inutilisé depuis {{n}} jours ou plus',
@@ -876,11 +913,13 @@ export const fr: Messages = {
     deniedWindow: 'en (minutes)',
     inactiveDays: 'Badge inactif après (jours)',
     saved: 'Paramètres enregistrés',
-    notifyHint: 'Pour être alerté en temps réel, choisissez les événements « Accès à une heure inhabituelle » et « Tentatives refusées répétées » dans Notifications ou Webhooks.',
+    notifyHint:
+      'Pour être alerté en temps réel, choisissez les événements « Accès à une heure inhabituelle » et « Tentatives refusées répétées » dans Notifications ou Webhooks.',
   },
   rules: {
     title: 'Règles',
-    description: 'Automatisations : quand quelque chose se produit et que les conditions sont remplies, envoyer des notifications, appeler des webhooks ou ouvrir des portes',
+    description:
+      'Automatisations : quand quelque chose se produit et que les conditions sont remplies, envoyer des notifications, appeler des webhooks ou ouvrir des portes',
     new: 'Nouvelle règle',
     colName: 'Nom',
     colTrigger: 'Quand',
@@ -894,13 +933,15 @@ export const fr: Messages = {
     newTitle: 'Nouvelle règle',
     name: 'Nom',
     severity: 'Gravité',
-    severityHint: "Définit la priorité des notifications ; les alarmes s'affichent aussi dans l'application jusqu'à leur fermeture",
+    severityHint:
+      "Définit la priorité des notifications ; les alarmes s'affichent aussi dans l'application jusqu'à leur fermeture",
     language: 'Langue des textes',
     sectionWhen: 'Quand',
     trigger: 'Événement',
     openFor: 'Porte ouverte plus de…',
     seconds: 'Secondes',
-    secondsHint: 'ex. 120 = 2 minutes. Se déclenche une fois par ouverture, si le capteur indique toujours la porte ouverte.',
+    secondsHint:
+      'ex. 120 = 2 minutes. Se déclenche une fois par ouverture, si le capteur indique toujours la porte ouverte.',
     sectionIf: 'Seulement si',
     doors: 'Portes',
     doorsHint: "Vide = n'importe quelle porte",
@@ -916,7 +957,8 @@ export const fr: Messages = {
     webhooks: 'Appeler les webhooks',
     openDoors: 'Ouvrir les portes',
     message: 'Message',
-    messageHint: 'Vide = texte automatique. Variables : {person} {card} {door} {controller} {time} {date} {reason} {duration}',
+    messageHint:
+      'Vide = texte automatique. Variables : {person} {card} {door} {controller} {time} {date} {reason} {duration}',
     cooldown: 'Pause après déclenchement (secondes)',
     cooldownHint: '0 = à chaque fois',
     enabledSwitch: 'Active',
@@ -954,7 +996,8 @@ export const fr: Messages = {
     offline: 'hors ligne',
     noDoors: 'Aucune porte',
     bioSetupTitle: 'Empreinte / Face ID requis',
-    bioSetupText: "L'administrateur exige l'empreinte ou Face ID pour ouvrir les portes depuis l'app. Activez-les sur ce téléphone.",
+    bioSetupText:
+      "L'administrateur exige l'empreinte ou Face ID pour ouvrir les portes depuis l'app. Activez-les sur ce téléphone.",
     bioOptionalTitle: 'Empreinte / Face ID',
     bioOptionalText: 'Avec empreinte / Face ID, ce téléphone reste connecté sans expiration.',
     bioActivate: 'Activer empreinte / Face ID',
@@ -962,7 +1005,8 @@ export const fr: Messages = {
     bioRemove: 'Désactiver',
     bioUnsupported: 'Ce navigateur ne peut pas utiliser empreinte / Face ID (HTTPS requis).',
     bioDone: 'Empreinte / Face ID activés',
-    notRemembered: "Ce navigateur n'est pas un appareil mémorisé : déconnectez-vous et reconnectez-vous avec « Mémoriser cet appareil » pour utiliser les notifications push et empreinte / Face ID.",
+    notRemembered:
+      "Ce navigateur n'est pas un appareil mémorisé : déconnectez-vous et reconnectez-vous avec « Mémoriser cet appareil » pour utiliser les notifications push et empreinte / Face ID.",
     deviceTitle: 'Cet appareil',
     deviceName: 'Nom',
     since: 'Connecté depuis le',
@@ -970,9 +1014,11 @@ export const fr: Messages = {
     neverExpires: 'jamais (empreinte / Face ID)',
     pushTitle: 'Notifications push',
     pushEnable: 'Notifications sur ce téléphone',
-    pushUnsupported: "Notifications indisponibles ici : sur iPhone, ajoutez d'abord l'app à l'écran d'accueil (iOS 16.4 ou ultérieur) ; HTTPS requis.",
+    pushUnsupported:
+      "Notifications indisponibles ici : sur iPhone, ajoutez d'abord l'app à l'écran d'accueil (iOS 16.4 ou ultérieur) ; HTTPS requis.",
     pushDenied: 'Les notifications de ce site sont bloquées dans les paramètres du navigateur.',
-    pushDeniedApp: 'Les notifications sont désactivées pour l’app installée : autorisez-les dans les paramètres Android (Applications → UHPPOTE Desk → Notifications), puis rouvrez l’app.',
+    pushDeniedApp:
+      'Les notifications sont désactivées pour l’app installée : autorisez-les dans les paramètres Android (Applications → UHPPOTE Desk → Notifications), puis rouvrez l’app.',
     pushEvents: 'Événements',
     pushDoors: 'Seulement ces portes',
     pushAllDoors: 'Toutes les portes',
@@ -992,7 +1038,8 @@ export const fr: Messages = {
     description: "Confirmation d'ouverture, durée de connexion et appareils mémorisés de l'app mobile (/m)",
     settings: 'Paramètres',
     confirmation: "Confirmation d'ouverture des portes",
-    confirmationHint: "S'applique aux appareils mémorisés (l'app) ; les connexions par mot de passe sur un poste ne changent pas.",
+    confirmationHint:
+      "S'applique aux appareils mémorisés (l'app) ; les connexions par mot de passe sur un poste ne changent pas.",
     sessionDays: 'Durée de connexion sans empreinte / Face ID',
     sessionDaysHint: "Les appareils avec empreinte / Face ID restent connectés jusqu'à leur révocation.",
     days: '{{n}} jours',
@@ -1010,9 +1057,11 @@ export const fr: Messages = {
     noExpiry: 'aucune',
     revoke: 'Révoquer',
     revokeTitle: 'Révoquer {{name}} ({{operator}})',
-    revokeInfo: "L'appareil est déconnecté immédiatement ; ses notifications push et son empreinte / Face ID sont supprimées.",
+    revokeInfo:
+      "L'appareil est déconnecté immédiatement ; ses notifications push et son empreinte / Face ID sont supprimées.",
     noDevices: 'Aucun appareil mémorisé',
-    httpsHint: "L'app nécessite HTTPS (proxy inverse) pour être installée et pour les notifications push et empreinte / Face ID. Définissez PUBLIC_URL avec l'adresse publique.",
+    httpsHint:
+      "L'app nécessite HTTPS (proxy inverse) pour être installée et pour les notifications push et empreinte / Face ID. Définissez PUBLIC_URL avec l'adresse publique.",
     link: "Adresse de l'app : {{url}}",
   },
   audit: {
@@ -1045,7 +1094,8 @@ export const fr: Messages = {
     listenerPublic: 'Récepteur programmé',
     notSet: 'non défini',
     timeout: "Délai d'attente",
-    listenerWarning: "Définissez UHPPOTE_LISTENER_PUBLIC avec l'IP du serveur joignable par les contrôleurs (ex. 192.168.1.10:60001) pour recevoir les événements en temps réel.",
+    listenerWarning:
+      "Définissez UHPPOTE_LISTENER_PUBLIC avec l'IP du serveur joignable par les contrôleurs (ex. 192.168.1.10:60001) pour recevoir les événements en temps réel.",
     backups: 'Sauvegarde de la base de données',
     backupsInfo: 'Sauvegarde quotidienne automatique dans le dossier de données du serveur (sous-dossier backups).',
     backupNow: 'Créer une sauvegarde maintenant',
@@ -1059,7 +1109,8 @@ export const fr: Messages = {
     mqttDoorControl: 'Ouverture des portes depuis Home Assistant',
     mqttAllowed: 'autorisée',
     mqttNotAllowed: 'non autorisée',
-    mqttDisabled: 'Définissez MQTT_URL pour publier les portes, les états et les événements dans Home Assistant (MQTT discovery).',
+    mqttDisabled:
+      'Définissez MQTT_URL pour publier les portes, les états et les événements dans Home Assistant (MQTT discovery).',
   },
   mqtt: {
     forceLock: 'Verrouillage forcé',
@@ -1340,7 +1391,8 @@ export const fr: Messages = {
     inUse: "Opération impossible : l'élément est utilisé",
     controllerError: 'Erreur du contrôleur : {{detail}}',
     internal: 'Erreur interne du serveur',
-    passwordManagedByEnv: "Le mot de passe de cet utilisateur est défini par la variable ADMIN_PASSWORD et ne peut pas être modifié ici",
+    passwordManagedByEnv:
+      'Le mot de passe de cet utilisateur est défini par la variable ADMIN_PASSWORD et ne peut pas être modifié ici',
     importEmptyCode: 'matricule vide',
     importInvalidCard: 'badge non valide : {{card}}',
     importCardTaken: 'badge {{card}} déjà attribué à {{person}}',

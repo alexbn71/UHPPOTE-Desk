@@ -61,7 +61,10 @@ export class AuditLog {
     }
   }
 
-  query(opts: { limit: number; offset: number; action?: string | undefined; operatorId?: number | undefined }): { rows: AuditEntry[]; total: number } {
+  query(opts: { limit: number; offset: number; action?: string | undefined; operatorId?: number | undefined }): {
+    rows: AuditEntry[]
+    total: number
+  } {
     const where: string[] = []
     const params: (string | number)[] = []
     if (opts.action) {

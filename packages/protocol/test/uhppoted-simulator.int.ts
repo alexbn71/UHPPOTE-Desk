@@ -72,7 +72,13 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
     await client.putCard(udp, card)
     await client.putCard(tcp, { ...card, card: 10058401 })
     expect(await client.getCards(udp)).toBe(2)
-    expect(await client.getCard(udp, 10058400)).toMatchObject({ card: 10058400, from: '2026-01-01', to: '2026-12-31', doors: [1, 0, 0, 1], pin: 7531 })
+    expect(await client.getCard(udp, 10058400)).toMatchObject({
+      card: 10058400,
+      from: '2026-01-01',
+      to: '2026-12-31',
+      doors: [1, 0, 0, 1],
+      pin: 7531,
+    })
     expect((await client.listCards(udp)).map((c) => c.card).sort()).toEqual([10058400, 10058401])
     expect(await client.deleteCard(udp, 10058401)).toBe(true)
     expect(await client.getCard(udp, 10058401)).toBeNull()
@@ -83,7 +89,15 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
       id: 29,
       from: '2026-01-01',
       to: '2026-12-31',
-      weekdays: [true, true, true, true, true, false, false] as [boolean, boolean, boolean, boolean, boolean, boolean, boolean],
+      weekdays: [true, true, true, true, true, false, false] as [
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+      ],
       segments: [{ start: '08:30', end: '17:30' }],
       linkedTo: 0,
     }
@@ -93,7 +107,15 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
 
   it('tasks, interlock, anti-passback, keypad, passcode, special events', async () => {
     await client.clearTaskList(udp)
-    await client.addTask(udp, { task: 2, from: '2026-01-01', to: '2026-12-31', weekdays: [true, true, true, true, true, true, true], start: '22:00', door: 1, moreCards: 0 })
+    await client.addTask(udp, {
+      task: 2,
+      from: '2026-01-01',
+      to: '2026-12-31',
+      weekdays: [true, true, true, true, true, true, true],
+      start: '22:00',
+      door: 1,
+      moreCards: 0,
+    })
     await client.refreshTaskList(udp)
     await client.setInterlock(udp, 0)
     await client.setAntiPassback(udp, 1)
@@ -116,7 +138,8 @@ describe.skipIf(!SIM)('simulatore uhppoted', () => {
       const res = await rest('POST', `/${ID}/swipe`, { door: 1, 'card-number': 10058400, direction: 1, PIN: 7531 })
       expect(res.ok).toBe(true)
       const deadline = Date.now() + 3000
-      while (!received.some((s) => s.event?.card === 10058400) && Date.now() < deadline) await new Promise((r) => setTimeout(r, 50))
+      while (!received.some((s) => s.event?.card === 10058400) && Date.now() < deadline)
+        await new Promise((r) => setTimeout(r, 50))
       const ev = received.find((s) => s.event?.card === 10058400)?.event
       expect(ev).toMatchObject({ card: 10058400, door: 1, granted: true })
       expect(await client.getEvent(udp, ev!.index)).toMatchObject({ card: 10058400, reason: Reason.Swipe })

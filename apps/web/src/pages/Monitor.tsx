@@ -18,7 +18,10 @@ export function MonitorPage() {
   const [onlySwipes, setOnlySwipes] = useState(false)
 
   const events = useMemo(
-    () => live.events.filter((e) => (!controllerId || e.controllerId === Number(controllerId)) && (!onlySwipes || e.type === 1)),
+    () =>
+      live.events.filter(
+        (e) => (!controllerId || e.controllerId === Number(controllerId)) && (!onlySwipes || e.type === 1),
+      ),
     [live.events, controllerId, onlySwipes],
   )
   const last = events.find((e) => e.type === 1)
@@ -38,7 +41,11 @@ export function MonitorPage() {
               onChange={setControllerId}
               w={220}
             />
-            <Switch label={t('monitor.swipesOnly')} checked={onlySwipes} onChange={(e) => setOnlySwipes(e.currentTarget.checked)} />
+            <Switch
+              label={t('monitor.swipesOnly')}
+              checked={onlySwipes}
+              onChange={(e) => setOnlySwipes(e.currentTarget.checked)}
+            />
           </>
         }
       />

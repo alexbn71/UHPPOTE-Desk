@@ -33,7 +33,8 @@ const now = () => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 const today = () => now().slice(0, 10)
-const percentile = (xs: number[], p: number) => [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor((p / 100) * xs.length))] ?? 0
+const percentile = (xs: number[], p: number) =>
+  [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor((p / 100) * xs.length))] ?? 0
 
 function requireHost(ctx: Context, t: TestHelpers): string {
   if (!ctx.opts.host) t.skip('controller IP address not specified (--ip)')
@@ -41,7 +42,14 @@ function requireHost(ctx: Context, t: TestHelpers): string {
 }
 
 function testCard(ctx: Context, card: number, doors: Quad<number>, pin = 0): Card {
-  return { card, from: today(), to: `${new Date().getFullYear() + 1}-12-31`, doors, pin, firstCard: [false, false, false, false] }
+  return {
+    card,
+    from: today(),
+    to: `${new Date().getFullYear() + 1}-12-31`,
+    doors,
+    pin,
+    firstCard: [false, false, false, false],
+  }
 }
 
 /** Temporarily points the controller's listener at this host (saving the original). */
@@ -64,7 +72,8 @@ async function ensureSpecialEvents(ctx: Context): Promise<void> {
 /** Runs a command that creates/changes a test card and guarantees its removal. */
 async function withTestCard<T>(ctx: Context, card: Card, fn: () => Promise<T>): Promise<T> {
   const existing = await ctx.client.getCard(ctx.target, card.card)
-  if (existing) throw new Error(`test card ${card.card} already exists on the controller: choose another number with --test-card`)
+  if (existing)
+    throw new Error(`test card ${card.card} already exists on the controller: choose another number with --test-card`)
   await ctx.client.putCard(ctx.target, card)
   try {
     return await fn()
@@ -76,7 +85,9 @@ async function withTestCard<T>(ctx: Context, card: Card, fn: () => Promise<T>): 
 async function userCard(ctx: Context, t: TestHelpers): Promise<number> {
   if (ctx.opts.userCard) return ctx.opts.userCard
   if (ctx.facts.userCard) return ctx.facts.userCard as number
-  const answer = (await ctx.driver.ask('Number of the real card to use for the tests (8 digits, Enter to detect it with a swipe)')).trim()
+  const answer = (
+    await ctx.driver.ask('Number of the real card to use for the tests (8 digits, Enter to detect it with a swipe)')
+  ).trim()
   let card = Number(answer)
   if (!answer) {
     await attachListener(ctx, t)
@@ -102,7 +113,9 @@ export const L0: TestCase[] = [
     level: 0,
     name: 'Host network interfaces',
     async run(ctx: Context, t: TestHelpers) {
-      const ifs = Object.entries(os.networkInterfaces()).flatMap(([name, a]) => (a ?? []).filter((x) => x.family === 'IPv4' && !x.internal).map((x) => ({ name, ...x })))
+      const ifs = Object.entries(os.networkInterfaces()).flatMap(([name, a]) =>
+        (a ?? []).filter((x) => x.family === 'IPv4' && !x.internal).map((x) => ({ name, ...x })),
+      )
       for (const i of ifs) t.log(`${i.name}: ${i.address}/${i.netmask}`)
       t.data(ifs)
       t.assert(ifs.length > 0, 'no active IPv4 interface')
@@ -110,7 +123,9 @@ export const L0: TestCase[] = [
         const ip = ipToInt(ctx.opts.host)
         const same = ifs.find((i) => (ipToInt(i.address) & ipToInt(i.netmask)) === (ip & ipToInt(i.netmask)))
         if (!same) t.warn(`no interface on the same subnet as ${ctx.opts.host}: broadcast discovery will not work`)
-        t.log(`interface towards the controller: ${same.name} (${same.address}); subnet broadcast ${intToIp((ipToInt(same.address) & ipToInt(same.netmask)) | (~ipToInt(same.netmask) >>> 0))}`)
+        t.log(
+          `interface towards the controller: ${same.name} (${same.address}); subnet broadcast ${intToIp((ipToInt(same.address) & ipToInt(same.netmask)) | (~ipToInt(same.netmask) >>> 0))}`,
+        )
         ctx.facts.localIp = same.address
       }
     },
@@ -128,7 +143,9 @@ export const L0: TestCase[] = [
         const line = stdout.split(/\r?\n/).find((l) => /(perdit|loss|persi)/i.test(l))
         if (line) t.log(line.trim())
       } catch (err) {
-        t.warn(`ping failed (${(err as Error).message.split('\n')[0]}); some controllers do not answer ICMP: continue with the UDP tests`)
+        t.warn(
+          `ping failed (${(err as Error).message.split('\n')[0]}); some controllers do not answer ICMP: continue with the UDP tests`,
+        )
       }
     },
   },
@@ -140,7 +157,11 @@ export const L0: TestCase[] = [
       const { host, port } = parseEndpoint(ctx.opts.listen, 60001)
       // the test runner's listener is already listening: check that it is reachable on loopback
       const sock = dgram.createSocket('udp4')
-      await new Promise<void>((resolve, reject) => sock.send(Buffer.from('ping'), port, host === '0.0.0.0' ? '127.0.0.1' : host, (e) => (e ? reject(e) : resolve())))
+      await new Promise<void>((resolve, reject) =>
+        sock.send(Buffer.from('ping'), port, host === '0.0.0.0' ? '127.0.0.1' : host, (e) =>
+          e ? reject(e) : resolve(),
+        ),
+      )
       sock.close()
       t.log(`test listener listening on ${host}:${port}`)
     },
@@ -152,16 +173,26 @@ export const L0: TestCase[] = [
     async run(ctx: Context, t: TestHelpers) {
       const broadcasts = new Set([ctx.opts.broadcast])
       if (ctx.facts.localIp && ctx.opts.host) {
-        const ifc = Object.values(os.networkInterfaces()).flat().find((i) => i?.address === ctx.facts.localIp)
-        if (ifc) broadcasts.add(`${intToIp((ipToInt(ifc.address) & ipToInt(ifc.netmask)) | (~ipToInt(ifc.netmask) >>> 0))}:60000`)
+        const ifc = Object.values(os.networkInterfaces())
+          .flat()
+          .find((i) => i?.address === ctx.facts.localIp)
+        if (ifc)
+          broadcasts.add(
+            `${intToIp((ipToInt(ifc.address) & ipToInt(ifc.netmask)) | (~ipToInt(ifc.netmask) >>> 0))}:60000`,
+          )
       }
       let found = false
       for (const b of broadcasts) {
         const list = await ctx.client.discover(b)
-        t.log(`${b}: ${list.length ? list.map((c) => `${c.controller}@${c.address} ${c.version}`).join(', ') : 'no reply'}`)
+        t.log(
+          `${b}: ${list.length ? list.map((c) => `${c.controller}@${c.address} ${c.version}`).join(', ') : 'no reply'}`,
+        )
         if (list.some((c) => c.controller === ctx.opts.serial)) found = true
       }
-      if (!found) t.warn(`controller ${ctx.opts.serial} did not answer the broadcast (normal if it is on another subnet or behind a Docker bridge)`)
+      if (!found)
+        t.warn(
+          `controller ${ctx.opts.serial} did not answer the broadcast (normal if it is on another subnet or behind a Docker bridge)`,
+        )
     },
   },
   {
@@ -172,7 +203,9 @@ export const L0: TestCase[] = [
       const host = requireHost(ctx, t)
       const info = await ctx.client.getController({ id: ctx.opts.serial, host, port: ctx.opts.port, transport: 'udp' })
       t.assert(info.controller === ctx.opts.serial, `reply from unexpected serial number ${info.controller}`)
-      t.log(`IP ${info.address}/${info.netmask} gw ${info.gateway}, MAC ${info.mac}, firmware ${info.version} (${info.date})`)
+      t.log(
+        `IP ${info.address}/${info.netmask} gw ${info.gateway}, MAC ${info.mac}, firmware ${info.version} (${info.date})`,
+      )
       if (info.address !== host) t.warn(`the controller reports IP ${info.address} but answers on ${host} (NAT?)`)
       ctx.facts.firmware = info.version
     },
@@ -207,7 +240,16 @@ export const L0: TestCase[] = [
     name: 'Comparison with uhppoted-cli (optional)',
     async run(ctx: Context, t: TestHelpers) {
       if (!ctx.opts.cliPath) t.skip('uhppoted-cli path not given (--cli)')
-      const args = ['--bind', `${ctx.opts.bind}:0`, '--broadcast', ctx.opts.broadcast, '--timeout', '2.5s', 'get-device', String(ctx.opts.serial)]
+      const args = [
+        '--bind',
+        `${ctx.opts.bind}:0`,
+        '--broadcast',
+        ctx.opts.broadcast,
+        '--timeout',
+        '2.5s',
+        'get-device',
+        String(ctx.opts.serial),
+      ]
       const { stdout } = await exec(ctx.opts.cliPath, args, { timeout: 15_000 })
       t.log(`uhppoted-cli: ${stdout.trim()}`)
       const info = await ctx.client.getController(ctx.target)
@@ -257,9 +299,15 @@ export const L1: TestCase[] = [
     async run(ctx: Context, t: TestHelpers) {
       const s = await ctx.client.getStatus(ctx.target)
       t.data(s)
-      t.log(`doors: ${s.doorOpen.map((o, i) => `${i + 1}:${o ? 'open' : 'closed'}`).join(' ')}; buttons: ${s.buttonPressed.map((b) => (b ? 1 : 0)).join('')}; relays 0b${s.relays.toString(2).padStart(4, '0')}; inputs 0x${s.inputs.toString(16)}`)
+      t.log(
+        `doors: ${s.doorOpen.map((o, i) => `${i + 1}:${o ? 'open' : 'closed'}`).join(' ')}; buttons: ${s.buttonPressed.map((b) => (b ? 1 : 0)).join('')}; relays 0b${s.relays.toString(2).padStart(4, '0')}; inputs 0x${s.inputs.toString(16)}`,
+      )
       t.log(`system error ${s.systemError}, special info ${s.specialInfo}`)
-      t.log(s.event ? `last event #${s.event.index}: type ${s.event.type}, card ${s.event.card}, door ${s.event.door}, reason ${s.event.reason} (${s.event.timestamp})` : 'no events stored')
+      t.log(
+        s.event
+          ? `last event #${s.event.index}: type ${s.event.type}, card ${s.event.card}, door ${s.event.door}, reason ${s.event.reason} (${s.event.timestamp})`
+          : 'no events stored',
+      )
       ctx.facts.lastEvent = s.event?.index ?? 0
       if (s.systemError !== 0) t.warn(`system error ${s.systemError}`)
     },
@@ -332,7 +380,10 @@ export const L1: TestCase[] = [
         await ctx.client.getEvent(ctx.target, last + 1)
         t.warn(`event ${last + 1} (past the last one) is present: unexpected behaviour`)
       } catch (err) {
-        t.assert(err instanceof NotFoundError, `event past the last one: expected "not found", got ${(err as Error).message}`)
+        t.assert(
+          err instanceof NotFoundError,
+          `event past the last one: expected "not found", got ${(err as Error).message}`,
+        )
         t.log('index past the last one → not found (as expected)')
       }
     },
@@ -418,7 +469,13 @@ export const L2: TestCase[] = [
       await withTestCard(ctx, card, async () => {
         const read = await ctx.client.getCard(ctx.target, card.card)
         t.assert(read, 'card not found after inserting it')
-        t.assert(read.from === card.from && read.to === card.to && read.pin === 4321 && read.doors.join() === card.doors.join(), `different data: ${JSON.stringify(read)}`)
+        t.assert(
+          read.from === card.from &&
+            read.to === card.to &&
+            read.pin === 4321 &&
+            read.doors.join() === card.doors.join(),
+          `different data: ${JSON.stringify(read)}`,
+        )
         t.assert((await ctx.client.getCards(ctx.target)) === before + 1, 'card count not incremented')
         t.log('inserted and verified')
       })
@@ -438,7 +495,15 @@ export const L2: TestCase[] = [
         id: 254,
         from: today(),
         to: `${new Date().getFullYear() + 1}-12-31`,
-        weekdays: [true, false, true, false, true, false, true] as [boolean, boolean, boolean, boolean, boolean, boolean, boolean],
+        weekdays: [true, false, true, false, true, false, true] as [
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+        ],
         segments: [
           { start: '08:30', end: '12:00' },
           { start: '13:30', end: '17:45' },
@@ -448,7 +513,10 @@ export const L2: TestCase[] = [
       await ctx.client.setTimeProfile(ctx.target, profile)
       const read = await ctx.client.getTimeProfile(ctx.target, 254)
       if (existing) await ctx.client.setTimeProfile(ctx.target, existing)
-      t.assert(read && JSON.stringify(read) === JSON.stringify(profile), `profile read back is different: ${JSON.stringify(read)}`)
+      t.assert(
+        read && JSON.stringify(read) === JSON.stringify(profile),
+        `profile read back is different: ${JSON.stringify(read)}`,
+      )
       if (!existing) t.log('note: the protocol cannot delete a single profile; 254 stays defined')
     },
   },
@@ -488,14 +556,28 @@ export const L2: TestCase[] = [
 // L3 — Physical tests (interactive)
 // ===========================================================================
 
-async function expectSwipe(ctx: Context, t: TestHelpers, opts: { card: number | null; door: number; pin?: number; message: string }): Promise<ControllerStatus> {
+async function expectSwipe(
+  ctx: Context,
+  t: TestHelpers,
+  opts: { card: number | null; door: number; pin?: number; message: string },
+): Promise<ControllerStatus> {
   await attachListener(ctx, t)
   const since = ctx.events.length
-  const action = { kind: 'swipe' as const, card: opts.card, door: opts.door, ...(opts.pin !== undefined ? { pin: opts.pin } : {}) }
+  const action = {
+    kind: 'swipe' as const,
+    card: opts.card,
+    door: opts.door,
+    ...(opts.pin !== undefined ? { pin: opts.pin } : {}),
+  }
   await ctx.driver.perform(action, opts.message)
-  const ev = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && (opts.card === null || s.event.card === opts.card), 30_000)
+  const ev = await ctx.waitEvent(
+    (s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && (opts.card === null || s.event.card === opts.card),
+    30_000,
+  )
   t.assert(ev?.event, 'no swipe event received within 30 s')
-  t.log(`event #${ev.event.index}: card ${ev.event.card}, door ${ev.event.door}, ${ev.event.granted ? 'granted' : 'denied'}, reason ${ev.event.reason}`)
+  t.log(
+    `event #${ev.event.index}: card ${ev.event.card}, door ${ev.event.door}, ${ev.event.granted ? 'granted' : 'denied'}, reason ${ev.event.reason}`,
+  )
   return ev
 }
 
@@ -508,7 +590,10 @@ export const L3: TestCase[] = [
       physical: true,
       async run(ctx: Context, t: TestHelpers) {
         await ctx.client.openDoor(ctx.target, door)
-        const ok = await ctx.driver.confirm(`Did you hear/see the relay of door ${door} click?`, { kind: 'observe-relay', door })
+        const ok = await ctx.driver.confirm(`Did you hear/see the relay of door ${door} click?`, {
+          kind: 'observe-relay',
+          door,
+        })
         t.assert(ok, `relay of door ${door} not observed`)
       },
     }),
@@ -523,7 +608,11 @@ export const L3: TestCase[] = [
       const existing = await ctx.client.getCard(ctx.target, card)
       if (!existing) await ctx.client.putCard(ctx.target, testCard(ctx, card, [1, 0, 0, 0]))
       try {
-        const ev = await expectSwipe(ctx, t, { card, door: 1, message: `Swipe card ${card} on the door 1 reader (it must be GRANTED)` })
+        const ev = await expectSwipe(ctx, t, {
+          card,
+          door: 1,
+          message: `Swipe card ${card} on the door 1 reader (it must be GRANTED)`,
+        })
         t.assert(ev.event!.granted, `access denied (reason ${ev.event!.reason})`)
         t.assert(ev.event!.door === 1, `event on door ${ev.event!.door} instead of 1: check the reader wiring`)
         t.log(`direction ${ev.event!.direction === 1 ? 'in' : 'out'}`)
@@ -541,10 +630,17 @@ export const L3: TestCase[] = [
       const card = await userCard(ctx, t)
       const existing = await ctx.client.getCard(ctx.target, card)
       if (existing) t.skip('the test card is registered on the controller: use an unregistered card')
-      const ev = await expectSwipe(ctx, t, { card, door: 1, message: `Swipe card ${card} on the door 1 reader (NOT registered: it must be denied)` })
+      const ev = await expectSwipe(ctx, t, {
+        card,
+        door: 1,
+        message: `Swipe card ${card} on the door 1 reader (NOT registered: it must be denied)`,
+      })
       t.assert(!ev.event!.granted, 'access granted to an unregistered card!')
       // the firmware may use "no access rights" (6) or "access denied" (18); the uhppoted simulator uses 18
-      t.assert([Reason.NoAccessRights, Reason.AccessDenied].includes(ev.event!.reason as 6 | 18), `reason ${ev.event!.reason} (expected 6 or 18)`)
+      t.assert(
+        [Reason.NoAccessRights, Reason.AccessDenied].includes(ev.event!.reason as 6 | 18),
+        `reason ${ev.event!.reason} (expected 6 or 18)`,
+      )
       ctx.facts.unknownCardReason = ev.event!.reason
     },
   },
@@ -558,12 +654,31 @@ export const L3: TestCase[] = [
       if (await ctx.client.getCard(ctx.target, card)) t.skip('the test card is already registered on the controller')
       const existing = await ctx.client.getTimeProfile(ctx.target, 253)
       const day = (new Date().getDay() + 6) % 7
-      const weekdays = [true, true, true, true, true, true, true] as [boolean, boolean, boolean, boolean, boolean, boolean, boolean]
+      const weekdays = [true, true, true, true, true, true, true] as [
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+      ]
       weekdays[day] = false
-      await ctx.client.setTimeProfile(ctx.target, { id: 253, from: today(), to: `${new Date().getFullYear() + 1}-12-31`, weekdays, segments: [{ start: '00:00', end: '23:59' }], linkedTo: 0 })
+      await ctx.client.setTimeProfile(ctx.target, {
+        id: 253,
+        from: today(),
+        to: `${new Date().getFullYear() + 1}-12-31`,
+        weekdays,
+        segments: [{ start: '00:00', end: '23:59' }],
+        linkedTo: 0,
+      })
       await ctx.client.putCard(ctx.target, testCard(ctx, card, [253, 0, 0, 0]))
       try {
-        const ev = await expectSwipe(ctx, t, { card, door: 1, message: `Swipe card ${card} on door 1 (time profile not valid today: it must be denied)` })
+        const ev = await expectSwipe(ctx, t, {
+          card,
+          door: 1,
+          message: `Swipe card ${card} on door 1 (time profile not valid today: it must be denied)`,
+        })
         t.assert(!ev.event!.granted, 'access granted outside the time profile!')
         t.assert(ev.event!.reason === Reason.NotInAllowedTimePeriod, `reason ${ev.event!.reason} (expected 13)`)
       } finally {
@@ -580,13 +695,25 @@ export const L3: TestCase[] = [
     async run(ctx: Context, t: TestHelpers) {
       await ensureSpecialEvents(ctx)
       await attachListener(ctx, t)
-      if (!(await ctx.driver.confirm('Does door 1 have a door sensor (magnetic contact) connected?'))) t.skip('sensor not installed')
+      if (!(await ctx.driver.confirm('Does door 1 have a door sensor (magnetic contact) connected?')))
+        t.skip('sensor not installed')
       const since = ctx.events.length
-      await ctx.driver.perform({ kind: 'door-sensor', door: 1, open: true }, 'Physically open door 1 (without a card: with the button or the key)')
-      const opened = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && (s.event?.reason === Reason.DoorOpened || s.doorOpen[0] === true), 20_000)
+      await ctx.driver.perform(
+        { kind: 'door-sensor', door: 1, open: true },
+        'Physically open door 1 (without a card: with the button or the key)',
+      )
+      const opened = await ctx.waitEvent(
+        (s) => ctx.events.indexOf(s) >= since && (s.event?.reason === Reason.DoorOpened || s.doorOpen[0] === true),
+        20_000,
+      )
       t.assert(opened, 'door opening not detected')
       await ctx.driver.perform({ kind: 'door-sensor', door: 1, open: false }, 'Close door 1 again')
-      const closed = await ctx.waitEvent((s) => ctx.events.indexOf(s) > ctx.events.indexOf(opened) && (s.event?.reason === Reason.DoorClosed || s.doorOpen[0] === false), 20_000)
+      const closed = await ctx.waitEvent(
+        (s) =>
+          ctx.events.indexOf(s) > ctx.events.indexOf(opened) &&
+          (s.event?.reason === Reason.DoorClosed || s.doorOpen[0] === false),
+        20_000,
+      )
       t.assert(closed, 'door closing not detected')
     },
   },
@@ -601,7 +728,10 @@ export const L3: TestCase[] = [
       if (!(await ctx.driver.confirm('Does door 1 have an exit button connected?'))) t.skip('button not installed')
       const since = ctx.events.length
       await ctx.driver.perform({ kind: 'press-button', door: 1 }, 'Press the exit button of door 1')
-      const ev = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && s.event?.reason === Reason.PushButtonOk, 20_000)
+      const ev = await ctx.waitEvent(
+        (s) => ctx.events.indexOf(s) >= since && s.event?.reason === Reason.PushButtonOk,
+        20_000,
+      )
       t.assert(ev, 'button event (reason 20) not received')
     },
   },
@@ -618,7 +748,12 @@ export const L3: TestCase[] = [
       await ctx.client.putCard(ctx.target, testCard(ctx, card, [1, 0, 0, 0], 1234))
       // no immediate "card + PIN" task: the PIN mode depends on the reader configuration
       try {
-        const ev = await expectSwipe(ctx, t, { card, door: 1, pin: 1234, message: `Swipe card ${card} on door 1 and type the PIN 1234 followed by #` })
+        const ev = await expectSwipe(ctx, t, {
+          card,
+          door: 1,
+          pin: 1234,
+          message: `Swipe card ${card} on door 1 and type the PIN 1234 followed by #`,
+        })
         t.assert(ev.event!.granted, `access denied (reason ${ev.event!.reason})`)
       } finally {
         await ctx.client.deleteCard(ctx.target, card)
@@ -638,7 +773,12 @@ export const L4: TestCase[] = [
     level: 4,
     name: '100 consecutive requests',
     async run(ctx: Context, t: TestHelpers) {
-      const strict = new UhppoteClient({ bindAddress: ctx.opts.bind, broadcast: ctx.opts.broadcast, timeoutMs: ctx.opts.timeoutMs, retries: 0 })
+      const strict = new UhppoteClient({
+        bindAddress: ctx.opts.bind,
+        broadcast: ctx.opts.broadcast,
+        timeoutMs: ctx.opts.timeoutMs,
+        retries: 0,
+      })
       const times: number[] = []
       let timeouts = 0
       for (let i = 0; i < 100; i++) {
@@ -665,7 +805,8 @@ export const L4: TestCase[] = [
       if (!ctx.opts.bulk) t.skip('use --bulk 1000 to run this test')
       const base = ctx.opts.testCard - ctx.opts.bulk
       const numbers = Array.from({ length: ctx.opts.bulk }, (_, i) => base + i).filter(isValidWiegand26)
-      for (const n of numbers.slice(0, 5)) if (await ctx.client.getCard(ctx.target, n)) t.skip(`card ${n} already present: choose another --test-card`)
+      for (const n of numbers.slice(0, 5))
+        if (await ctx.client.getCard(ctx.target, n)) t.skip(`card ${n} already present: choose another --test-card`)
       const before = await ctx.client.getCards(ctx.target)
       let s = Date.now()
       for (const n of numbers) await ctx.client.putCard(ctx.target, testCard(ctx, n, [1, 0, 0, 0]))
@@ -677,7 +818,9 @@ export const L4: TestCase[] = [
       s = Date.now()
       for (const n of numbers) await ctx.client.deleteCard(ctx.target, n)
       const delMs = Date.now() - s
-      t.log(`${numbers.length} cards: insert ${putMs} ms (${(putMs / numbers.length).toFixed(1)} ms/card), full read ${listMs} ms, delete ${delMs} ms`)
+      t.log(
+        `${numbers.length} cards: insert ${putMs} ms (${(putMs / numbers.length).toFixed(1)} ms/card), full read ${listMs} ms, delete ${delMs} ms`,
+      )
       t.assert(after === before + numbers.length, `count ${after}, expected ${before + numbers.length}`)
       t.assert(listed.filter((c) => numbers.includes(c.card)).length === numbers.length, 'not all cards were read back')
       t.assert((await ctx.client.getCards(ctx.target)) === before, 'cleanup not complete')
@@ -699,7 +842,10 @@ export const L4: TestCase[] = [
         offline = err instanceof TimeoutError
       }
       t.assert(offline, 'the controller still answers: was the cable unplugged?')
-      await ctx.driver.perform({ kind: 'swipe-burst', card, door: 1, count: 3 }, `Swipe card ${card} on door 1 THREE times (even if denied)`)
+      await ctx.driver.perform(
+        { kind: 'swipe-burst', card, door: 1, count: 3 },
+        `Swipe card ${card} on door 1 THREE times (even if denied)`,
+      )
       await ctx.driver.perform({ kind: 'replug' }, 'Plug the controller network cable back in')
       let lastAfter = 0
       for (let i = 0; i < 30 && lastAfter === 0; i++) {
@@ -723,7 +869,10 @@ export const L4: TestCase[] = [
     physical: true,
     async run(ctx: Context, t: TestHelpers) {
       const lastBefore = await ctx.client.getLastEventIndex(ctx.target)
-      await ctx.driver.perform({ kind: 'power-cycle' }, 'Power the controller off and on again, then press Enter when the status LED blinks')
+      await ctx.driver.perform(
+        { kind: 'power-cycle' },
+        'Power the controller off and on again, then press Enter when the status LED blinks',
+      )
       let back = false
       for (let i = 0; i < 60 && !back; i++) {
         try {
@@ -739,7 +888,8 @@ export const L4: TestCase[] = [
       const last = await ctx.client.getLastEventIndex(ctx.target)
       t.assert(last >= lastBefore, `event index decreased (${lastBefore} → ${last}): events lost on restart?`)
       const events = []
-      for (let i = lastBefore + 1; i <= last; i++) events.push(await ctx.client.getEvent(ctx.target, i).catch(() => null))
+      for (let i = lastBefore + 1; i <= last; i++)
+        events.push(await ctx.client.getEvent(ctx.target, i).catch(() => null))
       const power = events.find((e) => e?.reason === Reason.ControllerPowerOn)
       if (!power) t.warn('power-on event (reason 28) not found')
       t.log('power-on event recorded')
@@ -757,14 +907,23 @@ export const L4: TestCase[] = [
       await attachListener(ctx, t)
       const lastBefore = await ctx.client.getLastEventIndex(ctx.target)
       const since = ctx.events.length
-      await ctx.driver.perform({ kind: 'swipe-burst', card, door: 1, count: 10 }, `Swipe card ${card} on door 1 TEN times, as fast as possible`)
+      await ctx.driver.perform(
+        { kind: 'swipe-burst', card, door: 1, count: 10 },
+        `Swipe card ${card} on door 1 TEN times, as fast as possible`,
+      )
       await sleep(2000)
       const lastAfter = await ctx.client.getLastEventIndex(ctx.target)
-      const pushed = new Set(ctx.events.slice(since).map((s) => s.event?.index).filter((i): i is number => !!i && i > lastBefore))
+      const pushed = new Set(
+        ctx.events
+          .slice(since)
+          .map((s) => s.event?.index)
+          .filter((i): i is number => !!i && i > lastBefore),
+      )
       const expected = lastAfter - lastBefore
       t.log(`events recorded ${expected}, received via push ${pushed.size}`)
       t.assert(expected >= 10, `only ${expected} events recorded`)
-      if (pushed.size < expected) t.warn(`${expected - pushed.size} events not received via push (the collector will recover them)`)
+      if (pushed.size < expected)
+        t.warn(`${expected - pushed.size} events not received via push (the collector will recover them)`)
     },
   },
 ]
@@ -781,9 +940,22 @@ const EXPANSION_OFF: ExpansionBoardConfig = {
 }
 
 /** Writes an expansion configuration with only `relay` active on output `n` (1-4). */
-async function expansionWith(ctx: Context, n: number, relay: Partial<ExpansionRelay>, extra: Partial<ExpansionBoardConfig> = {}): Promise<void> {
+async function expansionWith(
+  ctx: Context,
+  n: number,
+  relay: Partial<ExpansionRelay>,
+  extra: Partial<ExpansionBoardConfig> = {},
+): Promise<void> {
   const relays = structuredClone(EXPANSION_OFF.relays)
-  relays[n - 1] = { active: true, source: ExpansionSource.Door1, mode: ExpansionOutputMode.Timed, events: 0, signals: 0, duration: 5, ...relay }
+  relays[n - 1] = {
+    active: true,
+    source: ExpansionSource.Door1,
+    mode: ExpansionOutputMode.Timed,
+    events: 0,
+    signals: 0,
+    duration: 5,
+    ...relay,
+  }
   ctx.backup.expansionTouched = true
   await ctx.client.setExpansionBoard(ctx.target, { ...EXPANSION_OFF, ...extra, relays })
 }
@@ -796,13 +968,23 @@ function statusBits(s: ControllerStatus | null): string {
 
 async function requireBoard(ctx: Context, t: TestHelpers): Promise<void> {
   if (ctx.facts.expansionBoard === undefined) {
-    ctx.facts.expansionBoard = await ctx.driver.confirm('Is the UT0311-01A expansion board connected to the controller, with something on its relays (LED, buzzer, tester)?')
+    ctx.facts.expansionBoard = await ctx.driver.confirm(
+      'Is the UT0311-01A expansion board connected to the controller, with something on its relays (LED, buzzer, tester)?',
+    )
   }
   if (!ctx.facts.expansionBoard) t.skip('expansion board not connected')
 }
 
-async function waitReason(ctx: Context, since: number, reasons: number[], timeoutMs: number): Promise<ControllerStatus | null> {
-  return ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && s.event !== null && reasons.includes(s.event.reason), timeoutMs)
+async function waitReason(
+  ctx: Context,
+  since: number,
+  reasons: number[],
+  timeoutMs: number,
+): Promise<ControllerStatus | null> {
+  return ctx.waitEvent(
+    (s) => ctx.events.indexOf(s) >= since && s.event !== null && reasons.includes(s.event.reason),
+    timeoutMs,
+  )
 }
 
 export const L6: TestCase[] = [
@@ -829,7 +1011,9 @@ export const L6: TestCase[] = [
     async run(ctx: Context, t: TestHelpers) {
       const original = await ctx.client.getDoorControl(ctx.target, 1)
       const delay = original.delay >= 250 ? original.delay - 1 : original.delay + 1
-      t.log(`door 1: mode ${original.mode}, delay ${original.delay} s → writing ${delay} s in parameters 2-3 (tenths of a second)`)
+      t.log(
+        `door 1: mode ${original.mode}, delay ${original.delay} s → writing ${delay} s in parameters 2-3 (tenths of a second)`,
+      )
       try {
         const tenths = delay * 10
         await ctx.client.writeParameters(ctx.target, [
@@ -838,9 +1022,14 @@ export const L6: TestCase[] = [
         ])
         const after = await ctx.client.getDoorControl(ctx.target, 1)
         t.data({ original, written: delay, readBack: after })
-        t.assert(after.mode === original.mode, `door 1 mode changed (${original.mode} → ${after.mode}): wrong address mapping!`)
+        t.assert(
+          after.mode === original.mode,
+          `door 1 mode changed (${original.mode} → ${after.mode}): wrong address mapping!`,
+        )
         if (after.delay !== delay) {
-          t.warn(`0xF2 accepted but get-door-control still reports ${after.delay} s: the controller may apply the table only after 0x80 or a restart (the vendor software sends 0x80 after these bytes)`)
+          t.warn(
+            `0xF2 accepted but get-door-control still reports ${after.delay} s: the controller may apply the table only after 0x80 or a restart (the vendor software sends 0x80 after these bytes)`,
+          )
         }
         t.log('mapping confirmed: parameter index + 16 = address')
       } finally {
@@ -864,11 +1053,22 @@ export const L6: TestCase[] = [
       t.log(`all outputs inactive written in ${Date.now() - started} ms`)
       const doorsAfter = []
       for (let d = 1; d <= 4; d++) doorsAfter.push(await ctx.client.getDoorControl(ctx.target, d))
-      t.assert(JSON.stringify(doorsAfter) === JSON.stringify(doors), `door configuration changed: ${JSON.stringify(doors)} → ${JSON.stringify(doorsAfter)}`)
-      t.assert(JSON.stringify(await ctx.client.getListener(ctx.target)) === JSON.stringify(listener), 'listener changed')
+      t.assert(
+        JSON.stringify(doorsAfter) === JSON.stringify(doors),
+        `door configuration changed: ${JSON.stringify(doors)} → ${JSON.stringify(doorsAfter)}`,
+      )
+      t.assert(
+        JSON.stringify(await ctx.client.getListener(ctx.target)) === JSON.stringify(listener),
+        'listener changed',
+      )
       t.assert((await ctx.client.getAntiPassback(ctx.target)) === antipassback, 'anti-passback changed')
       const deviceAfter = await ctx.client.getController(ctx.target)
-      t.assert(deviceAfter.address === device.address && deviceAfter.netmask === device.netmask && deviceAfter.gateway === device.gateway, 'network configuration changed')
+      t.assert(
+        deviceAfter.address === device.address &&
+          deviceAfter.netmask === device.netmask &&
+          deviceAfter.gateway === device.gateway,
+        'network configuration changed',
+      )
       t.log(`status after the write: ${statusBits(await ctx.client.getStatus(ctx.target))}`)
     },
   },
@@ -879,16 +1079,23 @@ export const L6: TestCase[] = [
     physical: true,
     async run(ctx: Context, t: TestHelpers) {
       await requireBoard(ctx, t)
-      if (!(await ctx.driver.confirm('Does door 1 have a door sensor connected (needed to detect a forced opening)?'))) t.skip('no door sensor on door 1')
+      if (!(await ctx.driver.confirm('Does door 1 have a door sensor connected (needed to detect a forced opening)?')))
+        t.skip('no door sensor on door 1')
       await ensureSpecialEvents(ctx)
       await attachListener(ctx, t)
       await expansionWith(ctx, 1, { events: ExpansionEvent.ForcedOpen, duration: 5 })
       const since = ctx.events.length
-      await ctx.driver.perform({ kind: 'force-door', door: 1 }, 'Open door 1 WITHOUT card or exit button (with the key, or a door left unlatched)')
+      await ctx.driver.perform(
+        { kind: 'force-door', door: 1 },
+        'Open door 1 WITHOUT card or exit button (with the key, or a door left unlatched)',
+      )
       const ev = await waitReason(ctx, since, [Reason.ForcedOpen], 20_000)
       t.assert(ev, 'forced-open event (reason 38) not received')
       t.log(`event: reason ${ev.event!.reason}, ${statusBits(ev)}`)
-      const on = await ctx.driver.confirm('Did OUTPUT 1 of the expansion board switch on for about 5 seconds?', { kind: 'observe-relay', door: 1 })
+      const on = await ctx.driver.confirm('Did OUTPUT 1 of the expansion board switch on for about 5 seconds?', {
+        kind: 'observe-relay',
+        door: 1,
+      })
       await ctx.driver.perform({ kind: 'door-sensor', door: 1, open: false }, 'Close door 1 again')
       t.assert(on, 'output 1 did not switch on')
     },
@@ -903,16 +1110,28 @@ export const L6: TestCase[] = [
       if (!(await ctx.driver.confirm('Does door 1 have a door sensor connected?'))) t.skip('no door sensor on door 1')
       await ensureSpecialEvents(ctx)
       await attachListener(ctx, t)
-      await expansionWith(ctx, 2, { events: ExpansionEvent.OpenTooLong, mode: ExpansionOutputMode.UntilReset }, { doorOpenTooLong: 5 })
+      await expansionWith(
+        ctx,
+        2,
+        { events: ExpansionEvent.OpenTooLong, mode: ExpansionOutputMode.UntilReset },
+        { doorOpenTooLong: 5 },
+      )
       const since = ctx.events.length
-      await ctx.driver.perform({ kind: 'hold-door-open', door: 1, seconds: 10 }, 'Open door 1 normally (card or exit button) and KEEP IT OPEN for at least 10 seconds')
+      await ctx.driver.perform(
+        { kind: 'hold-door-open', door: 1, seconds: 10 },
+        'Open door 1 normally (card or exit button) and KEEP IT OPEN for at least 10 seconds',
+      )
       const ev = await waitReason(ctx, since, [Reason.DoorOpenTooLong], 30_000)
       t.assert(ev, 'open-too-long event (reason 37) not received within 30 s')
       t.log(`event: ${statusBits(ev)}`)
-      const on = await ctx.driver.confirm('Is OUTPUT 2 of the expansion board on now?', { kind: 'observe-relay', door: 2 })
+      const on = await ctx.driver.confirm('Is OUTPUT 2 of the expansion board on now?', {
+        kind: 'observe-relay',
+        door: 2,
+      })
       await ctx.driver.perform({ kind: 'door-sensor', door: 1, open: false }, 'Close door 1')
       t.assert(on, 'output 2 did not switch on')
-      if (!(await ctx.driver.confirm('Did OUTPUT 2 switch off after closing the door?'))) t.warn('output 2 stays on after the reset (mode "until reset" behaves differently)')
+      if (!(await ctx.driver.confirm('Did OUTPUT 2 switch off after closing the door?')))
+        t.warn('output 2 stays on after the reset (mode "until reset" behaves differently)')
     },
   },
   {
@@ -925,11 +1144,20 @@ export const L6: TestCase[] = [
       await attachListener(ctx, t)
       await expansionWith(ctx, 3, { events: ExpansionEvent.InvalidCard, duration: 3 })
       const since = ctx.events.length
-      await ctx.driver.perform({ kind: 'swipe', card: null, door: 1 }, 'Swipe on door 1 a card that is NOT registered on the controller')
-      const ev = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && !s.event.granted, 20_000)
+      await ctx.driver.perform(
+        { kind: 'swipe', card: null, door: 1 },
+        'Swipe on door 1 a card that is NOT registered on the controller',
+      )
+      const ev = await ctx.waitEvent(
+        (s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && !s.event.granted,
+        20_000,
+      )
       t.assert(ev, 'denied swipe not received')
       t.log(`card ${ev.event!.card}, reason ${ev.event!.reason}, ${statusBits(ev)}`)
-      const on = await ctx.driver.confirm('Did OUTPUT 3 of the expansion board switch on for about 3 seconds?', { kind: 'observe-relay', door: 3 })
+      const on = await ctx.driver.confirm('Did OUTPUT 3 of the expansion board switch on for about 3 seconds?', {
+        kind: 'observe-relay',
+        door: 3,
+      })
       t.assert(on, 'output 3 did not switch on')
     },
   },
@@ -943,17 +1171,36 @@ export const L6: TestCase[] = [
       await attachListener(ctx, t)
       await expansionWith(ctx, 4, { events: ExpansionEvent.Fire, duration: 5 })
       const since = ctx.events.length
-      await ctx.driver.perform({ kind: 'fire-input', active: true }, 'ACTIVATE the fire input of the expansion board (close the fire contact)')
+      await ctx.driver.perform(
+        { kind: 'fire-input', active: true },
+        'ACTIVATE the fire input of the expansion board (close the fire contact)',
+      )
       try {
-        const ev = await ctx.waitEvent((s) => ctx.events.indexOf(s) >= since && (s.fireAlarm || s.event?.reason === Reason.Fire), 20_000)
+        const ev = await ctx.waitEvent(
+          (s) => ctx.events.indexOf(s) >= since && (s.fireAlarm || s.event?.reason === Reason.Fire),
+          20_000,
+        )
         const status = ev ?? (await ctx.client.getStatus(ctx.target))
         t.log(`fire: ${statusBits(status)}`)
-        t.data({ status: { relays: status.relays, inputs: status.inputs, fireAlarm: status.fireAlarm, reason: status.event?.reason } })
+        t.data({
+          status: {
+            relays: status.relays,
+            inputs: status.inputs,
+            fireAlarm: status.fireAlarm,
+            reason: status.event?.reason,
+          },
+        })
         t.assert(ev, 'fire alarm not reported by the controller (status bit or event 39)')
-        const on = await ctx.driver.confirm('Did OUTPUT 4 of the expansion board switch on, and did the door locks release?', { kind: 'observe-relay', door: 4 })
+        const on = await ctx.driver.confirm(
+          'Did OUTPUT 4 of the expansion board switch on, and did the door locks release?',
+          { kind: 'observe-relay', door: 4 },
+        )
         t.assert(on, 'output 4 / door release not observed')
       } finally {
-        await ctx.driver.perform({ kind: 'fire-input', active: false }, 'DEACTIVATE the fire input of the expansion board (open the fire contact)')
+        await ctx.driver.perform(
+          { kind: 'fire-input', active: false },
+          'DEACTIVATE the fire input of the expansion board (open the fire contact)',
+        )
       }
       await sleep(2000)
       const after = await ctx.client.getStatus(ctx.target)
@@ -975,12 +1222,21 @@ export const L6: TestCase[] = [
       try {
         await expansionWith(ctx, 1, { events: ExpansionEvent.Threat, duration: 5 }, { duressCode: code })
         const since = ctx.events.length
-        await ctx.driver.perform({ kind: 'keypad-code', door: 1, code }, `On the door 1 keypad type the duress code ${code} followed by #`)
+        await ctx.driver.perform(
+          { kind: 'keypad-code', door: 1, code },
+          `On the door 1 keypad type the duress code ${code} followed by #`,
+        )
         await sleep(3000)
-        const events = ctx.events.slice(since).filter((s) => s.event).map((s) => ({ reason: s.event!.reason, granted: s.event!.granted, type: s.event!.type }))
+        const events = ctx.events
+          .slice(since)
+          .filter((s) => s.event)
+          .map((s) => ({ reason: s.event!.reason, granted: s.event!.granted, type: s.event!.type }))
         t.log(`events after the code: ${JSON.stringify(events)}`)
         t.data({ events })
-        const on = await ctx.driver.confirm('Did OUTPUT 1 of the expansion board switch on?', { kind: 'observe-relay', door: 1 })
+        const on = await ctx.driver.confirm('Did OUTPUT 1 of the expansion board switch on?', {
+          kind: 'observe-relay',
+          door: 1,
+        })
         t.assert(on, 'output 1 did not switch on with the duress code')
         t.log(`the duress code stays ${code} on the controller: change it from UHPPOTE Desk (Expansion board tab)`)
       } finally {
@@ -1002,7 +1258,9 @@ export async function restore(ctx: Context): Promise<string[]> {
   if (ctx.backup.expansionTouched) {
     try {
       await ctx.client.setExpansionBoard(ctx.target, EXPANSION_OFF)
-      log.push('expansion board: all outputs left inactive — save the Expansion board tab in UHPPOTE Desk (or run a full synchronisation) to restore your configuration')
+      log.push(
+        'expansion board: all outputs left inactive — save the Expansion board tab in UHPPOTE Desk (or run a full synchronisation) to restore your configuration',
+      )
     } catch (err) {
       log.push(`expansion board reset failed: ${(err as Error).message}`)
     }

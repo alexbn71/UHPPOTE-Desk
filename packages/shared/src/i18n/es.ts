@@ -103,13 +103,15 @@ export const es: Messages = {
     tooShort: 'La contraseña debe tener al menos 8 caracteres',
     updated: 'Contraseña actualizada',
     logout: 'Cerrar sesión',
-    managedInfo: "La contraseña de este usuario la define la variable de entorno ADMIN_PASSWORD del servidor: cámbiela allí y reinicie el servidor.",
+    managedInfo:
+      'La contraseña de este usuario la define la variable de entorno ADMIN_PASSWORD del servidor: cámbiela allí y reinicie el servidor.',
   },
   dashboard: {
     title: 'Panel',
     description: 'Estado de los controladores, actividad y últimos eventos',
     noControllersTitle: 'No hay controladores configurados',
-    noControllersAdmin: 'Añada el primer controlador desde la página Controladores (búsqueda automática en la red disponible).',
+    noControllersAdmin:
+      'Añada el primer controlador desde la página Controladores (búsqueda automática en la red disponible).',
     noControllersUser: 'Pida a un administrador que configure los controladores.',
     goToControllers: 'Controladores',
     fireAlarm: 'Alarma de incendio',
@@ -225,10 +227,12 @@ export const es: Messages = {
     addCardHint: 'Número de 8 dígitos: código de instalación (facility) × 100000 + código',
     cardAssigned: 'Tarjeta {{n}} asignada',
     readerTitle: 'Captura desde un lector',
-    readerHint: 'Pase la tarjeta por cualquier lector: las tarjetas no registradas leídas en los últimos 10 minutos aparecen aquí.',
+    readerHint:
+      'Pase la tarjeta por cualquier lector: las tarjetas no registradas leídas en los últimos 10 minutos aparecen aquí.',
     readerNone: 'No se ha leído recientemente ninguna tarjeta desconocida.',
     replaceTitle: 'Tarjeta perdida {{n}}',
-    replaceInfo: 'La tarjeta se desactivará y se quitará de los controladores; la nueva tarjeta recibirá los mismos permisos.',
+    replaceInfo:
+      'La tarjeta se desactivará y se quitará de los controladores; la nueva tarjeta recibirá los mismos permisos.',
     replaceNewNumber: 'Número de la nueva tarjeta',
     replaceConfirm: 'Sustituir',
     replaced: 'Tarjeta sustituida',
@@ -309,13 +313,15 @@ export const es: Messages = {
     broadcast: 'broadcast',
     none: 'No hay controladores. Use «Buscar en la red» para encontrarlos automáticamente.',
     discoveryTitle: 'Buscar controladores en la red',
-    discoveryInfo: 'La búsqueda envía un broadcast UDP al puerto 60000 y espera respuestas durante unos segundos. Solo funciona si el servidor está en el mismo segmento de red que los controladores.',
+    discoveryInfo:
+      'La búsqueda envía un broadcast UDP al puerto 60000 y espera respuestas durante unos segundos. Solo funciona si el servidor está en el mismo segmento de red que los controladores.',
     broadcastAddress: 'Dirección de broadcast (opcional)',
     startSearch: 'Iniciar búsqueda',
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Ya configurado',
-    noneFound: 'Sin resultados (inicie la búsqueda). Si el controlador no responde, compruebe el cable, la subred, el cortafuegos (UDP 60000) y, con Docker, la red «host».',
+    noneFound:
+      'Sin resultados (inicie la búsqueda). Si el controlador no responde, compruebe el cable, la subred, el cortafuegos (UDP 60000) y, con Docker, la red «host».',
     newTitle: 'Nuevo controlador',
     added: 'Controlador añadido',
     serial: 'Número de serie',
@@ -373,17 +379,21 @@ export const es: Messages = {
     appConfig: 'Configuración en la aplicación',
     updated: 'Controlador actualizado',
     removeTitle: 'Quitar controlador',
-    removeInfo: 'El controlador y su historial de eventos se eliminarán de la base de datos (el controlador en sí no se modifica).',
+    removeInfo:
+      'El controlador y su historial de eventos se eliminarán de la base de datos (el controlador en sí no se modifica).',
     ipTitle: 'Dirección IP del controlador',
     netmask: 'Máscara de red',
     sendIp: 'Enviar nueva IP al controlador',
     sendIpTitle: 'Cambiar la dirección IP del controlador',
-    sendIpConfirm: 'El controlador se reconfigurará con la IP {{address}}/{{netmask}}, puerta de enlace {{gateway}}. Si la dirección no es accesible desde este servidor, el controlador no podrá contactarse hasta que se vuelva a configurar (desde la misma red, por broadcast). ¿Continuar?',
+    sendIpConfirm:
+      'El controlador se reconfigurará con la IP {{address}}/{{netmask}}, puerta de enlace {{gateway}}. Si la dirección no es accesible desde este servidor, el controlador no podrá contactarse hasta que se vuelva a configurar (desde la misma red, por broadcast). ¿Continuar?',
     sendIpButton: 'Cambiar IP',
     ipVerified: 'IP establecida y verificada',
-    ipNotVerified: 'Orden enviada, pero el controlador no responde en la nueva IP: compruébelo con una búsqueda en la red',
+    ipNotVerified:
+      'Orden enviada, pero el controlador no responde en la nueva IP: compruébelo con una búsqueda en la red',
     listenerTitle: 'Destino de los eventos (receptor)',
-    listenerInfo: 'El controlador envía cada evento a una sola dirección. Normalmente se configura automáticamente (variable UHPPOTE_LISTENER_PUBLIC).',
+    listenerInfo:
+      'El controlador envía cada evento a una sola dirección. Normalmente se configura automáticamente (variable UHPPOTE_LISTENER_PUBLIC).',
     listenerAuto: 'Configurar automáticamente',
     listenerUpdated: 'Receptor actualizado',
     listenerAlreadyOk: 'El receptor ya es correcto',
@@ -411,21 +421,27 @@ export const es: Messages = {
     settingsSaved: 'Ajustes guardados y enviados al controlador',
     syncHistory: 'Historial de sincronizaciones',
     resetTitle: 'Restablecimiento de fábrica',
-    resetInfo: 'Borra la red, el receptor, las tarjetas y los eventos del controlador. Las tarjetas almacenadas se guardan antes y pueden volver a enviarse con una sincronización. Escriba el número de serie {{serial}} para confirmar.',
+    resetInfo:
+      'Borra la red, el receptor, las tarjetas y los eventos del controlador. Las tarjetas almacenadas se guardan antes y pueden volver a enviarse con una sincronización. Escriba el número de serie {{serial}} para confirmar.',
     resetPlaceholder: 'Número de serie',
     resetButton: 'Restablecer',
     resetDone: 'Parámetros restablecidos: {{n}} tarjetas guardadas en {{file}} (carpeta de copias del servidor)',
   },
   expansion: {
     title: 'Placa de expansión de alarmas (UT0311-01A)',
-    intro: 'Cuatro relés de alarma y una entrada de incendio conectados al controlador. La configuración se envía junto con los ajustes avanzados y en la sincronización completa.',
-    experimental: 'Experimental: el protocolo se reconstruyó a partir del software del fabricante y aún no se ha verificado en todos los firmware. El controlador no puede devolver esta configuración: UHPPOTE Desk guarda la copia que envía.',
+    intro:
+      'Cuatro relés de alarma y una entrada de incendio conectados al controlador. La configuración se envía junto con los ajustes avanzados y en la sincronización completa.',
+    experimental:
+      'Experimental: el protocolo se reconstruyó a partir del software del fabricante y aún no se ha verificado en todos los firmware. El controlador no puede devolver esta configuración: UHPPOTE Desk guarda la copia que envía.',
     installed: 'Placa de expansión conectada',
-    installedHint: 'La configuración se escribe en el controlador solo con esta opción activa. Antes de desconectar la placa, desactiva las salidas y guarda.',
+    installedHint:
+      'La configuración se escribe en el controlador solo con esta opción activa. Antes de desconectar la placa, desactiva las salidas y guarda.',
     doorOpenTooLong: 'Puerta abierta demasiado tiempo después de (s)',
-    doorOpenTooLongHint: 'Tiempo tras el cual una puerta abierta genera la alarma "abierta demasiado tiempo" (por defecto 25 s)',
+    doorOpenTooLongHint:
+      'Tiempo tras el cual una puerta abierta genera la alarma "abierta demasiado tiempo" (por defecto 25 s)',
     duressCode: 'Código de coacción',
-    duressCodeHint: 'Código tecleado en el teclado bajo amenaza: abre la puerta y genera la alarma "coacción". Vacío = sin cambios',
+    duressCodeHint:
+      'Código tecleado en el teclado bajo amenaza: abre la puerta y genera la alarma "coacción". Vacío = sin cambios',
     relayN: 'Salida {{n}}',
     active: 'Activa',
     source: 'Origen',
@@ -482,7 +498,8 @@ export const es: Messages = {
   },
   timeProfiles: {
     title: 'Franjas horarias',
-    description: 'Intervalos de tiempo (ID 2-254) en los que un permiso es válido. Una franja puede enlazar con otra para añadir días/horas.',
+    description:
+      'Intervalos de tiempo (ID 2-254) en los que un permiso es válido. Una franja puede enlazar con otra para añadir días/horas.',
     new: 'Nueva franja',
     colId: 'ID',
     colName: 'Nombre',
@@ -507,7 +524,8 @@ export const es: Messages = {
   },
   tasks: {
     title: 'Tareas programadas',
-    description: 'Acciones que el controlador ejecuta automáticamente a una hora (p. ej. puerta abierta de día, cerrada de noche)',
+    description:
+      'Acciones que el controlador ejecuta automáticamente a una hora (p. ej. puerta abierta de día, cerrada de noche)',
     new: 'Nueva tarea',
     colController: 'Controlador',
     colDoor: 'Puerta',
@@ -531,12 +549,14 @@ export const es: Messages = {
   },
   sync: {
     title: 'Sincronización',
-    description: 'La base de datos de la aplicación es la fuente de verdad: los cambios se envían de inmediato a los controladores en línea; aquí puede comprobarlos y realinearlos (p. ej. después de que un controlador haya estado sin conexión).',
+    description:
+      'La base de datos de la aplicación es la fuente de verdad: los cambios se envían de inmediato a los controladores en línea; aquí puede comprobarlos y realinearlos (p. ej. después de que un controlador haya estado sin conexión).',
     compare: 'Comparar',
     syncCards: 'Alinear tarjetas',
     syncAll: 'Sincronización completa',
     syncAllTitle: 'Sincronización completa de {{name}}',
-    syncAllInfo: 'Se volverán a enviar la configuración de puertas, las franjas horarias, las tareas, los ajustes avanzados y todas las tarjetas. Puede tardar unos minutos.',
+    syncAllInfo:
+      'Se volverán a enviar la configuración de puertas, las franjas horarias, las tareas, los ajustes avanzados y todas las tarjetas. Puede tardar unos minutos.',
     syncAllConfirm: 'Sincronizar',
     syncAllDone: '{{name}}: sincronización completa realizada',
     cardsDone: '{{name}}: {{added}} añadidas, {{updated}} actualizadas, {{deleted}} quitadas',
@@ -556,7 +576,8 @@ export const es: Messages = {
   },
   attendance: {
     title: 'Asistencia',
-    description: 'Horas trabajadas calculadas a partir de los pasos por los lectores de asistencia, con turnos, festivos y ausencias',
+    description:
+      'Horas trabajadas calculadas a partir de los pasos por los lectores de asistencia, con turnos, festivos y ausencias',
     tabReport: 'Informe',
     tabShifts: 'Turnos',
     tabHolidays: 'Festivos',
@@ -581,7 +602,8 @@ export const es: Messages = {
     colLateShort: 'Retraso',
     colPunches: 'Fichajes',
     lateMinutes: '{{n}} min',
-    footnote: '* fichaje introducido manualmente. Solo se cuentan los pasos permitidos en lectores marcados como «asistencia» (página Puertas).',
+    footnote:
+      '* fichaje introducido manualmente. Solo se cuentan los pasos permitidos en lectores marcados como «asistencia» (página Puertas).',
     shiftsHint: 'El turno se asigna en la ficha de la persona. Los turnos que terminan antes de empezar son nocturnos.',
     newShift: 'Nuevo turno',
     colShiftName: 'Nombre',
@@ -606,7 +628,8 @@ export const es: Messages = {
   },
   operators: {
     title: 'Operadores',
-    description: 'Usuarios de la aplicación. Administrador: todo; Operador: personas, permisos, apertura de puertas, sincronización; Solo lectura: consulta.',
+    description:
+      'Usuarios de la aplicación. Administrador: todo; Operador: personas, permisos, apertura de puertas, sincronización; Solo lectura: consulta.',
     new: 'Nuevo operador',
     tempPasswordTitle: 'Contraseña temporal',
     tempPassword: 'Usuario {{user}}: {{password}} — comuníquesela al interesado; deberá cambiarla en el primer acceso.',
@@ -635,7 +658,8 @@ export const es: Messages = {
   },
   webhooks: {
     title: 'Webhooks',
-    description: 'Peticiones HTTP enviadas a otros sistemas (n8n, Node-RED, Home Assistant, servicios propios) cuando ocurre algo',
+    description:
+      'Peticiones HTTP enviadas a otros sistemas (n8n, Node-RED, Home Assistant, servicios propios) cuando ocurre algo',
     new: 'Nuevo webhook',
     colName: 'Nombre',
     colUrl: 'URL',
@@ -651,13 +675,15 @@ export const es: Messages = {
     urlHint: 'Recibe una petición POST con cuerpo JSON',
     events: 'Eventos',
     doors: 'Solo estas puertas',
-    doorsHint: 'Vacío = todas las puertas. Los eventos del controlador se envían si el controlador tiene una de las puertas seleccionadas.',
+    doorsHint:
+      'Vacío = todas las puertas. Los eventos del controlador se envían si el controlador tiene una de las puertas seleccionadas.',
     headers: 'Cabeceras adicionales',
     headersHint: 'Una por línea, "Nombre: valor" (p. ej. Authorization: Bearer …)',
     headersInvalid: 'Línea de cabecera no válida: {{line}}',
     enabledSwitch: 'Activo',
     secret: 'Clave de firma',
-    secretHint: 'Cada petición lleva X-UHPPOTE-Signature: sha256=HMAC-SHA256(clave, timestamp + "." + cuerpo), con el timestamp en X-UHPPOTE-Timestamp.',
+    secretHint:
+      'Cada petición lleva X-UHPPOTE-Signature: sha256=HMAC-SHA256(clave, timestamp + "." + cuerpo), con el timestamp en X-UHPPOTE-Timestamp.',
     secretAfterSave: 'La clave de firma se genera al guardar el webhook.',
     copy: 'Copiar',
     copied: 'Copiado',
@@ -681,7 +707,8 @@ export const es: Messages = {
   },
   apiTokens: {
     title: 'Tokens de API',
-    description: 'Acceso para otros sistemas y scripts (n8n, Home Assistant, CasaAuto, servicios propios) mediante Authorization: Bearer',
+    description:
+      'Acceso para otros sistemas y scripts (n8n, Home Assistant, CasaAuto, servicios propios) mediante Authorization: Bearer',
     new: 'Nuevo token',
     colName: 'Nombre',
     colToken: 'Token',
@@ -700,7 +727,8 @@ export const es: Messages = {
     name: 'Nombre',
     nameHint: 'El sistema que lo usa, p. ej. CasaAuto o n8n',
     access: 'Nivel de acceso',
-    accessHint: 'Solo lectura: datos, eventos y estado en tiempo real. Lectura + apertura de puertas: también puede abrir las puertas permitidas. Operador y Administrador: como los roles de operador (salvo la gestión de operadores y tokens).',
+    accessHint:
+      'Solo lectura: datos, eventos y estado en tiempo real. Lectura + apertura de puertas: también puede abrir las puertas permitidas. Operador y Administrador: como los roles de operador (salvo la gestión de operadores y tokens).',
     zones: 'Limitar a zonas',
     zonesHint: 'Vacío = todos los controladores. Se aplica a la apertura de puertas y a la sincronización.',
     doors: 'Puertas que se pueden abrir',
@@ -709,7 +737,8 @@ export const es: Messages = {
     expiresHint: 'Último día válido; vacío = sin caducidad',
     activeSwitch: 'Activo',
     createdTitle: 'Copie el token ahora',
-    createdInfo: 'No se volverá a mostrar. Póngalo en la configuración del otro sistema; si lo pierde, cree un nuevo token y elimine este.',
+    createdInfo:
+      'No se volverá a mostrar. Póngalo en la configuración del otro sistema; si lo pierde, cree un nuevo token y elimine este.',
     copy: 'Copiar',
     copied: 'Copiado',
     usage: 'Ejemplo: curl -H "Authorization: Bearer <token>" {{url}}/api/doors',
@@ -735,11 +764,13 @@ export const es: Messages = {
     type: 'Canal',
     language: 'Idioma de los mensajes',
     events: 'Eventos',
-    eventsHint: 'Cada evento envía un mensaje: "Acceso concedido" puede suponer muchos mensajes, elíjalo solo para pocas puertas.',
+    eventsHint:
+      'Cada evento envía un mensaje: "Acceso concedido" puede suponer muchos mensajes, elíjalo solo para pocas puertas.',
     doors: 'Solo estas puertas',
     doorsHint: 'Vacío = todas las puertas.',
     dailyReport: 'Informe diario',
-    dailyReportHint: 'Quién ha entrado y las anomalías (accesos denegados, alarmas, controladores fuera de línea) de las últimas 24 horas.',
+    dailyReportHint:
+      'Quién ha entrado y las anomalías (accesos denegados, alarmas, controladores fuera de línea) de las últimas 24 horas.',
     reportHour: 'Enviar a las',
     enabledSwitch: 'Activo',
     test: 'Enviar prueba',
@@ -836,7 +867,8 @@ export const es: Messages = {
   },
   anomalies: {
     title: 'Anomalías',
-    description: 'Accesos a horas inusuales, intentos denegados repetidos y tarjetas sin uso desde hace meses, a partir del historial',
+    description:
+      'Accesos a horas inusuales, intentos denegados repetidos y tarjetas sin uso desde hace meses, a partir del historial',
     tabUnusual: 'Horas inusuales',
     tabDenied: 'Intentos denegados repetidos',
     tabInactive: 'Tarjetas inactivas',
@@ -861,7 +893,8 @@ export const es: Messages = {
     days: '{{n}} días',
     disableSelected: 'Desactivar seleccionadas ({{n}})',
     disableTitle: 'Desactivar {{n}} tarjetas',
-    disableInfo: 'Las tarjetas pasan a "desactivada" y se eliminan de los controladores. Pueden reactivarse desde Tarjetas.',
+    disableInfo:
+      'Las tarjetas pasan a "desactivada" y se eliminan de los controladores. Pueden reactivarse desde Tarjetas.',
     disabledOk: '{{n}} tarjetas desactivadas',
     none: 'Nada en este periodo',
     noneInactive: 'Ninguna tarjeta activa sin uso desde hace {{n}} días o más',
@@ -876,11 +909,13 @@ export const es: Messages = {
     deniedWindow: 'en (minutos)',
     inactiveDays: 'Tarjeta inactiva tras (días)',
     saved: 'Ajustes guardados',
-    notifyHint: 'Para recibir avisos en tiempo real, elija los eventos "Acceso a una hora inusual" e "Intentos denegados repetidos" en Notificaciones o Webhooks.',
+    notifyHint:
+      'Para recibir avisos en tiempo real, elija los eventos "Acceso a una hora inusual" e "Intentos denegados repetidos" en Notificaciones o Webhooks.',
   },
   rules: {
     title: 'Reglas',
-    description: 'Automatizaciones: cuando ocurre algo y se cumplen las condiciones, enviar notificaciones, llamar webhooks o abrir puertas',
+    description:
+      'Automatizaciones: cuando ocurre algo y se cumplen las condiciones, enviar notificaciones, llamar webhooks o abrir puertas',
     new: 'Nueva regla',
     colName: 'Nombre',
     colTrigger: 'Cuando',
@@ -894,7 +929,8 @@ export const es: Messages = {
     newTitle: 'Nueva regla',
     name: 'Nombre',
     severity: 'Gravedad',
-    severityHint: 'Define la prioridad de las notificaciones; las alarmas también aparecen en la aplicación hasta cerrarlas',
+    severityHint:
+      'Define la prioridad de las notificaciones; las alarmas también aparecen en la aplicación hasta cerrarlas',
     language: 'Idioma de los textos',
     sectionWhen: 'Cuando',
     trigger: 'Evento',
@@ -916,7 +952,8 @@ export const es: Messages = {
     webhooks: 'Llamar a los webhooks',
     openDoors: 'Abrir las puertas',
     message: 'Mensaje',
-    messageHint: 'Vacío = texto automático. Marcadores: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
+    messageHint:
+      'Vacío = texto automático. Marcadores: {person} {card} {door} {controller} {time} {date} {reason} {duration}',
     cooldown: 'Pausa tras activarse (segundos)',
     cooldownHint: '0 = activar siempre',
     enabledSwitch: 'Activa',
@@ -954,7 +991,8 @@ export const es: Messages = {
     offline: 'fuera de línea',
     noDoors: 'Ninguna puerta',
     bioSetupTitle: 'Huella / Face ID requeridos',
-    bioSetupText: 'El administrador exige huella o Face ID para abrir puertas desde la app. Actívelos en este teléfono.',
+    bioSetupText:
+      'El administrador exige huella o Face ID para abrir puertas desde la app. Actívelos en este teléfono.',
     bioOptionalTitle: 'Huella / Face ID',
     bioOptionalText: 'Con huella / Face ID este teléfono permanece conectado sin caducidad.',
     bioActivate: 'Activar huella / Face ID',
@@ -962,7 +1000,8 @@ export const es: Messages = {
     bioRemove: 'Desactivar',
     bioUnsupported: 'Este navegador no puede usar huella / Face ID (requiere HTTPS).',
     bioDone: 'Huella / Face ID activados',
-    notRemembered: 'Este navegador no es un dispositivo recordado: cierre sesión e inicie con "Recordar este dispositivo" para usar notificaciones push y huella / Face ID.',
+    notRemembered:
+      'Este navegador no es un dispositivo recordado: cierre sesión e inicie con "Recordar este dispositivo" para usar notificaciones push y huella / Face ID.',
     deviceTitle: 'Este dispositivo',
     deviceName: 'Nombre',
     since: 'Conectado desde',
@@ -970,9 +1009,11 @@ export const es: Messages = {
     neverExpires: 'nunca (huella / Face ID)',
     pushTitle: 'Notificaciones push',
     pushEnable: 'Notificaciones en este teléfono',
-    pushUnsupported: 'Notificaciones no disponibles aquí: en iPhone añada primero la app a la pantalla de inicio (iOS 16.4 o posterior); se requiere HTTPS.',
+    pushUnsupported:
+      'Notificaciones no disponibles aquí: en iPhone añada primero la app a la pantalla de inicio (iOS 16.4 o posterior); se requiere HTTPS.',
     pushDenied: 'Las notificaciones de este sitio están bloqueadas en los ajustes del navegador.',
-    pushDeniedApp: 'Las notificaciones están desactivadas para la app instalada: permítalas en los ajustes de Android (Aplicaciones → UHPPOTE Desk → Notificaciones) y vuelva a abrir la app.',
+    pushDeniedApp:
+      'Las notificaciones están desactivadas para la app instalada: permítalas en los ajustes de Android (Aplicaciones → UHPPOTE Desk → Notificaciones) y vuelva a abrir la app.',
     pushEvents: 'Eventos',
     pushDoors: 'Solo estas puertas',
     pushAllDoors: 'Todas las puertas',
@@ -992,7 +1033,8 @@ export const es: Messages = {
     description: 'Confirmación de apertura, duración de la sesión y dispositivos recordados de la app móvil (/m)',
     settings: 'Ajustes',
     confirmation: 'Confirmación de apertura de puertas',
-    confirmationHint: 'Se aplica a los dispositivos recordados (la app); las sesiones con contraseña en un puesto no cambian.',
+    confirmationHint:
+      'Se aplica a los dispositivos recordados (la app); las sesiones con contraseña en un puesto no cambian.',
     sessionDays: 'Duración de la sesión sin huella / Face ID',
     sessionDaysHint: 'Los dispositivos con huella / Face ID siguen conectados hasta que se revoquen.',
     days: '{{n}} días',
@@ -1012,7 +1054,8 @@ export const es: Messages = {
     revokeTitle: 'Revocar {{name}} ({{operator}})',
     revokeInfo: 'El dispositivo se desconecta de inmediato; se eliminan sus notificaciones push y su huella / Face ID.',
     noDevices: 'Ningún dispositivo recordado',
-    httpsHint: 'La app necesita HTTPS (proxy inverso) para instalarse y para notificaciones push y huella / Face ID. Configure PUBLIC_URL con la dirección pública.',
+    httpsHint:
+      'La app necesita HTTPS (proxy inverso) para instalarse y para notificaciones push y huella / Face ID. Configure PUBLIC_URL con la dirección pública.',
     link: 'Dirección de la app: {{url}}',
   },
   audit: {
@@ -1045,7 +1088,8 @@ export const es: Messages = {
     listenerPublic: 'Receptor programado',
     notSet: 'no establecido',
     timeout: 'Tiempo de espera',
-    listenerWarning: 'Establezca UHPPOTE_LISTENER_PUBLIC con la IP del servidor accesible desde los controladores (p. ej. 192.168.1.10:60001) para recibir los eventos en tiempo real.',
+    listenerWarning:
+      'Establezca UHPPOTE_LISTENER_PUBLIC con la IP del servidor accesible desde los controladores (p. ej. 192.168.1.10:60001) para recibir los eventos en tiempo real.',
     backups: 'Copia de seguridad de la base de datos',
     backupsInfo: 'Copia de seguridad diaria automática en la carpeta de datos del servidor (subcarpeta backups).',
     backupNow: 'Crear copia ahora',
@@ -1326,7 +1370,8 @@ export const es: Messages = {
     emptyFile: 'El archivo no contiene filas de datos',
     missingColumns: 'Faltan columnas obligatorias: código y apellidos',
     cardNumberImmutable: 'El número de una tarjeta no puede modificarse: use la sustitución',
-    invalidWiegand: 'Número de tarjeta no válido para Wiegand-26 (código de instalación/facility ≤ 255, número ≤ 65535)',
+    invalidWiegand:
+      'Número de tarjeta no válido para Wiegand-26 (código de instalación/facility ≤ 255, número ≤ 65535)',
     confirmSerial: 'Para confirmar, escriba el número de serie del controlador',
     dateOrder: 'La fecha de inicio debe ser anterior a la fecha de fin',
     invalidSegment: 'Intervalo no válido: {{start}}-{{end}}',
@@ -1340,7 +1385,8 @@ export const es: Messages = {
     inUse: 'No es posible completar la operación: el elemento está en uso',
     controllerError: 'Error del controlador: {{detail}}',
     internal: 'Error interno del servidor',
-    passwordManagedByEnv: "La contraseña de este usuario la define la variable ADMIN_PASSWORD y no puede cambiarse aquí",
+    passwordManagedByEnv:
+      'La contraseña de este usuario la define la variable ADMIN_PASSWORD y no puede cambiarse aquí',
     importEmptyCode: 'código de empleado vacío',
     importInvalidCard: 'tarjeta no válida: {{card}}',
     importCardTaken: 'tarjeta {{card}} ya asignada a {{person}}',

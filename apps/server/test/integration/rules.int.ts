@@ -38,7 +38,12 @@ let webhookId = 0
 const hits: { path: string; body: Record<string, any> }[] = []
 const live: WsMessage[] = []
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 function config(dir: string): AppConfig {
   return {
@@ -71,7 +76,12 @@ function config(dir: string): AppConfig {
 }
 
 async function api(method: string, url: string, body?: unknown): Promise<LightMyRequestResponse> {
-  return app.inject({ method: method as 'GET', url: `/api${url}`, headers: { cookie }, ...(body !== undefined ? { payload: body as object } : {}) })
+  return app.inject({
+    method: method as 'GET',
+    url: `/api${url}`,
+    headers: { cookie },
+    ...(body !== undefined ? { payload: body as object } : {}),
+  })
 }
 
 async function waitFor(cond: () => boolean, timeoutMs = 5000): Promise<void> {
@@ -121,9 +131,21 @@ beforeAll(async () => {
   await ctx.auth.ensureAdmin(PASSWORD)
   await ctx.eventService.startListener()
   app = await buildApp(ctx)
-  const login = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { username: 'admin', password: PASSWORD } })
+  const login = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { username: 'admin', password: PASSWORD },
+  })
   cookie = `uhd_session=${login.cookies.find((c) => c.name === 'uhd_session')!.value}`
-  controllerId = ctx.controllers.create({ serial: SERIAL, name: 'Villa', host: fake.endpoint.host, port: fake.endpoint.port, transport: 'udp', zoneId: null, enabled: true })
+  controllerId = ctx.controllers.create({
+    serial: SERIAL,
+    name: 'Villa',
+    host: fake.endpoint.host,
+    port: fake.endpoint.port,
+    transport: 'udp',
+    zoneId: null,
+    enabled: true,
+  })
   ctx.controllers.updateDoor(doorId(1), { ...ctx.controllers.door(doorId(1))!, name: 'Cancello' })
   await ctx.health.check(controllerId)
 
@@ -137,7 +159,14 @@ beforeAll(async () => {
     reportHour: 3,
     config: { type: 'gotify', serverUrl: `${base}/gotify`, appToken: 'x' },
   })
-  webhookId = ctx.webhooks.create({ name: 'Hook', url: `${base}/hook`, enabled: true, events: ['alarm'], doorIds: [], headers: {} })
+  webhookId = ctx.webhooks.create({
+    name: 'Hook',
+    url: `${base}/hook`,
+    enabled: true,
+    events: ['alarm'],
+    doorIds: [],
+    headers: {},
+  })
   ctx.hub.on('message', (m) => m.type === 'rule' && live.push(m))
   ctx.ruleEngine.start()
 })
@@ -162,10 +191,23 @@ beforeEach(async () => {
 
 describe('rule management', () => {
   it('creates, validates and lists rules', async () => {
-    const r = await createRule({ name: 'Night badge', trigger: { type: 'access.granted' }, conditions: { cards: [CARD], ...windowAroundNow() } })
-    expect(r).toMatchObject({ enabled: true, severity: 'warning', fireCount: 0, lastFiredAt: null, conditions: { cards: [CARD], personIds: [] } })
+    const r = await createRule({
+      name: 'Night badge',
+      trigger: { type: 'access.granted' },
+      conditions: { cards: [CARD], ...windowAroundNow() },
+    })
+    expect(r).toMatchObject({
+      enabled: true,
+      severity: 'warning',
+      fireCount: 0,
+      lastFiredAt: null,
+      conditions: { cards: [CARD], personIds: [] },
+    })
     expect((await api('POST', '/rules', { name: 'x', trigger: { type: 'nope' } })).statusCode).toBe(400)
-    expect((await api('POST', '/rules', { name: 'x', trigger: { type: 'alarm' }, conditions: { timeFrom: '22:00' } })).statusCode).toBe(400)
+    expect(
+      (await api('POST', '/rules', { name: 'x', trigger: { type: 'alarm' }, conditions: { timeFrom: '22:00' } }))
+        .statusCode,
+    ).toBe(400)
     expect((await api('GET', '/rules')).json()).toHaveLength(1)
     expect((await app.inject({ method: 'GET', url: '/api/rules' })).statusCode).toBe(401)
   })
@@ -185,7 +227,11 @@ describe('event rules', () => {
     await waitFor(() => gotify().length === 1 && hooks().length === 1)
     expect(gotify()[0]!.body).toMatchObject({ title: '⚠️ Badge X di notte', priority: 8 })
     expect(gotify()[0]!.body.message).toMatch(/^tessera sconosciuta 10058400 al Cancello alle \d\d:\d\d:\d\d$/)
-    expect(hooks()[0]!.body).toMatchObject({ type: 'rule.triggered', door: { number: 1 }, data: { ruleId: r.id, rule: 'Badge X di notte', trigger: 'access.denied', event: { card: CARD } } })
+    expect(hooks()[0]!.body).toMatchObject({
+      type: 'rule.triggered',
+      door: { number: 1 },
+      data: { ruleId: r.id, rule: 'Badge X di notte', trigger: 'access.denied', event: { card: CARD } },
+    })
     expect(runs(r.id)).toHaveLength(1)
     expect(runs(r.id)[0]).toMatchObject({ errors: [] })
     expect(live).toEqual([expect.objectContaining({ type: 'rule', ruleId: r.id, severity: 'warning' })])
@@ -195,8 +241,16 @@ describe('event rules', () => {
   })
 
   it('does not fire outside the time window or on other days', async () => {
-    const outside = await createRule({ name: 'Outside', trigger: { type: 'access.denied' }, conditions: windowAroundNow(6) })
-    const noDay = await createRule({ name: 'No day', trigger: { type: 'access.denied' }, conditions: { weekdays: [false, false, false, false, false, false, false] } })
+    const outside = await createRule({
+      name: 'Outside',
+      trigger: { type: 'access.denied' },
+      conditions: windowAroundNow(6),
+    })
+    const noDay = await createRule({
+      name: 'No day',
+      trigger: { type: 'access.denied' },
+      conditions: { weekdays: [false, false, false, false, false, false, false] },
+    })
     fake.swipe(CARD, 1)
     await sleep(300)
     expect(runs(outside.id)).toHaveLength(0)
@@ -213,10 +267,17 @@ describe('event rules', () => {
   })
 
   it('reports actions that cannot run', async () => {
-    const r = await createRule({ name: 'Broken', trigger: { type: 'access.denied' }, actions: { channelIds: [999], openDoorIds: [998] } })
+    const r = await createRule({
+      name: 'Broken',
+      trigger: { type: 'access.denied' },
+      actions: { channelIds: [999], openDoorIds: [998] },
+    })
     fake.swipe(CARD, 1)
     await waitFor(() => runs(r.id).length === 1)
-    expect(runs(r.id)[0]!.errors).toEqual(['Canale di notifica 999 mancante o disattivato', 'Porta 998 mancante o disattivata'])
+    expect(runs(r.id)[0]!.errors).toEqual([
+      'Canale di notifica 999 mancante o disattivato',
+      'Porta 998 mancante o disattivata',
+    ])
   })
 })
 
@@ -229,7 +290,14 @@ describe('door open too long', () => {
       severity: 'alarm',
       language: 'it',
       trigger: { type: 'door.open_for', seconds: 1 },
-      conditions: { doorIds: [doorId(door)], personIds: [], cards: [], timeFrom: null, timeTo: null, weekdays: [true, true, true, true, true, true, true] },
+      conditions: {
+        doorIds: [doorId(door)],
+        personIds: [],
+        cards: [],
+        timeFrom: null,
+        timeTo: null,
+        weekdays: [true, true, true, true, true, true, true],
+      },
       actions: { channelIds: [channelId], webhookIds: [], openDoorIds: [] },
       message: '',
       cooldownSeconds: 0,
@@ -239,7 +307,11 @@ describe('door open too long', () => {
     const id = openFor('Porta 2 aperta', 2)
     fake.setDoorSensor(2, true)
     await waitFor(() => gotify().length === 1, 4000)
-    expect(gotify()[0]!.body).toMatchObject({ title: '🚨 Porta 2 aperta', priority: 10, message: 'Villa - Door 2 aperta da 1 s' })
+    expect(gotify()[0]!.body).toMatchObject({
+      title: '🚨 Porta 2 aperta',
+      priority: 10,
+      message: 'Villa - Door 2 aperta da 1 s',
+    })
     expect(runs(id)).toHaveLength(1)
     fake.setDoorSensor(2, false)
   })
@@ -259,15 +331,26 @@ describe('door open too long', () => {
 
 describe('door opening action', () => {
   it('opens the door, is audited, and does not retrigger rules on that door', async () => {
-    const opener = await createRule({ name: 'Apri cancello', trigger: { type: 'access.denied' }, conditions: { cards: [CARD] }, actions: { openDoorIds: [doorId(4)] } })
-    const watcher = await createRule({ name: 'Porta 4 aperta da remoto', trigger: { type: 'door.event' }, conditions: { doorIds: [doorId(4)] } })
+    const opener = await createRule({
+      name: 'Apri cancello',
+      trigger: { type: 'access.denied' },
+      conditions: { cards: [CARD] },
+      actions: { openDoorIds: [doorId(4)] },
+    })
+    const watcher = await createRule({
+      name: 'Porta 4 aperta da remoto',
+      trigger: { type: 'door.event' },
+      conditions: { doorIds: [doorId(4)] },
+    })
     const before = opens()
     fake.swipe(CARD, 1)
     await waitFor(() => opens() === before + 1)
     await waitFor(() => runs(opener.id).length === 1)
     await sleep(500) // the remote-open event of door 4 arrives meanwhile
     expect(runs(watcher.id)).toHaveLength(0)
-    const audit = ctx.db.get<{ operator_name: string; details: string }>("SELECT operator_name, details FROM audit_log WHERE action = 'open-door' ORDER BY id DESC LIMIT 1")!
+    const audit = ctx.db.get<{ operator_name: string; details: string }>(
+      "SELECT operator_name, details FROM audit_log WHERE action = 'open-door' ORDER BY id DESC LIMIT 1",
+    )!
     expect(audit.operator_name).toBe('rule:Apri cancello')
     expect(JSON.parse(audit.details)).toMatchObject({ door: 4, source: 'rule', ruleId: opener.id })
   })

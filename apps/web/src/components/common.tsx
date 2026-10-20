@@ -7,7 +7,15 @@ import { ALARM_REASONS } from '@uhppote-desk/shared'
 import { useCodes } from '../lib/codes'
 import { fmtDateTime } from '../lib/format'
 
-export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+}: {
+  title: string
+  description?: ReactNode
+  actions?: ReactNode
+}) {
   return (
     <Group justify="space-between" align="flex-start" mb="md" wrap="wrap">
       <Stack gap={2}>
@@ -25,7 +33,15 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 const WEEK = [0, 1, 2, 3, 4, 5, 6]
 
-export function WeekdaysInput({ value, onChange, label }: { value: boolean[]; onChange: (v: boolean[]) => void; label?: string }) {
+export function WeekdaysInput({
+  value,
+  onChange,
+  label,
+}: {
+  value: boolean[]
+  onChange: (v: boolean[]) => void
+  label?: string
+}) {
   const codes = useCodes()
   return (
     <Stack gap={4}>
@@ -114,7 +130,16 @@ export function EventsTable({ events, showController = true }: { events: EventDt
         </Table.Thead>
         <Table.Tbody>
           {events.map((e) => (
-            <Table.Tr key={`${e.controllerId}-${e.id}`} className={ALARM_REASONS.has(e.reason) ? 'event-row-alarm' : !e.granted && e.type === 1 ? 'event-row-denied' : undefined}>
+            <Table.Tr
+              key={`${e.controllerId}-${e.id}`}
+              className={
+                ALARM_REASONS.has(e.reason)
+                  ? 'event-row-alarm'
+                  : !e.granted && e.type === 1
+                    ? 'event-row-denied'
+                    : undefined
+              }
+            >
               <Table.Td className="mono">{fmtDateTime(e.timestamp)}</Table.Td>
               {showController && <Table.Td>{e.controllerName}</Table.Td>}
               <Table.Td>
@@ -125,7 +150,14 @@ export function EventsTable({ events, showController = true }: { events: EventDt
               </Table.Td>
               <Table.Td>{codes.eventType(e.type)}</Table.Td>
               <Table.Td>
-                {e.personName ?? (e.card ? <Text span c="dimmed">{t('events.cardOnly', { n: e.card })}</Text> : '—')}
+                {e.personName ??
+                  (e.card ? (
+                    <Text span c="dimmed">
+                      {t('events.cardOnly', { n: e.card })}
+                    </Text>
+                  ) : (
+                    '—'
+                  ))}
               </Table.Td>
               <Table.Td>{e.type === 1 || e.reason === 44 ? <GrantedBadge granted={e.granted} /> : null}</Table.Td>
               <Table.Td>{codes.reason(e.reason)}</Table.Td>
@@ -137,10 +169,31 @@ export function EventsTable({ events, showController = true }: { events: EventDt
   )
 }
 
-export function IconButton({ label, onClick, children, color, disabled, loading }: { label: string; onClick: () => void; children: ReactNode; color?: string; disabled?: boolean; loading?: boolean }) {
+export function IconButton({
+  label,
+  onClick,
+  children,
+  color,
+  disabled,
+  loading,
+}: {
+  label: string
+  onClick: () => void
+  children: ReactNode
+  color?: string
+  disabled?: boolean
+  loading?: boolean
+}) {
   return (
     <Tooltip label={label}>
-      <ActionIcon variant="subtle" color={color} onClick={onClick} disabled={disabled} loading={loading} aria-label={label}>
+      <ActionIcon
+        variant="subtle"
+        color={color}
+        onClick={onClick}
+        disabled={disabled}
+        loading={loading}
+        aria-label={label}
+      >
         {children}
       </ActionIcon>
     </Tooltip>

@@ -31,7 +31,9 @@ test.describe.serial('mobile app', () => {
     admin = await adminSession()
     const controllers = (await (await admin.get('/api/controllers')).json()) as { serial: number }[]
     if (!controllers.some((c) => c.serial === 405419896)) {
-      await admin.post('/api/controllers', { data: { serial: 405419896, name: 'Entrance', host: '127.0.0.1', port: 60020 } })
+      await admin.post('/api/controllers', {
+        data: { serial: 405419896, name: 'Entrance', host: '127.0.0.1', port: 60020 },
+      })
     }
     await admin.put('/api/mobile/settings', { data: { openConfirmation: 'press', sessionDays: 90 } })
   })
@@ -77,7 +79,14 @@ test.describe.serial('mobile app', () => {
     const cdp = await context.newCDPSession(page)
     await cdp.send('WebAuthn.enable')
     await cdp.send('WebAuthn.addVirtualAuthenticator', {
-      options: { protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true },
+      options: {
+        protocol: 'ctap2',
+        transport: 'internal',
+        hasResidentKey: true,
+        hasUserVerification: true,
+        isUserVerified: true,
+        automaticPresenceSimulation: true,
+      },
     })
 
     await page.goto('/m')
@@ -97,7 +106,10 @@ test.describe.serial('mobile app', () => {
     await expect(page.getByText('Fingerprint / Face ID active on this phone')).toBeVisible()
     await expect(page.getByText('never (fingerprint / Face ID)')).toBeVisible()
 
-    const list = (await (await admin.get('/api/mobile/devices')).json()) as { biometric: boolean; expiresAt: string | null }[]
+    const list = (await (await admin.get('/api/mobile/devices')).json()) as {
+      biometric: boolean
+      expiresAt: string | null
+    }[]
     expect(list.some((d) => d.biometric && d.expiresAt === null)).toBe(true)
     expect(errors).toEqual([])
   })

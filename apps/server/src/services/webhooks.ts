@@ -33,7 +33,12 @@ export class WebhookService {
   constructor(
     private readonly repo: WebhookRepo,
     private readonly events: IntegrationEvents,
-    private readonly opts: { version: string; logger?: Logger | undefined; timeoutMs?: number; retryDelaysMs?: number[] },
+    private readonly opts: {
+      version: string
+      logger?: Logger | undefined
+      timeoutMs?: number
+      retryDelaysMs?: number[]
+    },
   ) {}
 
   start(): void {
@@ -98,7 +103,12 @@ export class WebhookService {
   /** Queues a `rule.triggered` request for one webhook (automation rules); false if it does not exist or is disabled. */
   sendRule(webhookId: number, payload: Omit<WebhookPayload, 'id' | 'type' | 'occurredAt'>): boolean {
     if (!this.repo.get(webhookId)?.enabled) return false
-    this.enqueue(webhookId, { id: randomUUID(), type: 'rule.triggered', occurredAt: new Date().toISOString(), ...payload })
+    this.enqueue(webhookId, {
+      id: randomUUID(),
+      type: 'rule.triggered',
+      occurredAt: new Date().toISOString(),
+      ...payload,
+    })
     return true
   }
 
@@ -123,7 +133,11 @@ export class WebhookService {
       .finally(() => queue.pending--)
   }
 
-  private async deliver(webhookId: number, payload: WebhookPayload, opts: { retries: boolean; evenIfDisabled?: boolean }): Promise<DeliveryResult | null> {
+  private async deliver(
+    webhookId: number,
+    payload: WebhookPayload,
+    opts: { retries: boolean; evenIfDisabled?: boolean },
+  ): Promise<DeliveryResult | null> {
     const body = JSON.stringify(payload)
     const delays = opts.retries ? (this.opts.retryDelaysMs ?? [2000, 10_000, 60_000]) : []
     let attempts = 0
@@ -139,13 +153,29 @@ export class WebhookService {
       if (this.stopped) break
     }
     if (!last) return null
-    const result: DeliveryResult = { webhookId, deliveryId: payload.id, event: payload.type, ...last, attempts, payload: body }
+    const result: DeliveryResult = {
+      webhookId,
+      deliveryId: payload.id,
+      event: payload.type,
+      ...last,
+      attempts,
+      payload: body,
+    }
     this.repo.addDelivery(result)
-    if (!last.ok) this.opts.logger?.warn?.(`webhook ${webhookId}: ${payload.type} not delivered after ${attempts} attempt(s): ${last.error}`)
+    if (!last.ok)
+      this.opts.logger?.warn?.(
+        `webhook ${webhookId}: ${payload.type} not delivered after ${attempts} attempt(s): ${last.error}`,
+      )
     return result
   }
 
-  private async send(url: string, secret: string, extra: Record<string, string>, payload: WebhookPayload, body: string): Promise<Attempt> {
+  private async send(
+    url: string,
+    secret: string,
+    extra: Record<string, string>,
+    payload: WebhookPayload,
+    body: string,
+  ): Promise<Attempt> {
     const timestamp = String(Math.floor(Date.now() / 1000))
     const headers = new Headers(extra)
     headers.set('Content-Type', 'application/json')
@@ -156,7 +186,13 @@ export class WebhookService {
     headers.set('X-UHPPOTE-Signature', `sha256=${sign(secret, timestamp, body)}`)
     const started = Date.now()
     try {
-      const res = await fetch(url, { method: 'POST', headers, body, redirect: 'manual', signal: AbortSignal.timeout(this.opts.timeoutMs ?? 10_000) })
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body,
+        redirect: 'manual',
+        signal: AbortSignal.timeout(this.opts.timeoutMs ?? 10_000),
+      })
       const text = await res.text().catch(() => '')
       const ok = res.status >= 200 && res.status < 300
       return {

@@ -24,7 +24,15 @@ function config(dir: string, adminPassword: string | null): AppConfig {
     adminPassword,
     adminPasswordFromLegacyVariable: false,
     webDir: null,
-    uhppote: { bindAddress: '127.0.0.1', broadcast: '127.0.0.1:1', listen: '127.0.0.1:0', listenerPublic: null, timeoutMs: 200, retries: 0, debug: false },
+    uhppote: {
+      bindAddress: '127.0.0.1',
+      broadcast: '127.0.0.1:1',
+      listen: '127.0.0.1:0',
+      listenerPublic: null,
+      timeoutMs: 200,
+      retries: 0,
+      debug: false,
+    },
     healthIntervalSec: 3600,
     collectIntervalSec: 3600,
     timeSyncThresholdSec: 30,
@@ -60,7 +68,11 @@ afterEach(async () => {
 async function login(app: FastifyInstance, password: string) {
   const r = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { username: 'admin', password } })
   const cookie = r.cookies.find((c) => c.name === 'uhd_session')
-  return { status: r.statusCode, user: r.statusCode === 200 ? r.json().user : null, cookie: cookie ? `uhd_session=${cookie.value}` : '' }
+  return {
+    status: r.statusCode,
+    user: r.statusCode === 200 ? r.json().user : null,
+    cookie: cookie ? `uhd_session=${cookie.value}` : '',
+  }
 }
 
 describe('ADMIN_PASSWORD set', () => {
@@ -72,7 +84,9 @@ describe('ADMIN_PASSWORD set', () => {
     expect(s.status).toBe(200)
     expect(s.user).toMatchObject({ username: 'admin', mustChangePassword: false, passwordManaged: true })
     // the protected routes work immediately (no forced password change)
-    expect((await app.inject({ method: 'GET', url: '/api/controllers', headers: { cookie: s.cookie } })).statusCode).toBe(200)
+    expect(
+      (await app.inject({ method: 'GET', url: '/api/controllers', headers: { cookie: s.cookie } })).statusCode,
+    ).toBe(200)
     // changing it from the app is refused with a translatable code
     const r = await app.inject({
       method: 'POST',
@@ -83,7 +97,15 @@ describe('ADMIN_PASSWORD set', () => {
     expect(r.statusCode).toBe(400)
     expect(r.json().code).toBe('passwordManagedByEnv')
     const adminId = s.user.id
-    expect((await app.inject({ method: 'POST', url: `/api/operators/${adminId}/reset-password`, headers: { cookie: s.cookie } })).json().code).toBe('passwordManagedByEnv')
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: `/api/operators/${adminId}/reset-password`,
+          headers: { cookie: s.cookie },
+        })
+      ).json().code,
+    ).toBe('passwordManagedByEnv')
   })
 
   it('is applied again at every start, also when the variable changes or the database already exists', async () => {
@@ -117,7 +139,9 @@ describe('ADMIN_PASSWORD not set', () => {
     expect(s.result.password).toMatch(/^\S{16}$/)
     const l = await login(s.app, s.result.password!)
     expect(l.user).toMatchObject({ mustChangePassword: true, passwordManaged: false })
-    expect((await s.app.inject({ method: 'GET', url: '/api/controllers', headers: { cookie: l.cookie } })).statusCode).toBe(403)
+    expect(
+      (await s.app.inject({ method: 'GET', url: '/api/controllers', headers: { cookie: l.cookie } })).statusCode,
+    ).toBe(403)
     const r = await s.app.inject({
       method: 'POST',
       url: '/api/auth/password',

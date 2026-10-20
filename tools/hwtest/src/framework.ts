@@ -99,7 +99,11 @@ export interface TestHelpers {
   assert(cond: unknown, message: string): asserts cond
 }
 
-export async function runTests(ctx: Context, tests: TestCase[], onResult?: (r: TestResult) => void): Promise<TestResult[]> {
+export async function runTests(
+  ctx: Context,
+  tests: TestCase[],
+  onResult?: (r: TestResult) => void,
+): Promise<TestResult[]> {
   const results: TestResult[] = []
   for (const tc of tests) {
     const details: string[] = []
@@ -128,7 +132,15 @@ export async function runTests(ctx: Context, tests: TestCase[], onResult?: (r: T
       else status = 'fail'
       details.push((err as Error).message)
     }
-    const r: TestResult = { id: tc.id, level: tc.level, name: tc.name, status, durationMs: Date.now() - started, details, ...(data !== undefined ? { data } : {}) }
+    const r: TestResult = {
+      id: tc.id,
+      level: tc.level,
+      name: tc.name,
+      status,
+      durationMs: Date.now() - started,
+      details,
+      ...(data !== undefined ? { data } : {}),
+    }
     results.push(r)
     onResult?.(r)
   }
@@ -141,7 +153,12 @@ export function summarize(results: TestResult[]): Record<Status, number> {
   return s
 }
 
-export function toMarkdown(results: TestResult[], opts: Options, facts: Record<string, unknown>, startedAt: Date): string {
+export function toMarkdown(
+  results: TestResult[],
+  opts: Options,
+  facts: Record<string, unknown>,
+  startedAt: Date,
+): string {
   const s = summarize(results)
   const icon: Record<Status, string> = { pass: '✅', fail: '❌', warn: '⚠️', skip: '⏭️' }
   const lines = [
@@ -156,7 +173,8 @@ export function toMarkdown(results: TestResult[], opts: Options, facts: Record<s
     '| ID | Level | Test | Result | Duration | Details |',
     '|---|---|---|---|---|---|',
     ...results.map(
-      (r) => `| ${r.id} | L${r.level} | ${r.name} | ${icon[r.status]} ${r.status} | ${r.durationMs} ms | ${r.details.join('<br>').replaceAll('|', '\\|')} |`,
+      (r) =>
+        `| ${r.id} | L${r.level} | ${r.name} | ${icon[r.status]} ${r.status} | ${r.durationMs} ms | ${r.details.join('<br>').replaceAll('|', '\\|')} |`,
     ),
     '',
   ]

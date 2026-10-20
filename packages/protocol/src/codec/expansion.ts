@@ -134,7 +134,8 @@ export interface ParameterWrite {
 export const INACTIVE_RELAY: ExpansionRelay = { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 }
 
 function intIn(v: number, min: number, max: number, field: string): void {
-  if (!Number.isInteger(v) || v < min || v > max) throw new CodecError(`${field}: value out of range (${min}-${max}): ${v}`)
+  if (!Number.isInteger(v) || v < min || v > max)
+    throw new CodecError(`${field}: value out of range (${min}-${max}): ${v}`)
 }
 
 export function validateExpansionRelay(r: ExpansionRelay, n: number): void {

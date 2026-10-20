@@ -54,9 +54,28 @@ export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
             <Title order={3}>{t('password.title')}</Title>
             {forced && <Alert color="blue">{t('password.forcedInfo')}</Alert>}
             {error && <Alert color="red">{error}</Alert>}
-            <PasswordInput label={t('password.current')} value={current} onChange={(e) => setCurrent(e.currentTarget.value)} required autoComplete="current-password" />
-            <PasswordInput label={t('password.new')} description={t('password.newHint')} value={next} onChange={(e) => setNext(e.currentTarget.value)} required autoComplete="new-password" />
-            <PasswordInput label={t('password.repeat')} value={confirm} onChange={(e) => setConfirm(e.currentTarget.value)} required autoComplete="new-password" />
+            <PasswordInput
+              label={t('password.current')}
+              value={current}
+              onChange={(e) => setCurrent(e.currentTarget.value)}
+              required
+              autoComplete="current-password"
+            />
+            <PasswordInput
+              label={t('password.new')}
+              description={t('password.newHint')}
+              value={next}
+              onChange={(e) => setNext(e.currentTarget.value)}
+              required
+              autoComplete="new-password"
+            />
+            <PasswordInput
+              label={t('password.repeat')}
+              value={confirm}
+              onChange={(e) => setConfirm(e.currentTarget.value)}
+              required
+              autoComplete="new-password"
+            />
             <Button type="submit" loading={busy}>
               {t('common.save')}
             </Button>

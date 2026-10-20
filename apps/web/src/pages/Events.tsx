@@ -30,7 +30,10 @@ export function EventsPage() {
   const filter = { from, to, controllerId, personId, granted, type, card: card || undefined }
   const query = useQuery({
     queryKey: ['events', filter, page],
-    queryFn: () => api.get<{ rows: EventDto[]; total: number }>(`/events${qs({ ...filter, limit: PAGE, offset: (page - 1) * PAGE })}`),
+    queryFn: () =>
+      api.get<{ rows: EventDto[]; total: number }>(
+        `/events${qs({ ...filter, limit: PAGE, offset: (page - 1) * PAGE })}`,
+      ),
     placeholderData: keepPreviousData,
   })
   const reset = () => setPage(1)
@@ -45,7 +48,11 @@ export function EventsPage() {
             <Button variant="default" leftSection={<IconRefresh size={16} />} onClick={() => void query.refetch()}>
               {t('common.refresh')}
             </Button>
-            <Button component="a" href={`/api/events/export.csv${downloadQs(filter)}`} leftSection={<IconDownload size={16} />}>
+            <Button
+              component="a"
+              href={`/api/events/export.csv${downloadQs(filter)}`}
+              leftSection={<IconDownload size={16} />}
+            >
               {t('common.exportCsv')}
             </Button>
           </>
@@ -53,22 +60,49 @@ export function EventsPage() {
       />
       <Card withBorder mb="md">
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-          <DateInput label={t('events.from')} value={from} onChange={(v) => { setFrom(v); reset() }} valueFormat={DATE_INPUT_FORMAT} clearable />
-          <DateInput label={t('events.to')} value={to} onChange={(v) => { setTo(v); reset() }} valueFormat={DATE_INPUT_FORMAT} clearable />
+          <DateInput
+            label={t('events.from')}
+            value={from}
+            onChange={(v) => {
+              setFrom(v)
+              reset()
+            }}
+            valueFormat={DATE_INPUT_FORMAT}
+            clearable
+          />
+          <DateInput
+            label={t('events.to')}
+            value={to}
+            onChange={(v) => {
+              setTo(v)
+              reset()
+            }}
+            valueFormat={DATE_INPUT_FORMAT}
+            clearable
+          />
           <Select
             label={t('common.controller')}
             clearable
             data={(controllers.data ?? []).map((c) => ({ value: String(c.id), label: c.name }))}
             value={controllerId}
-            onChange={(v) => { setControllerId(v); reset() }}
+            onChange={(v) => {
+              setControllerId(v)
+              reset()
+            }}
           />
           <Select
             label={t('common.person')}
             clearable
             searchable
-            data={(people.data ?? []).map((p) => ({ value: String(p.id), label: `${p.lastName} ${p.firstName} (${p.code})` }))}
+            data={(people.data ?? []).map((p) => ({
+              value: String(p.id),
+              label: `${p.lastName} ${p.firstName} (${p.code})`,
+            }))}
             value={personId}
-            onChange={(v) => { setPersonId(v); reset() }}
+            onChange={(v) => {
+              setPersonId(v)
+              reset()
+            }}
           />
           <Select
             label={t('events.outcome')}
@@ -78,16 +112,29 @@ export function EventsPage() {
               { value: 'false', label: t('events.denied') },
             ]}
             value={granted}
-            onChange={(v) => { setGranted(v); reset() }}
+            onChange={(v) => {
+              setGranted(v)
+              reset()
+            }}
           />
           <Select
             label={t('common.type')}
             clearable
             data={[1, 2, 3].map((n) => ({ value: String(n), label: codes.eventType(n) }))}
             value={type}
-            onChange={(v) => { setType(v); reset() }}
+            onChange={(v) => {
+              setType(v)
+              reset()
+            }}
           />
-          <TextInput label={t('events.cardNumber')} value={card} onChange={(e) => { setCard(e.currentTarget.value.replace(/\D/g, '')); reset() }} />
+          <TextInput
+            label={t('events.cardNumber')}
+            value={card}
+            onChange={(e) => {
+              setCard(e.currentTarget.value.replace(/\D/g, ''))
+              reset()
+            }}
+          />
         </SimpleGrid>
       </Card>
       <Card withBorder>

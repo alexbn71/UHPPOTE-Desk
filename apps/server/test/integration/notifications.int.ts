@@ -49,7 +49,12 @@ const mails: { from: string; to: string[]; raw: string }[] = []
 const updates: object[] = []
 let updateId = 1
 
-const quiet = { info: () => undefined, warn: () => undefined, error: (m: string) => console.error(m), debug: () => undefined }
+const quiet = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: (m: string) => console.error(m),
+  debug: () => undefined,
+}
 
 function config(dir: string): AppConfig {
   return {
@@ -82,7 +87,12 @@ function config(dir: string): AppConfig {
 }
 
 async function api(method: string, url: string, body?: unknown): Promise<LightMyRequestResponse> {
-  return app.inject({ method: method as 'GET', url: `/api${url}`, headers: { cookie }, ...(body !== undefined ? { payload: body as object } : {}) })
+  return app.inject({
+    method: method as 'GET',
+    url: `/api${url}`,
+    headers: { cookie },
+    ...(body !== undefined ? { payload: body as object } : {}),
+  })
 }
 
 async function waitFor(cond: () => boolean, timeoutMs = 5000): Promise<void> {
@@ -113,7 +123,15 @@ const telegram = (extra: Record<string, unknown> = {}) => ({
 })
 
 function pressButton(data: string, userId = ALLOWED_USER): void {
-  updates.push({ update_id: updateId++, callback_query: { id: `cb${updateId}`, from: { id: userId, username: 'mario' }, data, message: { chat: { id: Number(CHAT) } } } })
+  updates.push({
+    update_id: updateId++,
+    callback_query: {
+      id: `cb${updateId}`,
+      from: { id: userId, username: 'mario' },
+      data,
+      message: { chat: { id: Number(CHAT) } },
+    },
+  })
 }
 
 beforeAll(async () => {
@@ -128,13 +146,18 @@ beforeAll(async () => {
         // like Telegram: updates are lost only when they reach a client still listening
         const reply = () => {
           if (req.socket.destroyed) return
-          res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true, result: updates.splice(0) }))
+          res
+            .writeHead(200, { 'Content-Type': 'application/json' })
+            .end(JSON.stringify({ ok: true, result: updates.splice(0) }))
         }
         return void (updates.length ? reply() : setTimeout(reply, 100))
       }
       hits.push({ path: url, headers: req.headers, body })
       if (url.startsWith('/fail')) return void res.writeHead(500).end('broken')
-      if (url.startsWith('/bot')) return void res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true, result: {} }))
+      if (url.startsWith('/bot'))
+        return void res
+          .writeHead(200, { 'Content-Type': 'application/json' })
+          .end(JSON.stringify({ ok: true, result: {} }))
       res.writeHead(200).end('{}')
     })
   })
@@ -148,7 +171,11 @@ beforeAll(async () => {
       let raw = ''
       stream.on('data', (c: Buffer) => (raw += c.toString()))
       stream.on('end', () => {
-        mails.push({ from: session.envelope.mailFrom ? session.envelope.mailFrom.address : '', to: session.envelope.rcptTo.map((r) => r.address), raw })
+        mails.push({
+          from: session.envelope.mailFrom ? session.envelope.mailFrom.address : '',
+          to: session.envelope.rcptTo.map((r) => r.address),
+          raw,
+        })
         cb()
       })
     },
@@ -160,18 +187,35 @@ beforeAll(async () => {
   fake = new FakeController({ id: SERIAL })
   await fake.start()
   ctx = createContext(config(dataDir), quiet, ':memory:')
-  ctx.notificationService = new NotificationService(ctx.notifications, ctx.integrationEvents, { controllers: ctx.controllers, events: ctx.events, gateway: ctx.gateway, anomalies: ctx.anomalies }, {
-    telegramApi: base,
-    timeoutMs: 3000,
-    retryDelayMs: 50,
-    logger: quiet,
-  })
+  ctx.notificationService = new NotificationService(
+    ctx.notifications,
+    ctx.integrationEvents,
+    { controllers: ctx.controllers, events: ctx.events, gateway: ctx.gateway, anomalies: ctx.anomalies },
+    {
+      telegramApi: base,
+      timeoutMs: 3000,
+      retryDelayMs: 50,
+      logger: quiet,
+    },
+  )
   await ctx.auth.ensureAdmin(PASSWORD)
   await ctx.eventService.startListener()
   app = await buildApp(ctx)
-  const login = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { username: 'admin', password: PASSWORD } })
+  const login = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { username: 'admin', password: PASSWORD },
+  })
   cookie = `uhd_session=${login.cookies.find((c) => c.name === 'uhd_session')!.value}`
-  controllerId = ctx.controllers.create({ serial: SERIAL, name: 'Villa', host: fake.endpoint.host, port: fake.endpoint.port, transport: 'udp', zoneId: null, enabled: true })
+  controllerId = ctx.controllers.create({
+    serial: SERIAL,
+    name: 'Villa',
+    host: fake.endpoint.host,
+    port: fake.endpoint.port,
+    transport: 'udp',
+    zoneId: null,
+    enabled: true,
+  })
   ctx.controllers.updateDoor(doorId(1), { ...ctx.controllers.door(doorId(1))!, name: 'Cancello' })
   await ctx.health.check(controllerId)
   ctx.notificationService.start()
@@ -210,10 +254,13 @@ describe('channel management', () => {
   })
 
   it('validates the input', async () => {
-    const bad = (body: object) => api('POST', '/notifications', { name: 'x', language: 'it', ...body }).then((r) => r.statusCode)
+    const bad = (body: object) =>
+      api('POST', '/notifications', { name: 'x', language: 'it', ...body }).then((r) => r.statusCode)
     expect(await bad({ events: [], dailyReport: false, config: telegram() })).toBe(400)
     expect(await bad({ events: ['alarm'], config: telegram({ allowedUserIds: [] }) })).toBe(400)
-    expect(await bad({ events: ['alarm'], config: { type: 'email', host: 'smtp', from: 'a@b.c', to: ['not-an-email'] } })).toBe(400)
+    expect(
+      await bad({ events: ['alarm'], config: { type: 'email', host: 'smtp', from: 'a@b.c', to: ['not-an-email'] } }),
+    ).toBe(400)
     expect(await bad({ events: ['alarm'], config: { type: 'ntfy', topic: 'bad topic!' } })).toBe(400)
   })
 })
@@ -238,7 +285,9 @@ describe('Telegram', () => {
     expect(opens()).toBe(before + 1)
     expect(sent('answerCallbackQuery')[0]!.body.text).toBe('Cancello aperta')
     await waitFor(() => sent('sendMessage').some((h) => /aperta da @mario/.test(h.body.text)))
-    const audit = ctx.db.get<{ operator_name: string; details: string }>("SELECT operator_name, details FROM audit_log WHERE action = 'open-door' ORDER BY id DESC LIMIT 1")!
+    const audit = ctx.db.get<{ operator_name: string; details: string }>(
+      "SELECT operator_name, details FROM audit_log WHERE action = 'open-door' ORDER BY id DESC LIMIT 1",
+    )!
     expect(audit.operator_name).toBe('telegram:mario')
     expect(JSON.parse(audit.details)).toMatchObject({ source: 'telegram', telegramUserId: ALLOWED_USER })
   })
@@ -274,17 +323,30 @@ describe('Telegram', () => {
 
 describe('ntfy, Gotify and email', () => {
   it('ntfy: JSON publish with priority, tags and token', async () => {
-    await createChannel({ events: ['access.denied'], language: 'en', config: { type: 'ntfy', serverUrl: `${base}/ntfy`, topic: 'doors', token: 'tk_abc' } })
+    await createChannel({
+      events: ['access.denied'],
+      language: 'en',
+      config: { type: 'ntfy', serverUrl: `${base}/ntfy`, topic: 'doors', token: 'tk_abc' },
+    })
     fake.swipe(10058400, 2)
     await waitFor(() => hits.some((h) => h.path === '/ntfy'))
     const h = hits.find((x) => x.path === '/ntfy')!
     expect(h.headers.authorization).toBe('Bearer tk_abc')
-    expect(h.body).toMatchObject({ topic: 'doors', title: 'Access denied — Villa - Door 2', priority: 4, tags: ['no_entry'] })
+    expect(h.body).toMatchObject({
+      topic: 'doors',
+      title: 'Access denied — Villa - Door 2',
+      priority: 4,
+      tags: ['no_entry'],
+    })
     expect(h.body.message).toContain('unknown card 10058400')
   })
 
   it('Gotify: message with the application token', async () => {
-    const c = await createChannel({ events: ['alarm'], language: 'en', config: { type: 'gotify', serverUrl: `${base}/gotify`, appToken: 'AppTok' } })
+    const c = await createChannel({
+      events: ['alarm'],
+      language: 'en',
+      config: { type: 'gotify', serverUrl: `${base}/gotify`, appToken: 'AppTok' },
+    })
     expect((await api('POST', `/notifications/${c.id}/test`)).json()).toEqual({ ok: true, error: null })
     const h = hits.find((x) => x.path === '/gotify/message')!
     expect(h.headers['x-gotify-key']).toBe('AppTok')
@@ -294,7 +356,14 @@ describe('ntfy, Gotify and email', () => {
   it('email: SMTP delivery to every recipient', async () => {
     const c = await createChannel({
       events: ['alarm'],
-      config: { type: 'email', host: '127.0.0.1', port: smtpPort, secure: false, from: 'uhppote@example.com', to: ['a@example.com', 'b@example.com'] },
+      config: {
+        type: 'email',
+        host: '127.0.0.1',
+        port: smtpPort,
+        secure: false,
+        from: 'uhppote@example.com',
+        to: ['a@example.com', 'b@example.com'],
+      },
     })
     expect((await api('POST', `/notifications/${c.id}/test`)).json()).toEqual({ ok: true, error: null })
     expect(mails).toHaveLength(1)
@@ -304,7 +373,10 @@ describe('ntfy, Gotify and email', () => {
   })
 
   it('records failures and retries once', async () => {
-    const c = await createChannel({ events: ['access.denied'], config: { type: 'gotify', serverUrl: `${base}/fail`, appToken: 'x' } })
+    const c = await createChannel({
+      events: ['access.denied'],
+      config: { type: 'gotify', serverUrl: `${base}/fail`, appToken: 'x' },
+    })
     fake.swipe(10058400, 1)
     await waitFor(() => hits.filter((h) => h.path === '/fail/message').length === 2)
     await ctx.notificationService.idle()
@@ -315,21 +387,50 @@ describe('ntfy, Gotify and email', () => {
 
 describe('daily report', () => {
   it('lists who came in and the anomalies, once a day at the chosen hour', async () => {
-    const person = ctx.people.create({ code: 'R1', firstName: 'Mario', lastName: 'Rossi', departmentId: null, email: '', phone: '', notes: '', pin: 0, validFrom: '2026-01-01', validTo: '2030-12-31', active: true, shiftId: null })
+    const person = ctx.people.create({
+      code: 'R1',
+      firstName: 'Mario',
+      lastName: 'Rossi',
+      departmentId: null,
+      email: '',
+      phone: '',
+      notes: '',
+      pin: 0,
+      validFrom: '2026-01-01',
+      validTo: '2030-12-31',
+      active: true,
+      shiftId: null,
+    })
     ctx.people.createCard(10001234, person, 'active')
     const now = new Date()
     const at = (minAgo: number) => localDateTime(new Date(now.getTime() - minAgo * 60_000))
     const epoch = ctx.controllers.get(controllerId)!.eventEpoch
     let idx = 9000
     const add = (e: { type: number; granted: boolean; card: number; reason: number; ts: string; door?: number }) =>
-      ctx.events.insert({ controllerId, epoch, index: idx++, type: e.type, granted: e.granted, door: e.door ?? 1, direction: 1, card: e.card, timestamp: e.ts, reason: e.reason })
+      ctx.events.insert({
+        controllerId,
+        epoch,
+        index: idx++,
+        type: e.type,
+        granted: e.granted,
+        door: e.door ?? 1,
+        direction: 1,
+        card: e.card,
+        timestamp: e.ts,
+        reason: e.reason,
+      })
     add({ type: 1, granted: true, card: 10001234, reason: 1, ts: at(300) })
     add({ type: 1, granted: true, card: 10001234, reason: 1, ts: at(60) })
     add({ type: 1, granted: false, card: 10009999, reason: 6, ts: at(30) })
     add({ type: 3, granted: false, card: 0, reason: 41, ts: at(20) })
     add({ type: 1, granted: true, card: 10001234, reason: 1, ts: at(60 * 30) }) // older than 24 h: not in the report
 
-    const c = await createChannel({ events: [], dailyReport: true, reportHour: now.getHours(), config: telegram({ openButton: false, allowedUserIds: [] }) })
+    const c = await createChannel({
+      events: [],
+      dailyReport: true,
+      reportHour: now.getHours(),
+      config: telegram({ openButton: false, allowedUserIds: [] }),
+    })
     await ctx.notificationService.tickReports(now)
     await ctx.notificationService.tickReports(now) // same day: not sent again
     expect(sent('sendMessage')).toHaveLength(1)

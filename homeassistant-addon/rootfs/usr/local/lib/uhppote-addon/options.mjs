@@ -23,7 +23,8 @@ export function broadcastOf(cidr) {
 /** IPv4 address (CIDR) of the primary interface of the host, from the Supervisor's /network/info. */
 export function primaryIPv4(network) {
   const interfaces = network?.interfaces ?? []
-  const iface = interfaces.find((i) => i.primary && i.ipv4?.address?.length) ?? interfaces.find((i) => i.ipv4?.address?.length)
+  const iface =
+    interfaces.find((i) => i.primary && i.ipv4?.address?.length) ?? interfaces.find((i) => i.ipv4?.address?.length)
   return iface?.ipv4.address[0] ?? null
 }
 
@@ -42,7 +43,8 @@ export function buildEnv({ options = {}, mqtt = null, network = null, ports = nu
   const hostIp = cidr?.split('/')[0] ?? null
   const destination = String(options.event_destination ?? '').trim() || (hostIp ? `${hostIp}:${eventPort}` : '')
   if (destination) env.UHPPOTE_LISTENER_PUBLIC = destination
-  const broadcast = String(options.discovery_broadcast ?? '').trim() || (cidr && broadcastOf(cidr) ? `${broadcastOf(cidr)}:60000` : '')
+  const broadcast =
+    String(options.discovery_broadcast ?? '').trim() || (cidr && broadcastOf(cidr) ? `${broadcastOf(cidr)}:60000` : '')
   if (broadcast) env.UHPPOTE_BROADCAST = broadcast
 
   const password = String(options.admin_password ?? '')
@@ -78,7 +80,10 @@ async function supervisor(path) {
   const token = process.env.SUPERVISOR_TOKEN
   if (!token) return null
   try {
-    const r = await fetch(`http://supervisor${path}`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) })
+    const r = await fetch(`http://supervisor${path}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(5000),
+    })
     if (!r.ok) return null
     return (await r.json()).data ?? null
   } catch {
@@ -89,13 +94,21 @@ async function supervisor(path) {
 async function main() {
   const file = process.env.ADDON_OPTIONS ?? '/data/options.json'
   const options = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
-  const [mqtt, network, self] = await Promise.all([supervisor('/services/mqtt'), supervisor('/network/info'), supervisor('/addons/self/info')])
+  const [mqtt, network, self] = await Promise.all([
+    supervisor('/services/mqtt'),
+    supervisor('/network/info'),
+    supervisor('/addons/self/info'),
+  ])
   const env = buildEnv({ options, mqtt, network, ports: self?.network ?? null })
   const log = (m) => process.stderr.write(`add-on: ${m}\n`)
   log(`web interface on port ${env.HTTP_PORT}, events on ${env.UHPPOTE_LISTEN}`)
   log(`event destination for the controllers: ${env.UHPPOTE_LISTENER_PUBLIC ?? 'not set (events only by polling)'}`)
   log(`discovery broadcast: ${env.UHPPOTE_BROADCAST ?? 'default'}`)
-  log(env.MQTT_URL ? `Home Assistant integration: MQTT broker ${env.MQTT_URL}` : 'Home Assistant integration: off (no MQTT broker)')
+  log(
+    env.MQTT_URL
+      ? `Home Assistant integration: MQTT broker ${env.MQTT_URL}`
+      : 'Home Assistant integration: off (no MQTT broker)',
+  )
   process.stdout.write(toShell(env) + '\n')
 }
 

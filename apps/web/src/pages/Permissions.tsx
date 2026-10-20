@@ -1,4 +1,18 @@
-import { Badge, Button, Card, Checkbox, Group, MultiSelect, Select, Stack, Table, Text, TextInput, Title, Tooltip } from '@mantine/core'
+import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  MultiSelect,
+  Select,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+  Tooltip,
+} from '@mantine/core'
 import { IconSearch } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
@@ -25,9 +39,13 @@ export function PermissionsPage() {
 
   const map = useMemo(() => new Map((perms.data ?? []).map((p) => [`${p.personId}:${p.doorId}`, p])), [perms.data])
   const activeDoors = (doors.data ?? []).filter((d) => d.active)
-  const filtered = (people.data ?? []).filter((p) => `${p.lastName} ${p.firstName} ${p.code}`.toLowerCase().includes(search.toLowerCase()))
+  const filtered = (people.data ?? []).filter((p) =>
+    `${p.lastName} ${p.firstName} ${p.code}`.toLowerCase().includes(search.toLowerCase()),
+  )
   const profileName = (id: number | null) =>
-    id === null ? t('people.permAlways') : (profiles.data?.find((p) => p.id === id)?.name ?? t('permissions.profileN', { n: id }))
+    id === null
+      ? t('people.permAlways')
+      : (profiles.data?.find((p) => p.id === id)?.name ?? t('permissions.profileN', { n: id }))
 
   const apply = async (action: 'grant' | 'revoke') => {
     setBusy(true)
@@ -60,23 +78,44 @@ export function PermissionsPage() {
             <MultiSelect
               label={t('permissions.people')}
               searchable
-              data={(people.data ?? []).map((p) => ({ value: String(p.id), label: `${p.lastName} ${p.firstName} (${p.code})` }))}
+              data={(people.data ?? []).map((p) => ({
+                value: String(p.id),
+                label: `${p.lastName} ${p.firstName} (${p.code})`,
+              }))}
               value={selPeople}
               onChange={setSelPeople}
             />
-            <MultiSelect label={t('permissions.doors')} data={activeDoors.map((d) => ({ value: String(d.id), label: d.name }))} value={selDoors} onChange={setSelDoors} />
+            <MultiSelect
+              label={t('permissions.doors')}
+              data={activeDoors.map((d) => ({ value: String(d.id), label: d.name }))}
+              value={selDoors}
+              onChange={setSelDoors}
+            />
             <Group align="flex-end">
               <Select
                 label={t('permissions.profile')}
-                data={[{ value: 'always', label: t('people.permAlways') }, ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` }))]}
+                data={[
+                  { value: 'always', label: t('people.permAlways') },
+                  ...(profiles.data ?? []).map((p) => ({ value: String(p.id), label: `${p.id} · ${p.name}` })),
+                ]}
                 value={profile}
                 onChange={setProfile}
                 w={260}
               />
-              <Button disabled={!selPeople.length || !selDoors.length} loading={busy} onClick={() => void apply('grant')}>
+              <Button
+                disabled={!selPeople.length || !selDoors.length}
+                loading={busy}
+                onClick={() => void apply('grant')}
+              >
                 {t('permissions.grant')}
               </Button>
-              <Button color="red" variant="light" disabled={!selPeople.length || !selDoors.length} loading={busy} onClick={() => void apply('revoke')}>
+              <Button
+                color="red"
+                variant="light"
+                disabled={!selPeople.length || !selDoors.length}
+                loading={busy}
+                onClick={() => void apply('revoke')}
+              >
                 {t('permissions.revoke')}
               </Button>
             </Group>
@@ -84,7 +123,13 @@ export function PermissionsPage() {
         </Card>
       )}
       <Card withBorder>
-        <TextInput leftSection={<IconSearch size={16} />} placeholder={t('permissions.filterPlaceholder')} value={search} onChange={(e) => setSearch(e.currentTarget.value)} mb="md" />
+        <TextInput
+          leftSection={<IconSearch size={16} />}
+          placeholder={t('permissions.filterPlaceholder')}
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          mb="md"
+        />
         <Table.ScrollContainer minWidth={400}>
           <Table className="matrix-table" withColumnBorders>
             <Table.Thead>
@@ -107,7 +152,13 @@ export function PermissionsPage() {
                       size="xs"
                       label={`${p.lastName} ${p.firstName}`}
                       checked={selPeople.includes(String(p.id))}
-                      onChange={(e) => setSelPeople(e.currentTarget.checked ? [...selPeople, String(p.id)] : selPeople.filter((x) => x !== String(p.id)))}
+                      onChange={(e) =>
+                        setSelPeople(
+                          e.currentTarget.checked
+                            ? [...selPeople, String(p.id)]
+                            : selPeople.filter((x) => x !== String(p.id)),
+                        )
+                      }
                       disabled={!can('operator')}
                     />
                   </Table.Td>

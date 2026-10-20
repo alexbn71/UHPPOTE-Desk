@@ -37,7 +37,15 @@ import { ControllerFormFields, controllerBody, type ControllerForm } from './Con
 import { ExpansionBoardPanel } from './ExpansionBoard'
 
 interface Info {
-  device: { controller: number; address: string; netmask: string; gateway: string; mac: string; version: string; date: string | null }
+  device: {
+    controller: number
+    address: string
+    netmask: string
+    gateway: string
+    mac: string
+    version: string
+    date: string | null
+  }
   time: string | null
   status: {
     doorOpen: boolean[]
@@ -47,7 +55,14 @@ interface Info {
     fireAlarm: boolean
     systemError: number
     specialInfo: number
-    event: { index: number; card: number; door: number; granted: boolean; reason: number; timestamp: string | null } | null
+    event: {
+      index: number
+      card: number
+      door: number
+      granted: boolean
+      reason: number
+      timestamp: string | null
+    } | null
   }
   listener: { address: string; port: number; interval: number }
   cards: number
@@ -59,7 +74,11 @@ interface Info {
 function Diagnostics({ id }: { id: number }) {
   const { t } = useTranslation()
   const codes = useCodes()
-  const info = useQuery({ queryKey: ['controller-info', id], queryFn: () => api.get<Info>(`/controllers/${id}/info`), retry: false })
+  const info = useQuery({
+    queryKey: ['controller-info', id],
+    queryFn: () => api.get<Info>(`/controllers/${id}/info`),
+    retry: false,
+  })
   const { can } = useAuth()
   const [busy, setBusy] = useState<string | null>(null)
 
@@ -89,7 +108,12 @@ function Diagnostics({ id }: { id: number }) {
   return (
     <Stack>
       <Group>
-        <Button variant="default" leftSection={<IconRefresh size={16} />} loading={info.isFetching} onClick={() => void info.refetch()}>
+        <Button
+          variant="default"
+          leftSection={<IconRefresh size={16} />}
+          loading={info.isFetching}
+          onClick={() => void info.refetch()}
+        >
           {t('controllerDetail.reread')}
         </Button>
         {can('operator') && (
@@ -98,7 +122,12 @@ function Diagnostics({ id }: { id: number }) {
               variant="default"
               leftSection={<IconClock size={16} />}
               loading={busy === 'time'}
-              onClick={() => void action('time', async () => (await api.post(`/controllers/${id}/time-sync`), t('controllerDetail.timeSynced')))}
+              onClick={() =>
+                void action(
+                  'time',
+                  async () => (await api.post(`/controllers/${id}/time-sync`), t('controllerDetail.timeSynced')),
+                )
+              }
             >
               {t('controllerDetail.syncTime')}
             </Button>
@@ -134,13 +163,20 @@ function Diagnostics({ id }: { id: number }) {
                     [t('controllerDetail.ip'), `${d.device.address} / ${d.device.netmask}`],
                     [t('controllerDetail.gateway'), d.device.gateway],
                     [t('controllerDetail.mac'), d.device.mac],
-                    [t('controllerDetail.firmware'), t('controllerDetail.firmwareValue', { version: d.device.version, date: fmtDate(d.device.date) })],
+                    [
+                      t('controllerDetail.firmware'),
+                      t('controllerDetail.firmwareValue', { version: d.device.version, date: fmtDate(d.device.date) }),
+                    ],
                     [t('controllerDetail.controllerTime'), fmtDateTime(d.time)],
                     [t('controllerDetail.storedCards'), d.cards],
                     [
                       t('controllerDetail.lastEvent'),
                       d.status.event
-                        ? t('controllerDetail.lastEventValue', { index: d.status.event.index, reason: codes.reason(d.status.event.reason), time: fmtDateTime(d.status.event.timestamp) })
+                        ? t('controllerDetail.lastEventValue', {
+                            index: d.status.event.index,
+                            reason: codes.reason(d.status.event.reason),
+                            time: fmtDateTime(d.status.event.timestamp),
+                          })
                         : t('common.none'),
                     ],
                     [t('controllerDetail.bookmark'), d.eventIndex],
@@ -188,14 +224,17 @@ function Diagnostics({ id }: { id: number }) {
                           {d.status.doorOpen[i] ? t('dashboard.doorOpen') : t('dashboard.doorClosed')}
                         </Badge>
                       </Table.Td>
-                      <Table.Td>{d.status.relayUnlocked[i] ? t('controllerDetail.unlocked') : t('controllerDetail.locked')}</Table.Td>
+                      <Table.Td>
+                        {d.status.relayUnlocked[i] ? t('controllerDetail.unlocked') : t('controllerDetail.locked')}
+                      </Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
               </Table>
               {(d.status.fireAlarm || d.status.forceLock) && (
                 <Alert color="red" mt="sm">
-                  {d.status.fireAlarm && t('controllerDetail.fireAlarmActive')} {d.status.forceLock && t('controllerDetail.forcedLockActive')}
+                  {d.status.fireAlarm && t('controllerDetail.fireAlarmActive')}{' '}
+                  {d.status.forceLock && t('controllerDetail.forcedLockActive')}
                 </Alert>
               )}
             </Card>
@@ -210,7 +249,12 @@ function Network({ c }: { c: ControllerDto }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const navigate = useNavigate()
-  const [form, setForm] = useState<ControllerForm>({ ...c, serial: c.serial, host: c.host ?? '', zoneId: c.zoneId ? String(c.zoneId) : null })
+  const [form, setForm] = useState<ControllerForm>({
+    ...c,
+    serial: c.serial,
+    host: c.host ?? '',
+    zoneId: c.zoneId ? String(c.zoneId) : null,
+  })
   const [ip, setIp] = useState({ address: c.host ?? '', netmask: '255.255.255.0', gateway: '' })
   const [listener, setListener] = useState({ address: '', port: 60001, interval: 0 })
 
@@ -280,11 +324,28 @@ function Network({ c }: { c: ControllerDto }) {
           </Title>
           <Stack>
             <SimpleGrid cols={3}>
-              <TextInput label={t('controllerDetail.listenerIp')} value={ip.address} onChange={(e) => setIp({ ...ip, address: e.currentTarget.value })} />
-              <TextInput label={t('controllerDetail.netmask')} value={ip.netmask} onChange={(e) => setIp({ ...ip, netmask: e.currentTarget.value })} />
-              <TextInput label={t('controllerDetail.gateway')} value={ip.gateway} onChange={(e) => setIp({ ...ip, gateway: e.currentTarget.value })} />
+              <TextInput
+                label={t('controllerDetail.listenerIp')}
+                value={ip.address}
+                onChange={(e) => setIp({ ...ip, address: e.currentTarget.value })}
+              />
+              <TextInput
+                label={t('controllerDetail.netmask')}
+                value={ip.netmask}
+                onChange={(e) => setIp({ ...ip, netmask: e.currentTarget.value })}
+              />
+              <TextInput
+                label={t('controllerDetail.gateway')}
+                value={ip.gateway}
+                onChange={(e) => setIp({ ...ip, gateway: e.currentTarget.value })}
+              />
             </SimpleGrid>
-            <Button variant="light" color="orange" onClick={setIpAddress} disabled={!ip.address || !ip.netmask || !ip.gateway}>
+            <Button
+              variant="light"
+              color="orange"
+              onClick={setIpAddress}
+              disabled={!ip.address || !ip.netmask || !ip.gateway}
+            >
               {t('controllerDetail.sendIp')}
             </Button>
           </Stack>
@@ -302,7 +363,11 @@ function Network({ c }: { c: ControllerDto }) {
               onClick={() =>
                 api
                   .post<{ changed: boolean }>(`/controllers/${c.id}/listener`, null)
-                  .then((r) => notifyOk(r.changed ? t('controllerDetail.listenerUpdated') : t('controllerDetail.listenerAlreadyOk')))
+                  .then((r) =>
+                    notifyOk(
+                      r.changed ? t('controllerDetail.listenerUpdated') : t('controllerDetail.listenerAlreadyOk'),
+                    ),
+                  )
                   .catch(notifyError)
               }
             >
@@ -310,9 +375,24 @@ function Network({ c }: { c: ControllerDto }) {
             </Button>
           </Group>
           <SimpleGrid cols={3} mt="sm">
-            <TextInput label={t('controllerDetail.listenerIp')} value={listener.address} onChange={(e) => setListener({ ...listener, address: e.currentTarget.value })} />
-            <NumberInput label={t('controllerDetail.listenerPort')} value={listener.port} onChange={(v) => setListener({ ...listener, port: Number(v) })} hideControls />
-            <NumberInput label={t('controllerDetail.listenerInterval')} value={listener.interval} min={0} max={255} onChange={(v) => setListener({ ...listener, interval: Number(v) })} />
+            <TextInput
+              label={t('controllerDetail.listenerIp')}
+              value={listener.address}
+              onChange={(e) => setListener({ ...listener, address: e.currentTarget.value })}
+            />
+            <NumberInput
+              label={t('controllerDetail.listenerPort')}
+              value={listener.port}
+              onChange={(v) => setListener({ ...listener, port: Number(v) })}
+              hideControls
+            />
+            <NumberInput
+              label={t('controllerDetail.listenerInterval')}
+              value={listener.interval}
+              min={0}
+              max={255}
+              onChange={(v) => setListener({ ...listener, interval: Number(v) })}
+            />
           </SimpleGrid>
           <Button
             mt="sm"
@@ -337,7 +417,10 @@ function AdvancedSettings({ id }: { id: number }) {
   const { t } = useTranslation()
   const codes = useCodes()
   const { can } = useAuth()
-  const settings = useQuery({ queryKey: ['settings', id], queryFn: () => api.get<ControllerSettings>(`/controllers/${id}/settings`) })
+  const settings = useQuery({
+    queryKey: ['settings', id],
+    queryFn: () => api.get<ControllerSettings>(`/controllers/${id}/settings`),
+  })
   const [s, setS] = useState<ControllerSettings | null>(null)
   const [busy, setBusy] = useState(false)
   const readOnly = !can('admin')
@@ -360,7 +443,14 @@ function AdvancedSettings({ id }: { id: number }) {
     }
   }
 
-  const fcDefault = { enabled: true, start: '08:00', end: '18:00', activeMode: 0, inactiveMode: 3, weekdays: [true, true, true, true, true, false, false] }
+  const fcDefault = {
+    enabled: true,
+    start: '08:00',
+    end: '18:00',
+    activeMode: 0,
+    inactiveMode: 3,
+    weekdays: [true, true, true, true, true, false, false],
+  }
 
   return (
     <Stack>
@@ -386,8 +476,18 @@ function AdvancedSettings({ id }: { id: number }) {
               onChange={(v) => setS({ ...s, antipassback: Number(v) })}
               readOnly={readOnly}
             />
-            <Switch label={t('controllerDetail.specialEvents')} checked={s.recordSpecialEvents} onChange={(e) => setS({ ...s, recordSpecialEvents: e.currentTarget.checked })} disabled={readOnly} />
-            <Switch label={t('controllerDetail.pcControl')} checked={s.pcControl} onChange={(e) => setS({ ...s, pcControl: e.currentTarget.checked })} disabled={readOnly} />
+            <Switch
+              label={t('controllerDetail.specialEvents')}
+              checked={s.recordSpecialEvents}
+              onChange={(e) => setS({ ...s, recordSpecialEvents: e.currentTarget.checked })}
+              disabled={readOnly}
+            />
+            <Switch
+              label={t('controllerDetail.pcControl')}
+              checked={s.pcControl}
+              onChange={(e) => setS({ ...s, pcControl: e.currentTarget.checked })}
+              disabled={readOnly}
+            />
             <NumberInput
               label={t('controllerDetail.autosend')}
               min={0}
@@ -453,18 +553,39 @@ function AdvancedSettings({ id }: { id: number }) {
                   label={t('common.doorN', { n: i + 1 })}
                   checked={!!fc?.enabled}
                   disabled={readOnly}
-                  onChange={(e) => setFc(e.currentTarget.checked ? { ...fcDefault, ...(fc ?? {}), enabled: true } : fc ? { ...fc, enabled: false } : null)}
+                  onChange={(e) =>
+                    setFc(
+                      e.currentTarget.checked
+                        ? { ...fcDefault, ...(fc ?? {}), enabled: true }
+                        : fc
+                          ? { ...fc, enabled: false }
+                          : null,
+                    )
+                  }
                 />
                 {fc?.enabled && (
                   <Stack mt="xs" gap="xs">
                     <Group grow>
-                      <TextInput label={t('controllerDetail.fcFrom')} value={fc.start} onChange={(e) => setFc({ ...fc, start: e.currentTarget.value })} readOnly={readOnly} />
-                      <TextInput label={t('controllerDetail.fcTo')} value={fc.end} onChange={(e) => setFc({ ...fc, end: e.currentTarget.value })} readOnly={readOnly} />
+                      <TextInput
+                        label={t('controllerDetail.fcFrom')}
+                        value={fc.start}
+                        onChange={(e) => setFc({ ...fc, start: e.currentTarget.value })}
+                        readOnly={readOnly}
+                      />
+                      <TextInput
+                        label={t('controllerDetail.fcTo')}
+                        value={fc.end}
+                        onChange={(e) => setFc({ ...fc, end: e.currentTarget.value })}
+                        readOnly={readOnly}
+                      />
                     </Group>
                     <Group grow>
                       <Select
                         label={t('controllerDetail.fcActive')}
-                        data={FIRST_CARD_MODES.filter((m) => m !== 3).map((m) => ({ value: String(m), label: codes.firstCardMode(m) }))}
+                        data={FIRST_CARD_MODES.filter((m) => m !== 3).map((m) => ({
+                          value: String(m),
+                          label: codes.firstCardMode(m),
+                        }))}
                         value={String(fc.activeMode)}
                         onChange={(v) => setFc({ ...fc, activeMode: Number(v) })}
                         readOnly={readOnly}
@@ -500,7 +621,17 @@ function Maintenance({ c }: { c: ControllerDto }) {
   const [confirm, setConfirm] = useState('')
   const history = useQuery({
     queryKey: ['sync-history', c.id],
-    queryFn: () => api.get<{ id: number; kind: string; startedAt: string; status: string; summary: string | null; operator: string | null }[]>(`/controllers/${c.id}/sync/history`),
+    queryFn: () =>
+      api.get<
+        {
+          id: number
+          kind: string
+          startedAt: string
+          status: string
+          summary: string | null
+          operator: string | null
+        }[]
+      >(`/controllers/${c.id}/sync/history`),
   })
   return (
     <Stack>
@@ -515,7 +646,9 @@ function Maintenance({ c }: { c: ControllerDto }) {
                 <Table.Td>{fmtDateTime(h.startedAt)}</Table.Td>
                 <Table.Td>{h.operator ?? t('common.system')}</Table.Td>
                 <Table.Td>
-                  <Badge color={h.status === 'ok' ? 'green' : h.status === 'error' ? 'red' : 'blue'}>{codes.syncStatus(h.status)}</Badge>
+                  <Badge color={h.status === 'ok' ? 'green' : h.status === 'error' ? 'red' : 'blue'}>
+                    {codes.syncStatus(h.status)}
+                  </Badge>
                 </Table.Td>
                 <Table.Td>
                   <Code>{h.summary}</Code>
@@ -533,13 +666,19 @@ function Maintenance({ c }: { c: ControllerDto }) {
           {t('controllerDetail.resetInfo', { serial: c.serial })}
         </Text>
         <Group>
-          <TextInput value={confirm} onChange={(e) => setConfirm(e.currentTarget.value)} placeholder={t('controllerDetail.resetPlaceholder')} />
+          <TextInput
+            value={confirm}
+            onChange={(e) => setConfirm(e.currentTarget.value)}
+            placeholder={t('controllerDetail.resetPlaceholder')}
+          />
           <Button
             color="red"
             disabled={confirm !== String(c.serial)}
             onClick={() =>
               api
-                .post<{ cardsBackup: unknown[]; backupFile: string }>(`/controllers/${c.id}/restore-defaults`, { confirm })
+                .post<{ cardsBackup: unknown[]; backupFile: string }>(`/controllers/${c.id}/restore-defaults`, {
+                  confirm,
+                })
                 .then((r) => notifyOk(t('controllerDetail.resetDone', { n: r.cardsBackup.length, file: r.backupFile })))
                 .catch(notifyError)
             }
@@ -558,7 +697,10 @@ export function ControllerDetailPage() {
   const cid = Number(id)
   const { can } = useAuth()
   const live = useLive()
-  const controller = useQuery({ queryKey: ['controller', cid], queryFn: () => api.get<ControllerDto>(`/controllers/${cid}`) })
+  const controller = useQuery({
+    queryKey: ['controller', cid],
+    queryFn: () => api.get<ControllerDto>(`/controllers/${cid}`),
+  })
   const c = controller.data
   if (!c) return null
   const online = live.states[c.id]?.online ?? c.online
@@ -568,7 +710,8 @@ export function ControllerDetailPage() {
         title={c.name}
         description={
           <>
-            S/N {c.serial} · {c.host ?? t('controllers.broadcast')} · <ControllerStatusBadge enabled={c.enabled} online={online} />
+            S/N {c.serial} · {c.host ?? t('controllers.broadcast')} ·{' '}
+            <ControllerStatusBadge enabled={c.enabled} online={online} />
           </>
         }
       />

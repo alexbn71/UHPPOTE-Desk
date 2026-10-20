@@ -16,7 +16,10 @@ export class Db {
     try {
       this.raw = new DatabaseSync(file)
     } catch (err) {
-      throw new Error(`cannot open the database ${file}: ${(err as Error).message} (check that the folder is writable)`, { cause: err })
+      throw new Error(
+        `cannot open the database ${file}: ${(err as Error).message} (check that the folder is writable)`,
+        { cause: err },
+      )
     }
     this.raw.exec('PRAGMA journal_mode = WAL')
     this.raw.exec('PRAGMA foreign_keys = ON')
@@ -31,7 +34,10 @@ export class Db {
       if (applied.has(m.id)) continue
       this.tx(() => {
         this.raw.exec(m.sql)
-        this.run("INSERT INTO schema_migrations (id, name, applied_at) VALUES (?, ?, datetime('now','localtime'))", [m.id, m.name])
+        this.run("INSERT INTO schema_migrations (id, name, applied_at) VALUES (?, ?, datetime('now','localtime'))", [
+          m.id,
+          m.name,
+        ])
       })
       done.push(m.id)
     }

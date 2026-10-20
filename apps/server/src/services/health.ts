@@ -47,7 +47,12 @@ export class HealthService {
     if (this.busy) return
     this.busy = true
     try {
-      await Promise.all(this.controllers.list().filter((c) => c.enabled).map((c) => this.check(c.id)))
+      await Promise.all(
+        this.controllers
+          .list()
+          .filter((c) => c.enabled)
+          .map((c) => this.check(c.id)),
+      )
     } finally {
       this.busy = false
     }
@@ -57,7 +62,9 @@ export class HealthService {
     const hub = this.gateway.hub
     const wasOnline = hub.state(controllerId).online
     try {
-      const status = await this.gateway.run(null, controllerId, 'health', null, (client, t) => client.getStatus(t), { audit: false })
+      const status = await this.gateway.run(null, controllerId, 'health', null, (client, t) => client.getStatus(t), {
+        audit: false,
+      })
       this.events.onStatus(status)
       if (!wasOnline) await this.onBackOnline(controllerId)
       await this.checkTime(controllerId)
@@ -70,11 +77,18 @@ export class HealthService {
   private async onBackOnline(controllerId: number): Promise<void> {
     const c = this.controllers.get(controllerId)!
     this.opts.logger?.info?.(`controller ${c.serial} online`)
-    await this.gateway.run(null, controllerId, 'health', null, async (client, t) => {
-      const info = await client.getController(t)
-      this.controllers.markSeen(c.id, localDateTime(), info.version)
-      await this.ensureListener(controllerId)
-    }, { audit: false })
+    await this.gateway.run(
+      null,
+      controllerId,
+      'health',
+      null,
+      async (client, t) => {
+        const info = await client.getController(t)
+        this.controllers.markSeen(c.id, localDateTime(), info.version)
+        await this.ensureListener(controllerId)
+      },
+      { audit: false },
+    )
     this.lastTimeCheck.delete(controllerId)
     await this.events.collect(controllerId)
     await this.opts.afterBackOnline?.(controllerId)
@@ -106,7 +120,9 @@ export class HealthService {
   }
 
   async measureDrift(controllerId: number): Promise<number | null> {
-    const time = await this.gateway.run(null, controllerId, 'get-time', null, (client, t) => client.getTime(t), { audit: false })
+    const time = await this.gateway.run(null, controllerId, 'get-time', null, (client, t) => client.getTime(t), {
+      audit: false,
+    })
     const drift = time ? Math.round((parseLocal(time).getTime() - Date.now()) / 1000) : null
     this.gateway.hub.patch(controllerId, { controllerTime: time, driftSeconds: drift })
     return drift
@@ -114,7 +130,9 @@ export class HealthService {
 
   async syncTime(controllerId: number, actor: Actor): Promise<string | null> {
     const now = localDateTime()
-    const result = await this.gateway.run(actor, controllerId, 'set-time', { time: now }, (client, t) => client.setTime(t, now))
+    const result = await this.gateway.run(actor, controllerId, 'set-time', { time: now }, (client, t) =>
+      client.setTime(t, now),
+    )
     this.gateway.hub.patch(controllerId, { controllerTime: result, driftSeconds: 0 })
     return result
   }

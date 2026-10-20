@@ -178,7 +178,10 @@ export class RuleEngine {
   async fire(rule: RuleDto, ctx: RuleContext): Promise<void> {
     const now = Date.now()
     // the stored last firing keeps the cooldown across restarts
-    const last = Math.max(this.lastFired.get(rule.id) ?? 0, rule.lastFiredAt ? parseLocal(rule.lastFiredAt).getTime() : 0)
+    const last = Math.max(
+      this.lastFired.get(rule.id) ?? 0,
+      rule.lastFiredAt ? parseLocal(rule.lastFiredAt).getTime() : 0,
+    )
     if (rule.cooldownSeconds > 0 && now - last < rule.cooldownSeconds * 1000) return
     this.lastFired.set(rule.id, now)
 

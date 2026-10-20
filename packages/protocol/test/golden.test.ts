@@ -113,18 +113,33 @@ const specs: Record<string, Spec> = {
   },
   'set listener': {
     encode: (g) =>
-      encode.setListener(g.num('controller'), { address: g.str('address'), port: g.num('port'), interval: g.num('interval') }),
+      encode.setListener(g.num('controller'), {
+        address: g.str('address'),
+        port: g.num('port'),
+        interval: g.num('interval'),
+      }),
     decode: (b, g) => expect(decode.setListener(b)).toEqual({ controller: ID, ok: g.bool('ok') }),
   },
   'get door': {
     encode: (g) => encode.getDoorControl(g.num('controller'), g.num('door')),
     decode: (b, g) =>
-      expect(decode.getDoorControl(b)).toEqual({ controller: ID, door: g.num('door'), mode: g.num('mode'), delay: g.num('delay') }),
+      expect(decode.getDoorControl(b)).toEqual({
+        controller: ID,
+        door: g.num('door'),
+        mode: g.num('mode'),
+        delay: g.num('delay'),
+      }),
   },
   'set door': {
-    encode: (g) => encode.setDoorControl(g.num('controller'), { door: g.num('door'), mode: g.num('mode'), delay: g.num('delay') }),
+    encode: (g) =>
+      encode.setDoorControl(g.num('controller'), { door: g.num('door'), mode: g.num('mode'), delay: g.num('delay') }),
     decode: (b, g) =>
-      expect(decode.setDoorControl(b)).toEqual({ controller: ID, door: g.num('door'), mode: g.num('mode'), delay: g.num('delay') }),
+      expect(decode.setDoorControl(b)).toEqual({
+        controller: ID,
+        door: g.num('door'),
+        mode: g.num('mode'),
+        delay: g.num('delay'),
+      }),
   },
   'open door': {
     encode: (g) => encode.openDoor(g.num('controller'), g.num('door')),
@@ -261,17 +276,27 @@ const specs: Record<string, Spec> = {
   },
   'activate keypads': {
     encode: (g) =>
-      encode.activateKeypads(g.num('controller'), [g.bool('reader 1'), g.bool('reader 2'), g.bool('reader 3'), g.bool('reader 4')]),
+      encode.activateKeypads(g.num('controller'), [
+        g.bool('reader 1'),
+        g.bool('reader 2'),
+        g.bool('reader 3'),
+        g.bool('reader 4'),
+      ]),
     decode: (b, g) => expect(decode.activateKeypads(b)).toEqual({ controller: ID, ok: g.bool('ok') }),
   },
   'set door passcodes': {
     encode: (g) =>
-      encode.setDoorPasscodes(g.num('controller'), g.num('door'), [1, 2, 3, 4].map((i) => g.num(`passcode ${i}`))),
+      encode.setDoorPasscodes(
+        g.num('controller'),
+        g.num('door'),
+        [1, 2, 3, 4].map((i) => g.num(`passcode ${i}`)),
+      ),
     decode: (b, g) => expect(decode.setDoorPasscodes(b)).toEqual({ controller: ID, ok: g.bool('ok') }),
   },
   'get antipassback': {
     encode: (g) => encode.getAntiPassback(g.num('controller')),
-    decode: (b, g) => expect(decode.getAntiPassback(b)).toEqual({ controller: ID, antipassback: g.num('antipassback') }),
+    decode: (b, g) =>
+      expect(decode.getAntiPassback(b)).toEqual({ controller: ID, antipassback: g.num('antipassback') }),
   },
   'set antipassback': {
     encode: (g) => encode.setAntiPassback(g.num('controller'), g.num('antipassback')),

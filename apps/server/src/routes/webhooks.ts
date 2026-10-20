@@ -13,7 +13,14 @@ export function registerWebhookRoutes(app: FastifyInstance, ctx: AppContext): vo
     return w
   }
   // header values may hold credentials: only their names go to the audit log
-  const auditDetails = (b: { name: string; url: string; enabled: boolean; events: string[]; doorIds: number[]; headers: Record<string, string> }) => ({
+  const auditDetails = (b: {
+    name: string
+    url: string
+    enabled: boolean
+    events: string[]
+    doorIds: number[]
+    headers: Record<string, string>
+  }) => ({
     name: b.name,
     url: b.url,
     enabled: b.enabled,
@@ -60,7 +67,13 @@ export function registerWebhookRoutes(app: FastifyInstance, ctx: AppContext): vo
     const { id } = idParam.parse(req.params)
     existing(id)
     const result = await ctx.webhookService.test(id)
-    ctx.audit.log(req.user, 'test-webhook', `webhook:${id}`, { ok: result?.ok, statusCode: result?.statusCode }, result && !result.ok ? result.error : null)
+    ctx.audit.log(
+      req.user,
+      'test-webhook',
+      `webhook:${id}`,
+      { ok: result?.ok, statusCode: result?.statusCode },
+      result && !result.ok ? result.error : null,
+    )
     return result
   })
 

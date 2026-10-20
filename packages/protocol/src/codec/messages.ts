@@ -1,6 +1,11 @@
 import { CodecError } from '../errors.js'
 import { Reader, Writer, type DateString, type DateTimeString, type TimeString } from './bytes.js'
-import { PARAMETER_ADDRESS_OFFSET, PARAMETER_TABLE_SIZE, PARAMETERS_PER_PACKET, type ParameterWrite } from './expansion.js'
+import {
+  PARAMETER_ADDRESS_OFFSET,
+  PARAMETER_TABLE_SIZE,
+  PARAMETERS_PER_PACKET,
+  type ParameterWrite,
+} from './expansion.js'
 import {
   FunctionCode as F,
   INTERLOCK_VALUES,
@@ -271,7 +276,10 @@ export const encode = {
       w.u8(20 + i, p)
     })
     w.pin24(24, card.pin)
-    w.u8(27, card.firstCard.reduce((acc, on, i) => (on ? acc | (1 << i) : acc), 0))
+    w.u8(
+      27,
+      card.firstCard.reduce((acc, on, i) => (on ? acc | (1 << i) : acc), 0),
+    )
     return w.buf
   },
 
@@ -327,11 +335,7 @@ export const encode = {
     if (!Number.isInteger(t.task) || t.task < 0 || t.task > 12) throw new CodecError(`invalid task type: ${t.task}`)
     const w = new Writer(F.AddTask, controller).date(8, t.from, 'valid from').date(12, t.to, 'valid until')
     weekdays(w, 16, t.weekdays)
-    return w
-      .hhmm(23, t.start, 'start time')
-      .u8(25, door(t.door))
-      .u8(26, t.task)
-      .u8(27, t.moreCards, 'more cards').buf
+    return w.hhmm(23, t.start, 'start time').u8(25, door(t.door)).u8(26, t.task).u8(27, t.moreCards, 'more cards').buf
   },
 
   refreshTaskList(controller: number): Buffer {

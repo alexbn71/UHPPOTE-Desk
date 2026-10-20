@@ -1,10 +1,34 @@
-import { Badge, Button, Card, Checkbox, Group, Modal, MultiSelect, NumberInput, PasswordInput, Select, SimpleGrid, Stack, Switch, Table, Text, TextInput, Tooltip } from '@mantine/core'
+import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  Modal,
+  MultiSelect,
+  NumberInput,
+  PasswordInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { IconBell, IconEdit, IconPlus, IconReportAnalytics, IconSend, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Language, NotificationChannelDto, NotificationConfig, NotificationType, WebhookEvent } from '@uhppote-desk/shared'
+import type {
+  Language,
+  NotificationChannelDto,
+  NotificationConfig,
+  NotificationType,
+  WebhookEvent,
+} from '@uhppote-desk/shared'
 import { LANGUAGES, NOTIFICATION_TYPES, SECRET_MASK, WEBHOOK_EVENTS } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
@@ -40,11 +64,15 @@ export function NotificationsPage() {
   const { t, i18n } = useTranslation()
   const qc = useQueryClient()
   const doors = useDoors()
-  const channels = useQuery({ queryKey: ['notifications'], queryFn: () => api.get<NotificationChannelDto[]>('/notifications') })
+  const channels = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => api.get<NotificationChannelDto[]>('/notifications'),
+  })
   const [form, setForm] = useState<Form | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
 
-  const eventLabel = (e: string) => t(`codes.webhookEvent.${e.replace('.', '_')}` as 'codes.webhookEvent.alarm', { defaultValue: e })
+  const eventLabel = (e: string) =>
+    t(`codes.webhookEvent.${e.replace('.', '_')}` as 'codes.webhookEvent.alarm', { defaultValue: e })
   const typeLabel = (type: NotificationType) => t(`codes.notificationType.${type}`)
   const refresh = () => void qc.invalidateQueries({ queryKey: ['notifications'] })
 
@@ -96,7 +124,8 @@ export function NotificationsPage() {
     config: DEFAULTS.telegram,
   })
 
-  const setConfig = (patch: Partial<Record<string, unknown>>) => form && setForm({ ...form, config: { ...form.config, ...patch } as NotificationConfig })
+  const setConfig = (patch: Partial<Record<string, unknown>>) =>
+    form && setForm({ ...form, config: { ...form.config, ...patch } as NotificationConfig })
   const secretHint = (v: string) => (v === SECRET_MASK ? t('notifications.secretKept') : undefined)
 
   return (
@@ -138,7 +167,9 @@ export function NotificationsPage() {
                     ))}
                   </Group>
                 </Table.Td>
-                <Table.Td>{c.dailyReport ? t('notifications.reportAt', { hour: String(c.reportHour).padStart(2, '0') }) : '—'}</Table.Td>
+                <Table.Td>
+                  {c.dailyReport ? t('notifications.reportAt', { hour: String(c.reportHour).padStart(2, '0') }) : '—'}
+                </Table.Td>
                 <Table.Td>
                   {c.lastSentAt ? (
                     <Stack gap={2} align="flex-start">
@@ -159,15 +190,26 @@ export function NotificationsPage() {
                 </Table.Td>
                 <Table.Td>
                   <Group gap={0} justify="flex-end" wrap="nowrap">
-                    <IconButton label={t('notifications.test')} onClick={() => void run(c, 'test')} loading={busy === `test${c.id}`}>
+                    <IconButton
+                      label={t('notifications.test')}
+                      onClick={() => void run(c, 'test')}
+                      loading={busy === `test${c.id}`}
+                    >
                       <IconSend size={16} />
                     </IconButton>
                     {c.dailyReport && (
-                      <IconButton label={t('notifications.sendReport')} onClick={() => void run(c, 'report')} loading={busy === `report${c.id}`}>
+                      <IconButton
+                        label={t('notifications.sendReport')}
+                        onClick={() => void run(c, 'report')}
+                        loading={busy === `report${c.id}`}
+                      >
                         <IconReportAnalytics size={16} />
                       </IconButton>
                     )}
-                    <IconButton label={t('common.edit')} onClick={() => setForm({ ...c, doorIds: c.doorIds.map(String) })}>
+                    <IconButton
+                      label={t('common.edit')}
+                      onClick={() => setForm({ ...c, doorIds: c.doorIds.map(String) })}
+                    >
                       <IconEdit size={16} />
                     </IconButton>
                     <IconButton label={t('common.delete')} color="red" onClick={() => remove(c)}>
@@ -184,17 +226,28 @@ export function NotificationsPage() {
         {t('notifications.docs')}
       </Text>
 
-      <Modal opened={!!form} onClose={() => setForm(null)} title={form?.id ? t('notifications.editTitle') : t('notifications.newTitle')} size="lg">
+      <Modal
+        opened={!!form}
+        onClose={() => setForm(null)}
+        title={form?.id ? t('notifications.editTitle') : t('notifications.newTitle')}
+        size="lg"
+      >
         {form && (
           <Stack>
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
-              <TextInput label={t('notifications.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} />
+              <TextInput
+                label={t('notifications.name')}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.currentTarget.value })}
+              />
               <Select
                 label={t('notifications.type')}
                 data={NOTIFICATION_TYPES.map((x) => ({ value: x, label: typeLabel(x) }))}
                 value={form.config.type}
                 allowDeselect={false}
-                onChange={(v) => v && v !== form.config.type && setForm({ ...form, config: DEFAULTS[v as NotificationType] })}
+                onChange={(v) =>
+                  v && v !== form.config.type && setForm({ ...form, config: DEFAULTS[v as NotificationType] })
+                }
               />
             </SimpleGrid>
 
@@ -206,7 +259,12 @@ export function NotificationsPage() {
                   value={form.config.botToken}
                   onChange={(e) => setConfig({ botToken: e.currentTarget.value })}
                 />
-                <TextInput label={t('notifications.tgChatId')} description={t('notifications.tgChatIdHint')} value={form.config.chatId} onChange={(e) => setConfig({ chatId: e.currentTarget.value })} />
+                <TextInput
+                  label={t('notifications.tgChatId')}
+                  description={t('notifications.tgChatIdHint')}
+                  value={form.config.chatId}
+                  onChange={(e) => setConfig({ chatId: e.currentTarget.value })}
+                />
                 <Switch
                   label={t('notifications.tgOpenButton')}
                   description={t('notifications.tgOpenButtonHint')}
@@ -218,7 +276,13 @@ export function NotificationsPage() {
                     label={t('notifications.tgUsers')}
                     description={t('notifications.tgUsersHint')}
                     defaultValue={form.config.allowedUserIds.join(', ')}
-                    onChange={(e) => setConfig({ allowedUserIds: list(e.currentTarget.value).map(Number).filter((n) => Number.isInteger(n) && n > 0) })}
+                    onChange={(e) =>
+                      setConfig({
+                        allowedUserIds: list(e.currentTarget.value)
+                          .map(Number)
+                          .filter((n) => Number.isInteger(n) && n > 0),
+                      })
+                    }
                   />
                 )}
               </>
@@ -227,9 +291,23 @@ export function NotificationsPage() {
             {form.config.type === 'email' && (
               <>
                 <SimpleGrid cols={{ base: 1, sm: 2 }}>
-                  <TextInput label={t('notifications.mailHost')} value={form.config.host} onChange={(e) => setConfig({ host: e.currentTarget.value })} />
-                  <NumberInput label={t('notifications.mailPort')} min={1} max={65535} value={form.config.port} onChange={(v) => setConfig({ port: Number(v) || 587 })} />
-                  <TextInput label={t('notifications.mailUsername')} value={form.config.username} onChange={(e) => setConfig({ username: e.currentTarget.value })} />
+                  <TextInput
+                    label={t('notifications.mailHost')}
+                    value={form.config.host}
+                    onChange={(e) => setConfig({ host: e.currentTarget.value })}
+                  />
+                  <NumberInput
+                    label={t('notifications.mailPort')}
+                    min={1}
+                    max={65535}
+                    value={form.config.port}
+                    onChange={(v) => setConfig({ port: Number(v) || 587 })}
+                  />
+                  <TextInput
+                    label={t('notifications.mailUsername')}
+                    value={form.config.username}
+                    onChange={(e) => setConfig({ username: e.currentTarget.value })}
+                  />
                   <PasswordInput
                     label={t('notifications.mailPassword')}
                     description={secretHint(form.config.password)}
@@ -243,7 +321,11 @@ export function NotificationsPage() {
                   checked={form.config.secure}
                   onChange={(e) => setConfig({ secure: e.currentTarget.checked })}
                 />
-                <TextInput label={t('notifications.mailFrom')} value={form.config.from} onChange={(e) => setConfig({ from: e.currentTarget.value })} />
+                <TextInput
+                  label={t('notifications.mailFrom')}
+                  value={form.config.from}
+                  onChange={(e) => setConfig({ from: e.currentTarget.value })}
+                />
                 <TextInput
                   label={t('notifications.mailTo')}
                   description={t('notifications.mailToHint')}
@@ -255,8 +337,17 @@ export function NotificationsPage() {
 
             {form.config.type === 'ntfy' && (
               <>
-                <TextInput label={t('notifications.ntfyServer')} description={t('notifications.ntfyServerHint')} value={form.config.serverUrl} onChange={(e) => setConfig({ serverUrl: e.currentTarget.value })} />
-                <TextInput label={t('notifications.ntfyTopic')} value={form.config.topic} onChange={(e) => setConfig({ topic: e.currentTarget.value })} />
+                <TextInput
+                  label={t('notifications.ntfyServer')}
+                  description={t('notifications.ntfyServerHint')}
+                  value={form.config.serverUrl}
+                  onChange={(e) => setConfig({ serverUrl: e.currentTarget.value })}
+                />
+                <TextInput
+                  label={t('notifications.ntfyTopic')}
+                  value={form.config.topic}
+                  onChange={(e) => setConfig({ topic: e.currentTarget.value })}
+                />
                 <PasswordInput
                   label={t('notifications.ntfyToken')}
                   description={secretHint(form.config.token) ?? t('notifications.ntfyTokenHint')}
@@ -264,7 +355,11 @@ export function NotificationsPage() {
                   onChange={(e) => setConfig({ token: e.currentTarget.value })}
                 />
                 <SimpleGrid cols={{ base: 1, sm: 2 }}>
-                  <TextInput label={t('notifications.ntfyUsername')} value={form.config.username} onChange={(e) => setConfig({ username: e.currentTarget.value })} />
+                  <TextInput
+                    label={t('notifications.ntfyUsername')}
+                    value={form.config.username}
+                    onChange={(e) => setConfig({ username: e.currentTarget.value })}
+                  />
                   <PasswordInput
                     label={t('notifications.ntfyPassword')}
                     description={secretHint(form.config.password)}
@@ -277,7 +372,12 @@ export function NotificationsPage() {
 
             {form.config.type === 'gotify' && (
               <>
-                <TextInput label={t('notifications.gotifyServer')} description={t('notifications.gotifyServerHint')} value={form.config.serverUrl} onChange={(e) => setConfig({ serverUrl: e.currentTarget.value })} />
+                <TextInput
+                  label={t('notifications.gotifyServer')}
+                  description={t('notifications.gotifyServerHint')}
+                  value={form.config.serverUrl}
+                  onChange={(e) => setConfig({ serverUrl: e.currentTarget.value })}
+                />
                 <PasswordInput
                   label={t('notifications.gotifyToken')}
                   description={secretHint(form.config.appToken) ?? t('notifications.gotifyTokenHint')}
@@ -287,7 +387,12 @@ export function NotificationsPage() {
               </>
             )}
 
-            <Checkbox.Group label={t('notifications.events')} description={t('notifications.eventsHint')} value={form.events} onChange={(v) => setForm({ ...form, events: v as WebhookEvent[] })}>
+            <Checkbox.Group
+              label={t('notifications.events')}
+              description={t('notifications.eventsHint')}
+              value={form.events}
+              onChange={(v) => setForm({ ...form, events: v as WebhookEvent[] })}
+            >
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={6} mt={6}>
                 {WEBHOOK_EVENTS.map((e) => (
                   <Checkbox key={e} value={e} label={eventLabel(e)} />
@@ -315,7 +420,10 @@ export function NotificationsPage() {
                 w={110}
                 label={t('notifications.reportHour')}
                 disabled={!form.dailyReport}
-                data={Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: `${String(h).padStart(2, '0')}:00` }))}
+                data={Array.from({ length: 24 }, (_, h) => ({
+                  value: String(h),
+                  label: `${String(h).padStart(2, '0')}:00`,
+                }))}
                 value={String(form.reportHour)}
                 allowDeselect={false}
                 onChange={(v) => setForm({ ...form, reportHour: Number(v ?? 20) })}
@@ -329,9 +437,18 @@ export function NotificationsPage() {
                 allowDeselect={false}
                 onChange={(v) => setForm({ ...form, language: (v ?? 'en') as Language })}
               />
-              <Switch mt="xl" label={t('notifications.enabledSwitch')} checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })} />
+              <Switch
+                mt="xl"
+                label={t('notifications.enabledSwitch')}
+                checked={form.enabled}
+                onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })}
+              />
             </SimpleGrid>
-            <Button leftSection={<IconBell size={16} />} onClick={() => void save()} disabled={!form.name.trim() || (form.events.length === 0 && !form.dailyReport)}>
+            <Button
+              leftSection={<IconBell size={16} />}
+              onClick={() => void save()}
+              disabled={!form.name.trim() || (form.events.length === 0 && !form.dailyReport)}
+            >
               {t('common.save')}
             </Button>
           </Stack>

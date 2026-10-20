@@ -24,7 +24,12 @@ beforeAll(async () => {
   fake = new FakeController({ id: ID, tcp: true })
   const ep = await fake.start()
   target = { id: ID, host: ep.host, port: ep.port }
-  client = new UhppoteClient({ bindAddress: '127.0.0.1', broadcast: `${ep.host}:${ep.port}`, timeoutMs: 500, retries: 1 })
+  client = new UhppoteClient({
+    bindAddress: '127.0.0.1',
+    broadcast: `${ep.host}:${ep.port}`,
+    timeoutMs: 500,
+    retries: 1,
+  })
 })
 
 afterAll(async () => {
@@ -42,7 +47,12 @@ describe('device', () => {
   it('discovery returns the controller', async () => {
     const found = await client.discover()
     expect(found).toHaveLength(1)
-    expect(found[0]).toMatchObject({ controller: ID, address: '192.168.1.100', version: 'v8.92', mac: '00:12:23:34:45:56' })
+    expect(found[0]).toMatchObject({
+      controller: ID,
+      address: '192.168.1.100',
+      version: 'v8.92',
+      mac: '00:12:23:34:45:56',
+    })
   })
 
   it('get controller via unicast UDP and TCP', async () => {
@@ -126,7 +136,15 @@ describe('time profiles, tasks, advanced', () => {
       id: 29,
       from: '2026-01-01',
       to: '2026-12-31',
-      weekdays: [true, true, true, true, true, false, false] as [boolean, boolean, boolean, boolean, boolean, boolean, boolean],
+      weekdays: [true, true, true, true, true, false, false] as [
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+      ],
       segments: [
         { start: '08:30', end: '12:30' },
         { start: '13:30', end: '17:30' },
@@ -210,7 +228,9 @@ describe('expansion board (0xF2)', () => {
   it('a refused write raises OperationFailedError', async () => {
     fake.failOps.add(0xf2)
     try {
-      await expect(client.writeParameters(target, [{ index: 136, value: 0 }])).rejects.toBeInstanceOf(OperationFailedError)
+      await expect(client.writeParameters(target, [{ index: 136, value: 0 }])).rejects.toBeInstanceOf(
+        OperationFailedError,
+      )
     } finally {
       fake.failOps.delete(0xf2)
     }
@@ -276,10 +296,32 @@ describe('events', () => {
   it('outside the time profile → reason 13', async () => {
     const now = fake.now()
     const day = (now.getDay() + 6) % 7
-    const weekdays = [false, false, false, false, false, false, false] as [boolean, boolean, boolean, boolean, boolean, boolean, boolean]
+    const weekdays = [false, false, false, false, false, false, false] as [
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+    ]
     weekdays[(day + 1) % 7] = true // tomorrow only
-    await client.setTimeProfile(target, { id: 10, from: '2020-01-01', to: '2099-12-31', weekdays, segments: [{ start: '00:00', end: '23:59' }], linkedTo: 0 })
-    await client.putCard(target, { card: 10058499, from: '2020-01-01', to: '2099-12-31', doors: [10, 0, 0, 0], pin: 0, firstCard: [false, false, false, false] })
+    await client.setTimeProfile(target, {
+      id: 10,
+      from: '2020-01-01',
+      to: '2099-12-31',
+      weekdays,
+      segments: [{ start: '00:00', end: '23:59' }],
+      linkedTo: 0,
+    })
+    await client.putCard(target, {
+      card: 10058499,
+      from: '2020-01-01',
+      to: '2099-12-31',
+      doors: [10, 0, 0, 0],
+      pin: 0,
+      firstCard: [false, false, false, false],
+    })
     expect(fake.swipe(10058499, 1)).toMatchObject({ granted: false, reason: Reason.NotInAllowedTimePeriod })
   })
 
@@ -360,7 +402,12 @@ describe('robustness', () => {
 
   it('retry recovers a lost packet', async () => {
     const attempts: number[] = []
-    const c = new UhppoteClient({ bindAddress: '127.0.0.1', timeoutMs: 300, retries: 2, onRequest: (i) => attempts.push(i.attempts) })
+    const c = new UhppoteClient({
+      bindAddress: '127.0.0.1',
+      timeoutMs: 300,
+      retries: 2,
+      onRequest: (i) => attempts.push(i.attempts),
+    })
     fake.dropNext = 2 // the first two requests are lost, the third one gets a reply
     expect(await c.getTime(target)).not.toBeNull()
     expect(attempts).toEqual([3])

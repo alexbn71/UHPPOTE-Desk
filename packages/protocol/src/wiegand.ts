@@ -20,7 +20,8 @@ export function splitWiegand26(card: number): Wiegand26 {
 }
 
 export function joinWiegand26(facility: number, number: number): number {
-  if (!Number.isInteger(facility) || facility < 0 || facility > 255) throw new RangeError(`invalid facility code: ${facility}`)
+  if (!Number.isInteger(facility) || facility < 0 || facility > 255)
+    throw new RangeError(`invalid facility code: ${facility}`)
   if (!Number.isInteger(number) || number < 0 || number > 65535) throw new RangeError(`invalid card number: ${number}`)
   return facility * 100000 + number
 }

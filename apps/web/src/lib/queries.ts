@@ -35,16 +35,23 @@ export interface Permission {
   firstCard: boolean
 }
 
-export const useControllers = () => useQuery({ queryKey: ['controllers'], queryFn: () => api.get<ControllerDto[]>('/controllers') })
+export const useControllers = () =>
+  useQuery({ queryKey: ['controllers'], queryFn: () => api.get<ControllerDto[]>('/controllers') })
 export const useDoors = () => useQuery({ queryKey: ['doors'], queryFn: () => api.get<DoorDto[]>('/doors') })
 export const useZones = () => useQuery({ queryKey: ['zones'], queryFn: () => api.get<TreeNode[]>('/zones') })
-export const useDepartments = () => useQuery({ queryKey: ['departments'], queryFn: () => api.get<TreeNode[]>('/departments') })
+export const useDepartments = () =>
+  useQuery({ queryKey: ['departments'], queryFn: () => api.get<TreeNode[]>('/departments') })
 export const usePeople = (search = '') =>
-  useQuery({ queryKey: ['people', search], queryFn: () => api.get<PersonDto[]>(`/people${search ? `?search=${encodeURIComponent(search)}` : ''}`) })
+  useQuery({
+    queryKey: ['people', search],
+    queryFn: () => api.get<PersonDto[]>(`/people${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  })
 export const useCards = () => useQuery({ queryKey: ['cards'], queryFn: () => api.get<CardDto[]>('/cards') })
-export const useTimeProfiles = () => useQuery({ queryKey: ['time-profiles'], queryFn: () => api.get<TimeProfile[]>('/time-profiles') })
+export const useTimeProfiles = () =>
+  useQuery({ queryKey: ['time-profiles'], queryFn: () => api.get<TimeProfile[]>('/time-profiles') })
 export const useShifts = () => useQuery({ queryKey: ['shifts'], queryFn: () => api.get<Shift[]>('/shifts') })
-export const usePermissions = () => useQuery({ queryKey: ['permissions'], queryFn: () => api.get<Permission[]>('/permissions') })
+export const usePermissions = () =>
+  useQuery({ queryKey: ['permissions'], queryFn: () => api.get<Permission[]>('/permissions') })
 
 /** Full "Parent › Child" path of a node. */
 export function treePath(nodes: TreeNode[] | undefined, id: number | null): string {
@@ -62,5 +69,7 @@ export function treePath(nodes: TreeNode[] | undefined, id: number | null): stri
 }
 
 export function treeOptions(nodes: TreeNode[] | undefined): { value: string; label: string }[] {
-  return (nodes ?? []).map((n) => ({ value: String(n.id), label: treePath(nodes, n.id) })).sort((a, b) => a.label.localeCompare(b.label))
+  return (nodes ?? [])
+    .map((n) => ({ value: String(n.id), label: treePath(nodes, n.id) }))
+    .sort((a, b) => a.label.localeCompare(b.label))
 }

@@ -1,4 +1,20 @@
-import { Alert, Badge, Button, Card, Code, CopyButton, Group, Modal, MultiSelect, Select, Stack, Switch, Table, Text, TextInput } from '@mantine/core'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Code,
+  CopyButton,
+  Group,
+  Modal,
+  MultiSelect,
+  Select,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { modals } from '@mantine/modals'
 import { IconCopy, IconEdit, IconPlus, IconTrash } from '@tabler/icons-react'
@@ -39,7 +55,14 @@ export function ApiTokensPage() {
   const save = async () => {
     if (!form) return
     try {
-      const body = { name: form.name, access: form.access, zoneIds: form.zoneIds.map(Number), doorIds: form.doorIds.map(Number), expiresAt: form.expiresAt, active: form.active }
+      const body = {
+        name: form.name,
+        access: form.access,
+        zoneIds: form.zoneIds.map(Number),
+        doorIds: form.doorIds.map(Number),
+        expiresAt: form.expiresAt,
+        active: form.active,
+      }
       if (form.id) await api.put(`/tokens/${form.id}`, body)
       else {
         const r = await api.post<{ token: string; apiToken: ApiTokenDto }>('/tokens', body)
@@ -63,8 +86,18 @@ export function ApiTokensPage() {
 
   const restrictions = (tk: ApiTokenDto) => {
     const parts: string[] = []
-    if (tk.zoneIds.length) parts.push(t('apiTokens.zonesValue', { list: tk.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', ') }))
-    if (tk.doorIds.length) parts.push(t('apiTokens.doorsValue', { list: tk.doorIds.map((d) => doors.data?.find((x) => x.id === d)?.name ?? d).join(', ') }))
+    if (tk.zoneIds.length)
+      parts.push(
+        t('apiTokens.zonesValue', {
+          list: tk.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', '),
+        }),
+      )
+    if (tk.doorIds.length)
+      parts.push(
+        t('apiTokens.doorsValue', {
+          list: tk.doorIds.map((d) => doors.data?.find((x) => x.id === d)?.name ?? d).join(', '),
+        }),
+      )
     return parts.length ? parts.join(' · ') : t('apiTokens.unrestricted')
   }
 
@@ -74,19 +107,36 @@ export function ApiTokensPage() {
         title={t('apiTokens.title')}
         description={t('apiTokens.description')}
         actions={
-          <Button leftSection={<IconPlus size={16} />} onClick={() => setForm({ name: '', access: 'read', zoneIds: [], doorIds: [], expiresAt: null, active: true })}>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() =>
+              setForm({ name: '', access: 'read', zoneIds: [], doorIds: [], expiresAt: null, active: true })
+            }
+          >
             {t('apiTokens.new')}
           </Button>
         }
       />
       {created && (
-        <Alert color="blue" withCloseButton onClose={() => setCreated(null)} mb="md" title={`${t('apiTokens.createdTitle')} — ${created.name}`}>
+        <Alert
+          color="blue"
+          withCloseButton
+          onClose={() => setCreated(null)}
+          mb="md"
+          title={`${t('apiTokens.createdTitle')} — ${created.name}`}
+        >
           <Stack gap="xs">
             <Group gap="xs" wrap="nowrap">
               <Code style={{ wordBreak: 'break-all', flex: 1 }}>{created.token}</Code>
               <CopyButton value={created.token}>
                 {({ copied, copy }) => (
-                  <Button size="xs" variant="light" color={copied ? 'green' : 'blue'} leftSection={<IconCopy size={14} />} onClick={copy}>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color={copied ? 'green' : 'blue'}
+                    leftSection={<IconCopy size={14} />}
+                    onClick={copy}
+                  >
                     {copied ? t('apiTokens.copied') : t('apiTokens.copy')}
                   </Button>
                 )}
@@ -147,7 +197,12 @@ export function ApiTokensPage() {
                   </Table.Td>
                   <Table.Td>
                     <Group gap={0} justify="flex-end" wrap="nowrap">
-                      <IconButton label={t('common.edit')} onClick={() => setForm({ ...tk, zoneIds: tk.zoneIds.map(String), doorIds: tk.doorIds.map(String) })}>
+                      <IconButton
+                        label={t('common.edit')}
+                        onClick={() =>
+                          setForm({ ...tk, zoneIds: tk.zoneIds.map(String), doorIds: tk.doorIds.map(String) })
+                        }
+                      >
                         <IconEdit size={16} />
                       </IconButton>
                       <IconButton label={t('common.delete')} color="red" onClick={() => remove(tk)}>
@@ -165,10 +220,20 @@ export function ApiTokensPage() {
         {t('apiTokens.docs')}
       </Text>
 
-      <Modal opened={!!form} onClose={() => setForm(null)} title={form?.id ? t('apiTokens.editTitle') : t('apiTokens.newTitle')} size="lg">
+      <Modal
+        opened={!!form}
+        onClose={() => setForm(null)}
+        title={form?.id ? t('apiTokens.editTitle') : t('apiTokens.newTitle')}
+        size="lg"
+      >
         {form && (
           <Stack>
-            <TextInput label={t('apiTokens.name')} description={t('apiTokens.nameHint')} value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} />
+            <TextInput
+              label={t('apiTokens.name')}
+              description={t('apiTokens.nameHint')}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.currentTarget.value })}
+            />
             <Select
               label={t('apiTokens.access')}
               description={t('apiTokens.accessHint')}
@@ -202,7 +267,11 @@ export function ApiTokensPage() {
               onChange={(v) => setForm({ ...form, expiresAt: v || null })}
               clearable
             />
-            <Switch label={t('apiTokens.activeSwitch')} checked={form.active} onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })} />
+            <Switch
+              label={t('apiTokens.activeSwitch')}
+              checked={form.active}
+              onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })}
+            />
             <Button onClick={() => void save()} disabled={!form.name.trim()}>
               {t('common.save')}
             </Button>

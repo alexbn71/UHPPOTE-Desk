@@ -35,7 +35,8 @@ describe('prepareDataDir', () => {
     again.close()
   })
 
-  const canTestPermissions = process.platform !== 'win32' && typeof process.getuid === 'function' && process.getuid() !== 0
+  const canTestPermissions =
+    process.platform !== 'win32' && typeof process.getuid === 'function' && process.getuid() !== 0
 
   it.skipIf(!canTestPermissions)('reports a clear error when the folder is not writable', () => {
     const dir = mkTmp()

@@ -59,7 +59,9 @@ export interface ErrorInfo {
 export function errorInfo(err: unknown): ErrorInfo {
   if (!(err instanceof Error)) {
     const info = err as ErrorInfo | null
-    return info !== null && typeof info === 'object' && typeof info.message === 'string' ? info : { message: String(err) }
+    return info !== null && typeof info === 'object' && typeof info.message === 'string'
+      ? info
+      : { message: String(err) }
   }
   const { code, params } = err as Error & { code?: unknown; params?: unknown }
   if (typeof code === 'string' && params !== null && typeof params === 'object') {
@@ -71,7 +73,9 @@ export function errorInfo(err: unknown): ErrorInfo {
 /** Text of an error in a language; errors without a translatable code keep their own text. */
 export function translateError(lang: Language, err: unknown): string {
   const info = errorInfo(err)
-  return info.code && lookup(resources.en, `errors.${info.code}`) ? translate(lang, `errors.${info.code}`, info.params) : info.message
+  return info.code && lookup(resources.en, `errors.${info.code}`)
+    ? translate(lang, `errors.${info.code}`, info.params)
+    : info.message
 }
 
 /** Translator bound to one language, with helpers for the protocol codes. */
@@ -80,7 +84,8 @@ export function translator(lang: Language) {
   return {
     t,
     error: (err: unknown) => translateError(lang, err),
-    reason: (code: number) => (lookup(resources[lang], `codes.reason.${code}`) ? t(`codes.reason.${code}`) : t('codes.reason.unknown', { code })),
+    reason: (code: number) =>
+      lookup(resources[lang], `codes.reason.${code}`) ? t(`codes.reason.${code}`) : t('codes.reason.unknown', { code }),
     eventType: (code: number) => t(`codes.eventType.${code}`),
     direction: (code: number) => (code === 1 || code === 2 ? t(`codes.direction.${code}`) : ''),
     attendanceStatus: (code: string) => t(`codes.attendanceStatus.${code}`),

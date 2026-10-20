@@ -24,7 +24,11 @@ describe('Home Assistant add-on options', () => {
   })
 
   it('defaults: addresses from the host network, MQTT from the Supervisor', () => {
-    const env = buildEnv({ options: { mqtt_enabled: true, mqtt_door_control: true, mqtt_language: 'it', log_level: 'info' }, mqtt, network })
+    const env = buildEnv({
+      options: { mqtt_enabled: true, mqtt_door_control: true, mqtt_language: 'it', log_level: 'info' },
+      mqtt,
+      network,
+    })
     expect(env).toMatchObject({
       HTTP_PORT: '8080',
       UHPPOTE_LISTEN: '0.0.0.0:60001',

@@ -34,7 +34,9 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   /** Propagates the changes of a person to the controllers; errors do not block saving. */
   const push = async (req: FastifyRequest, personId: number | null, removed: number[] = []) => {
     const results = await ctx.sync.pushPerson(req.user, personId, removed)
-    return results.filter((r) => r.error).map((r) => ({ controllerId: r.controllerId, error: requestErrorText(req, r.error) }))
+    return results
+      .filter((r) => r.error)
+      .map((r) => ({ controllerId: r.controllerId, error: requestErrorText(req, r.error) }))
   }
 
   // --- departments -----------------------------------------------------------
@@ -70,7 +72,11 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
         active: z.enum(['true', 'false']).optional(),
       })
       .parse(req.query)
-    return ctx.people.list({ search: q.search, departmentId: q.departmentId, active: q.active === undefined ? undefined : q.active === 'true' })
+    return ctx.people.list({
+      search: q.search,
+      departmentId: q.departmentId,
+      active: q.active === undefined ? undefined : q.active === 'true',
+    })
   })
 
   app.get('/people/:id', viewer, async (req) => {
@@ -91,7 +97,12 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const { id } = idParam.parse(req.params)
     const b = personInputSchema.parse(req.body)
     if (!ctx.people.update(id, b)) throw new HttpError(404, 'personNotFound')
-    ctx.audit.log(req.user, 'update-person', `person:${id}`, { code: b.code, active: b.active, validFrom: b.validFrom, validTo: b.validTo })
+    ctx.audit.log(req.user, 'update-person', `person:${id}`, {
+      code: b.code,
+      active: b.active,
+      validFrom: b.validFrom,
+      validTo: b.validTo,
+    })
     return { ok: true, pushErrors: await push(req, id) }
   })
 
@@ -162,7 +173,9 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
   // --- cards -----------------------------------------------------------------
 
   app.get('/cards', viewer, async (req) => {
-    const q = z.object({ unassigned: z.enum(['true', 'false']).optional(), search: z.string().optional() }).parse(req.query)
+    const q = z
+      .object({ unassigned: z.enum(['true', 'false']).optional(), search: z.string().optional() })
+      .parse(req.query)
     return ctx.people.cards({ unassigned: q.unassigned === 'true', ...(q.search ? { search: q.search } : {}) })
   })
 
@@ -237,7 +250,12 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const cDept = col('reparto', 'department', 'dipartimento')
     if (cCode < 0 || cLast < 0) throw new HttpError(400, 'missingColumns')
 
-    const report = { created: 0, updated: 0, cards: 0, errors: [] as { row: number; error: string; code?: string; params?: Record<string, string | number> }[] }
+    const report = {
+      created: 0,
+      updated: 0,
+      cards: 0,
+      errors: [] as { row: number; error: string; code?: string; params?: Record<string, string | number> }[],
+    }
     const today = localDate()
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i]!
@@ -274,7 +292,8 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
           const cardRaw = get(cCard)
           if (cardRaw) {
             const number = Number(cardRaw)
-            if (!Number.isInteger(number) || !isValidWiegand26(number)) throw new ImportRowError('importInvalidCard', { card: cardRaw })
+            if (!Number.isInteger(number) || !isValidWiegand26(number))
+              throw new ImportRowError('importInvalidCard', { card: cardRaw })
             const card = ctx.people.cardByNumber(number)
             if (!card) {
               ctx.people.createCard(number, personId)
@@ -292,7 +311,12 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
         )
       }
     }
-    ctx.audit.log(req.user, 'import-people', null, { created: report.created, updated: report.updated, cards: report.cards, errors: report.errors.length })
+    ctx.audit.log(req.user, 'import-people', null, {
+      created: report.created,
+      updated: report.updated,
+      cards: report.cards,
+      errors: report.errors.length,
+    })
     return report
   })
 }

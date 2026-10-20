@@ -97,7 +97,9 @@ export function computeAttendance(input: {
   const result: AttendanceDayDto[] = []
   for (const person of input.people) {
     for (const date of days) {
-      const punches = (byPersonDay.get(`${person.id}|${date}`) ?? []).sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+      const punches = (byPersonDay.get(`${person.id}|${date}`) ?? []).sort((a, b) =>
+        a.timestamp.localeCompare(b.timestamp),
+      )
       const leave = input.leaves.find((l) => l.personId === person.id && l.fromDate <= date && l.toDate >= date)
       const holiday = input.holidays.get(date)
       const shift = person.shift
@@ -108,7 +110,8 @@ export function computeAttendance(input: {
       let worked = 0
       const pairs = Math.floor(punches.length / 2)
       for (let i = 0; i < pairs; i++) {
-        worked += minuteOfWorkDay(punches[2 * i + 1]!.timestamp, date) - minuteOfWorkDay(punches[2 * i]!.timestamp, date)
+        worked +=
+          minuteOfWorkDay(punches[2 * i + 1]!.timestamp, date) - minuteOfWorkDay(punches[2 * i]!.timestamp, date)
       }
       if (punches.length % 2 === 1) anomalies.push(punches.length === 1 ? 'singlePunch' : 'oddPunches')
       if (pairs === 1 && shift && worked > shift.breakMinutes + 240) worked -= shift.breakMinutes

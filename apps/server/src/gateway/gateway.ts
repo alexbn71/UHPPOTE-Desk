@@ -88,7 +88,12 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
   }
 
   /** Synchronisation progress; `code` is a key under `sync.progress.*` (or `errors.*` for errors). */
-  publishSync(controllerId: number, status: 'running' | 'ok' | 'error', code: string, params: Record<string, string | number> = {}): void {
+  publishSync(
+    controllerId: number,
+    status: 'running' | 'ok' | 'error',
+    code: string,
+    params: Record<string, string | number> = {},
+  ): void {
     this.emit('message', { type: 'sync', controllerId, status, code, params })
   }
 }

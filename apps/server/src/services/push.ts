@@ -247,7 +247,9 @@ export class PushService {
     // 404/410: the browser dropped the subscription (app uninstalled, permission revoked)
     if (status === 404 || status === 410) {
       this.db.run('DELETE FROM push_subscriptions WHERE id = ?', [sub.id])
-      this.logger?.info?.(`push: the browser dropped the subscription of device ${sub.device_id} (HTTP ${status}), removed`)
+      this.logger?.info?.(
+        `push: the browser dropped the subscription of device ${sub.device_id} (HTTP ${status}), removed`,
+      )
       return `HTTP ${status}: subscription removed`
     }
     this.db.run('UPDATE push_subscriptions SET last_sent_at = ?, last_error = ? WHERE id = ?', [

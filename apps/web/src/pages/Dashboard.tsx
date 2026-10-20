@@ -61,7 +61,14 @@ function DoorTile({ door, live, canOpen }: { door: DoorDto; live?: ControllerLiv
           </Group>
         </Stack>
         {canOpen && (
-          <Button size="xs" variant="light" style={{ flexShrink: 0 }} leftSection={<IconDoorEnter size={14} />} disabled={!live?.online} onClick={() => openDoorWithConfirm(door)}>
+          <Button
+            size="xs"
+            variant="light"
+            style={{ flexShrink: 0 }}
+            leftSection={<IconDoorEnter size={14} />}
+            disabled={!live?.online}
+            onClick={() => openDoorWithConfirm(door)}
+          >
             {t('dashboard.openButton')}
           </Button>
         )}
@@ -88,7 +95,9 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
         </Group>
         <Text size="xs" c="dimmed">
           S/N {c.serial} · {c.host ?? t('controllers.broadcast')}
-          {drift !== null && drift !== undefined && Math.abs(drift) > 30 ? ` · ${t('dashboard.clockDrift', { n: drift })}` : ''}
+          {drift !== null && drift !== undefined && Math.abs(drift) > 30
+            ? ` · ${t('dashboard.clockDrift', { n: drift })}`
+            : ''}
         </Text>
       </Group>
       {c.enabled && !online && live?.lastError && (
@@ -116,7 +125,10 @@ export function DashboardPage() {
   const live = useLive()
   const { can } = useAuth()
   const navigate = useNavigate()
-  const latest = useQuery({ queryKey: ['events', 'latest'], queryFn: () => api.get<{ rows: EventDto[] }>('/events?limit=15') })
+  const latest = useQuery({
+    queryKey: ['events', 'latest'],
+    queryFn: () => api.get<{ rows: EventDto[] }>('/events?limit=15'),
+  })
   const stats = useEventStats()
 
   return (
@@ -136,9 +148,13 @@ export function DashboardPage() {
           )}
         </Alert>
       )}
-      {!!controllers.data?.length && <StatTiles stats={stats.data} controllers={controllers.data} states={live.states} />}
+      {!!controllers.data?.length && (
+        <StatTiles stats={stats.data} controllers={controllers.data} states={live.states} />
+      )}
       <SimpleGrid cols={{ base: 1, lg: 2 }} mb="lg">
-        {controllers.data?.map((c) => <ControllerCard key={c.id} c={c} live={live.states[c.id]} canOpen={can('operator')} />)}
+        {controllers.data?.map((c) => (
+          <ControllerCard key={c.id} c={c} live={live.states[c.id]} canOpen={can('operator')} />
+        ))}
       </SimpleGrid>
       {!!controllers.data?.length && stats.data && (
         <>

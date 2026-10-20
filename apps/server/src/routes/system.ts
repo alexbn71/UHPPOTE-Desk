@@ -23,7 +23,9 @@ export function registerSystemRoutes(app: FastifyInstance, ctx: AppContext): voi
       hostname: os.hostname(),
       uptimeSec: Math.round(process.uptime()),
       interfaces: Object.entries(os.networkInterfaces()).flatMap(([name, addrs]) =>
-        (addrs ?? []).filter((a) => a.family === 'IPv4' && !a.internal).map((a) => ({ name, address: a.address, netmask: a.netmask })),
+        (addrs ?? [])
+          .filter((a) => a.family === 'IPv4' && !a.internal)
+          .map((a) => ({ name, address: a.address, netmask: a.netmask })),
       ),
       uhppote: {
         bindAddress: ctx.config.uhppote.bindAddress,
@@ -33,7 +35,13 @@ export function registerSystemRoutes(app: FastifyInstance, ctx: AppContext): voi
         timeoutMs: ctx.config.uhppote.timeoutMs,
       },
       counts,
-      mqtt: ctx.mqtt?.status() ?? { enabled: false, connected: false, broker: null, baseTopic: null, doorControl: false },
+      mqtt: ctx.mqtt?.status() ?? {
+        enabled: false,
+        connected: false,
+        broker: null,
+        baseTopic: null,
+        doorControl: false,
+      },
     }
   })
 

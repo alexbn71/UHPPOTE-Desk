@@ -1,4 +1,19 @@
-import { Badge, Button, Card, Group, Modal, NumberInput, Select, SimpleGrid, Stack, Table, Tabs, Text, TextInput, Tooltip } from '@mantine/core'
+import {
+  Badge,
+  Button,
+  Card,
+  Group,
+  Modal,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Tabs,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { IconCalendarPlus, IconDownload, IconEdit, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -44,9 +59,28 @@ function Report() {
   })
 
   const totals = useMemo(() => {
-    const m = new Map<number, { name: string; worked: number; expected: number; late: number; overtime: number; absent: number; anomalies: number }>()
+    const m = new Map<
+      number,
+      {
+        name: string
+        worked: number
+        expected: number
+        late: number
+        overtime: number
+        absent: number
+        anomalies: number
+      }
+    >()
     for (const d of report.data ?? []) {
-      const x = m.get(d.personId) ?? { name: d.personName, worked: 0, expected: 0, late: 0, overtime: 0, absent: 0, anomalies: 0 }
+      const x = m.get(d.personId) ?? {
+        name: d.personName,
+        worked: 0,
+        expected: 0,
+        late: 0,
+        overtime: 0,
+        absent: 0,
+        anomalies: 0,
+      }
       x.worked += d.workedMinutes
       x.expected += d.expectedMinutes
       x.late += d.lateMinutes
@@ -64,7 +98,13 @@ function Report() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }}>
           <DateInput label={t('common.from')} valueFormat={DATE_INPUT_FORMAT} value={from} onChange={setFrom} />
           <DateInput label={t('common.to')} valueFormat={DATE_INPUT_FORMAT} value={to} onChange={setTo} />
-          <Select label={t('attendance.department')} clearable data={treeOptions(departments.data)} value={departmentId} onChange={setDepartmentId} />
+          <Select
+            label={t('attendance.department')}
+            clearable
+            data={treeOptions(departments.data)}
+            value={departmentId}
+            onChange={setDepartmentId}
+          />
           <Select
             label={t('attendance.person')}
             clearable
@@ -73,7 +113,13 @@ function Report() {
             value={personId}
             onChange={setPersonId}
           />
-          <Button mt={24} component="a" href={`/api/attendance/report.csv${downloadQs(params)}`} leftSection={<IconDownload size={16} />} variant="default">
+          <Button
+            mt={24}
+            component="a"
+            href={`/api/attendance/report.csv${downloadQs(params)}`}
+            leftSection={<IconDownload size={16} />}
+            variant="default"
+          >
             {t('common.exportCsv')}
           </Button>
         </SimpleGrid>
@@ -137,7 +183,10 @@ function Report() {
                     <Table.Td>{d.personName}</Table.Td>
                     <Table.Td>{fmtDate(d.date)}</Table.Td>
                     <Table.Td>
-                      <Tooltip label={d.anomalies.map((a) => codes.anomaly(a)).join(', ')} disabled={!d.anomalies.length}>
+                      <Tooltip
+                        label={d.anomalies.map((a) => codes.anomaly(a)).join(', ')}
+                        disabled={!d.anomalies.length}
+                      >
                         <Badge color={STATUS_COLORS[d.status]} variant="light">
                           {codes.attendanceStatus(d.status)}
                         </Badge>
@@ -146,8 +195,12 @@ function Report() {
                     <Table.Td className="mono">{d.firstIn ?? '—'}</Table.Td>
                     <Table.Td className="mono">{d.lastOut ?? '—'}</Table.Td>
                     <Table.Td className="mono">{fmtMinutes(d.workedMinutes)}</Table.Td>
-                    <Table.Td className="mono">{d.lateMinutes ? t('attendance.lateMinutes', { n: d.lateMinutes }) : '—'}</Table.Td>
-                    <Table.Td className="mono">{d.punches.map((p) => `${p.time}${p.source === 'manuale' ? '*' : ''}`).join('  ')}</Table.Td>
+                    <Table.Td className="mono">
+                      {d.lateMinutes ? t('attendance.lateMinutes', { n: d.lateMinutes }) : '—'}
+                    </Table.Td>
+                    <Table.Td className="mono">
+                      {d.punches.map((p) => `${p.time}${p.source === 'manuale' ? '*' : ''}`).join('  ')}
+                    </Table.Td>
                   </Table.Tr>
                 ))}
             </Table.Tbody>
@@ -190,7 +243,16 @@ function Shifts() {
           <Button
             size="xs"
             leftSection={<IconPlus size={14} />}
-            onClick={() => setEdit({ name: '', startTime: '08:30', endTime: '17:30', breakMinutes: 60, toleranceMinutes: 10, weekdays: [true, true, true, true, true, false, false] })}
+            onClick={() =>
+              setEdit({
+                name: '',
+                startTime: '08:30',
+                endTime: '17:30',
+                breakMinutes: 60,
+                toleranceMinutes: 10,
+                weekdays: [true, true, true, true, true, false, false],
+              })
+            }
           >
             {t('attendance.newShift')}
           </Button>
@@ -245,14 +307,40 @@ function Shifts() {
       <Modal opened={!!edit} onClose={() => setEdit(null)} title={t('attendance.shiftTitle')}>
         {edit && (
           <Stack>
-            <TextInput label={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })} />
+            <TextInput
+              label={t('common.name')}
+              value={edit.name}
+              onChange={(e) => setEdit({ ...edit, name: e.currentTarget.value })}
+            />
             <SimpleGrid cols={2}>
-              <TextInput label={t('attendance.shiftStart')} value={edit.startTime} onChange={(e) => setEdit({ ...edit, startTime: e.currentTarget.value })} />
-              <TextInput label={t('attendance.shiftEnd')} value={edit.endTime} onChange={(e) => setEdit({ ...edit, endTime: e.currentTarget.value })} />
-              <NumberInput label={t('attendance.shiftBreak')} min={0} value={edit.breakMinutes} onChange={(v) => setEdit({ ...edit, breakMinutes: Number(v) || 0 })} />
-              <NumberInput label={t('attendance.shiftTolerance')} min={0} value={edit.toleranceMinutes} onChange={(v) => setEdit({ ...edit, toleranceMinutes: Number(v) || 0 })} />
+              <TextInput
+                label={t('attendance.shiftStart')}
+                value={edit.startTime}
+                onChange={(e) => setEdit({ ...edit, startTime: e.currentTarget.value })}
+              />
+              <TextInput
+                label={t('attendance.shiftEnd')}
+                value={edit.endTime}
+                onChange={(e) => setEdit({ ...edit, endTime: e.currentTarget.value })}
+              />
+              <NumberInput
+                label={t('attendance.shiftBreak')}
+                min={0}
+                value={edit.breakMinutes}
+                onChange={(v) => setEdit({ ...edit, breakMinutes: Number(v) || 0 })}
+              />
+              <NumberInput
+                label={t('attendance.shiftTolerance')}
+                min={0}
+                value={edit.toleranceMinutes}
+                onChange={(v) => setEdit({ ...edit, toleranceMinutes: Number(v) || 0 })}
+              />
             </SimpleGrid>
-            <WeekdaysInput label={t('attendance.workingDays')} value={edit.weekdays} onChange={(w) => setEdit({ ...edit, weekdays: w })} />
+            <WeekdaysInput
+              label={t('attendance.workingDays')}
+              value={edit.weekdays}
+              onChange={(w) => setEdit({ ...edit, weekdays: w })}
+            />
             <Button onClick={() => void save()} disabled={!edit.name}>
               {t('common.save')}
             </Button>
@@ -267,7 +355,10 @@ function Holidays() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const { can } = useAuth()
-  const holidays = useQuery({ queryKey: ['holidays'], queryFn: () => api.get<{ date: string; name: string }[]>('/holidays') })
+  const holidays = useQuery({
+    queryKey: ['holidays'],
+    queryFn: () => api.get<{ date: string; name: string }[]>('/holidays'),
+  })
   const [date, setDate] = useState<string | null>(null)
   const [name, setName] = useState('')
   const year = new Date().getFullYear()
@@ -276,8 +367,17 @@ function Holidays() {
     <Card withBorder>
       {can('operator') && (
         <Group align="flex-end" mb="md">
-          <DateInput label={t('attendance.holidayDate')} valueFormat={DATE_INPUT_FORMAT} value={date} onChange={setDate} />
-          <TextInput label={t('attendance.holidayName')} value={name} onChange={(e) => setName(e.currentTarget.value)} />
+          <DateInput
+            label={t('attendance.holidayDate')}
+            valueFormat={DATE_INPUT_FORMAT}
+            value={date}
+            onChange={setDate}
+          />
+          <TextInput
+            label={t('attendance.holidayName')}
+            value={name}
+            onChange={(e) => setName(e.currentTarget.value)}
+          />
           <Button
             disabled={!date || !name}
             onClick={() =>
@@ -320,7 +420,11 @@ function Holidays() {
               <Table.Td>{h.name}</Table.Td>
               <Table.Td w={50}>
                 {can('operator') && (
-                  <IconButton label={t('common.delete')} color="red" onClick={() => void api.del(`/holidays/${h.date}`).then(refresh).catch(notifyError)}>
+                  <IconButton
+                    label={t('common.delete')}
+                    color="red"
+                    onClick={() => void api.del(`/holidays/${h.date}`).then(refresh).catch(notifyError)}
+                  >
                     <IconTrash size={16} />
                   </IconButton>
                 )}
@@ -341,9 +445,18 @@ function Leaves() {
   const people = usePeople()
   const leaves = useQuery({
     queryKey: ['leaves'],
-    queryFn: () => api.get<{ id: number; personName: string; fromDate: string; toDate: string; type: string; notes: string }[]>('/leaves'),
+    queryFn: () =>
+      api.get<{ id: number; personName: string; fromDate: string; toDate: string; type: string; notes: string }[]>(
+        '/leaves',
+      ),
   })
-  const [form, setForm] = useState({ personId: null as string | null, fromDate: today() as string | null, toDate: today() as string | null, type: 'ferie', notes: '' })
+  const [form, setForm] = useState({
+    personId: null as string | null,
+    fromDate: today() as string | null,
+    toDate: today() as string | null,
+    type: 'ferie',
+    notes: '',
+  })
   const refresh = () => qc.invalidateQueries({ queryKey: ['leaves'] })
   return (
     <Card withBorder>
@@ -356,15 +469,29 @@ function Leaves() {
             value={form.personId}
             onChange={(v) => setForm({ ...form, personId: v })}
           />
-          <DateInput label={t('common.from')} valueFormat={DATE_INPUT_FORMAT} value={form.fromDate} onChange={(v) => setForm({ ...form, fromDate: v })} />
-          <DateInput label={t('common.to')} valueFormat={DATE_INPUT_FORMAT} value={form.toDate} onChange={(v) => setForm({ ...form, toDate: v })} />
+          <DateInput
+            label={t('common.from')}
+            valueFormat={DATE_INPUT_FORMAT}
+            value={form.fromDate}
+            onChange={(v) => setForm({ ...form, fromDate: v })}
+          />
+          <DateInput
+            label={t('common.to')}
+            valueFormat={DATE_INPUT_FORMAT}
+            value={form.toDate}
+            onChange={(v) => setForm({ ...form, toDate: v })}
+          />
           <Select
             label={t('attendance.leaveType')}
             data={LEAVE_TYPES.map((v) => ({ value: v, label: codes.leave(v) }))}
             value={form.type}
             onChange={(v) => setForm({ ...form, type: v ?? 'ferie' })}
           />
-          <TextInput label={t('common.notes')} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
+          <TextInput
+            label={t('common.notes')}
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })}
+          />
           <Button
             mt={24}
             disabled={!form.personId || !form.fromDate || !form.toDate}
@@ -395,7 +522,11 @@ function Leaves() {
               <Table.Td>{l.notes}</Table.Td>
               <Table.Td w={50}>
                 {can('operator') && (
-                  <IconButton label={t('common.delete')} color="red" onClick={() => void api.del(`/leaves/${l.id}`).then(refresh).catch(notifyError)}>
+                  <IconButton
+                    label={t('common.delete')}
+                    color="red"
+                    onClick={() => void api.del(`/leaves/${l.id}`).then(refresh).catch(notifyError)}
+                  >
                     <IconTrash size={16} />
                   </IconButton>
                 )}
@@ -416,9 +547,25 @@ function ManualPunches() {
   const [range] = useState({ from: addDays(today(), -31), to: today() })
   const punches = useQuery({
     queryKey: ['punches', range],
-    queryFn: () => api.get<{ id: number; personName: string; timestamp: string; direction: number; reason: string; operator: string | null }[]>(`/punches${qs(range)}`),
+    queryFn: () =>
+      api.get<
+        {
+          id: number
+          personName: string
+          timestamp: string
+          direction: number
+          reason: string
+          operator: string | null
+        }[]
+      >(`/punches${qs(range)}`),
   })
-  const [form, setForm] = useState({ personId: null as string | null, date: today() as string | null, time: '08:30', direction: '1', reason: '' })
+  const [form, setForm] = useState({
+    personId: null as string | null,
+    date: today() as string | null,
+    time: '08:30',
+    direction: '1',
+    reason: '',
+  })
   const refresh = () => qc.invalidateQueries({ queryKey: ['punches'] })
   return (
     <Card withBorder>
@@ -431,8 +578,17 @@ function ManualPunches() {
             value={form.personId}
             onChange={(v) => setForm({ ...form, personId: v })}
           />
-          <DateInput label={t('common.date')} valueFormat={DATE_INPUT_FORMAT} value={form.date} onChange={(v) => setForm({ ...form, date: v })} />
-          <TextInput label={t('common.time')} value={form.time} onChange={(e) => setForm({ ...form, time: e.currentTarget.value })} />
+          <DateInput
+            label={t('common.date')}
+            valueFormat={DATE_INPUT_FORMAT}
+            value={form.date}
+            onChange={(v) => setForm({ ...form, date: v })}
+          />
+          <TextInput
+            label={t('common.time')}
+            value={form.time}
+            onChange={(e) => setForm({ ...form, time: e.currentTarget.value })}
+          />
           <Select
             label={t('attendance.punchDirection')}
             data={[
@@ -442,13 +598,22 @@ function ManualPunches() {
             value={form.direction}
             onChange={(v) => setForm({ ...form, direction: v ?? '1' })}
           />
-          <TextInput label={t('attendance.punchReason')} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.currentTarget.value })} />
+          <TextInput
+            label={t('attendance.punchReason')}
+            value={form.reason}
+            onChange={(e) => setForm({ ...form, reason: e.currentTarget.value })}
+          />
           <Button
             mt={24}
             disabled={!form.personId || !form.date || !form.reason}
             onClick={() =>
               void api
-                .post('/punches', { personId: Number(form.personId), timestamp: `${form.date} ${form.time}`, direction: Number(form.direction), reason: form.reason })
+                .post('/punches', {
+                  personId: Number(form.personId),
+                  timestamp: `${form.date} ${form.time}`,
+                  direction: Number(form.direction),
+                  reason: form.reason,
+                })
                 .then(() => {
                   setForm({ ...form, reason: '' })
                   void refresh()
@@ -471,7 +636,11 @@ function ManualPunches() {
               <Table.Td c="dimmed">{p.operator}</Table.Td>
               <Table.Td w={50}>
                 {can('operator') && (
-                  <IconButton label={t('common.delete')} color="red" onClick={() => void api.del(`/punches/${p.id}`).then(refresh).catch(notifyError)}>
+                  <IconButton
+                    label={t('common.delete')}
+                    color="red"
+                    onClick={() => void api.del(`/punches/${p.id}`).then(refresh).catch(notifyError)}
+                  >
                     <IconTrash size={16} />
                   </IconButton>
                 )}

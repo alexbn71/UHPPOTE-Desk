@@ -35,7 +35,12 @@ const relay = (r: Partial<ExpansionRelay>): ExpansionRelay => ({
   ...r,
 })
 
-const allInactive = (): Quad<ExpansionRelay> => [{ ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }]
+const allInactive = (): Quad<ExpansionRelay> => [
+  { ...INACTIVE_RELAY },
+  { ...INACTIVE_RELAY },
+  { ...INACTIVE_RELAY },
+  { ...INACTIVE_RELAY },
+]
 
 function table(cfg: ExpansionBoardConfig): Uint8Array {
   const t = new Uint8Array(PARAMETER_TABLE_SIZE)
@@ -67,7 +72,12 @@ describe('0xF2 write parameters packet', () => {
 
   it('rejects empty, too many, out-of-range index or value', () => {
     expect(() => encode.writeParameters(ID, [])).toThrow(CodecError)
-    expect(() => encode.writeParameters(ID, Array.from({ length: 9 }, (_, i) => ({ index: i, value: 0 })))).toThrow(CodecError)
+    expect(() =>
+      encode.writeParameters(
+        ID,
+        Array.from({ length: 9 }, (_, i) => ({ index: i, value: 0 })),
+      ),
+    ).toThrow(CodecError)
     expect(() => encode.writeParameters(ID, [{ index: -1, value: 0 }])).toThrow(CodecError)
     expect(() => encode.writeParameters(ID, [{ index: 1024, value: 0 }])).toThrow(CodecError)
     expect(() => encode.writeParameters(ID, [{ index: 10, value: 256 }])).toThrow(CodecError)
@@ -97,7 +107,11 @@ describe('expansion board parameters', () => {
         relay({ source: ExpansionSource.Door1, events: ExpansionEvent.ForcedOpen, duration: 5 }),
         relay({ source: ExpansionSource.Door3, mode: ExpansionOutputMode.AnySignal, signals: 0x82, duration: 300 }),
         { ...INACTIVE_RELAY },
-        relay({ source: ExpansionSource.Door2, mode: ExpansionOutputMode.UntilReset, events: ExpansionEvent.Fire | ExpansionEvent.Threat }),
+        relay({
+          source: ExpansionSource.Door2,
+          mode: ExpansionOutputMode.UntilReset,
+          events: ExpansionEvent.Fire | ExpansionEvent.Threat,
+        }),
       ],
       doorOpenTooLong: 25,
       duressCode: null,
@@ -111,7 +125,12 @@ describe('expansion board parameters', () => {
 
   it('alarm types: union of the relay events + forced lock + fire (as the vendor software)', () => {
     const t = table({
-      relays: [relay({ events: ExpansionEvent.OpenTooLong }), relay({ events: ExpansionEvent.InvalidCard }), { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }],
+      relays: [
+        relay({ events: ExpansionEvent.OpenTooLong }),
+        relay({ events: ExpansionEvent.InvalidCard }),
+        { ...INACTIVE_RELAY },
+        { ...INACTIVE_RELAY },
+      ],
       doorOpenTooLong: 25,
       duressCode: null,
     })
@@ -127,7 +146,12 @@ describe('expansion board parameters', () => {
 
   it('ARM source: events cleared, ARM bit and vendor defaults (126, 30 s, 30 s)', () => {
     const writes = expansionBoardParameters({
-      relays: [relay({ source: ExpansionSource.Arm, events: ExpansionEvent.ForcedOpen }), { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }],
+      relays: [
+        relay({ source: ExpansionSource.Arm, events: ExpansionEvent.ForcedOpen }),
+        { ...INACTIVE_RELAY },
+        { ...INACTIVE_RELAY },
+        { ...INACTIVE_RELAY },
+      ],
       doorOpenTooLong: 25,
       duressCode: null,
     })
@@ -139,7 +163,9 @@ describe('expansion board parameters', () => {
   })
 
   it('without ARM the ARM parameters and, without duress code, bytes 74/75/163 are not written', () => {
-    const idx = expansionBoardParameters({ relays: allInactive(), doorOpenTooLong: 25, duressCode: null }).map((w) => w.index)
+    const idx = expansionBoardParameters({ relays: allInactive(), doorOpenTooLong: 25, duressCode: null }).map(
+      (w) => w.index,
+    )
     for (const i of [45, 46, 47, 74, 75, 163]) expect(idx).not.toContain(i)
   })
 
@@ -152,7 +178,19 @@ describe('expansion board parameters', () => {
     const writes = expansionBoardParameters({ relays: allInactive(), doorOpenTooLong: 25, duressCode: 1 })
     const idx = writes.map((w) => w.index)
     expect(idx).toEqual([...idx].sort((a, b) => a - b))
-    const allowed = new Set([30, 32, 35, 45, 46, 47, 74, 75, 162, 163, ...Array.from({ length: 24 }, (_, i) => 136 + i)])
+    const allowed = new Set([
+      30,
+      32,
+      35,
+      45,
+      46,
+      47,
+      74,
+      75,
+      162,
+      163,
+      ...Array.from({ length: 24 }, (_, i) => 136 + i),
+    ])
     for (const i of idx) expect(allowed.has(i)).toBe(true)
   })
 
@@ -163,8 +201,15 @@ describe('expansion board parameters', () => {
   })
 
   it('validation', () => {
-    const bad = (r: Partial<ExpansionRelay>, extra: Partial<ExpansionBoardConfig> = {}) => () =>
-      expansionBoardParameters({ relays: [relay(r), { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }], doorOpenTooLong: 25, duressCode: null, ...extra })
+    const bad =
+      (r: Partial<ExpansionRelay>, extra: Partial<ExpansionBoardConfig> = {}) =>
+      () =>
+        expansionBoardParameters({
+          relays: [relay(r), { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }, { ...INACTIVE_RELAY }],
+          doorOpenTooLong: 25,
+          duressCode: null,
+          ...extra,
+        })
     expect(bad({ source: 4 })).toThrow(CodecError)
     expect(bad({ mode: 0 })).toThrow(CodecError)
     expect(bad({ mode: 6 })).toThrow(CodecError)
@@ -190,10 +235,19 @@ describe('expansion board parameters', () => {
       }),
     )
     fc.assert(
-      fc.property(fc.tuple(relayArb, relayArb, relayArb, relayArb), fc.integer({ min: 1, max: 6553 }), fc.integer({ min: 0, max: 999999 }), (relays, ajar, duress) => {
-        const cfg: ExpansionBoardConfig = { relays: relays as Quad<ExpansionRelay>, doorOpenTooLong: ajar, duressCode: duress }
-        expect(decodeExpansionBoard(table(cfg))).toEqual(cfg)
-      }),
+      fc.property(
+        fc.tuple(relayArb, relayArb, relayArb, relayArb),
+        fc.integer({ min: 1, max: 6553 }),
+        fc.integer({ min: 0, max: 999999 }),
+        (relays, ajar, duress) => {
+          const cfg: ExpansionBoardConfig = {
+            relays: relays as Quad<ExpansionRelay>,
+            doorOpenTooLong: ajar,
+            duressCode: duress,
+          }
+          expect(decodeExpansionBoard(table(cfg))).toEqual(cfg)
+        },
+      ),
     )
   })
 })

@@ -41,7 +41,9 @@ export function prepareDataDir(dataDir: string, dbFile: string): { created: bool
     try {
       fs.accessSync(dbFile, fs.constants.R_OK | fs.constants.W_OK)
     } catch {
-      throw new DataDirError(`the database ${dbFile} exists but is not readable/writable by the process (${whoami()}). Fix its ownership (see PUID/PGID in docs/DOCKER.md).`)
+      throw new DataDirError(
+        `the database ${dbFile} exists but is not readable/writable by the process (${whoami()}). Fix its ownership (see PUID/PGID in docs/DOCKER.md).`,
+      )
     }
   }
   return { created: !exists }

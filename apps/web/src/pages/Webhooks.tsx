@@ -1,4 +1,22 @@
-import { Alert, Badge, Button, Card, Checkbox, Code, CopyButton, Group, Modal, MultiSelect, Stack, Switch, Table, Text, Textarea, TextInput, Tooltip } from '@mantine/core'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  Code,
+  CopyButton,
+  Group,
+  Modal,
+  MultiSelect,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  Textarea,
+  TextInput,
+  Tooltip,
+} from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { IconCopy, IconEdit, IconList, IconPlus, IconRefresh, IconSend, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -52,7 +70,8 @@ export function WebhooksPage() {
   const [log, setLog] = useState<WebhookDto | null>(null)
   const [testing, setTesting] = useState<number | null>(null)
 
-  const eventLabel = (e: string) => t(`codes.webhookEvent.${e.replace('.', '_')}` as 'codes.webhookEvent.alarm', { defaultValue: e })
+  const eventLabel = (e: string) =>
+    t(`codes.webhookEvent.${e.replace('.', '_')}` as 'codes.webhookEvent.alarm', { defaultValue: e })
   const doorName = (id: number) => doors.data?.find((d) => d.id === id)?.name ?? `#${id}`
   const refresh = () => void qc.invalidateQueries({ queryKey: ['webhooks'] })
 
@@ -62,7 +81,14 @@ export function WebhooksPage() {
   const save = async () => {
     if (!form || 'invalid' in headers) return
     try {
-      const body = { name: form.name, url: form.url, enabled: form.enabled, events: form.events, doorIds: form.doorIds.map(Number), headers }
+      const body = {
+        name: form.name,
+        url: form.url,
+        enabled: form.enabled,
+        events: form.events,
+        doorIds: form.doorIds.map(Number),
+        headers,
+      }
       if (form.id) await api.put(`/webhooks/${form.id}`, body)
       else await api.post('/webhooks', body)
       setForm(null)
@@ -116,7 +142,19 @@ export function WebhooksPage() {
         title={t('webhooks.title')}
         description={t('webhooks.description')}
         actions={
-          <Button leftSection={<IconPlus size={16} />} onClick={() => setForm({ name: '', url: 'https://', enabled: true, events: ['access.granted', 'access.denied'], doorIds: [], headers: '' })}>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() =>
+              setForm({
+                name: '',
+                url: 'https://',
+                enabled: true,
+                events: ['access.granted', 'access.denied'],
+                doorIds: [],
+                headers: '',
+              })
+            }
+          >
             {t('webhooks.new')}
           </Button>
         }
@@ -196,12 +234,31 @@ export function WebhooksPage() {
         {t('webhooks.docs')}
       </Text>
 
-      <Modal opened={!!form} onClose={() => setForm(null)} title={form?.id ? t('webhooks.editTitle') : t('webhooks.newTitle')} size="lg">
+      <Modal
+        opened={!!form}
+        onClose={() => setForm(null)}
+        title={form?.id ? t('webhooks.editTitle') : t('webhooks.newTitle')}
+        size="lg"
+      >
         {form && (
           <Stack>
-            <TextInput label={t('webhooks.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} />
-            <TextInput label={t('webhooks.url')} description={t('webhooks.urlHint')} classNames={{ input: 'mono' }} value={form.url} onChange={(e) => setForm({ ...form, url: e.currentTarget.value })} />
-            <Checkbox.Group label={t('webhooks.events')} value={form.events} onChange={(v) => setForm({ ...form, events: v as WebhookEvent[] })}>
+            <TextInput
+              label={t('webhooks.name')}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.currentTarget.value })}
+            />
+            <TextInput
+              label={t('webhooks.url')}
+              description={t('webhooks.urlHint')}
+              classNames={{ input: 'mono' }}
+              value={form.url}
+              onChange={(e) => setForm({ ...form, url: e.currentTarget.value })}
+            />
+            <Checkbox.Group
+              label={t('webhooks.events')}
+              value={form.events}
+              onChange={(v) => setForm({ ...form, events: v as WebhookEvent[] })}
+            >
               <Stack gap={6} mt={6}>
                 {WEBHOOK_EVENTS.map((e) => (
                   <Checkbox key={e} value={e} label={eventLabel(e)} />
@@ -236,7 +293,11 @@ export function WebhooksPage() {
                   <Code style={{ wordBreak: 'break-all', flex: 1 }}>{form.secret}</Code>
                   <CopyButton value={form.secret}>
                     {({ copied, copy }) => (
-                      <IconButton label={copied ? t('webhooks.copied') : t('webhooks.copy')} onClick={copy} color={copied ? 'green' : undefined}>
+                      <IconButton
+                        label={copied ? t('webhooks.copied') : t('webhooks.copy')}
+                        onClick={copy}
+                        color={copied ? 'green' : undefined}
+                      >
                         <IconCopy size={16} />
                       </IconButton>
                     )}
@@ -252,8 +313,15 @@ export function WebhooksPage() {
             ) : (
               <Alert color="gray">{t('webhooks.secretAfterSave')}</Alert>
             )}
-            <Switch label={t('webhooks.enabledSwitch')} checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })} />
-            <Button onClick={() => void save()} disabled={!form.name || !/^https?:\/\/.+/i.test(form.url) || form.events.length === 0 || !!headersError}>
+            <Switch
+              label={t('webhooks.enabledSwitch')}
+              checked={form.enabled}
+              onChange={(e) => setForm({ ...form, enabled: e.currentTarget.checked })}
+            />
+            <Button
+              onClick={() => void save()}
+              disabled={!form.name || !/^https?:\/\/.+/i.test(form.url) || form.events.length === 0 || !!headersError}
+            >
               {t('common.save')}
             </Button>
           </Stack>
@@ -265,7 +333,15 @@ export function WebhooksPage() {
   )
 }
 
-function DeliveriesModal({ webhook, onClose, eventLabel }: { webhook: WebhookDto | null; onClose: () => void; eventLabel: (e: string) => string }) {
+function DeliveriesModal({
+  webhook,
+  onClose,
+  eventLabel,
+}: {
+  webhook: WebhookDto | null
+  onClose: () => void
+  eventLabel: (e: string) => string
+}) {
   const { t } = useTranslation()
   const [open, setOpen] = useState<number | null>(null)
   const deliveries = useQuery({
@@ -276,7 +352,12 @@ function DeliveriesModal({ webhook, onClose, eventLabel }: { webhook: WebhookDto
   })
 
   return (
-    <Modal opened={!!webhook} onClose={onClose} title={webhook ? t('webhooks.deliveriesTitle', { name: webhook.name }) : ''} size="xl">
+    <Modal
+      opened={!!webhook}
+      onClose={onClose}
+      title={webhook ? t('webhooks.deliveriesTitle', { name: webhook.name }) : ''}
+      size="xl"
+    >
       {deliveries.data?.length === 0 && (
         <Text size="sm" c="dimmed">
           {t('webhooks.noDeliveries')}

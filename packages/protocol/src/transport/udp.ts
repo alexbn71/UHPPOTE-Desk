@@ -95,7 +95,9 @@ export async function udpExchange(
 
   try {
     return await new Promise<Buffer | null>((resolve, reject) => {
-      const timer = expectReply ? setTimeout(() => reject(new TimeoutError(controller, fc, opts.timeoutMs)), opts.timeoutMs) : null
+      const timer = expectReply
+        ? setTimeout(() => reject(new TimeoutError(controller, fc, opts.timeoutMs)), opts.timeoutMs)
+        : null
 
       sock.on('message', (msg, rinfo) => {
         log?.debug?.(`UDP ← ${rinfo.address}:${rinfo.port}\n${hexdump(msg)}`)

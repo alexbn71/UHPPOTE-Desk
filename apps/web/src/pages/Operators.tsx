@@ -1,4 +1,20 @@
-import { Alert, Badge, Button, Card, Code, Group, Modal, MultiSelect, PasswordInput, Select, Stack, Switch, Table, Text, TextInput } from '@mantine/core'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Code,
+  Group,
+  Modal,
+  MultiSelect,
+  PasswordInput,
+  Select,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { IconEdit, IconKey, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -34,7 +50,14 @@ export function OperatorsPage() {
   const save = async () => {
     if (!form) return
     try {
-      const body = { username: form.username, displayName: form.displayName, role: form.role, active: form.active, password: form.password || undefined, zoneIds: form.zoneIds.map(Number) }
+      const body = {
+        username: form.username,
+        displayName: form.displayName,
+        role: form.role,
+        active: form.active,
+        password: form.password || undefined,
+        zoneIds: form.zoneIds.map(Number),
+      }
       if (form.id) await api.put(`/operators/${form.id}`, body)
       else {
         const r = await api.post<{ password?: string }>('/operators', body)
@@ -78,13 +101,24 @@ export function OperatorsPage() {
         title={t('operators.title')}
         description={t('operators.description')}
         actions={
-          <Button leftSection={<IconPlus size={16} />} onClick={() => setForm({ username: '', displayName: '', role: 'operator', active: true, password: '', zoneIds: [] })}>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() =>
+              setForm({ username: '', displayName: '', role: 'operator', active: true, password: '', zoneIds: [] })
+            }
+          >
             {t('operators.new')}
           </Button>
         }
       />
       {generated && (
-        <Alert color="blue" withCloseButton onClose={() => setGenerated(null)} mb="md" title={t('operators.tempPasswordTitle')}>
+        <Alert
+          color="blue"
+          withCloseButton
+          onClose={() => setGenerated(null)}
+          mb="md"
+          title={t('operators.tempPasswordTitle')}
+        >
           <Code>{t('operators.tempPassword', { user: generated.username, password: generated.password })}</Code>
         </Alert>
       )}
@@ -110,11 +144,18 @@ export function OperatorsPage() {
                     {codes.role(o.role)}
                   </Badge>
                 </Table.Td>
-                <Table.Td>{o.zoneIds.length ? o.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', ') : t('operators.allZones')}</Table.Td>
+                <Table.Td>
+                  {o.zoneIds.length
+                    ? o.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', ')
+                    : t('operators.allZones')}
+                </Table.Td>
                 <Table.Td>{fmtDateTime(o.lastLoginAt)}</Table.Td>
                 <Table.Td>
                   <Group gap={0} justify="flex-end">
-                    <IconButton label={t('common.edit')} onClick={() => setForm({ ...o, password: '', zoneIds: o.zoneIds.map(String) })}>
+                    <IconButton
+                      label={t('common.edit')}
+                      onClick={() => setForm({ ...o, password: '', zoneIds: o.zoneIds.map(String) })}
+                    >
                       <IconEdit size={16} />
                     </IconButton>
                     <IconButton label={t('operators.resetPassword')} onClick={() => resetPassword(o)}>
@@ -130,20 +171,47 @@ export function OperatorsPage() {
           </Table.Tbody>
         </Table>
       </Card>
-      <Modal opened={!!form} onClose={() => setForm(null)} title={form?.id ? t('operators.editTitle') : t('operators.newTitle')}>
+      <Modal
+        opened={!!form}
+        onClose={() => setForm(null)}
+        title={form?.id ? t('operators.editTitle') : t('operators.newTitle')}
+      >
         {form && (
           <Stack>
-            <TextInput label={t('operators.username')} value={form.username} onChange={(e) => setForm({ ...form, username: e.currentTarget.value })} />
-            <TextInput label={t('operators.displayName')} value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.currentTarget.value })} />
-            <Select label={t('operators.role')} data={ROLES.map((r) => ({ value: r, label: codes.role(r) }))} value={form.role} onChange={(v) => setForm({ ...form, role: (v as Role) ?? 'viewer' })} />
-            <MultiSelect label={t('operators.zones')} description={t('operators.zonesHint')} data={treeOptions(zones.data)} value={form.zoneIds} onChange={(v) => setForm({ ...form, zoneIds: v })} />
+            <TextInput
+              label={t('operators.username')}
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.currentTarget.value })}
+            />
+            <TextInput
+              label={t('operators.displayName')}
+              value={form.displayName}
+              onChange={(e) => setForm({ ...form, displayName: e.currentTarget.value })}
+            />
+            <Select
+              label={t('operators.role')}
+              data={ROLES.map((r) => ({ value: r, label: codes.role(r) }))}
+              value={form.role}
+              onChange={(v) => setForm({ ...form, role: (v as Role) ?? 'viewer' })}
+            />
+            <MultiSelect
+              label={t('operators.zones')}
+              description={t('operators.zonesHint')}
+              data={treeOptions(zones.data)}
+              value={form.zoneIds}
+              onChange={(v) => setForm({ ...form, zoneIds: v })}
+            />
             <PasswordInput
               label={form.id ? t('operators.passwordNew') : t('operators.passwordOptional')}
               description={t('operators.passwordHint')}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.currentTarget.value })}
             />
-            <Switch label={t('operators.activeSwitch')} checked={form.active} onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })} />
+            <Switch
+              label={t('operators.activeSwitch')}
+              checked={form.active}
+              onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })}
+            />
             <Button onClick={() => void save()} disabled={!form.username || !form.displayName}>
               {t('common.save')}
             </Button>

@@ -71,14 +71,27 @@ describe('encoder validation', () => {
     const base = {
       from: '2026-01-01',
       to: '2026-12-31',
-      weekdays: [true, true, true, true, true, false, false] as [boolean, boolean, boolean, boolean, boolean, boolean, boolean],
+      weekdays: [true, true, true, true, true, false, false] as [
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+        boolean,
+      ],
       segments: [{ start: '08:00', end: '17:00' }],
     }
     expect(() => encode.setTimeProfile(1, { ...base, id: 1, linkedTo: 0 })).toThrow(CodecError)
     expect(() => encode.setTimeProfile(1, { ...base, id: 255, linkedTo: 0 })).toThrow(CodecError)
     expect(() => encode.setTimeProfile(1, { ...base, id: 2, linkedTo: 1 })).toThrow(CodecError)
     expect(() =>
-      encode.setTimeProfile(1, { ...base, id: 2, linkedTo: 0, segments: [base.segments[0]!, base.segments[0]!, base.segments[0]!, base.segments[0]!] }),
+      encode.setTimeProfile(1, {
+        ...base,
+        id: 2,
+        linkedTo: 0,
+        segments: [base.segments[0]!, base.segments[0]!, base.segments[0]!, base.segments[0]!],
+      }),
     ).toThrow(CodecError)
   })
 
@@ -89,12 +102,25 @@ describe('encoder validation', () => {
 
   it('first-card: the active mode cannot be "first-card only"', () => {
     expect(() =>
-      encode.setFirstCard(1, { door: 1, start: '08:00', end: '18:00', activeMode: 3, inactiveMode: 0, weekdays: [true, true, true, true, true, true, true] }),
+      encode.setFirstCard(1, {
+        door: 1,
+        start: '08:00',
+        end: '18:00',
+        activeMode: 3,
+        inactiveMode: 0,
+        weekdays: [true, true, true, true, true, true, true],
+      }),
     ).toThrow(CodecError)
   })
 
   it('card: number 0 and 0xFFFFFFFF rejected', () => {
-    const card = { from: '2026-01-01', to: '2026-12-31', doors: [1, 0, 0, 0] as [number, number, number, number], pin: 0, firstCard: [false, false, false, false] as [boolean, boolean, boolean, boolean] }
+    const card = {
+      from: '2026-01-01',
+      to: '2026-12-31',
+      doors: [1, 0, 0, 0] as [number, number, number, number],
+      pin: 0,
+      firstCard: [false, false, false, false] as [boolean, boolean, boolean, boolean],
+    }
     expect(() => encode.putCard(1, { ...card, card: 0 })).toThrow(CodecError)
     expect(() => encode.putCard(1, { ...card, card: 0xffffffff })).toThrow(CodecError)
   })

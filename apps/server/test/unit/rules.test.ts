@@ -8,12 +8,30 @@ const controller = { id: 1, serial: 1, name: 'Villa', enabled: true } as Control
 const door = { id: 7, controllerId: 1, door: 1, name: 'Cancello', active: true, attendance: false, mode: 3, delay: 5 }
 
 function ctx(timestamp: string, e: Partial<EventDto> = {}): RuleContext {
-  const event = { id: 1, controllerId: 1, controllerName: 'Villa', index: 1, type: 1, granted: false, door: 1, doorName: 'Cancello', direction: 1, card: 10058400, personId: 3, personName: 'Rossi Mario', timestamp, reason: 6, receivedAt: timestamp, ...e }
+  const event = {
+    id: 1,
+    controllerId: 1,
+    controllerName: 'Villa',
+    index: 1,
+    type: 1,
+    granted: false,
+    door: 1,
+    doorName: 'Cancello',
+    direction: 1,
+    card: 10058400,
+    personId: 3,
+    personName: 'Rossi Mario',
+    timestamp,
+    reason: 6,
+    receivedAt: timestamp,
+    ...e,
+  }
   const ev: IntegrationEvent = { type: 'access.denied', controller, door, data: {}, event, state: null }
   return { event: ev, controller, door, timestamp, seconds: null }
 }
 
-const rule = (conditions: object, extra: object = {}) => ruleInputSchema.parse({ name: 'R', trigger: { type: 'access.denied' }, conditions, ...extra })
+const rule = (conditions: object, extra: object = {}) =>
+  ruleInputSchema.parse({ name: 'R', trigger: { type: 'access.denied' }, conditions, ...extra })
 const match = (r: ReturnType<typeof rule>, c: RuleContext) => matchesConditions(r, c, () => [7, 8])
 
 describe('matchesConditions', () => {
@@ -51,13 +69,17 @@ describe('matchesConditions', () => {
 describe('ruleText', () => {
   it('fills the placeholders', () => {
     const r = rule({}, { message: '{person} ({card}) a {door} alle {time}: {reason} {unknown}' })
-    expect(ruleText(r, ctx('2026-10-12 22:30:05'), 'it')).toBe('Rossi Mario (10058400) a Cancello alle 22:30:05: Nessun diritto di accesso {unknown}')
+    expect(ruleText(r, ctx('2026-10-12 22:30:05'), 'it')).toBe(
+      'Rossi Mario (10058400) a Cancello alle 22:30:05: Nessun diritto di accesso {unknown}',
+    )
   })
 
   it('writes an automatic text when the message is empty', () => {
     expect(ruleText(rule({}), ctx('2026-10-12 22:30:05'), 'it').split('\n')[0]).toBe('Accesso negato — Cancello')
     const open = ruleInputSchema.parse({ name: 'R', trigger: { type: 'door.open_for', seconds: 120 } })
-    expect(ruleText(open, { event: null, controller, door, timestamp: '2026-10-12 10:00:00', seconds: 120 }, 'it')).toBe('Cancello aperta da 2 min')
+    expect(
+      ruleText(open, { event: null, controller, door, timestamp: '2026-10-12 10:00:00', seconds: 120 }, 'it'),
+    ).toBe('Cancello aperta da 2 min')
   })
 
   it('formats durations', () => {

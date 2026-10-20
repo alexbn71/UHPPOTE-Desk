@@ -109,10 +109,13 @@ export class RuleRepo {
 
   runs(ruleId: number, limit = KEEP_RUNS): RuleRunDto[] {
     return this.db
-      .all<{ id: number; rule_id: number; at: string; text: string; errors: string }>(
-        'SELECT * FROM rule_runs WHERE rule_id = ? ORDER BY id DESC LIMIT ?',
-        [ruleId, limit],
-      )
+      .all<{
+        id: number
+        rule_id: number
+        at: string
+        text: string
+        errors: string
+      }>('SELECT * FROM rule_runs WHERE rule_id = ? ORDER BY id DESC LIMIT ?', [ruleId, limit])
       .map((r) => ({ id: r.id, ruleId: r.rule_id, at: r.at, text: r.text, errors: JSON.parse(r.errors) as string[] }))
   }
 }

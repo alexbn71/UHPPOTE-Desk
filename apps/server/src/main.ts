@@ -26,7 +26,9 @@ async function main(): Promise<void> {
   const config = loadConfig()
   const dbFile = path.join(config.dataDir, 'uhppote-desk.sqlite')
   const { created } = prepareDataDir(config.dataDir, dbFile)
-  logger.info!(created ? `no database found in ${config.dataDir}: creating a new one (${dbFile})` : `using database ${dbFile}`)
+  logger.info!(
+    created ? `no database found in ${config.dataDir}: creating a new one (${dbFile})` : `using database ${dbFile}`,
+  )
   const ctx = createContext(config, logger, dbFile)
 
   if (config.adminPasswordFromLegacyVariable) {
@@ -50,10 +52,14 @@ async function main(): Promise<void> {
     const addr = await ctx.eventService.startListener()
     logger.info!(`UHPPOTE event listener listening on ${addr.address}:${addr.port}`)
   } catch (err) {
-    logger.error!(`cannot start the event listener: ${(err as Error).message} — events will be collected by polling only`)
+    logger.error!(
+      `cannot start the event listener: ${(err as Error).message} — events will be collected by polling only`,
+    )
   }
   if (!config.uhppote.listenerPublic) {
-    logger.warn!('UHPPOTE_LISTENER_PUBLIC not set: the controllers\' event listener will not be configured automatically')
+    logger.warn!(
+      "UHPPOTE_LISTENER_PUBLIC not set: the controllers' event listener will not be configured automatically",
+    )
   }
 
   ctx.health.start()
@@ -65,7 +71,9 @@ async function main(): Promise<void> {
   ctx.backup.start()
   const collectTimer = setInterval(() => {
     for (const c of ctx.controllers.list().filter((x) => x.enabled && ctx.hub.state(x.id).online)) {
-      ctx.eventService.collect(c.id).catch((err) => logger.warn!(`event collection ${c.serial}: ${(err as Error).message}`))
+      ctx.eventService
+        .collect(c.id)
+        .catch((err) => logger.warn!(`event collection ${c.serial}: ${(err as Error).message}`))
     }
     ctx.auth.purgeExpired()
   }, config.collectIntervalSec * 1000)
