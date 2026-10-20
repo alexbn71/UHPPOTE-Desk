@@ -76,7 +76,8 @@ The screenshots use demonstration data and a simulated controller; they are rege
 | [packages/shared](packages/shared) | zod API schemas, DTOs, translations (`src/i18n`) |
 | [apps/server](apps/server) | Fastify backend: SQLite (`node:sqlite`), authentication and roles, synchronisation, event collection, monitoring, attendance, WebSocket |
 | [apps/web](apps/web) | React + Mantine frontend |
-| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L6) and a development simulator |
+| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L6), a development simulator and the capture analysis (`npm run pcap`) |
+| [tools/wireshark](tools/wireshark) | Wireshark dissector for the controller protocol |
 | [e2e](e2e) | Playwright end-to-end tests |
 | [docker](docker) | Docker image, compose files, Unraid template |
 | [homeassistant-addon](homeassistant-addon) | Home Assistant add-on (with [repository.yaml](repository.yaml) at the root) |

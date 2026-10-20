@@ -15,3 +15,6 @@ test-results/
 # manufacturer material (not redistributable): see README
 Legacy/
 docs/manual/shots/
+
+# network captures (contain local network data)
+tools/wireshark/captures/

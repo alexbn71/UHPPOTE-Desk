@@ -141,3 +141,52 @@ Every test logs the raw *relays* and *inputs* bytes of the status at the moment 
 (`reports/hwtest-*.md` and `.json`) when something does not behave as described here.
 
 The whole level also runs against the FakeController in `tools/hwtest/test/hwtest.int.ts` (`npm run test:int`).
+
+## Capturing with Wireshark
+
+A capture of the manufacturer's software configuring the board is the reference for the reconstructed protocol:
+it shows whether it uses `0xF2` with the same bytes as UHPPOTE Desk, or its older long-packet protocol.
+
+### Setup
+
+1. Install [Wireshark](https://www.wireshark.org) (with Npcap).
+2. Copy [tools/wireshark/uhppote.lua](../tools/wireshark/uhppote.lua) to `%APPDATA%\Wireshark\plugins\`
+   (Linux/macOS: `~/.local/lib/wireshark/plugins/`) and restart Wireshark, or *Analyze → Reload Lua Plugins*
+   (Ctrl+Shift+L).
+3. Capture on the network card that reaches the controller (e.g. *Ethernet*) with the capture filter
+   `udp port 60000 or udp port 60001`, and use the display filter `uhppote`.
+
+The dissector names every function, decodes status and events (door, card, reason, relay and input bytes) and,
+for `0xF2`, every byte written: `[138] = 0x14 expansion output 1: events = forced open, invalid card`.
+Packets of a size other than 64 bytes are the manufacturer's long-packet protocol: only their header is shown.
+The listener port (default 60001) can be changed in *Edit → Preferences → Protocols → UHPPOTE*.
+
+### Capturing the manufacturer's software
+
+> **Careful.** The manufacturer's *Upload* sends its whole configuration to the controller, including its own
+> card list and time profiles. Use a controller without production data, or run *Synchronisation → Full
+> synchronisation* in UHPPOTE Desk afterwards to restore cards, profiles and settings. Do not run the two
+> programs against the controller at the same time.
+
+1. Install the manufacturer's software (`MJ_all_en.rar`, *AccessControl*), log in (`abc` / `123`) and add the
+   controller.
+2. Enable *Peripheral control* in the extended functions (password `5678`).
+3. Start the capture in Wireshark.
+4. *Configuration → Peripheral → Hardware Configuration*: configure the terminal blocks (for example block 1 =
+   door 1, *Forced Open*, 20 s), confirm with *OK*, then *Operation → Console → Upload* to the controller.
+5. Stop the capture and save it as `.pcapng`.
+6. Enter the same configuration in the *Expansion board* tab of UHPPOTE Desk and save it as `expected.json`
+   (the `expansionBoard` object of `GET /api/controllers/<id>/settings`), then compare:
+
+```bash
+npm run pcap -- capture.pcapng                           # functions, 0xF2 writes, reconstructed board
+npm run pcap -- capture.pcapng --expected expected.json  # IDENTICAL, or the bytes that differ (exit code 2)
+npm run pcap -- capture.pcapng --json analysis.json      # the same, as JSON
+```
+
+`npm run pcap` needs `tshark` (installed with Wireshark; set `TSHARK` if it is not in
+`C:\Program Files\Wireshark`). Bytes reported as *extra* are written by the manufacturer's software but not by
+UHPPOTE Desk; *long-packet protocol* lines mean the software did not use the 64-byte protocol for that operation.
+
+Captures of the hardware tests are useful too: start Wireshark, run `npm run hw -- … --level 6` and attach the
+`.pcapng` to the report.

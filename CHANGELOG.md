@@ -14,6 +14,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 - Hardware test level **L6** (`npm run hw -- --level 6`): address mapping check, configuration write and guided
   tests of the board relays (forced open, open too long, invalid card, fire input, duress code).
 - FakeController: parameter table, simulated expansion relays, `raiseAlarm` and `setFireInput`.
+- Wireshark dissector (`tools/wireshark/uhppote.lua`) and `npm run pcap`, which reconstructs the expansion board
+  written in a capture and compares it with a configuration.
 
 ### Fixed
 - *Network and configuration*: the "send new IP" form and the listener form start from the configuration read

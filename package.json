@@ -24,6 +24,7 @@
     "test:all": "vitest run",
     "hw": "tsx tools/hwtest/src/cli.ts",
     "sim": "tsx tools/hwtest/src/devsim.ts",
+    "pcap": "tsx tools/hwtest/src/pcap-cli.ts",
     "manual": "npm run build --workspace @uhppote-desk/web && tsx docs/manual/build.ts",
     "screenshots": "npm run build --workspace @uhppote-desk/web && tsx docs/manual/build.ts --readme",
     "e2e": "npm run build --workspace @uhppote-desk/web && playwright test",
