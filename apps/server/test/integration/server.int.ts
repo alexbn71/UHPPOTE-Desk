@@ -547,6 +547,49 @@ describe('synchronisation', () => {
     expect((await bad({ relays })).statusCode).toBe(400)
   })
 
+  it('reader and door options: written and verified only when managed', async () => {
+    const saved = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    // without the expansion board, so that only these options reach the parameter table
+    const settings = { ...saved, expansionBoard: { ...saved.expansionBoard, installed: false } }
+    expect(settings.controllerOptions.managed).toBe(false)
+    const before = fake.parameterWrites
+    expect((await api('PUT', `/controllers/${controllerId}/settings`, settings)).json().options).toBeNull()
+    expect(fake.parameterWrites).toBe(before)
+    expect((await api('GET', `/controllers/${controllerId}/controller-options`)).json().mismatches).toBeNull()
+
+    const controllerOptions = {
+      managed: true,
+      fourTimesNormalOpen: { readers: [true, false, true, false], timeProfile: 0 },
+      silentInvalidCard: true,
+      swipeGapSeconds: 30,
+      doorAsSwitch: [false, true, false, false],
+      multiCard: [0, 0, 0, 3],
+    }
+    const r = await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, controllerOptions })
+    expect(r.json().options).toEqual({ verified: true, mismatches: [] })
+    expect([
+      fake.parameters[250],
+      fake.parameters[205],
+      fake.parameters[52],
+      fake.parameters[222],
+      fake.parameters[171],
+    ]).toEqual([0b0101, 0xa5, 15, 0xfd, 3])
+    const read = (await api('GET', `/controllers/${controllerId}/controller-options`)).json()
+    const { managed: _managed, ...values } = controllerOptions
+    expect(read).toEqual({ ...values, mismatches: [] })
+    fake.parameters[250] = 0
+    expect((await api('GET', `/controllers/${controllerId}/controller-options`)).json().mismatches).toEqual([
+      { index: 250, expected: 0b0101, actual: 0 },
+    ])
+    // invalid: odd gap, 1 card
+    const bad = await api('PUT', `/controllers/${controllerId}/settings?push=false`, {
+      ...settings,
+      controllerOptions: { ...controllerOptions, swipeGapSeconds: 3, multiCard: [1, 0, 0, 0] },
+    })
+    expect(bad.statusCode).toBe(400)
+    await api('PUT', `/controllers/${controllerId}/settings?push=false`, settings)
+  })
+
   it('settings saved without expansionBoard (older clients) get the default', async () => {
     const { expansionBoard: _drop, ...settings } = (await api('GET', `/controllers/${controllerId}/settings`)).json()
     expect((await api('PUT', `/controllers/${controllerId}/settings?push=false`, settings)).statusCode).toBe(200)
@@ -602,6 +645,71 @@ describe('lost card and person deletion', () => {
   it('person deletion: cards removed from the controller', async () => {
     expect((await api('DELETE', `/people/${personId}`)).json().pushErrors).toEqual([])
     expect(fake.cards).toHaveLength(0)
+  })
+})
+
+describe('persons inside', () => {
+  it('last swipe on entry / exit doors; direction 2 counts as exit; "none" doors ignored', async () => {
+    const doors = (await api('GET', '/doors')).json() as { id: number; door: number; name: string }[]
+    const door = (n: number) => doors.find((d) => d.door === n)!
+    const setRole = (n: number, presence: string) =>
+      api('PUT', `/doors/${door(n).id}`, {
+        name: door(n).name,
+        active: true,
+        attendance: false,
+        presence,
+        mode: 3,
+        delay: 5,
+      })
+    expect((await setRole(1, 'entry')).statusCode).toBe(200)
+    await setRole(2, 'exit')
+    await setRole(3, 'none')
+    expect((await api('GET', '/doors')).json().find((d: { door: number }) => d.door === 2).presence).toBe('exit')
+    const p = (
+      await api('POST', '/people', {
+        code: 'E003',
+        lastName: 'Neri',
+        firstName: 'Luca',
+        validFrom: '2020-01-01',
+        validTo: '2099-12-31',
+      })
+    ).json()
+    await api('POST', '/cards', { number: 10058403, personId: p.id })
+    await api('PUT', `/people/${p.id}/permissions`, {
+      permissions: [1, 2, 3].map((n) => ({ doorId: door(n).id, profileId: null, firstCard: false })),
+    })
+    const inside = async () =>
+      ((await api('GET', '/presence')).json().inside as { personId: number }[]).some((r) => r.personId === p.id)
+    const swipe = async (n: number, direction = 1) => {
+      const ev = fake.swipe(10058403, n, direction)
+      await waitFor(async () =>
+        (await api('GET', `/events?personId=${p.id}`)).json().rows.some((e: { index: number }) => e.index === ev.index),
+      )
+    }
+    await swipe(1)
+    expect(await inside()).toBe(true)
+    const dto = (await api('GET', '/presence')).json()
+    expect(dto).toMatchObject({ entryDoors: expect.any(Number), exitDoors: 1 })
+    expect(dto.inside.find((r: { personId: number }) => r.personId === p.id)).toMatchObject({
+      name: 'Neri Luca',
+      card: 10058403,
+    })
+    await swipe(3) // not counted: still inside
+    expect(await inside()).toBe(true)
+    await swipe(2) // exit door
+    expect(await inside()).toBe(false)
+    expect((await api('GET', '/presence')).json().leftCount).toBeGreaterThanOrEqual(1)
+    await swipe(1)
+    expect(await inside()).toBe(true)
+    await swipe(1, 2) // exit reader of a two-reader door
+    expect(await inside()).toBe(false)
+    // CSV and period validation
+    const csv = await api('GET', '/presence/export.csv?period=24&lang=it')
+    expect(csv.statusCode).toBe(200)
+    expect(csv.body.split(String.fromCharCode(10))[0]).toContain('Persona')
+    expect((await api('GET', '/presence?period=500')).statusCode).toBe(400)
+    await setRole(2, 'entry')
+    await setRole(3, 'entry')
   })
 })
 

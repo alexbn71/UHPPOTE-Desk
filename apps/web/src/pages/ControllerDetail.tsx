@@ -20,12 +20,13 @@ import {
   Title,
 } from '@mantine/core'
 import { modals } from '@mantine/modals'
+import { notifications } from '@mantine/notifications'
 import { IconAlertTriangle, IconClock, IconDownload, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
-import type { ControllerDto, ControllerSettings } from '@uhppote-desk/shared'
+import type { ControllerDto, ControllerSettings, ExpansionVerificationDto } from '@uhppote-desk/shared'
 import { ANTIPASSBACK_MODES, FIRST_CARD_MODES, INTERLOCK_MODES } from '@uhppote-desk/shared'
 import { ControllerStatusBadge, PageHeader, WeekdaysInput } from '../components/common'
 import { api, errorMessage, notifyError, notifyOk } from '../lib/api'
@@ -34,6 +35,7 @@ import { useCodes } from '../lib/codes'
 import { fmtDate, fmtDateTime } from '../lib/format'
 import { useLive } from '../lib/live'
 import { ControllerFormFields, controllerBody, type ControllerForm } from './Controllers'
+import { ControllerOptionsCard } from './ControllerOptions'
 import { ExpansionBoardPanel } from './ExpansionBoard'
 
 interface Info {
@@ -449,8 +451,19 @@ function AdvancedSettings({ id }: { id: number }) {
     try {
       // the expansion board is edited in its own tab: keep the saved copy
       const current = await api.get<ControllerSettings>(`/controllers/${id}/settings`)
-      await api.put(`/controllers/${id}/settings`, { ...s, expansionBoard: current.expansionBoard })
-      notifyOk(t('controllerDetail.settingsSaved'))
+      const r = await api.put<{ options: ExpansionVerificationDto | null }>(`/controllers/${id}/settings`, {
+        ...s,
+        expansionBoard: current.expansionBoard,
+      })
+      const v = r.options
+      if (!v || v.verified) notifyOk(v ? t('controllerOptions.verified') : t('controllerDetail.settingsSaved'))
+      else
+        notifications.show({
+          color: 'orange',
+          autoClose: 10_000,
+          message:
+            v.verified === null ? t('expansion.notVerified') : t('expansion.verifyFailed', { n: v.mismatches.length }),
+        })
     } catch (err) {
       notifyError(err)
     } finally {
@@ -621,6 +634,12 @@ function AdvancedSettings({ id }: { id: number }) {
           })}
         </SimpleGrid>
       </Card>
+      <ControllerOptionsCard
+        id={id}
+        value={s.controllerOptions}
+        onChange={(controllerOptions) => setS({ ...s, controllerOptions })}
+        readOnly={readOnly}
+      />
       {!readOnly && (
         <Button onClick={() => void save()} loading={busy}>
           {t('controllerDetail.saveAndSend')}

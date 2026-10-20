@@ -8,7 +8,7 @@ import type {
   EventStatsDto,
   PersonDto,
 } from '@uhppote-desk/shared'
-import { DEFAULT_EXPANSION_BOARD } from '@uhppote-desk/shared'
+import { DEFAULT_CONTROLLER_OPTIONS_SETTINGS, DEFAULT_EXPANSION_BOARD } from '@uhppote-desk/shared'
 import { HttpError } from '../auth/auth.js'
 import type { Db } from './database.js'
 import { fromBool, toBool, weekdaysFromString, weekdaysToString } from './database.js'
@@ -95,6 +95,7 @@ interface DoorRow {
   name: string
   active: number
   attendance: number
+  presence: string
   mode: number
   delay: number
 }
@@ -113,6 +114,7 @@ export const DEFAULT_SETTINGS: ControllerSettings = {
   pcControl: false,
   listenerInterval: 0,
   expansionBoard: DEFAULT_EXPANSION_BOARD,
+  controllerOptions: DEFAULT_CONTROLLER_OPTIONS_SETTINGS,
 }
 
 function mapController(r: ControllerRow): ControllerRecord {
@@ -140,6 +142,7 @@ function mapDoor(r: DoorRow): DoorDto {
     name: r.name,
     active: toBool(r.active),
     attendance: toBool(r.attendance),
+    presence: (r.presence ?? 'entry') as DoorDto['presence'],
     mode: r.mode,
     delay: r.delay,
   }
@@ -236,16 +239,12 @@ export class ControllerRepo {
     return r && mapDoor(r)
   }
 
-  updateDoor(id: number, d: Pick<DoorDto, 'name' | 'active' | 'attendance' | 'mode' | 'delay'>): boolean {
+  updateDoor(id: number, d: Pick<DoorDto, 'name' | 'active' | 'attendance' | 'presence' | 'mode' | 'delay'>): boolean {
     return (
-      this.db.run('UPDATE doors SET name = ?, active = ?, attendance = ?, mode = ?, delay = ? WHERE id = ?', [
-        d.name,
-        fromBool(d.active),
-        fromBool(d.attendance),
-        d.mode,
-        d.delay,
-        id,
-      ]).changes > 0
+      this.db.run(
+        'UPDATE doors SET name = ?, active = ?, attendance = ?, presence = ?, mode = ?, delay = ? WHERE id = ?',
+        [d.name, fromBool(d.active), fromBool(d.attendance), d.presence, d.mode, d.delay, id],
+      ).changes > 0
     )
   }
 
@@ -257,7 +256,12 @@ export class ControllerRepo {
     if (!r) return defaults
     const saved = JSON.parse(r.settings) as Partial<ControllerSettings>
     // fields added to the expansion board later get their default
-    return { ...defaults, ...saved, expansionBoard: { ...defaults.expansionBoard, ...saved.expansionBoard } }
+    return {
+      ...defaults,
+      ...saved,
+      expansionBoard: { ...defaults.expansionBoard, ...saved.expansionBoard },
+      controllerOptions: { ...defaults.controllerOptions, ...saved.controllerOptions },
+    }
   }
 
   saveSettings(controllerId: number, s: ControllerSettings): void {

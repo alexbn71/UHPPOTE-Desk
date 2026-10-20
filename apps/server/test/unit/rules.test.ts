@@ -5,7 +5,17 @@ import type { IntegrationEvent } from '../../src/services/integrationEvents.js'
 import { formatDuration, matchesConditions, ruleText, type RuleContext } from '../../src/services/rules.js'
 
 const controller = { id: 1, serial: 1, name: 'Villa', enabled: true } as ControllerRecord
-const door = { id: 7, controllerId: 1, door: 1, name: 'Cancello', active: true, attendance: false, mode: 3, delay: 5 }
+const door = {
+  id: 7,
+  controllerId: 1,
+  door: 1,
+  name: 'Cancello',
+  active: true,
+  attendance: false,
+  presence: 'entry' as const,
+  mode: 3,
+  delay: 5,
+}
 
 function ctx(timestamp: string, e: Partial<EventDto> = {}): RuleContext {
   const event = {

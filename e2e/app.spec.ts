@@ -117,6 +117,7 @@ test.describe.serial('UHPPOTE Desk', () => {
       ['/', 'Dashboard'],
       ['/monitor', 'Monitor'],
       ['/events', 'Event history'],
+      ['/presence', 'Persons inside'],
       ['/attendance', 'Attendance'],
       ['/anomalies', 'Anomalies'],
       ['/people', 'People'],
@@ -217,6 +218,37 @@ test.describe.serial('UHPPOTE Desk', () => {
     await expect(page.getByText('New version available')).toBeVisible({ timeout: 10_000 })
     await expect(page.getByRole('button', { name: 'Reload' })).toBeVisible()
     await page.unroute('/api/health')
+  })
+
+  test('reader and door options: managed, saved and verified', async ({ page }) => {
+    await login(page, 'admin', ADMIN_PASSWORD)
+    await page.goto('/controllers/1')
+    await page.getByRole('tab', { name: 'Advanced settings' }).click()
+    const card = page.getByTestId('controller-options')
+    await card.getByLabel('Managed by UHPPOTE Desk').check({ force: true })
+    await card.getByLabel('Silent reader on invalid cards').check({ force: true })
+    await card.getByLabel('Minimum gap between two swipes of the same card (s)').fill('10')
+    await page.getByRole('button', { name: 'Save and send to the controller' }).click()
+    await expect(page.getByText('Settings saved, sent and verified in the controller')).toBeVisible({ timeout: 10_000 })
+    const settings = await (await page.request.get('/api/controllers/1/settings')).json()
+    expect(settings.controllerOptions).toMatchObject({ managed: true, silentInvalidCard: true, swipeGapSeconds: 10 })
+    await card.getByRole('button', { name: 'Read from the controller' }).click()
+    await expect(page.getByTestId('controller-options-read').getByText('Same as the saved configuration')).toBeVisible({
+      timeout: 10_000,
+    })
+  })
+
+  test('persons inside: door role and page', async ({ page }) => {
+    await login(page, 'admin', ADMIN_PASSWORD)
+    await page.goto('/doors')
+    await page.getByRole('button', { name: 'Edit' }).nth(1).click()
+    await page.getByRole('dialog').getByLabel('Persons inside').click()
+    await page.getByRole('option', { name: 'Exit' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Save and send to the controller' }).click()
+    await expect(page.getByRole('cell', { name: 'Exit' })).toBeVisible({ timeout: 10_000 })
+    await page.goto('/presence')
+    await expect(page.getByRole('heading', { name: 'Persons inside', exact: true })).toBeVisible()
+    await expect(page.getByTestId('presence-count')).toBeVisible()
   })
 
   test('synchronisation: comparison without differences', async ({ page }) => {

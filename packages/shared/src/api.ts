@@ -79,10 +79,15 @@ export const controllerInputSchema = z.object({
   enabled: z.boolean().default(true),
 })
 
+/** How the swipes on a door count for "persons inside": entry, exit or not counted. */
+export const DOOR_PRESENCE = ['entry', 'exit', 'none'] as const
+export type DoorPresence = (typeof DOOR_PRESENCE)[number]
+
 export const doorInputSchema = z.object({
   name: z.string().min(1).max(100),
   active: z.boolean(),
   attendance: z.boolean(),
+  presence: z.enum(DOOR_PRESENCE).default('entry'),
   mode: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   delay: z.number().int().min(0).max(255),
 })
@@ -263,6 +268,76 @@ export interface ExpansionVerificationDto {
   error?: string
 }
 
+/** Reader and door options written to the parameter table (see protocol ControllerOptions). */
+export const controllerOptionsSchema = z.object({
+  /** Written to the controller only when true (controllers configured elsewhere are not touched). */
+  managed: z.boolean(),
+  fourTimesNormalOpen: z.object({
+    readers: z.array(z.boolean()).length(4),
+    /** 0 = every user, 2-15 = users of this time profile */
+    timeProfile: z
+      .number()
+      .int()
+      .min(0)
+      .max(15)
+      .refine((v) => v !== 1),
+  }),
+  silentInvalidCard: z.boolean(),
+  /** even number of seconds, 0 = off */
+  swipeGapSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(600)
+    .refine((v) => v % 2 === 0),
+  doorAsSwitch: z.array(z.boolean()).length(4),
+  /** cards needed per door: 0 = off, 2-10 */
+  multiCard: z
+    .array(
+      z
+        .number()
+        .int()
+        .min(0)
+        .max(10)
+        .refine((v) => v !== 1),
+    )
+    .length(4),
+})
+export type ControllerOptionsSettings = z.infer<typeof controllerOptionsSchema>
+
+export const DEFAULT_CONTROLLER_OPTIONS_SETTINGS: ControllerOptionsSettings = {
+  managed: false,
+  fourTimesNormalOpen: { readers: [false, false, false, false], timeProfile: 0 },
+  silentInvalidCard: false,
+  swipeGapSeconds: 0,
+  doorAsSwitch: [false, false, false, false],
+  multiCard: [0, 0, 0, 0],
+}
+
+/** GET /controllers/:id/controller-options: the options stored in the controller. */
+export interface ControllerOptionsReadDto extends Omit<ControllerOptionsSettings, 'managed'> {
+  /** Differences from the saved options; null when they are not managed by UHPPOTE Desk. */
+  mismatches: ParameterMismatchDto[] | null
+}
+
+/** GET /presence: who is inside now, from the last swipe on entry/exit doors. */
+export interface PresenceDto {
+  since: string
+  inside: {
+    personId: number
+    name: string
+    department: string | null
+    card: number
+    door: string
+    timestamp: string
+  }[]
+  /** Active people with a card whose last swipe in the period was an exit. */
+  leftCount: number
+  /** Doors counted: entry and exit. */
+  entryDoors: number
+  exitDoors: number
+}
+
 export const controllerSettingsSchema = z.object({
   interlock: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(8)]),
   antipassback: z.number().int().min(0).max(4),
@@ -273,6 +348,7 @@ export const controllerSettingsSchema = z.object({
   pcControl: z.boolean(),
   listenerInterval: z.number().int().min(0).max(255),
   expansionBoard: expansionBoardSchema.default(() => structuredClone(DEFAULT_EXPANSION_BOARD)),
+  controllerOptions: controllerOptionsSchema.default(() => structuredClone(DEFAULT_CONTROLLER_OPTIONS_SETTINGS)),
 })
 export type ControllerSettings = z.infer<typeof controllerSettingsSchema>
 
@@ -366,6 +442,7 @@ export interface DoorDto {
   name: string
   active: boolean
   attendance: boolean
+  presence: DoorPresence
   mode: number
   delay: number
 }

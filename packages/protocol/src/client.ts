@@ -25,6 +25,7 @@ import {
   type ParameterWrite,
 } from './codec/expansion.js'
 import { decodeReadParametersReply, encodeReadParameters, isReadParametersReply, LongPacket } from './codec/long.js'
+import { controllerOptionsParameters, decodeControllerOptions, type ControllerOptions } from './codec/options.js'
 import { EventOverwrittenError, NotFoundError, OperationFailedError, TimeoutError, TransportError } from './errors.js'
 import type { Logger } from './logger.js'
 import { tcpExchange } from './transport/tcp.js'
@@ -511,6 +512,21 @@ export class UhppoteClient {
       },
     })
     return decodeReadParametersReply(reply!).table
+  }
+
+  /**
+   * Writes the reader and door options (0xF2). The table is read first so that the multi-card option bits not
+   * managed here are kept; if it cannot be read they are written as 0.
+   */
+  async setControllerOptions(t: ControllerTarget, options: ControllerOptions): Promise<void> {
+    const current = await this.readParameters(t).catch(() => undefined)
+    await this.writeParameters(t, controllerOptionsParameters(options, current))
+  }
+
+  /** Reads the reader and door options stored in the controller. */
+  async readControllerOptions(t: ControllerTarget): Promise<ControllerOptions & { table: Uint8Array }> {
+    const table = await this.readParameters(t)
+    return { ...decodeControllerOptions(table), table }
   }
 
   /** Reads the expansion board configuration stored in the controller. */

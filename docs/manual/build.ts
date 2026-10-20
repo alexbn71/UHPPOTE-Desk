@@ -143,14 +143,14 @@ const controller = await call<{ id: number }>('POST', '/controllers', {
 await ctx.health.check(controller.id)
 const doors = await call<{ id: number; door: number }[]>('GET', '/doors')
 const door = (n: number) => doors.find((d) => d.door === n)!.id
-const doorSetup: [number, string, boolean][] = [
-  [1, 'Main entrance', true],
-  [2, 'Warehouse', false],
-  [3, 'Server room', false],
-  [4, 'Back office', false],
+const doorSetup: [number, string, boolean, 'entry' | 'exit' | 'none'][] = [
+  [1, 'Main entrance', true, 'entry'],
+  [2, 'Warehouse', false, 'none'],
+  [3, 'Server room', false, 'none'],
+  [4, 'Back office', false, 'exit'],
 ]
-for (const [n, name, attendance] of doorSetup)
-  await call('PUT', `/doors/${door(n)}`, { name, active: true, attendance, mode: 3, delay: n === 2 ? 8 : 5 })
+for (const [n, name, attendance, presence] of doorSetup)
+  await call('PUT', `/doors/${door(n)}`, { name, active: true, attendance, presence, mode: 3, delay: n === 2 ? 8 : 5 })
 
 const weekdays = [true, true, true, true, true, false, false]
 await call('PUT', '/time-profiles/2', {
@@ -393,6 +393,14 @@ await call('PUT', `/controllers/${controller.id}/settings`, {
       { active: true, source: 1, mode: 1, events: 0x20, signals: 0, duration: 300 },
     ],
   },
+  controllerOptions: {
+    managed: true,
+    fourTimesNormalOpen: { readers: [true, false, false, false], timeProfile: 0 },
+    silentInvalidCard: false,
+    swipeGapSeconds: 4,
+    doorAsSwitch: [false, false, false, false],
+    multiCard: [0, 0, 2, 0],
+  },
 })
 
 await call('POST', `/holidays/italian/${year}`)
@@ -624,6 +632,9 @@ await shot('monitor', { maxHeight: 700 })
 
 await go('/events', 'Event history')
 await shot('events')
+await go('/presence', 'Persons inside')
+await page.getByTestId('presence-count').waitFor()
+await shot('presence', { maxHeight: 900 })
 
 await go('/people', 'People')
 await shot('people')

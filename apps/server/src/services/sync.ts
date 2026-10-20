@@ -1,12 +1,17 @@
 import {
+  compareControllerOptions,
   compareExpansionBoard,
+  decodeControllerOptions,
   type Card,
+  type ControllerOptions,
   type ExpansionBoardConfig,
   type Logger,
   type Quad,
 } from '@uhppote-desk/protocol'
 import {
   errorInfo,
+  type ControllerOptionsReadDto,
+  type ControllerOptionsSettings,
   type ExpansionBoardReadDto,
   type ExpansionBoardSettings,
   type ExpansionRelaySettings,
@@ -16,6 +21,25 @@ import {
 import type { Db } from '../db/database.js'
 import type { ControllerRepo, PeopleRepo, ScheduleRepo } from '../db/repos.js'
 import type { Actor, ControllerGateway } from '../gateway/gateway.js'
+
+function optionsConfig(o: ControllerOptionsSettings): ControllerOptions {
+  return {
+    fourTimesNormalOpen: {
+      readers: o.fourTimesNormalOpen.readers as Quad<boolean>,
+      timeProfile: o.fourTimesNormalOpen.timeProfile,
+    },
+    silentInvalidCard: o.silentInvalidCard,
+    swipeGapSeconds: o.swipeGapSeconds,
+    doorAsSwitch: o.doorAsSwitch as Quad<boolean>,
+    multiCard: o.multiCard as Quad<number>,
+  }
+}
+
+/** Settings written to the parameter table and verified by reading it back. */
+export interface SettingsVerification {
+  expansion: ExpansionVerificationDto | null
+  options: ExpansionVerificationDto | null
+}
 
 function expansionConfig(x: ExpansionBoardSettings): ExpansionBoardConfig {
   return {
@@ -309,7 +333,7 @@ export class SyncService {
   }
 
   /** Sends the advanced settings; with the expansion board connected, returns the read-back check of its bytes. */
-  async pushSettings(actor: Actor, controllerId: number): Promise<ExpansionVerificationDto | null> {
+  async pushSettings(actor: Actor, controllerId: number): Promise<SettingsVerification> {
     const s = this.controllers.settings(controllerId)
     return this.gateway.run(actor, controllerId, 'push-settings', s, async (client, t) => {
       await client.setInterlock(t, s.interlock)
@@ -331,19 +355,57 @@ export class SyncService {
       }
       await client.recordSpecialEvents(t, s.recordSpecialEvents)
       await client.setPCControl(t, s.pcControl)
-      // only with the board connected: the parameter table of other controllers is never touched
+      // parameter table: only what the user asked UHPPOTE Desk to manage (board connected, options managed)
       const x = s.expansionBoard
-      if (!x.installed) return null
-      const config = expansionConfig(x)
-      await client.setExpansionBoard(t, config)
+      const expansion = x.installed ? expansionConfig(x) : null
+      const options = s.controllerOptions.managed ? optionsConfig(s.controllerOptions) : null
+      if (expansion) await client.setExpansionBoard(t, expansion)
+      if (options) await client.setControllerOptions(t, options)
+      if (!expansion && !options) return { expansion: null, options: null }
       // read back with the vendor long-packet request: what the controller really stored
+      let table: Uint8Array
       try {
-        const mismatches = compareExpansionBoard(config, await client.readParameters(t))
-        return { verified: mismatches.length === 0, mismatches }
+        table = await client.readParameters(t)
       } catch (err) {
-        return { verified: null, mismatches: [], error: (err as Error).message }
+        const unverified = { verified: null, mismatches: [], error: (err as Error).message }
+        return { expansion: expansion && unverified, options: options && unverified }
+      }
+      const check = (mismatches: { index: number; expected: number; actual: number }[]) => ({
+        verified: mismatches.length === 0,
+        mismatches,
+      })
+      return {
+        expansion: expansion && check(compareExpansionBoard(expansion, table)),
+        options: options && check(compareControllerOptions(options, table)),
       }
     })
+  }
+
+  /** Reads the reader and door options stored in the controller and compares them with the saved ones. */
+  async readControllerOptions(actor: Actor, controllerId: number): Promise<ControllerOptionsReadDto> {
+    const o = this.controllers.settings(controllerId).controllerOptions
+    return this.gateway.run(
+      actor,
+      controllerId,
+      'read-controller-options',
+      null,
+      async (client, t) => {
+        const table = await client.readParameters(t)
+        const d = decodeControllerOptions(table)
+        return {
+          fourTimesNormalOpen: {
+            readers: [...d.fourTimesNormalOpen.readers],
+            timeProfile: d.fourTimesNormalOpen.timeProfile,
+          },
+          silentInvalidCard: d.silentInvalidCard,
+          swipeGapSeconds: d.swipeGapSeconds,
+          doorAsSwitch: [...d.doorAsSwitch],
+          multiCard: [...d.multiCard],
+          mismatches: o.managed ? compareControllerOptions(optionsConfig(o), table) : null,
+        }
+      },
+      { audit: false },
+    )
   }
 
   /** Reads the expansion board configuration stored in the controller and compares it with the saved one. */

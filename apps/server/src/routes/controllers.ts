@@ -218,12 +218,19 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     ctx.controllers.saveSettings(id, s)
     ctx.audit.log(req.user, 'update-settings', `controller:${id}`, s)
     const push = (req.query as { push?: string }).push !== 'false'
-    let expansion = null
+    let verification = { expansion: null, options: null } as Awaited<ReturnType<typeof ctx.sync.pushSettings>>
     if (push) {
-      expansion = await ctx.sync.pushSettings(req.user, id)
+      verification = await ctx.sync.pushSettings(req.user, id)
       await ctx.health.ensureListener(id)
     }
-    return { ok: true, pushed: push, expansion }
+    return { ok: true, pushed: push, ...verification }
+  })
+
+  /** Reader and door options read from the controller (vendor long-packet read, read-only). */
+  app.get('/controllers/:id/controller-options', viewer, async (req) => {
+    const { id } = idParam.parse(req.params)
+    assertZoneAccess(ctx, req.user!, ctx.gateway.controller(id))
+    return ctx.sync.readControllerOptions(req.user, id)
   })
 
   /** Expansion board configuration read from the controller (vendor long-packet read, read-only). */

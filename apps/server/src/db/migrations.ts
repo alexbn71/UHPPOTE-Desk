@@ -375,4 +375,11 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       ALTER TABLE audit_log ADD COLUMN error_info TEXT;
     `,
   },
+  {
+    id: 8,
+    name: 'doors: role for persons inside (entry, exit, none)',
+    sql: /* sql */ `
+      ALTER TABLE doors ADD COLUMN presence TEXT NOT NULL DEFAULT 'entry';
+    `,
+  },
 ]

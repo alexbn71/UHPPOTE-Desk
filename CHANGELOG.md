@@ -22,6 +22,14 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 - FakeController: parameter table, simulated expansion relays, `raiseAlarm` and `setFireInput`.
 - Wireshark dissector (`tools/wireshark/uhppote.lua`) and `npm run pcap`, which reconstructs the expansion board
   written in a capture and compares it with a configuration.
+- **Persons inside** page: who is inside now, from the last granted swipe of each person on the doors set as
+  *entry* or *exit* (new *Persons inside* field of the doors; exit readers of two-reader doors count as exits),
+  for today or the last 8/24 hours, with CSV export.
+- **Reader and door options** in *Advanced settings* (the vendor "extended functions"): four swipes = normally
+  open, silent reader on invalid cards, minimum gap between two swipes of the same card, door as switch and
+  multi-card access (cards needed per door). Written with `0xF2` only when *Managed by UHPPOTE Desk* is on,
+  verified by reading the table back, with *Read from the controller*; hardware test level **L7** restores the
+  original bytes exactly.
 - **Update notice**: a page opened before the server was updated shows *New version available* with a *Reload*
   button. `/api/health` now also reports `build`, the entry bundle of the web build being served.
 

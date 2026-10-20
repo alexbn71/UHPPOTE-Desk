@@ -15,6 +15,7 @@ import { registerAttendanceRoutes } from './routes/attendance.js'
 import { registerAuthRoutes } from './routes/auth.js'
 import { registerControllerRoutes } from './routes/controllers.js'
 import { registerEventRoutes } from './routes/events.js'
+import { registerPresenceRoutes } from './routes/presence.js'
 import { registerPeopleRoutes } from './routes/people.js'
 import { registerScheduleRoutes } from './routes/schedule.js'
 import { registerSystemRoutes } from './routes/system.js'
@@ -98,6 +99,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerPeopleRoutes(api, ctx)
       registerScheduleRoutes(api, ctx)
       registerEventRoutes(api, ctx)
+      registerPresenceRoutes(api, ctx)
       registerAttendanceRoutes(api, ctx)
       registerSystemRoutes(api, ctx)
       registerWebhookRoutes(api, ctx)

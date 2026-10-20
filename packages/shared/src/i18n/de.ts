@@ -66,6 +66,7 @@ export const de: Messages = {
     dashboard: 'Übersicht',
     monitor: 'Monitor',
     events: 'Ereignisverlauf',
+    presence: 'Anwesende',
     anomalies: 'Auffälligkeiten',
     attendance: 'Anwesenheit',
     people: 'Personen',
@@ -508,6 +509,54 @@ export const de: Messages = {
     duressAfterCardHint: 'Der Bedrohungscode wird nur direkt nach dem Vorhalten einer registrierten Karte angenommen',
     noAlarmOptions: 'Keine Alarmoption aktiviert',
   },
+  presence: {
+    title: 'Anwesende',
+    description:
+      'Wer jetzt drinnen ist, nach dem letzten Kartenlesen jeder Person an den Ein- und Ausgangstüren (Türen → Anwesende)',
+    period: {
+      today: 'Heute',
+      '8': 'Letzte 8 Stunden',
+      '24': 'Letzte 24 Stunden',
+    },
+    insideNow: 'Jetzt drinnen',
+    left: 'Gegangen',
+    doors: 'Berücksichtigte Türen',
+    doorsValue: '{{entry}} Eingang · {{exit}} Ausgang',
+    since: 'Buchungen seit {{time}}',
+    colPerson: 'Person',
+    colDepartment: 'Abteilung',
+    colCard: 'Karte',
+    colDoor: 'Eingetreten über',
+    colSince: 'Seit',
+    empty: 'Niemand drinnen',
+    noExitDoors:
+      'Keine Tür ist als Ausgang eingestellt: Wer eingetreten ist, bleibt drinnen. Ausgangstüren unter Türen → Anwesende festlegen.',
+  },
+  controllerOptions: {
+    readerN: 'Leser {{n}}',
+    title: 'Leser- und Türoptionen',
+    intro:
+      'Funktionen der Controller-Firmware (die erweiterten Funktionen der Herstellersoftware). Mit den übrigen Einstellungen gesendet und durch Zurücklesen geprüft.',
+    managed: 'Von UHPPOTE Desk verwaltet',
+    managedHint: 'Nur bei aktivierter Option geschrieben; aus = der Controller behält seine eigenen Werte',
+    readNotCompared: 'Nicht verwaltet: kein Vergleich',
+    fourTimes: '4× Karte = Dauer offen',
+    fourTimesHint:
+      '4 aufeinanderfolgende Buchungen einer gültigen Karte schalten die Tür auf Dauer offen; 4 weitere zurück (Firmware V5.52+)',
+    fourTimesProfile: 'Berechtigte Benutzer',
+    allUsers: 'Alle Benutzer',
+    silent: 'Leser stumm bei ungültigen Karten',
+    silentHint: 'Keine rote LED und kein Piepton am Leser bei einer ungültigen Karte (Firmware V5.48+)',
+    swipeGap: 'Mindestabstand zwischen zwei Buchungen derselben Karte (s)',
+    swipeGapHint: 'Gerade Anzahl Sekunden, 0 = aus',
+    doorAsSwitch: 'Tür als Schalter',
+    doorAsSwitchHint:
+      'Die Karte schaltet das Schloss um (offen / geschlossen), statt es für die Öffnungszeit zu öffnen',
+    multiCard: 'Mehrkarten-Zutritt',
+    multiCardHint:
+      'Verschiedene Karten, die zum Öffnen jeder Tür nötig sind (0 = aus, 2-10); Gruppen werden nicht verwaltet',
+    verified: 'Einstellungen gespeichert, gesendet und im Controller geprüft',
+  },
   doors: {
     title: 'Türen',
     description: 'Name, Betriebsart, Öffnungszeit und für die Anwesenheit verwendete Leser',
@@ -525,6 +574,14 @@ export const de: Messages = {
     attendanceSwitch: 'Leser für die Anwesenheit verwenden',
     saved: 'Tür aktualisiert',
     savedNotSent: 'Gespeichert, aber nicht an den Controller gesendet: {{error}}',
+    colPresence: 'Anwesende',
+    presenceLabel: 'Anwesende',
+    presenceHint: 'Wie die Buchungen an dieser Tür für die Anwesenden zählen',
+    presence: {
+      entry: 'Eingang',
+      exit: 'Ausgang',
+      none: 'Zählt nicht',
+    },
   },
   timeProfiles: {
     title: 'Zeitprofile',
@@ -1360,6 +1417,13 @@ export const de: Messages = {
       overtime: 'Überstunden',
       punches: 'Buchungen',
       anomalies: 'Unregelmäßigkeiten',
+    },
+    presence: {
+      person: 'Person',
+      department: 'Abteilung',
+      card: 'Karte',
+      door: 'Eingetreten über',
+      since: 'Seit',
     },
   },
   holidays: {

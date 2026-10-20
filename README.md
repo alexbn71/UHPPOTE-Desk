@@ -42,6 +42,8 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Mobile app** (PWA at `/m`, installable on the home screen): doors with live state, opening with *hold to open* or fingerprint/Face ID, push notifications with an *Open* action, remembered devices revocable by the administrator — see [docs/MOBILE.md](docs/MOBILE.md).
 
+**Persons inside**: who is inside now, from the last swipe on entry and exit doors, with CSV export. **Reader and door options** from the manufacturer's extended functions (four swipes = normally open, silent reader on invalid cards, minimum gap between swipes, door as switch, multi-card access), verified by reading them back from the controller.
+
 **Alarm expansion board** (UT0311-01A, experimental): four alarm relays and the fire input, driven by duress code, door open too long, forced open, invalid card and fire — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).
 
 **API tokens** for machine-to-machine access (`Authorization: Bearer`): read-only, door opening only (optionally limited to specific doors), operator or administrator, with zone restrictions, expiry and audit — see [docs/API-TOKENS.md](docs/API-TOKENS.md).
@@ -76,7 +78,7 @@ The screenshots use demonstration data and a simulated controller; they are rege
 | [packages/shared](packages/shared) | zod API schemas, DTOs, translations (`src/i18n`) |
 | [apps/server](apps/server) | Fastify backend: SQLite (`node:sqlite`), authentication and roles, synchronisation, event collection, monitoring, attendance, WebSocket |
 | [apps/web](apps/web) | React + Mantine frontend |
-| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L6), a development simulator and the capture analysis (`npm run pcap`) |
+| [tools/hwtest](tools/hwtest) | Test suite for the real controller (levels L0–L7), a development simulator and the capture analysis (`npm run pcap`) |
 | [tools/wireshark](tools/wireshark) | Wireshark dissector for the controller protocol |
 | [e2e](e2e) | Playwright end-to-end tests |
 | [docker](docker) | Docker image, compose files, Unraid template |
@@ -147,6 +149,10 @@ Recommended procedure when the controller arrives:
    ```bash
    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 6
    ```
+10. **Reader and door options** (L7): written, read back and restored exactly; guided tests of four swipes, silent reader, swipe gap, door as switch and multi-card access (a second card is asked for the last one).
+    ```bash
+    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 7
+    ```
 
 ## Languages
 

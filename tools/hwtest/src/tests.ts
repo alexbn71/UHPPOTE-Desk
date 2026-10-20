@@ -4,7 +4,11 @@ import net from 'node:net'
 import os from 'node:os'
 import { promisify } from 'node:util'
 import {
+  compareControllerOptions,
   compareExpansionBoard,
+  controllerOptionsParameters,
+  decodeControllerOptions,
+  DEFAULT_CONTROLLER_OPTIONS,
   DEFAULT_DOOR_OPEN_TOO_LONG,
   EventOverwrittenError,
   ExpansionEvent,
@@ -19,6 +23,7 @@ import {
   UhppoteClient,
   parseEndpoint,
   type Card,
+  type ControllerOptions,
   type ControllerStatus,
   type ExpansionBoardConfig,
   type ExpansionRelay,
@@ -1291,6 +1296,211 @@ export const L6: TestCase[] = [
   },
 ]
 
+// ===========================================================================
+// L7 — Reader and door options (parameter table, vendor "extended functions")
+// ===========================================================================
+
+/** Saves the original option bytes once (restored exactly at the end) and writes `options`, verified. */
+async function withOptions(ctx: Context, t: TestHelpers, patch: Partial<ControllerOptions>): Promise<void> {
+  if (!ctx.backup.optionsTable) ctx.backup.optionsTable = [...(await ctx.client.readParameters(ctx.target))]
+  const options: ControllerOptions = { ...structuredClone(DEFAULT_CONTROLLER_OPTIONS), ...patch }
+  await ctx.client.setControllerOptions(ctx.target, options)
+  const mismatches = compareControllerOptions(options, await ctx.client.readParameters(ctx.target))
+  if (mismatches.length) throw new Error(`options not stored by the controller: ${JSON.stringify(mismatches)}`)
+  t.log(`options written and verified: ${JSON.stringify(patch)}`)
+}
+
+/** Registers the operator's card on door 1 for the test (removed afterwards if it was not there). */
+async function withUserCardOnDoor1<T>(ctx: Context, t: TestHelpers, fn: (card: number) => Promise<T>): Promise<T> {
+  const card = await userCard(ctx, t)
+  const existing = await ctx.client.getCard(ctx.target, card)
+  if (!existing) await ctx.client.putCard(ctx.target, testCard(ctx, card, [1, 0, 0, 0]))
+  try {
+    return await fn(card)
+  } finally {
+    if (!existing) await ctx.client.deleteCard(ctx.target, card)
+  }
+}
+
+/** Restores exactly the option bytes saved by withOptions (0xF2). */
+async function restoreOptions(ctx: Context): Promise<boolean> {
+  const saved = ctx.backup.optionsTable as number[] | undefined
+  if (!saved) return false
+  const indexes = controllerOptionsParameters(DEFAULT_CONTROLLER_OPTIONS).map((w) => w.index)
+  await ctx.client.writeParameters(
+    ctx.target,
+    indexes.map((index) => ({ index, value: saved[index]! })),
+  )
+  return true
+}
+
+export const L7: TestCase[] = [
+  {
+    id: 'L7.1',
+    level: 7,
+    name: 'Options written with 0xF2, read back identical, original bytes restored exactly',
+    async run(ctx: Context, t: TestHelpers) {
+      const before = await ctx.client.readParameters(ctx.target)
+      t.data({ before: decodeControllerOptions(before) })
+      await withOptions(ctx, t, {
+        fourTimesNormalOpen: { readers: [true, false, true, false], timeProfile: 0 },
+        silentInvalidCard: true,
+        swipeGapSeconds: 10,
+        doorAsSwitch: [false, true, false, false],
+        multiCard: [0, 0, 0, 3],
+      })
+      t.assert(await restoreOptions(ctx), 'nothing to restore')
+      const after = await ctx.client.readParameters(ctx.target)
+      const indexes = controllerOptionsParameters(DEFAULT_CONTROLLER_OPTIONS).map((w) => w.index)
+      const changed = indexes.filter((i) => after[i] !== before[i])
+      t.assert(changed.length === 0, `bytes not restored: ${changed.join(', ')}`)
+      t.log('original option bytes restored')
+    },
+  },
+  {
+    id: 'L7.2',
+    level: 7,
+    name: 'Four swipes on reader 1 = normally open, four more = controlled',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await withUserCardOnDoor1(ctx, t, async (card) => {
+        await withOptions(ctx, t, { fourTimesNormalOpen: { readers: [true, false, false, false], timeProfile: 0 } })
+        await attachListener(ctx, t)
+        await ctx.driver.perform(
+          { kind: 'swipe-burst', card, door: 1, count: 4 },
+          `Swipe card ${card} on door 1 FOUR times in a row`,
+        )
+        const open = await ctx.driver.confirm('Does door 1 now stay UNLOCKED (normally open)?', {
+          kind: 'observe-relay',
+          door: 1,
+        })
+        await ctx.driver.perform(
+          { kind: 'swipe-burst', card, door: 1, count: 4 },
+          `Swipe card ${card} on door 1 FOUR more times`,
+        )
+        const back = await ctx.driver.confirm('Is door 1 LOCKED again (controlled)?')
+        t.data({ status: statusBits(await ctx.client.getStatus(ctx.target)) })
+        t.assert(open, 'four swipes did not set normally open')
+        t.assert(back, 'four more swipes did not set controlled again')
+      })
+    },
+  },
+  {
+    id: 'L7.3',
+    level: 7,
+    name: 'Silent reader on an invalid card',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await withOptions(ctx, t, { silentInvalidCard: true })
+      await attachListener(ctx, t)
+      const since = ctx.events.length
+      await ctx.driver.perform(
+        { kind: 'swipe', card: null, door: 1 },
+        'Swipe on door 1 a card that is NOT registered on the controller',
+      )
+      const ev = await ctx.waitEvent(
+        (s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && !s.event.granted,
+        20_000,
+      )
+      t.assert(ev, 'denied swipe not received')
+      const silent = await ctx.driver.confirm('Did the reader stay SILENT (no beep, no red LED)?')
+      t.assert(silent, 'the reader still signalled the invalid card')
+    },
+  },
+  {
+    id: 'L7.4',
+    level: 7,
+    name: 'Minimum gap between two swipes of the same card (10 s)',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await withUserCardOnDoor1(ctx, t, async (card) => {
+        await withOptions(ctx, t, { swipeGapSeconds: 10 })
+        await attachListener(ctx, t)
+        const since = ctx.events.length
+        await ctx.driver.perform(
+          { kind: 'swipe-burst', card, door: 1, count: 2 },
+          `Swipe card ${card} on door 1 TWICE within 5 seconds`,
+        )
+        await sleep(3000)
+        const swipes = ctx.events.slice(since).filter((s) => s.event?.type === 1 && s.event.card === card)
+        t.log(
+          `events: ${swipes.map((s) => `${s.event!.granted ? 'granted' : 'denied'} (reason ${s.event!.reason})`).join(', ') || 'none'}`,
+        )
+        t.data({ swipes: swipes.map((s) => ({ granted: s.event!.granted, reason: s.event!.reason })) })
+        const refused = await ctx.driver.confirm('Was the SECOND swipe refused (door not opened again)?')
+        t.assert(refused, 'the second swipe within the gap was accepted')
+      })
+    },
+  },
+  {
+    id: 'L7.5',
+    level: 7,
+    name: 'Door 1 as switch: a swipe toggles the lock',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      await withUserCardOnDoor1(ctx, t, async (card) => {
+        await withOptions(ctx, t, { doorAsSwitch: [true, false, false, false] })
+        await attachListener(ctx, t)
+        await ctx.driver.perform({ kind: 'swipe', card, door: 1 }, `Swipe card ${card} on door 1 once`)
+        const on = await ctx.driver.confirm('Does door 1 stay UNLOCKED after the open delay?', {
+          kind: 'observe-relay',
+          door: 1,
+        })
+        await ctx.driver.perform({ kind: 'swipe', card, door: 1 }, `Swipe card ${card} on door 1 again`)
+        const off = await ctx.driver.confirm('Is door 1 LOCKED again?')
+        t.assert(on, 'the swipe did not keep the lock open')
+        t.assert(off, 'the second swipe did not lock the door again')
+      })
+    },
+  },
+  {
+    id: 'L7.6',
+    level: 7,
+    name: 'Multi-card access: 2 different cards on door 1',
+    physical: true,
+    async run(ctx: Context, t: TestHelpers) {
+      const second = Number(
+        (await ctx.driver.ask('Number of a SECOND card for the multi-card test (Enter to skip)')).trim(),
+      )
+      if (!second) t.skip('no second card')
+      await withUserCardOnDoor1(ctx, t, async (card) => {
+        t.assert(second !== card, 'the second card must be different')
+        const existing = await ctx.client.getCard(ctx.target, second)
+        if (!existing) await ctx.client.putCard(ctx.target, testCard(ctx, second, [1, 0, 0, 0]))
+        try {
+          await withOptions(ctx, t, { multiCard: [2, 0, 0, 0] })
+          await attachListener(ctx, t)
+          const since = ctx.events.length
+          await ctx.driver.perform(
+            { kind: 'swipe', card, door: 1 },
+            `Swipe card ${card} on door 1 (it must NOT open yet)`,
+          )
+          const first = await ctx.waitEvent(
+            (s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && s.event.card === card,
+            20_000,
+          )
+          t.assert(first, 'first swipe not received')
+          t.log(`first card: ${first.event!.granted ? 'granted' : 'denied'}, reason ${first.event!.reason}`)
+          t.assert(!first.event!.granted, 'the door opened with one card only')
+          const mark = ctx.events.length
+          await ctx.driver.perform(
+            { kind: 'swipe', card: second, door: 1 },
+            `Now swipe the second card ${second} on door 1 (it must open)`,
+          )
+          const ev = await ctx.waitEvent(
+            (s) => ctx.events.indexOf(s) >= mark && s.event?.type === 1 && s.event.card === second,
+            20_000,
+          )
+          t.assert(ev, 'second swipe not received')
+          t.assert(ev.event!.granted, `second card denied (reason ${ev.event!.reason})`)
+        } finally {
+          if (!existing) await ctx.client.deleteCard(ctx.target, second)
+        }
+      })
+    },
+  },
+]
+
 /** Restores the state saved during the tests (listener, bookmark, expansion board outputs off). */
 export async function restore(ctx: Context): Promise<string[]> {
   const log: string[] = []
@@ -1299,6 +1509,11 @@ export async function restore(ctx: Context): Promise<string[]> {
     if (ctx.backup.listener) log.push('listener restored')
   } catch (err) {
     log.push(`listener restore failed: ${(err as Error).message}`)
+  }
+  try {
+    if (await restoreOptions(ctx)) log.push('reader and door options: original bytes restored')
+  } catch (err) {
+    log.push(`reader and door options restore failed: ${(err as Error).message}`)
   }
   if (ctx.backup.expansionTouched) {
     try {
@@ -1313,7 +1528,7 @@ export async function restore(ctx: Context): Promise<string[]> {
   return log
 }
 
-export const ALL_LEVELS: Record<number, TestCase[]> = { 0: L0, 1: L1, 2: L2, 3: L3, 4: L4, 6: L6 }
+export const ALL_LEVELS: Record<number, TestCase[]> = { 0: L0, 1: L1, 2: L2, 3: L3, 4: L4, 6: L6, 7: L7 }
 
 function ipToInt(ip: string): number {
   return ip.split('.').reduce((acc, p) => ((acc << 8) | Number(p)) >>> 0, 0)

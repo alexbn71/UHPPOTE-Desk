@@ -66,6 +66,7 @@ export const es: Messages = {
     dashboard: 'Panel',
     monitor: 'Monitor',
     events: 'Historial de eventos',
+    presence: 'Presentes',
     anomalies: 'Anomalías',
     attendance: 'Asistencia',
     people: 'Personas',
@@ -507,6 +508,54 @@ export const es: Messages = {
     duressAfterCardHint: 'El código de coacción solo se acepta justo después de pasar una tarjeta registrada',
     noAlarmOptions: 'Ninguna opción de alarma activada',
   },
+  presence: {
+    title: 'Presentes',
+    description:
+      'Quién está dentro ahora, según la última pasada de cada persona en las puertas de entrada y salida (Puertas → Presentes)',
+    period: {
+      today: 'Hoy',
+      '8': 'Últimas 8 horas',
+      '24': 'Últimas 24 horas',
+    },
+    insideNow: 'Dentro ahora',
+    left: 'Salieron',
+    doors: 'Puertas consideradas',
+    doorsValue: '{{entry}} de entrada · {{exit}} de salida',
+    since: 'Pasadas desde {{time}}',
+    colPerson: 'Persona',
+    colDepartment: 'Departamento',
+    colCard: 'Tarjeta',
+    colDoor: 'Entró por',
+    colSince: 'Desde',
+    empty: 'Nadie dentro',
+    noExitDoors:
+      'Ninguna puerta está configurada como salida: quien entró sigue dentro. Configura las puertas de salida en Puertas → Presentes.',
+  },
+  controllerOptions: {
+    readerN: 'Lector {{n}}',
+    title: 'Opciones de lectores y puertas',
+    intro:
+      'Funciones del firmware del controlador (las funciones extendidas del software del fabricante). Se envían con los demás ajustes y se verifican leyéndolas de nuevo.',
+    managed: 'Gestionadas por UHPPOTE Desk',
+    managedHint: 'Solo se escriben con esta opción activada; desactivada = el controlador conserva sus valores',
+    readNotCompared: 'No gestionadas: sin comparación',
+    fourTimes: '4 pasadas = siempre abierta',
+    fourTimesHint:
+      '4 pasadas seguidas de una tarjeta válida ponen la puerta siempre abierta; otras 4 la devuelven a normal (firmware V5.52+)',
+    fourTimesProfile: 'Usuarios permitidos',
+    allUsers: 'Todos los usuarios',
+    silent: 'Lector silencioso con tarjetas no válidas',
+    silentHint: 'Sin LED rojo ni pitido en el lector para una tarjeta no válida (firmware V5.48+)',
+    swipeGap: 'Intervalo mínimo entre dos pasadas de la misma tarjeta (s)',
+    swipeGapHint: 'Número par de segundos, 0 = desactivado',
+    doorAsSwitch: 'Puerta como interruptor',
+    doorAsSwitchHint:
+      'La tarjeta conmuta la cerradura (abierta / cerrada) en lugar de abrirla durante el retardo de apertura',
+    multiCard: 'Apertura con varias tarjetas',
+    multiCardHint:
+      'Tarjetas distintas necesarias para abrir cada puerta (0 = desactivado, 2-10); los grupos no se gestionan',
+    verified: 'Ajustes guardados, enviados y verificados en el controlador',
+  },
   doors: {
     title: 'Puertas',
     description: 'Nombre, modo de funcionamiento, tiempo de apertura y lectores usados para la asistencia',
@@ -524,6 +573,14 @@ export const es: Messages = {
     attendanceSwitch: 'Lector usado para la asistencia',
     saved: 'Puerta actualizada',
     savedNotSent: 'Guardado, pero no enviado al controlador: {{error}}',
+    colPresence: 'Presentes',
+    presenceLabel: 'Presentes',
+    presenceHint: 'Cómo cuentan las pasadas en esta puerta para las personas presentes',
+    presence: {
+      entry: 'Entrada',
+      exit: 'Salida',
+      none: 'No cuenta',
+    },
   },
   timeProfiles: {
     title: 'Franjas horarias',
@@ -1352,6 +1409,13 @@ export const es: Messages = {
       overtime: 'Horas extra',
       punches: 'Fichajes',
       anomalies: 'Anomalías',
+    },
+    presence: {
+      person: 'Persona',
+      department: 'Departamento',
+      card: 'Tarjeta',
+      door: 'Entró por',
+      since: 'Desde',
     },
   },
   holidays: {

@@ -3,6 +3,7 @@
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import {
+  DEFAULT_CONTROLLER_OPTIONS,
   EventListener,
   EventOverwrittenError,
   NotFoundError,
@@ -261,6 +262,24 @@ describe('expansion board (0xF2)', () => {
     expect((await client.getDoorControl(target, 2)).delay).toBe(7)
     await client.setDoorControl(target, before)
     expect((await client.readParameters(target))[4]).toBe(before.delay * 10)
+  })
+
+  it('setControllerOptions / readControllerOptions keep the unmanaged multi-card bits', async () => {
+    fake.parameters[219] = 0xe0
+    const options = {
+      fourTimesNormalOpen: { readers: [true, false, false, false], timeProfile: 0 },
+      silentInvalidCard: true,
+      swipeGapSeconds: 4,
+      doorAsSwitch: [false, false, true, false],
+      multiCard: [2, 0, 0, 0],
+    } as const
+    await client.setControllerOptions(target, structuredClone(options) as never)
+    const read = await client.readControllerOptions(target)
+    expect(read).toMatchObject(options)
+    expect(read.table[219]).toBe(0xe0)
+    expect(read.table[222]).toBe(0xfb)
+    // back to no options: the following tests swipe on door 1
+    await client.setControllerOptions(target, structuredClone(DEFAULT_CONTROLLER_OPTIONS))
   })
 
   it('readParameters times out on an offline controller', async () => {

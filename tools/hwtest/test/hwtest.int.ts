@@ -63,8 +63,8 @@ class FakeDriver implements Driver {
       return this.f.expansionOutputs[action.door - 1]!
     return true
   }
-  async ask(): Promise<string> {
-    return String(USER_CARD)
+  async ask(question: string): Promise<string> {
+    return /second card/i.test(question) ? '10058499' : String(USER_CARD)
   }
   info(): void {}
 }
@@ -166,6 +166,20 @@ describe('hardware suite against FakeController', () => {
       fake.longPackets = true
     }
   }, 60_000)
+
+  it('level 7 (reader and door options) passes and restores the original bytes exactly', async () => {
+    fake.parameters[205] = 0xff // factory values, as read from a real controller
+    fake.parameters[222] = 0xff
+    fake.parameters[52] = 0xff
+    fake.parameters[53] = 0xff
+    const before = [...fake.parameterTable()]
+    const { results } = await runSuite(opts, [7], new FakeDriver(fake))
+    expect(
+      results.filter((r) => r.status !== 'pass').map((f) => `${f.id}: ${f.status} ${f.details.join(' / ')}`),
+    ).toEqual([])
+    expect([...fake.parameterTable()]).toEqual(before)
+    expect(fake.cards.map((c) => c.card)).toEqual([10000001])
+  }, 120_000)
 
   it('detects a controller that does not answer', async () => {
     fake.offline = true

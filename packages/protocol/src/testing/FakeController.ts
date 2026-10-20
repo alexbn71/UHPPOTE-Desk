@@ -149,6 +149,8 @@ export class FakeController {
   /** Simulated state of the 4 relays of the expansion board (not reported by the real controller). */
   expansionOutputs: Quad<boolean> = [false, false, false, false]
   private readonly expansionTimers: (NodeJS.Timeout | null)[] = [null, null, null, null]
+  /** Cards already swiped per door while multi-card access waits for the others. */
+  private multiCardPending: number[][] = [[], [], [], []]
   /** Number of 0xF2 packets received. */
   parameterWrites = 0
   /** Number of long-packet parameter table reads received. */
@@ -331,7 +333,15 @@ export class FakeController {
 
   /** Simulates a card swipe on the door reader. Returns the generated event. */
   swipe(card: number, door: number, direction: number = Direction.In, pin?: number): ControllerEvent {
-    const reason = this.authorise(card, door, pin)
+    let reason = this.authorise(card, door, pin)
+    // multi-card access (parameter 168 + door): the first N-1 different valid cards wait (reason 9)
+    const needed = this.parameters[168 + door - 1]!
+    if (reason === Reason.Swipe && needed >= 2) {
+      const pending = this.multiCardPending[door - 1]!
+      if (!pending.includes(card)) pending.push(card)
+      if (pending.length < needed) reason = Reason.MoreCards
+      else this.multiCardPending[door - 1] = []
+    }
     const granted = reason === Reason.Swipe
     if (granted) this.pulseRelay(door)
     const ev = this.event(EventType.Swipe, granted, door, direction, card, reason)

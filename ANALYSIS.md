@@ -78,7 +78,9 @@
 | 3.2.5 Keypad/PIN (card+PIN, door PIN, super password) | ✅ | Keypad activation, per-card PIN, up to 4 passcodes per door | `0xA4`, `0x8C`, `0x50` |
 | 3.2.6 Anti-passback | ✅ | 5 modes | `0x84`, `0x86` |
 | 3.2.7 Interlock | ✅ | 6 modes | `0xA2` |
-| 3.2.8 Multi-card | ⚠️ | Only through the "enable/disable more cards" task (`more cards` count); group definitions are not part of the known protocol | `0xA8` |
+| 3.2.8 Multi-card | ⚠️ | Number of cards per door (2–10) in the parameter table, written with `0xF2` and verified by read-back; also the "enable/disable more cards" task. Group definitions (per-card group) are not supported | `0xF2`, `0xA8` |
+| Extended functions: four swipes = normally open, silent reader on invalid cards, swipe gap, door as switch | ⚠️ experimental | Parameter table bytes 250, 205, 52–53, 222 (inverted), written only when *Managed by UHPPOTE Desk* is on; hardware level L7 | `0xF2` |
+| Persons inside | ✅ | From the last granted swipe on entry / exit doors (door role), page + CSV | — |
 | 3.2.9 First card open | ✅ | Per door: hours and active/inactive mode | `0xAA`, flag in `0x50` |
 | 3.2.10 Task list | ✅ | 13 kinds of scheduled tasks | `0xA6`, `0xA8`, `0xAC` |
 | 3.3.1 Remote open | ✅ | Open-door button (with confirmation and audit) | `0x40` |

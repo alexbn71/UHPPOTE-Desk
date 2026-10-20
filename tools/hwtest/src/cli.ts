@@ -25,6 +25,8 @@ Levels (--level, e.g. 0,1,2 or 0-4; default 0,1):
   6  UT0311-01A expansion board: parameter table read, 0xF2 mapping check, configuration write verified by read-back,
      guided relay tests (forced open, open too long, invalid card, fire input; duress code with --destructive).
      WARNING: overwrites the expansion board configuration and leaves all its outputs inactive.
+  7  Reader and door options: four swipes = normally open, silent reader, swipe gap, door as switch, multi-card
+     (written with 0xF2, verified by read-back; the original bytes are restored exactly at the end).
 
 Options:
   --serial <n>        controller serial number (required)

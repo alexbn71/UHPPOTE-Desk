@@ -16,8 +16,8 @@ import { IconDoorEnter, IconEdit } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DoorDto } from '@uhppote-desk/shared'
-import { DOOR_MODES } from '@uhppote-desk/shared'
+import type { DoorDto, DoorPresence } from '@uhppote-desk/shared'
+import { DOOR_MODES, DOOR_PRESENCE } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -42,6 +42,7 @@ export function DoorsPage() {
         name: edit.name,
         active: edit.active,
         attendance: edit.attendance,
+        presence: edit.presence,
         mode: edit.mode,
         delay: edit.delay,
       })
@@ -72,6 +73,7 @@ export function DoorsPage() {
                 <Table.Th>{t('doors.colOpening')}</Table.Th>
                 <Table.Th>{t('doors.colState')}</Table.Th>
                 <Table.Th>{t('doors.colAttendance')}</Table.Th>
+                <Table.Th>{t('doors.colPresence')}</Table.Th>
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
@@ -94,6 +96,7 @@ export function DoorsPage() {
                       )}
                     </Table.Td>
                     <Table.Td>{d.attendance ? <Badge variant="light">{t('common.yes')}</Badge> : '—'}</Table.Td>
+                    <Table.Td>{d.presence === 'none' ? '—' : t(`doors.presence.${d.presence}`)}</Table.Td>
                     <Table.Td>
                       <Group gap={4} justify="flex-end">
                         {can('operator') && d.active && (
@@ -150,6 +153,14 @@ export function DoorsPage() {
               label={t('doors.attendanceSwitch')}
               checked={edit.attendance}
               onChange={(e) => setEdit({ ...edit, attendance: e.currentTarget.checked })}
+            />
+            <Select
+              label={t('doors.presenceLabel')}
+              description={t('doors.presenceHint')}
+              data={DOOR_PRESENCE.map((p) => ({ value: p, label: t(`doors.presence.${p}`) }))}
+              value={edit.presence}
+              onChange={(v) => setEdit({ ...edit, presence: (v ?? 'entry') as DoorPresence })}
+              allowDeselect={false}
             />
             <Button onClick={() => void save()}>{t('controllerDetail.saveAndSend')}</Button>
           </Stack>

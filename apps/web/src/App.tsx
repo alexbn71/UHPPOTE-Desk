@@ -34,6 +34,7 @@ import {
   IconLogout,
   IconRefresh,
   IconReportAnalytics,
+  IconUserCheck,
   IconSettings,
   IconSitemap,
   IconUsers,
@@ -69,6 +70,7 @@ import { NotificationsPage } from './pages/Notifications'
 import { OperatorsPage } from './pages/Operators'
 import { PeoplePage } from './pages/People'
 import { PermissionsPage } from './pages/Permissions'
+import { PresencePage } from './pages/Presence'
 import { RulesPage } from './pages/Rules'
 import { StructurePage } from './pages/Structure'
 import { SyncPage } from './pages/Sync'
@@ -81,6 +83,7 @@ type NavKey =
   | 'dashboard'
   | 'monitor'
   | 'events'
+  | 'presence'
   | 'attendance'
   | 'anomalies'
   | 'people'
@@ -115,6 +118,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
       { to: '/', label: 'dashboard', icon: <IconDashboard size={18} />, role: 'viewer' },
       { to: '/monitor', label: 'monitor', icon: <IconActivity size={18} />, role: 'viewer' },
       { to: '/events', label: 'events', icon: <IconHistory size={18} />, role: 'viewer' },
+      { to: '/presence', label: 'presence', icon: <IconUserCheck size={18} />, role: 'viewer' },
       { to: '/attendance', label: 'attendance', icon: <IconReportAnalytics size={18} />, role: 'viewer' },
       { to: '/anomalies', label: 'anomalies', icon: <IconAlertTriangle size={18} />, role: 'viewer' },
     ],
@@ -339,6 +343,7 @@ export function App() {
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/monitor" element={<MonitorPage />} />
                     <Route path="/events" element={<EventsPage />} />
+                    <Route path="/presence" element={<PresencePage />} />
                     <Route path="/attendance" element={<AttendancePage />} />
                     <Route path="/anomalies" element={<AnomaliesPage />} />
                     <Route path="/people" element={<PeoplePage />} />
