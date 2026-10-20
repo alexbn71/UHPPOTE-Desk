@@ -181,7 +181,8 @@ test.describe.serial('UHPPOTE Desk', () => {
     await expect(relay1.getByLabel('Forced open')).toBeChecked()
     await relay1.getByLabel('Fire alarm').uncheck({ force: true })
     await page.getByRole('button', { name: 'Save and send to the controller' }).click()
-    await expect(page.getByText('Settings saved')).toBeVisible({ timeout: 10_000 })
+    // written with 0xF2 and verified by reading the table back
+    await expect(page.getByText('Saved, sent and verified')).toBeVisible({ timeout: 10_000 })
     const settings = await (await page.request.get('/api/controllers/1/settings')).json()
     expect(settings.expansionBoard.installed).toBe(true)
     expect(settings.expansionBoard.relays[0]).toMatchObject({
@@ -192,6 +193,12 @@ test.describe.serial('UHPPOTE Desk', () => {
       duration: 10,
     })
     expect(settings.expansionBoard.relays.slice(1).every((r: { active: boolean }) => !r.active)).toBe(true)
+    // configuration read from the controller: same as the saved one
+    await page.getByRole('button', { name: 'Read from the controller' }).click()
+    const read = page.getByTestId('expansion-read')
+    await expect(read.getByText('Same as the saved configuration')).toBeVisible({ timeout: 10_000 })
+    await expect(read.getByRole('row', { name: /Output 1/ })).toContainText('Door 1')
+    await expect(read.getByRole('row', { name: /Output 2/ })).toContainText('Off')
   })
 
   test('synchronisation: comparison without differences', async ({ page }) => {

@@ -432,7 +432,7 @@ export const de: Messages = {
     intro:
       'Vier Alarmrelais und ein Feuereingang am Controller. Die Konfiguration wird zusammen mit den erweiterten Einstellungen und bei der vollständigen Synchronisierung gesendet.',
     experimental:
-      'Experimentell: Das Protokoll wurde aus der Herstellersoftware rekonstruiert und ist noch nicht auf jeder Firmware geprüft. Der Controller kann diese Konfiguration nicht zurückmelden: UHPPOTE Desk speichert die gesendete Kopie.',
+      'Experimentell: Das Protokoll wurde aus der Herstellersoftware rekonstruiert und nur an einem Controller geprüft (Firmware v9.f8). Nach jedem Speichern liest UHPPOTE Desk die Konfiguration zur Kontrolle aus dem Controller zurück.',
     installed: 'Erweiterungskarte angeschlossen',
     installedHint:
       'Die Konfiguration wird nur bei aktivierter Option in den Controller geschrieben. Vor dem Abklemmen der Karte die Ausgänge deaktivieren und speichern.',
@@ -476,6 +476,22 @@ export const de: Messages = {
     },
     duration: 'Ausgangsdauer (s)',
     noEvents: 'Kein Ereignis gewählt: Der Ausgang wird nie aktiviert',
+    read: 'Aus dem Controller lesen',
+    readHint:
+      'Zeigt die Konfiguration, die tatsächlich im Controller gespeichert ist (nur lesen, nichts wird geändert)',
+    readTitle: 'Konfiguration im Controller',
+    readAligned: 'Gleich wie die gespeicherte',
+    readDifferent: '{{n}} Byte(s) anders als die gespeicherte Konfiguration',
+    readNotCompared: 'Karte nicht als angeschlossen markiert: kein Vergleich',
+    readOutput: 'Ausgang',
+    readInactive: 'Aus',
+    readAlarms: 'Alarmtypen',
+    readUse: 'In das Formular übernehmen',
+    verified: 'Gespeichert, gesendet und geprüft: Der Controller enthält genau diese Konfiguration',
+    notVerified:
+      'Gespeichert und gesendet, aber die Konfiguration konnte zur Prüfung nicht aus dem Controller gelesen werden',
+    verifyFailed:
+      'Gespeichert und gesendet, aber {{n}} aus dem Controller gelesene Byte(s) weichen ab: „Aus dem Controller lesen“ verwenden',
   },
   doors: {
     title: 'Türen',

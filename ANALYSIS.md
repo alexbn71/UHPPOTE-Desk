@@ -74,7 +74,7 @@
 | 2.7.2 DB backup | ✅ | Scheduled SQLite backup | — |
 | 3.2.1 Record push-button events / 3.2.2 door events | ✅ | "Special events" flag | `0x8E` |
 | 3.2.3 Time profiles (linked) | ✅ | Profiles 2–254, 3 segments, weekdays, validity, chaining | `0x88`, `0x98`, `0x8A` |
-| 3.2.4 Peripherals (alarms) | ⚠️ experimental | Alarm expansion board UT0311-01A: 4 outputs (source, mode, events, signals, duration), open-too-long time, duress code — write-only parameter table reconstructed from the vendor software, see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md); alarm output reset not supported | `0xF2`, `0x20` |
+| 3.2.4 Peripherals (alarms) | ⚠️ experimental | Alarm expansion board UT0311-01A: 4 outputs (source, mode, events, signals, duration), open-too-long time, duress code — parameter table written with `0xF2` and read back with the vendor long packet, reconstructed from the vendor software and verified on firmware v9.f8, see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md); alarm output reset not supported | `0xF2`, long `0x24/0x10`, `0x20` |
 | 3.2.5 Keypad/PIN (card+PIN, door PIN, super password) | ✅ | Keypad activation, per-card PIN, up to 4 passcodes per door | `0xA4`, `0x8C`, `0x50` |
 | 3.2.6 Anti-passback | ✅ | 5 modes | `0x84`, `0x86` |
 | 3.2.7 Interlock | ✅ | 6 modes | `0xA2` |
@@ -413,7 +413,7 @@ Implemented following the architecture in §9, with one change from the original
 | Attendance: shifts (including night shifts), holidays (including Easter), leave/absences, manual punches, report + CSV | ✅ | unit |
 | Operators with roles and zones, audit log, daily backup | ✅ | server integration + E2E |
 | Multilingual interface: English (base), Italian, Spanish, French, German; translated server errors, sync progress and CSV exports | ✅ | unit (key/placeholder consistency) + server integration + E2E |
-| Alarm expansion board (0xF2 parameter writes) | ⚠️ not yet verified on hardware | unit (layout, property test) + client and server integration + E2E + hardware level L6 against the FakeController |
+| Alarm expansion board (0xF2 writes, long-packet read) | ⚠️ write/read verified on firmware v9.f8, relays not yet tested with a board | unit (layout, property test) + client and server integration + E2E + hardware level L6 against the FakeController |
 | Hardware commissioning suite L0–L6 | ✅ | run against the FakeController (all levels) and the uhppoted simulator (L0–L2) |
 | Docker image | ✅ | built, smoke-tested and published by GitHub Actions |
 
@@ -428,4 +428,4 @@ Not included in v1 (see §4): meal, patrol, meeting, lifts, alarm output reset, 
 3. Door sensors and exit buttons wired on all 4 doors?
 4. Addressing: server subnet and static IP to assign to the controller.
 5. Possible data migration from the legacy software (`iCCard3000.mdb`, password `168168`) — out of scope for v1, feasible as an import.
-6. Alarm expansion board (hardware level L6): is the `0xF2` address mapping (index + 16) confirmed, and applied immediately or only after `0x80`/restart? Does the status packet report the board relays? Which event does the duress code produce? Does the firmware answer `0xC2`?
+6. Alarm expansion board (hardware level L6): ~~`0xF2` mapping (index + 16)~~ confirmed and applied immediately on v9.f8. Still open: is the triggering source 0–3 or a door bit mask (factory values 1, 2, 4)? Does the status packet report the board relays? Which event does the duress code produce? Does the firmware answer `0xC2`?

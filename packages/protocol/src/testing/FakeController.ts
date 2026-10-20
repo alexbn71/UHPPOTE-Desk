@@ -11,6 +11,7 @@ import {
   decodeExpansionBoard,
   type ExpansionBoardConfig,
 } from '../codec/expansion.js'
+import { ANY_CONTROLLER, encodeReadParametersReply, LongPacket, longPacketCrcOk } from '../codec/long.js'
 import {
   DELETED_CARD,
   validatePacket,
@@ -150,6 +151,10 @@ export class FakeController {
   private readonly expansionTimers: (NodeJS.Timeout | null)[] = [null, null, null, null]
   /** Number of 0xF2 packets received. */
   parameterWrites = 0
+  /** Number of long-packet parameter table reads received. */
+  parameterReads = 0
+  /** False simulates a firmware that ignores the vendor long-packet protocol. */
+  longPackets = true
 
   // --- knobs for tests --------------------------------------------------------
   /** Reply latency (ms). */
@@ -487,6 +492,7 @@ export class FakeController {
 
   private async handle(msg: Buffer): Promise<Buffer | null> {
     if (this.offline) return null
+    if (msg.length !== PACKET_SIZE) return this.handleLong(msg)
     const r = validatePacket(msg)
     if (!r) return null
     const target = r.controller
@@ -500,6 +506,39 @@ export class FakeController {
     this.requestCount.set(r.functionCode, (this.requestCount.get(r.functionCode) ?? 0) + 1)
     if (this.latencyMs > 0) await new Promise((res) => setTimeout(res, this.latencyMs))
     return this.dispatch(r)
+  }
+
+  /** Vendor long-packet protocol: only the parameter table read (type 0x24, code 0x10). */
+  private handleLong(msg: Buffer): Buffer | null {
+    if (
+      msg.length !== 20 ||
+      msg[0] !== LongPacket.Type ||
+      msg[1] !== LongPacket.ReadParameters ||
+      !longPacketCrcOk(msg)
+    ) {
+      return null
+    }
+    const to = msg.readUInt32LE(12)
+    if (!this.longPackets || (to !== this.id && to !== ANY_CONTROLLER)) return null
+    if (this.dropNext > 0) {
+      this.dropNext--
+      return null
+    }
+    this.parameterReads++
+    return encodeReadParametersReply(this.id, msg.readUInt32LE(4), this.parameterTable())
+  }
+
+  /** The parameter table as the controller reports it: start markers and door configuration included. */
+  parameterTable(): Uint8Array {
+    const t = Uint8Array.from(this.parameters)
+    t[0] = 0x0d
+    t[1] = 0x7e
+    this.doors.forEach((d, i) => {
+      t[2 + 2 * i] = (d.delay * 10) & 0xff
+      t[3 + 2 * i] = (d.delay * 10) >> 8
+      t[10 + i] = d.mode
+    })
+    return t
   }
 
   private reply(fc: number): Writer {
@@ -791,7 +830,18 @@ export class FakeController {
           if (index < 0 || index >= PARAMETER_TABLE_SIZE) return this.ok(fc, false)
           writes.push([index, r.u8(14 + 3 * i)])
         }
-        for (const [index, value] of writes) this.parameters[index] = value
+        // door delays (2-9, tenths of a second) and modes (10-13) are the door configuration
+        const table = this.parameterTable()
+        for (const [index, value] of writes) {
+          this.parameters[index] = value
+          table[index] = value
+        }
+        if (writes.some(([index]) => index >= 2 && index <= 13)) {
+          this.doors = this.doors.map((_, i) => ({
+            mode: table[10 + i]!,
+            delay: Math.round((table[2 + 2 * i]! | (table[3 + 2 * i]! << 8)) / 10),
+          })) as Quad<{ mode: number; delay: number }>
+        }
         this.parameterWrites++
         return this.ok(fc)
       }

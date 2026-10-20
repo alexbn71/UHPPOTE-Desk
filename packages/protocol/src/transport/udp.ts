@@ -76,6 +76,15 @@ function closeQuietly(sock: dgram.Socket): void {
   }
 }
 
+/** For packets that are not 64-byte messages (vendor long-packet protocol). */
+export interface RawPacketOptions {
+  /** Validates a received datagram (default: a 64-byte UHPPOTE message). */
+  validate: (reply: Buffer) => boolean
+  /** Controller and function code for the timeout error. */
+  controller: number
+  functionCode: number
+}
+
 /**
  * Sends a packet and waits for the first valid reply that satisfies `accept`.
  * If `expectReply` is false (e.g. Set IP) it resolves with null right after sending.
@@ -87,11 +96,13 @@ export async function udpExchange(
   accept: (reply: Buffer) => boolean,
   expectReply = true,
   broadcast = false,
+  raw?: RawPacketOptions,
 ): Promise<Buffer | null> {
   const sock = await openSocket(opts.bindAddress, broadcast)
   const log = opts.logger
-  const controller = packet.readUInt32LE(4)
-  const fc = packet[1]!
+  const controller = raw?.controller ?? packet.readUInt32LE(4)
+  const fc = raw?.functionCode ?? packet[1]!
+  const validate = raw?.validate ?? ((b: Buffer) => validatePacket(b) !== null)
 
   try {
     return await new Promise<Buffer | null>((resolve, reject) => {
@@ -101,7 +112,7 @@ export async function udpExchange(
 
       sock.on('message', (msg, rinfo) => {
         log?.debug?.(`UDP ← ${rinfo.address}:${rinfo.port}\n${hexdump(msg)}`)
-        if (validatePacket(msg) && accept(msg)) {
+        if (validate(msg) && accept(msg)) {
           if (timer) clearTimeout(timer)
           resolve(msg)
         }

@@ -4,6 +4,7 @@ import net from 'node:net'
 import os from 'node:os'
 import { promisify } from 'node:util'
 import {
+  compareExpansionBoard,
   DEFAULT_DOOR_OPEN_TOO_LONG,
   EventOverwrittenError,
   ExpansionEvent,
@@ -957,7 +958,11 @@ async function expansionWith(
     ...relay,
   }
   ctx.backup.expansionTouched = true
-  await ctx.client.setExpansionBoard(ctx.target, { ...EXPANSION_OFF, ...extra, relays })
+  const config = { ...EXPANSION_OFF, ...extra, relays }
+  await ctx.client.setExpansionBoard(ctx.target, config)
+  // the physical tests start only from a configuration verified in the controller
+  const mismatches = compareExpansionBoard(config, await ctx.client.readParameters(ctx.target))
+  if (mismatches.length) throw new Error(`configuration not stored by the controller: ${JSON.stringify(mismatches)}`)
 }
 
 /** Relay/input bytes of the status: the board outputs may (or may not) be reported there. */
@@ -1007,7 +1012,40 @@ export const L6: TestCase[] = [
   {
     id: 'L6.2',
     level: 6,
-    name: '0xF2 address mapping (index + 16) via the door 1 open delay',
+    name: 'Read the parameter table (vendor long packet 0x24/0x10)',
+    async run(ctx: Context, t: TestHelpers) {
+      const table = await ctx.client.readParameters(ctx.target)
+      t.assert(
+        table[0] === 0x0d && table[1] === 0x7e,
+        `unexpected start markers ${table[0]} ${table[1]} (expected 0D 7E)`,
+      )
+      const doors = []
+      for (let d = 1; d <= 4; d++) doors.push(await ctx.client.getDoorControl(ctx.target, d))
+      const fromTable = doors.map((_, i) => ({
+        mode: table[10 + i],
+        tenths: table[2 + 2 * i]! | (table[3 + 2 * i]! << 8),
+      }))
+      t.data({
+        relays: [0, 1, 2, 3].map((n) => [...table.subarray(136 + 6 * n, 142 + 6 * n)]),
+        alarmEvents: table[32],
+        recordAlarmEvents: table[30],
+        doorOpenTooLong: table[35]! | (table[162]! << 8),
+        doors,
+        fromTable,
+      })
+      t.log(
+        `expansion outputs: ${[0, 1, 2, 3].map((n) => `[${[...table.subarray(136 + 6 * n, 142 + 6 * n)].join(',')}]`).join(' ')}`,
+      )
+      const same = doors.every((d, i) => d.mode === fromTable[i]!.mode && d.delay * 10 === fromTable[i]!.tenths)
+      if (!same)
+        t.warn(`door bytes 2-13 differ from get-door-control: ${JSON.stringify(fromTable)} vs ${JSON.stringify(doors)}`)
+      t.log('table read; door modes and delays match get-door-control')
+    },
+  },
+  {
+    id: 'L6.3',
+    level: 6,
+    name: '0xF2 address mapping (index + 16): door 1 open delay written and read back',
     async run(ctx: Context, t: TestHelpers) {
       const original = await ctx.client.getDoorControl(ctx.target, 1)
       const delay = original.delay >= 250 ? original.delay - 1 : original.delay + 1
@@ -1020,27 +1058,32 @@ export const L6: TestCase[] = [
           { index: 2, value: tenths & 0xff },
           { index: 3, value: tenths >> 8 },
         ])
+        const table = await ctx.client.readParameters(ctx.target)
         const after = await ctx.client.getDoorControl(ctx.target, 1)
-        t.data({ original, written: delay, readBack: after })
+        t.data({ original, written: delay, table: table[2]! | (table[3]! << 8), getDoorControl: after })
+        t.assert(
+          (table[2]! | (table[3]! << 8)) === tenths,
+          `parameter table does not contain the written value (${table[2]}, ${table[3]})`,
+        )
         t.assert(
           after.mode === original.mode,
           `door 1 mode changed (${original.mode} → ${after.mode}): wrong address mapping!`,
         )
+        t.log('mapping confirmed: parameter index + 16 = address')
         if (after.delay !== delay) {
           t.warn(
-            `0xF2 accepted but get-door-control still reports ${after.delay} s: the controller may apply the table only after 0x80 or a restart (the vendor software sends 0x80 after these bytes)`,
+            `the table holds ${delay} s but get-door-control still reports ${after.delay} s (applied only after 0x80 or a restart?)`,
           )
         }
-        t.log('mapping confirmed: parameter index + 16 = address')
       } finally {
         await ctx.client.setDoorControl(ctx.target, original)
       }
     },
   },
   {
-    id: 'L6.3',
+    id: 'L6.4',
     level: 6,
-    name: 'Expansion configuration accepted, other settings untouched',
+    name: 'Expansion configuration written, read back identical, other settings untouched',
     async run(ctx: Context, t: TestHelpers) {
       const doors = []
       for (let d = 1; d <= 4; d++) doors.push(await ctx.client.getDoorControl(ctx.target, d))
@@ -1051,6 +1094,8 @@ export const L6: TestCase[] = [
       const started = Date.now()
       await ctx.client.setExpansionBoard(ctx.target, EXPANSION_OFF)
       t.log(`all outputs inactive written in ${Date.now() - started} ms`)
+      const mismatches = compareExpansionBoard(EXPANSION_OFF, await ctx.client.readParameters(ctx.target))
+      t.assert(mismatches.length === 0, `bytes read back differ: ${JSON.stringify(mismatches)}`)
       const doorsAfter = []
       for (let d = 1; d <= 4; d++) doorsAfter.push(await ctx.client.getDoorControl(ctx.target, d))
       t.assert(
@@ -1073,7 +1118,7 @@ export const L6: TestCase[] = [
     },
   },
   {
-    id: 'L6.4',
+    id: 'L6.5',
     level: 6,
     name: 'Output 1 on forced open of door 1',
     physical: true,
@@ -1101,7 +1146,7 @@ export const L6: TestCase[] = [
     },
   },
   {
-    id: 'L6.5',
+    id: 'L6.6',
     level: 6,
     name: 'Output 2 on door 1 open too long (until reset)',
     physical: true,
@@ -1135,7 +1180,7 @@ export const L6: TestCase[] = [
     },
   },
   {
-    id: 'L6.6',
+    id: 'L6.7',
     level: 6,
     name: 'Output 3 on invalid card at door 1',
     physical: true,
@@ -1162,7 +1207,7 @@ export const L6: TestCase[] = [
     },
   },
   {
-    id: 'L6.7',
+    id: 'L6.8',
     level: 6,
     name: 'Fire input of the board: event, doors unlocked, output 4',
     physical: true,
@@ -1208,7 +1253,7 @@ export const L6: TestCase[] = [
     },
   },
   {
-    id: 'L6.8',
+    id: 'L6.9',
     level: 6,
     name: 'Duress code on the door 1 keypad (output 1)',
     physical: true,

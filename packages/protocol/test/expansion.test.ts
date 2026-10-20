@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import {
   CodecError,
   chunkParameters,
+  compareExpansionBoard,
   decode,
   decodeExpansionBoard,
   encode,
@@ -249,5 +250,24 @@ describe('expansion board parameters', () => {
         },
       ),
     )
+  })
+})
+
+describe('compareExpansionBoard', () => {
+  it('no difference on the written table, the changed byte otherwise', () => {
+    const cfg: ExpansionBoardConfig = {
+      relays: [
+        relay({ events: ExpansionEvent.ForcedOpen }),
+        { ...INACTIVE_RELAY },
+        { ...INACTIVE_RELAY },
+        { ...INACTIVE_RELAY },
+      ],
+      doorOpenTooLong: 25,
+      duressCode: null,
+    }
+    const t = table(cfg)
+    expect(compareExpansionBoard(cfg, t)).toEqual([])
+    t[138] = 0x01
+    expect(compareExpansionBoard(cfg, t)).toEqual([{ index: 138, expected: 0x04, actual: 0x01 }])
   })
 })

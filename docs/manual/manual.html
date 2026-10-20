@@ -555,12 +555,13 @@
 
   <h3>Expansion board</h3>
   <figure><img src="shots/controller-expansion.png"><figcaption><b>Figure 23</b> — Alarm expansion board: four outputs and the fire input.</figcaption></figure>
-  <p>The UHPPOTE <b>UT0311-01A</b> alarm expansion board (also sold as ACM-EC05) adds four alarm relays and a fire input to the controller: a siren, a warning light or a signal to a burglar or fire panel can be switched on when something happens at the doors. The configuration is in the <span class="ui">Expansion board</span> tab; <span class="ui">Save and send to the controller</span> writes it, and the full synchronisation writes it again.</p>
+  <p>The UHPPOTE <b>UT0311-01A</b> alarm expansion board (also sold as ACM-EC05) adds four alarm relays and a fire input to the controller: a siren, a warning light or a signal to a burglar or fire panel can be switched on when something happens at the doors. The configuration is in the <span class="ui">Expansion board</span> tab; <span class="ui">Save and send to the controller</span> writes it and then reads it back from the controller to check it (the message says <i>verified</i> when the controller stores exactly what was sent); the full synchronisation writes it again.</p>
   <ul>
     <li><b>Expansion board connected</b> — the configuration is written to the controller only when this is on, so controllers without the board are never touched.</li>
     <li><b>Door open too long after</b> — seconds after which a door left open raises the <i>Door open too long</i> alarm (default 25 s).</li>
     <li><b>Duress code</b> — a code typed on the PIN keypad under threat: the door opens as usual and the <i>duress</i> alarm is raised. Leave it empty to keep the code stored in the controller.</li>
     <li>For each <b>output</b>: the <b>triggering source</b> (one of the four doors, or the burglar alarm), the <b>output mode</b>, the <b>triggering events</b> and the <b>output duration</b>.</li>
+    <li><b>Read from the controller</b> — shows the configuration the controller really stores (read only, nothing is changed), with a badge saying whether it is the same as the saved one. <span class="ui">Copy into the form</span> takes it as a starting point, for example a configuration made with the manufacturer's software; save to apply it.</li>
   </ul>
   <table>
     <thead><tr><th style="width:52mm">Output mode</th><th>The relay stays on…</th></tr></thead>
@@ -570,7 +571,7 @@
     <tr><td>Any signal / All signals</td><td>while at least one (or all) of the selected signals is active: lock relay, door sensor, exit button, force lock input, inputs A1–A3 and fire input of the board</td></tr>
   </table>
   <p>Triggering events: <b>duress code</b>, <b>door open too long</b>, <b>forced open</b> (door opened without a valid access; requires a door sensor), <b>forced lock</b>, <b>invalid card</b> and <b>fire alarm</b>. The fire alarm also opens all the doors of the controller and is recorded as event 39.</p>
-  <div class="box warn"><b>Experimental</b><p>The commands for the expansion board are not part of the public controller protocol: they were reconstructed from the manufacturer's software. The controller cannot report this configuration back, so UHPPOTE Desk keeps the copy it sends; a configuration made with the manufacturer's software is replaced at the next save. Before removing the board, deactivate the outputs and save. The <b>burglar alarm</b> source uses the manufacturer's default delays and has not been verified yet.</p></div>
+  <div class="box warn"><b>Experimental</b><p>The commands for the expansion board are not part of the public controller protocol: they were reconstructed from the manufacturer's software. They have been verified on one controller (firmware v9.f8); the behaviour of the relays still has to be confirmed with a board connected. A configuration made with the manufacturer's software is replaced at the next save: read it and copy it into the form first if you want to keep it. Before removing the board, deactivate the outputs and save. The <b>burglar alarm</b> source uses the manufacturer's default delays and has not been verified yet.</p></div>
 
   <h3>Maintenance</h3>
   <figure><img src="shots/controller-maintenance.png"><figcaption><b>Figure 24</b> — Synchronisation history and factory reset.</figcaption></figure>
@@ -742,7 +743,7 @@
     <tr><td>"Saved, but not sent to every controller"</td><td>Some controller was offline. When it is back, use <i>Align cards</i> or <i>Full synchronisation</i>.</td></tr>
     <tr><td>"Card number not valid for Wiegand-26"</td><td>The number must have facility ≤ 255 and code ≤ 65535. Swipe the card and use the number shown among the unknown cards.</td></tr>
     <tr><td>Wrong time in events or reports</td><td>Server time zone (<code>TZ</code> variable); the controller clock is corrected automatically, or use <i>Synchronise time</i>.</td></tr>
-    <tr><td>An expansion board output does not switch</td><td>Check that <i>Expansion board connected</i> is on and save again; that the output is active, with the right door and events; that the alarm really happens (the event appears in the Monitor: 37 open too long, 38 forced open, 39 fire). Forced open needs a door sensor; duress needs a PIN keypad.</td></tr>
+    <tr><td>An expansion board output does not switch</td><td>Use <i>Read from the controller</i> to see what the controller stores; check that <i>Expansion board connected</i> is on and save again; that the output is active, with the right door and events; that the alarm really happens (the event appears in the Monitor: 37 open too long, 38 forced open, 39 fire). Forced open needs a door sensor; duress needs a PIN keypad.</td></tr>
     <tr><td>Forgotten administrator password</td><td>Set <code>ADMIN_PASSWORD</code> on the server and restart it; then log in as <code>admin</code>.</td></tr>
   </table>
 

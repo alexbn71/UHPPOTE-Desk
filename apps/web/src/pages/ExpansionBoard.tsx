@@ -1,5 +1,6 @@
 import {
   Alert,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -9,15 +10,23 @@ import {
   SimpleGrid,
   Stack,
   Switch,
+  Table,
   Text,
   TextInput,
   Title,
 } from '@mantine/core'
-import { IconAlertTriangle } from '@tabler/icons-react'
+import { notifications } from '@mantine/notifications'
+import { IconAlertTriangle, IconDownload } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ControllerSettings, ExpansionBoardSettings, ExpansionRelaySettings } from '@uhppote-desk/shared'
+import type {
+  ControllerSettings,
+  ExpansionBoardReadDto,
+  ExpansionBoardSettings,
+  ExpansionRelaySettings,
+  ExpansionVerificationDto,
+} from '@uhppote-desk/shared'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
@@ -156,6 +165,80 @@ function RelayCard({
   )
 }
 
+/** What the controller really stores, read back with the vendor long-packet request. */
+function ControllerCopy({
+  read,
+  onUse,
+  readOnly,
+}: {
+  read: ExpansionBoardReadDto
+  onUse: () => void
+  readOnly: boolean
+}) {
+  const { t } = useTranslation()
+  const sourceLabel = (s: number) =>
+    s >= 0 && s <= 3 ? t('common.doorN', { n: s + 1 }) : s === ARM ? t('expansion.sourceArm') : `? (${s})`
+  const eventsLabel = (bits: number) =>
+    EVENTS.filter(([, bit]) => bits & bit)
+      .map(([key]) => t(`expansion.eventNames.${key}`))
+      .join(', ') || '—'
+  return (
+    <Card withBorder data-testid="expansion-read">
+      <Group justify="space-between" mb="xs">
+        <Title order={5}>{t('expansion.readTitle')}</Title>
+        {read.mismatches === null ? (
+          <Badge color="gray">{t('expansion.readNotCompared')}</Badge>
+        ) : read.mismatches.length === 0 ? (
+          <Badge color="green">{t('expansion.readAligned')}</Badge>
+        ) : (
+          <Badge color="orange">{t('expansion.readDifferent', { n: read.mismatches.length })}</Badge>
+        )}
+      </Group>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>{t('expansion.readOutput')}</Table.Th>
+            <Table.Th>{t('expansion.source')}</Table.Th>
+            <Table.Th>{t('expansion.mode')}</Table.Th>
+            <Table.Th>{t('expansion.events')}</Table.Th>
+            <Table.Th>{t('expansion.duration')}</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {read.relays.map((r, i) => (
+            <Table.Tr key={i}>
+              <Table.Td>{t('expansion.relayN', { n: i + 1 })}</Table.Td>
+              {r.active ? (
+                <>
+                  <Table.Td>{sourceLabel(r.source)}</Table.Td>
+                  <Table.Td>{t(`expansion.modes.${r.mode}`, { defaultValue: String(r.mode) })}</Table.Td>
+                  <Table.Td>{eventsLabel(r.events)}</Table.Td>
+                  <Table.Td>{r.duration}</Table.Td>
+                </>
+              ) : (
+                <Table.Td colSpan={4}>
+                  <Text size="sm" c="dimmed">
+                    {t('expansion.readInactive')}
+                  </Text>
+                </Table.Td>
+              )}
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+      <Text size="sm" mt="xs">
+        {t('expansion.doorOpenTooLong')}: {read.doorOpenTooLong} · {t('expansion.duressCode')}: {read.duressCode} ·{' '}
+        {t('expansion.readAlarms')}: {eventsLabel(read.alarmEvents)}
+      </Text>
+      {!readOnly && (
+        <Button mt="sm" variant="light" onClick={onUse}>
+          {t('expansion.readUse')}
+        </Button>
+      )}
+    </Card>
+  )
+}
+
 export function ExpansionBoardPanel({ id }: { id: number }) {
   const { t } = useTranslation()
   const { can } = useAuth()
@@ -166,6 +249,8 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
   })
   const [x, setX] = useState<ExpansionBoardSettings | null>(null)
   const [busy, setBusy] = useState(false)
+  const [read, setRead] = useState<ExpansionBoardReadDto | null>(null)
+  const [reading, setReading] = useState(false)
   const readOnly = !can('admin')
   useEffect(() => {
     if (settings.data) setX(settings.data.expansionBoard)
@@ -177,15 +262,49 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
     try {
       // the latest saved settings + this board: the other advanced settings are not touched
       const current = await api.get<ControllerSettings>(`/controllers/${id}/settings`)
-      await api.put(`/controllers/${id}/settings`, { ...current, expansionBoard: x })
+      const r = await api.put<{ expansion: ExpansionVerificationDto | null }>(`/controllers/${id}/settings`, {
+        ...current,
+        expansionBoard: x,
+      })
       await qc.invalidateQueries({ queryKey: ['settings', id] })
-      notifyOk(t('controllerDetail.settingsSaved'))
+      const v = r.expansion
+      if (!v || v.verified) {
+        notifyOk(v ? t('expansion.verified') : t('controllerDetail.settingsSaved'))
+      } else {
+        notifications.show({
+          color: 'orange',
+          autoClose: 10_000,
+          message:
+            v.verified === null ? t('expansion.notVerified') : t('expansion.verifyFailed', { n: v.mismatches.length }),
+        })
+      }
+      setRead(null)
     } catch (err) {
       notifyError(err)
     } finally {
       setBusy(false)
     }
   }
+
+  const readFromController = async () => {
+    setReading(true)
+    try {
+      setRead(await api.get<ExpansionBoardReadDto>(`/controllers/${id}/expansion-board`))
+    } catch (err) {
+      notifyError(err)
+    } finally {
+      setReading(false)
+    }
+  }
+
+  // copies the controller configuration into the form (inactive outputs keep the form values, switched off)
+  const applyRead = (r: ExpansionBoardReadDto) =>
+    setX({
+      ...x,
+      doorOpenTooLong: r.doorOpenTooLong,
+      duressCode: r.duressCode,
+      relays: r.relays.map((rr, i) => (rr.active ? rr : { ...x.relays[i]!, active: false })),
+    })
 
   const setRelay = (i: number, r: ExpansionRelaySettings) =>
     setX({ ...x, relays: x.relays.map((old, j) => (j === i ? r : old)) })
@@ -233,8 +352,22 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
               readOnly={readOnly}
             />
           </Group>
+          <Group>
+            <Button
+              variant="default"
+              leftSection={<IconDownload size={16} />}
+              loading={reading}
+              onClick={() => void readFromController()}
+            >
+              {t('expansion.read')}
+            </Button>
+            <Text size="xs" c="dimmed">
+              {t('expansion.readHint')}
+            </Text>
+          </Group>
         </Stack>
       </Card>
+      {read && <ControllerCopy read={read} readOnly={readOnly} onUse={() => applyRead(read)} />}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         {x.relays.map((r, i) => (
           <RelayCard key={i} n={i + 1} relay={r} readOnly={readOnly} onChange={(v) => setRelay(i, v)} />

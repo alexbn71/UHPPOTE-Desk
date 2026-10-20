@@ -225,6 +225,44 @@ describe('expansion board (0xF2)', () => {
     expect(fake.parameterWrites - before).toBe(4)
   })
 
+  it('readParameters / readExpansionBoard read back what was written (unicast and broadcast)', async () => {
+    const config = {
+      relays: [
+        { active: true, source: 0, mode: 1, events: 0x04, signals: 0, duration: 5 },
+        { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 },
+        { active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 },
+        { active: true, source: 3, mode: 4, events: 0, signals: 0x82, duration: 30 },
+      ],
+      doorOpenTooLong: 12,
+      duressCode: 123456,
+    }
+    await client.setExpansionBoard(target, structuredClone(config) as never)
+    const table = await client.readParameters(target)
+    expect(table.length).toBe(1024)
+    expect([table[0], table[1]]).toEqual([0x0d, 0x7e])
+    expect(table[10]).toBe(fake.doors[0].mode)
+    const state = await client.readExpansionBoard(target)
+    expect(state).toMatchObject({ ...config, recordAlarmEvents: true, alarmEvents: 0x04 | 0x08 | 0x20 })
+    // without host: broadcast, like the vendor software
+    expect((await client.readExpansionBoard({ id: ID })).relays).toEqual(config.relays)
+  })
+
+  it('a 0xF2 write of the door bytes is applied to the door configuration', async () => {
+    const before = await client.getDoorControl(target, 2)
+    await client.writeParameters(target, [
+      { index: 4, value: 70 },
+      { index: 5, value: 0 },
+    ])
+    expect((await client.getDoorControl(target, 2)).delay).toBe(7)
+    await client.setDoorControl(target, before)
+    expect((await client.readParameters(target))[4]).toBe(before.delay * 10)
+  })
+
+  it('readParameters times out on an offline controller', async () => {
+    fake.offline = true
+    await expect(client.readParameters(target)).rejects.toBeInstanceOf(TimeoutError)
+  })
+
   it('a refused write raises OperationFailedError', async () => {
     fake.failOps.add(0xf2)
     try {

@@ -1,8 +1,29 @@
-import type { Card, Logger, Quad } from '@uhppote-desk/protocol'
-import { errorInfo, type ExpansionRelaySettings, type SyncDiffDto } from '@uhppote-desk/shared'
+import {
+  compareExpansionBoard,
+  type Card,
+  type ExpansionBoardConfig,
+  type Logger,
+  type Quad,
+} from '@uhppote-desk/protocol'
+import {
+  errorInfo,
+  type ExpansionBoardReadDto,
+  type ExpansionBoardSettings,
+  type ExpansionRelaySettings,
+  type ExpansionVerificationDto,
+  type SyncDiffDto,
+} from '@uhppote-desk/shared'
 import type { Db } from '../db/database.js'
 import type { ControllerRepo, PeopleRepo, ScheduleRepo } from '../db/repos.js'
 import type { Actor, ControllerGateway } from '../gateway/gateway.js'
+
+function expansionConfig(x: ExpansionBoardSettings): ExpansionBoardConfig {
+  return {
+    relays: x.relays as Quad<ExpansionRelaySettings>,
+    doorOpenTooLong: x.doorOpenTooLong,
+    duressCode: x.duressCode,
+  }
+}
 
 /** Computes the differences between the desired cards (DB) and those on the controller. */
 export function diffCards(
@@ -284,9 +305,10 @@ export class SyncService {
     })
   }
 
-  async pushSettings(actor: Actor, controllerId: number): Promise<void> {
+  /** Sends the advanced settings; with the expansion board connected, returns the read-back check of its bytes. */
+  async pushSettings(actor: Actor, controllerId: number): Promise<ExpansionVerificationDto | null> {
     const s = this.controllers.settings(controllerId)
-    await this.gateway.run(actor, controllerId, 'push-settings', s, async (client, t) => {
+    return this.gateway.run(actor, controllerId, 'push-settings', s, async (client, t) => {
       await client.setInterlock(t, s.interlock)
       await client.setAntiPassback(t, s.antipassback)
       await client.activateKeypads(t, s.keypads as Quad<boolean>)
@@ -308,14 +330,40 @@ export class SyncService {
       await client.setPCControl(t, s.pcControl)
       // only with the board connected: the parameter table of other controllers is never touched
       const x = s.expansionBoard
-      if (x.installed) {
-        await client.setExpansionBoard(t, {
-          relays: x.relays as Quad<ExpansionRelaySettings>,
-          doorOpenTooLong: x.doorOpenTooLong,
-          duressCode: x.duressCode,
-        })
+      if (!x.installed) return null
+      const config = expansionConfig(x)
+      await client.setExpansionBoard(t, config)
+      // read back with the vendor long-packet request: what the controller really stored
+      try {
+        const mismatches = compareExpansionBoard(config, await client.readParameters(t))
+        return { verified: mismatches.length === 0, mismatches }
+      } catch (err) {
+        return { verified: null, mismatches: [], error: (err as Error).message }
       }
     })
+  }
+
+  /** Reads the expansion board configuration stored in the controller and compares it with the saved one. */
+  async readExpansionBoard(actor: Actor, controllerId: number): Promise<ExpansionBoardReadDto> {
+    const x = this.controllers.settings(controllerId).expansionBoard
+    return this.gateway.run(
+      actor,
+      controllerId,
+      'read-expansion-board',
+      null,
+      async (client, t) => {
+        const state = await client.readExpansionBoard(t)
+        return {
+          relays: state.relays.map((r) => ({ ...r, source: r.source as ExpansionRelaySettings['source'] })),
+          doorOpenTooLong: state.doorOpenTooLong,
+          duressCode: state.duressCode,
+          alarmEvents: state.alarmEvents,
+          recordAlarmEvents: state.recordAlarmEvents,
+          mismatches: x.installed ? compareExpansionBoard(expansionConfig(x), state.table) : null,
+        }
+      },
+      { audit: false },
+    )
   }
 
   /** Full synchronisation: doors, time profiles, tasks, settings, cards. */

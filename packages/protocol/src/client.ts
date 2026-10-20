@@ -18,14 +18,17 @@ import {
 import type { DateTimeString } from './codec/bytes.js'
 import {
   chunkParameters,
+  decodeExpansionBoard,
   expansionBoardParameters,
+  Param,
   type ExpansionBoardConfig,
   type ParameterWrite,
 } from './codec/expansion.js'
+import { decodeReadParametersReply, encodeReadParameters, isReadParametersReply, LongPacket } from './codec/long.js'
 import { EventOverwrittenError, NotFoundError, OperationFailedError, TimeoutError, TransportError } from './errors.js'
 import type { Logger } from './logger.js'
 import { tcpExchange } from './transport/tcp.js'
-import { udpBroadcast, udpExchange, type Endpoint } from './transport/udp.js'
+import { udpBroadcast, udpExchange, type Endpoint, type RawPacketOptions } from './transport/udp.js'
 
 export type Transport = 'udp' | 'tcp'
 
@@ -60,6 +63,23 @@ export interface RequestInfo {
   error?: Error
 }
 
+/** Expansion board configuration as stored in the controller (read back with readExpansionBoard). */
+export interface ExpansionBoardState extends ExpansionBoardConfig {
+  duressCode: number
+  /** Param.AlarmEvents: alarm types handled by the controller. */
+  alarmEvents: number
+  recordAlarmEvents: boolean
+  /** The whole parameter table (1024 bytes). */
+  table: Uint8Array
+}
+
+/** Long-packet exchange: own validation, matching and function code for errors. */
+interface RawExchange {
+  validate: (reply: Buffer) => boolean
+  accept: (reply: Buffer) => boolean
+  functionCode: number
+}
+
 export type CardSlot =
   | { state: 'card'; card: Card }
   | { state: 'deleted' }
@@ -88,6 +108,7 @@ export class UhppoteClient {
   private readonly logger: Logger | undefined
   private readonly onRequest: ((info: RequestInfo) => void) | undefined
   private readonly queues = new Map<number, Promise<unknown>>()
+  private xid = 1
 
   constructor(opts: ClientOptions = {}) {
     this.bindAddress = opts.bindAddress ?? '0.0.0.0'
@@ -117,11 +138,16 @@ export class UhppoteClient {
     target: ControllerTarget,
     operation: string,
     packet: Buffer,
-    opts: { idempotent: boolean; expectReply?: boolean },
+    opts: { idempotent: boolean; expectReply?: boolean; raw?: RawExchange },
   ): Promise<Buffer | null> {
     const expectReply = opts.expectReply ?? true
-    const fc = packet[1]!
-    const accept = (reply: Buffer) => reply[1] === fc && reply.readUInt32LE(4) === target.id
+    const fc = opts.raw?.functionCode ?? packet[1]!
+    const accept = opts.raw?.accept ?? ((reply: Buffer) => reply[1] === fc && reply.readUInt32LE(4) === target.id)
+    const raw: RawPacketOptions | undefined = opts.raw && {
+      validate: opts.raw.validate,
+      controller: target.id,
+      functionCode: fc,
+    }
     const attemptsMax = opts.idempotent ? 1 + this.retries : 1
 
     return this.enqueue(target.id, async () => {
@@ -131,7 +157,7 @@ export class UhppoteClient {
       while (attempts < attemptsMax) {
         attempts++
         try {
-          const reply = await this.send(target, packet, accept, expectReply)
+          const reply = await this.send(target, packet, accept, expectReply, raw)
           this.onRequest?.({
             controller: target.id,
             functionCode: fc,
@@ -163,13 +189,16 @@ export class UhppoteClient {
     packet: Buffer,
     accept: (b: Buffer) => boolean,
     expectReply: boolean,
+    raw?: RawPacketOptions,
   ): Promise<Buffer | null> {
     const common = { bindAddress: this.bindAddress, timeoutMs: this.timeoutMs, logger: this.logger }
     if (target.host) {
       const dest = { host: target.host, port: target.port ?? CONTROLLER_PORT }
-      if (target.transport === 'tcp') return tcpExchange(common, dest, packet, accept, expectReply)
-      return udpExchange(common, dest, packet, accept, expectReply, false)
+      // long packets: UDP only (the only transport verified with the vendor protocol)
+      if (target.transport === 'tcp' && !raw) return tcpExchange(common, dest, packet, accept, expectReply)
+      return udpExchange(common, dest, packet, accept, expectReply, false, raw)
     }
+    if (raw) return udpExchange(common, this.broadcast, packet, accept, expectReply, true, raw)
     if (target.transport === 'tcp') {
       return Promise.reject(
         new TransportError(`TCP requires the IP address of controller ${target.id}`, {
@@ -468,6 +497,33 @@ export class UhppoteClient {
   /** Configures the UT0311-01A alarm expansion board (relays, alarm types, open-too-long time, duress code). */
   setExpansionBoard(t: ControllerTarget, config: ExpansionBoardConfig): Promise<void> {
     return this.writeParameters(t, expansionBoardParameters(config))
+  }
+
+  /** Reads the whole parameter table (vendor long-packet request 0x24/0x10, UDP only). */
+  async readParameters(t: ControllerTarget): Promise<Uint8Array> {
+    const xid = this.xid++ >>> 0
+    const reply = await this.exchange(t, 'read-parameters', encodeReadParameters(t.id, xid), {
+      idempotent: true,
+      raw: {
+        validate: isReadParametersReply,
+        accept: (b) => b.readUInt32LE(8) === t.id && b.readUInt32LE(4) === xid,
+        functionCode: LongPacket.ReadParameters,
+      },
+    })
+    return decodeReadParametersReply(reply!).table
+  }
+
+  /** Reads the expansion board configuration stored in the controller. */
+  async readExpansionBoard(t: ControllerTarget): Promise<ExpansionBoardState> {
+    const table = await this.readParameters(t)
+    const board = decodeExpansionBoard(table)
+    return {
+      ...board,
+      duressCode: board.duressCode ?? 0,
+      alarmEvents: table[Param.AlarmEvents]!,
+      recordAlarmEvents: table[Param.RecordAlarmEvents] === 1,
+      table,
+    }
   }
 
   /**

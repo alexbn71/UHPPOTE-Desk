@@ -1,12 +1,15 @@
 /**
  * Analysis of Wireshark captures of UHPPOTE traffic (see pcap-cli.ts): reconstructs what was written to the
- * controller parameter table with 0xF2 — typically the vendor software configuring the expansion board.
+ * controller parameter table — with 0xF2 (UHPPOTE Desk) or with the vendor long-packet write (type 0x24 code 0x20,
+ * table + update mask) — and the last table read back from the controller.
  */
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import {
   decodeExpansionBoard,
   expansionBoardParameters,
+  isReadParametersReply,
+  LONG_HEADER_SIZE,
   FunctionCode,
   PARAMETER_ADDRESS_OFFSET,
   PARAMETER_TABLE_SIZE,
@@ -36,12 +39,14 @@ export interface PcapAnalysis {
   functions: { code: string; name: string; requests: number; replies: number; events: number }[]
   /** Packets of the vendor's long-packet protocol (size ≠ 64). */
   longPackets: { length: number; type: string; code: string; count: number }[]
-  /** 0xF2 writes in capture order, with the controller answer when found. */
-  writes: { frame: number; serial: number; index: number; value: number; ok: boolean | null }[]
+  /** Parameter writes in capture order (0xF2 or vendor long write), with the controller answer when found. */
+  writes: { frame: number; serial: number; index: number; value: number; ok: boolean | null; via: '0xF2' | 'long' }[]
   /** Parameter table image after all the writes (null = never written). */
   table: (number | null)[]
   /** Expansion board decoded from the written bytes (null if no relay byte was written). */
   expansion: ExpansionBoardConfig | null
+  /** Last parameter table read from the controller (long-packet read reply), and its expansion board. */
+  lastRead: { frame: number; serial: number; expansion: ExpansionBoardConfig; alarmEvents: number } | null
   comparison?: {
     missing: ParameterWrite[]
     different: { index: number; expected: number; captured: number }[]
@@ -108,11 +113,43 @@ export function analyse(
   const long = new Map<string, { length: number; type: string; code: string; count: number }>()
   const writes: PcapAnalysis['writes'] = []
   const pendingF2: PcapAnalysis['writes'][] = []
+  const pendingLong: PcapAnalysis['writes'][] = []
   const table: (number | null)[] = new Array(PARAMETER_TABLE_SIZE).fill(null)
+  let lastRead: PcapAnalysis['lastRead'] = null
 
   for (const pkt of packets) {
     const b = pkt.payload
     if (b.length !== 64 || (b[0] !== 0x17 && b[0] !== 0x19)) {
+      // vendor long write: header, 1024-byte table, 128-byte mask of the bytes to update
+      if (b[0] === 0x24 && b[1] === 0x20 && b.length >= LONG_HEADER_SIZE + PARAMETER_TABLE_SIZE + 128) {
+        const batch: PcapAnalysis['writes'] = []
+        for (let i = 0; i < PARAMETER_TABLE_SIZE; i++) {
+          if (!(b[LONG_HEADER_SIZE + PARAMETER_TABLE_SIZE + (i >> 3)]! & (1 << (i & 7)))) continue
+          const w = {
+            frame: pkt.frame,
+            serial: b.readUInt32LE(12),
+            index: i,
+            value: b[LONG_HEADER_SIZE + i]!,
+            ok: null,
+            via: 'long' as const,
+          }
+          batch.push(w)
+          writes.push(w)
+          table[i] = w.value
+        }
+        pendingLong.push(batch)
+      } else if (b[0] === 0x24 && b[1] === 0x21) {
+        const batch = pendingLong.shift()
+        if (batch) for (const w of batch) w.ok = true
+      } else if (isReadParametersReply(b)) {
+        const image = Uint8Array.from(b.subarray(LONG_HEADER_SIZE, LONG_HEADER_SIZE + PARAMETER_TABLE_SIZE))
+        lastRead = {
+          frame: pkt.frame,
+          serial: b.readUInt32LE(8),
+          expansion: decodeExpansionBoard(image),
+          alarmEvents: image[32]!,
+        }
+      }
       const key = `${b.length}/${b[0]}/${b[1]}`
       const entry = long.get(key) ?? { length: b.length, type: hex2(b[0] ?? 0), code: hex2(b[1] ?? 0), count: 0 }
       entry.count++
@@ -142,6 +179,7 @@ export function analyse(
           index,
           value: b[14 + 3 * k]!,
           ok: null as boolean | null,
+          via: '0xF2' as const,
         }
         batch.push(w)
         writes.push(w)
@@ -165,6 +203,7 @@ export function analyse(
     writes,
     table,
     expansion: relayWritten ? decodeExpansionBoard(image) : null,
+    lastRead,
   }
   // the duress code is optional: not written ≠ 0
   if (result.expansion && table[74] === null && table[75] === null && table[163] === null)

@@ -11,8 +11,12 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   the "door open too long" time and the duress code. The configuration is written with function `0xF2`
   (reconstructed from the manufacturer's software), only on controllers marked as having the board, and again by
   the full synchronisation — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).
-- Hardware test level **L6** (`npm run hw -- --level 6`): address mapping check, configuration write and guided
-  tests of the board relays (forced open, open too long, invalid card, fire input, duress code).
+- **Read from the controller** on the *Expansion board* tab: the parameter table is read back with the vendor
+  long-packet request (0x24/0x10, CRC-16/ARC), shown next to the saved configuration and copied into the form if
+  wanted; every save is verified by reading the table back.
+- Hardware test level **L6** (`npm run hw -- --level 6`): parameter table read, address mapping check,
+  configuration write verified by read-back and guided tests of the board relays (forced open, open too long,
+  invalid card, fire input, duress code).
 - FakeController: parameter table, simulated expansion relays, `raiseAlarm` and `setFireInput`.
 - Wireshark dissector (`tools/wireshark/uhppote.lua`) and `npm run pcap`, which reconstructs the expansion board
   written in a capture and compares it with a configuration.

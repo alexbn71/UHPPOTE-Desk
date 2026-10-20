@@ -431,7 +431,7 @@ export const en = {
     intro:
       'Four alarm relays and a fire input connected to the controller. The configuration is sent together with the advanced settings and by the full synchronisation.',
     experimental:
-      'Experimental: the protocol was reconstructed from the vendor software and has not yet been verified on every firmware. The controller cannot report this configuration back: UHPPOTE Desk keeps the copy it sends.',
+      'Experimental: the protocol was reconstructed from the vendor software and verified on one controller only (firmware v9.f8). After every save UHPPOTE Desk reads the configuration back from the controller to check it.',
     installed: 'Expansion board connected',
     installedHint:
       'The configuration is written to the controller only when this is on. Before disconnecting the board, deactivate the outputs and save.',
@@ -475,6 +475,20 @@ export const en = {
     },
     duration: 'Output duration (s)',
     noEvents: 'No event selected: the output will never switch on',
+    read: 'Read from the controller',
+    readHint: 'Shows the configuration the controller really stores (read only, nothing is changed)',
+    readTitle: 'Configuration in the controller',
+    readAligned: 'Same as the saved configuration',
+    readDifferent: '{{n}} byte(s) different from the saved configuration',
+    readNotCompared: 'Board not marked as connected: not compared',
+    readOutput: 'Output',
+    readInactive: 'Off',
+    readAlarms: 'Alarm types',
+    readUse: 'Copy into the form',
+    verified: 'Saved, sent and verified: the controller stores exactly this configuration',
+    notVerified: 'Saved and sent, but the controller could not be read back to verify it',
+    verifyFailed:
+      'Saved and sent, but {{n}} byte(s) read back from the controller are different: use "Read from the controller"',
   },
   doors: {
     title: 'Doors',

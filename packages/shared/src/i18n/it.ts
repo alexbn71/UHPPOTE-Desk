@@ -430,7 +430,7 @@ export const it: Messages = {
     intro:
       'Quattro relè di allarme e un ingresso incendio collegati al controller. La configurazione viene inviata insieme alle impostazioni avanzate e dalla sincronizzazione completa.',
     experimental:
-      'Sperimentale: il protocollo è stato ricostruito dal software del produttore e non è ancora verificato su tutti i firmware. Il controller non sa restituire questa configurazione: UHPPOTE Desk conserva la copia che invia.',
+      'Sperimentale: il protocollo è stato ricostruito dal software del produttore e verificato su un solo controller (firmware v9.f8). Dopo ogni salvataggio UHPPOTE Desk rilegge la configurazione dal controller per controllarla.',
     installed: 'Scheda di espansione collegata',
     installedHint:
       'La configurazione viene scritta nel controller solo con questa opzione attiva. Prima di scollegare la scheda disattiva le uscite e salva.',
@@ -475,6 +475,19 @@ export const it: Messages = {
     },
     duration: 'Durata uscita (s)',
     noEvents: "Nessun evento selezionato: l'uscita non si attiverà mai",
+    read: 'Leggi dal controller',
+    readHint: 'Mostra la configurazione che il controller contiene davvero (sola lettura, non cambia nulla)',
+    readTitle: 'Configurazione nel controller',
+    readAligned: 'Uguale a quella salvata',
+    readDifferent: '{{n}} byte diversi da quella salvata',
+    readNotCompared: 'Scheda non segnata come collegata: nessun confronto',
+    readOutput: 'Uscita',
+    readInactive: 'Spenta',
+    readAlarms: 'Tipi di allarme',
+    readUse: 'Copia nel modulo',
+    verified: 'Salvata, inviata e verificata: il controller contiene esattamente questa configurazione',
+    notVerified: 'Salvata e inviata, ma non è stato possibile rileggerla dal controller per verificarla',
+    verifyFailed: 'Salvata e inviata, ma {{n}} byte riletti dal controller sono diversi: usa "Leggi dal controller"',
   },
   doors: {
     title: 'Porte',

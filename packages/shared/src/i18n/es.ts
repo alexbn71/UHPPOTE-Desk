@@ -432,7 +432,7 @@ export const es: Messages = {
     intro:
       'Cuatro relés de alarma y una entrada de incendio conectados al controlador. La configuración se envía junto con los ajustes avanzados y en la sincronización completa.',
     experimental:
-      'Experimental: el protocolo se reconstruyó a partir del software del fabricante y aún no se ha verificado en todos los firmware. El controlador no puede devolver esta configuración: UHPPOTE Desk guarda la copia que envía.',
+      'Experimental: el protocolo se reconstruyó a partir del software del fabricante y se verificó solo en un controlador (firmware v9.f8). Después de cada guardado UHPPOTE Desk vuelve a leer la configuración del controlador para comprobarla.',
     installed: 'Placa de expansión conectada',
     installedHint:
       'La configuración se escribe en el controlador solo con esta opción activa. Antes de desconectar la placa, desactiva las salidas y guarda.',
@@ -477,6 +477,20 @@ export const es: Messages = {
     },
     duration: 'Duración de la salida (s)',
     noEvents: 'Ningún evento seleccionado: la salida nunca se activará',
+    read: 'Leer del controlador',
+    readHint: 'Muestra la configuración que el controlador contiene realmente (solo lectura, no cambia nada)',
+    readTitle: 'Configuración en el controlador',
+    readAligned: 'Igual a la guardada',
+    readDifferent: '{{n}} byte(s) distintos de la configuración guardada',
+    readNotCompared: 'Placa no marcada como conectada: sin comparación',
+    readOutput: 'Salida',
+    readInactive: 'Apagada',
+    readAlarms: 'Tipos de alarma',
+    readUse: 'Copiar en el formulario',
+    verified: 'Guardada, enviada y verificada: el controlador contiene exactamente esta configuración',
+    notVerified: 'Guardada y enviada, pero no se pudo volver a leer del controlador para verificarla',
+    verifyFailed:
+      'Guardada y enviada, pero {{n}} byte(s) leídos del controlador son distintos: usa "Leer del controlador"',
   },
   doors: {
     title: 'Puertas',

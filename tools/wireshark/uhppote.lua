@@ -69,7 +69,14 @@ local f = {
   -- long packets
   long = ProtoField.bytes('uhppote.long', 'Vendor long-packet protocol'),
   ltype = ProtoField.uint8('uhppote.long.type', 'Type', base.HEX),
-  lcode = ProtoField.uint8('uhppote.long.code', 'Code', base.HEX),
+  lcode = ProtoField.uint8('uhppote.long.code', 'Code', base.HEX, {
+    [0x10] = 'read parameters / run info', [0x11] = 'read reply', [0x20] = 'write parameter table', [0x21] = 'write reply',
+  }),
+  lxid = ProtoField.uint32('uhppote.long.xid', 'Transaction id', base.DEC),
+  lfrom = ProtoField.uint32('uhppote.long.from', 'From serial', base.DEC),
+  lto = ProtoField.uint32('uhppote.long.to', 'To serial (0xffffffff = any)', base.DEC),
+  ltable = ProtoField.bytes('uhppote.long.table', 'Parameter table'),
+  lflagged = ProtoField.uint16('uhppote.long.flagged', 'Bytes marked for update', base.DEC),
 }
 p.fields = f
 p.prefs.listener_port = Pref.uint('Listener (event) port', 60001, 'UDP port where the controllers send their events')
@@ -118,7 +125,10 @@ local function param_name(index, value)
     [60] = 'ARM status', [74] = 'duress code, low byte', [75] = 'duress code, middle byte',
     [162] = 'door open too long, high byte', [163] = 'duress code, high byte',
   }
-  if index >= 116 and index <= 129 then return 'network configuration (IP/mask/gateway/port)' end
+  if index >= 384 and index <= 387 then return 'network: IP address' end
+  if index >= 388 and index <= 391 then return 'network: netmask' end
+  if index >= 392 and index <= 395 then return 'network: gateway' end
+  if index >= 116 and index <= 129 then return 'network configuration (factory copy?)' end
   return names[index] or '?'
 end
 
@@ -187,11 +197,46 @@ function p.dissector(tvb, pinfo, tree)
   if len ~= 64 then
     local item = root:add(f.long, tvb())
     item:set_text(string.format('Vendor long-packet protocol (%d bytes)', len))
-    if len >= 2 then
+    local info = string.format('long packet, %d bytes, type 0x%02x code 0x%02x', len, tvb(0, 1):uint(), len >= 2 and tvb(1, 1):uint() or 0)
+    if len >= 20 then
+      local ptype, code = tvb(0, 1):uint(), tvb(1, 1):uint()
       item:add(f.ltype, tvb(0, 1))
       item:add(f.lcode, tvb(1, 1))
+      item:add_le(f.lxid, tvb(4, 4))
+      item:add_le(f.lfrom, tvb(8, 4))
+      item:add_le(f.lto, tvb(12, 4))
+      if ptype == 0x24 and (code == 0x11 or code == 0x20) and len >= 1044 then
+        local tvt = tvb(20, 1024):tvb()
+        local tbl = item:add(f.ltable, tvb(20, 1024))
+        tbl:set_text('Parameter table (1024 bytes)')
+        local flagged = nil
+        if code == 0x20 and len >= 1172 then
+          flagged = 0
+          for i = 0, 1023 do
+            if tvb(1044 + (i >> 3), 1):uint() & (1 << (i & 7)) ~= 0 then flagged = flagged + 1 end
+          end
+          item:add(f.lflagged, tvb(1044, 128), flagged)
+        end
+        local interesting = { 2, 4, 6, 8, 10, 11, 12, 13, 30, 32, 35, 74, 75, 162, 163 }
+        for i = 136, 159 do interesting[#interesting + 1] = i end
+        for _, i in ipairs(interesting) do
+          local v = tvt(i, 1):uint()
+          tbl:add(f.pw, tvt(i, 1)):set_text(string.format('[%d] = 0x%02x (%d)  %s', i, v, v, param_name(i, v)))
+        end
+        local function ip(o) return string.format('%d.%d.%d.%d', tvt(o, 1):uint(), tvt(o + 1, 1):uint(), tvt(o + 2, 1):uint(), tvt(o + 3, 1):uint()) end
+        tbl:add(f.pname, tvt(384, 12), string.format('network: %s / %s gw %s', ip(384), ip(388), ip(392)))
+        if code == 0x11 then
+          info = string.format('read parameters reply, S/N %d — table 1024 bytes', tvb(8, 4):le_uint())
+        else
+          info = string.format('write parameter table, S/N %d — %d byte(s) marked for update', tvb(12, 4):le_uint(), flagged or 0)
+        end
+      elseif ptype == 0x24 and code == 0x10 and len == 20 then
+        info = string.format('read parameters request, to %s', tvb(12, 4):le_uint() == 0xffffffff and 'any controller' or tostring(tvb(12, 4):le_uint()))
+      elseif ptype == 0x24 and code == 0x21 then
+        info = string.format('write parameter table reply, S/N %d', tvb(8, 4):le_uint())
+      end
     end
-    pinfo.cols.info = string.format('long packet, %d bytes, type 0x%02x code 0x%02x', len, tvb(0, 1):uint(), len >= 2 and tvb(1, 1):uint() or 0)
+    pinfo.cols.info = info
     return len
   end
 

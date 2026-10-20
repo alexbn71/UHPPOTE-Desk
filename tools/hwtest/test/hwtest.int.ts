@@ -134,23 +134,36 @@ describe('hardware suite against FakeController', () => {
     const { results } = await runSuite({ ...opts, destructive: true }, [6], driver)
     const byId = Object.fromEntries(results.map((r) => [r.id, r]))
     expect(results.filter((r) => r.status === 'fail').map((f) => `${f.id}: ${f.details.join(' / ')}`)).toEqual([])
-    // the simulator answers neither 0xC2 nor applies the table to get-door-control: warnings, not failures
+    // the simulator does not answer 0xC2: a warning, not a failure
     expect(byId['L6.1']!.status).toBe('warn')
-    expect(byId['L6.2']!.status).toBe('warn')
-    for (const id of ['L6.3', 'L6.4', 'L6.5', 'L6.6', 'L6.7', 'L6.8']) expect(byId[id]!.status, id).toBe('pass')
+    for (const id of ['L6.2', 'L6.3', 'L6.4', 'L6.5', 'L6.6', 'L6.7', 'L6.8', 'L6.9'])
+      expect(byId[id]!.status, id).toBe('pass')
     expect(fake.doors[0].delay).toBe(delayBefore)
     expect(fake.expansionBoard().relays.every((r) => !r.active)).toBe(true)
     expect(fake.expansionBoard().doorOpenTooLong).toBe(25)
     expect(fake.listener).toEqual({ address: '10.0.0.5', port: 60001, interval: 0 })
   }, 120_000)
 
-  it('level 6 fails when an output does not switch (relay not configured on the controller)', async () => {
+  it('level 6 fails when the controller refuses the configuration', async () => {
     fake.failOps.add(0xf2)
     try {
-      const { results } = await runSuite(opts, [6], new FakeDriver(fake), { only: ['L6.3', 'L6.4'] })
+      const { results } = await runSuite(opts, [6], new FakeDriver(fake), { only: ['L6.4', 'L6.5'] })
       expect(results.map((r) => r.status)).toEqual(['fail', 'fail'])
     } finally {
       fake.failOps.delete(0xf2)
+    }
+  }, 60_000)
+
+  it('level 6: a firmware without the long-packet read fails the read tests', async () => {
+    fake.longPackets = false
+    try {
+      const { results } = await runSuite({ ...opts, timeoutMs: 200 }, [6], new FakeDriver(fake), {
+        only: ['L6.2', 'L6.3'],
+      })
+      expect(results.map((r) => r.status)).toEqual(['fail', 'fail'])
+      expect(results[0]!.details.join()).toMatch(/no reply/)
+    } finally {
+      fake.longPackets = true
     }
   }, 60_000)
 

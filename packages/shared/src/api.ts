@@ -225,6 +225,32 @@ export const DEFAULT_EXPANSION_BOARD: ExpansionBoardSettings = {
   duressCode: null,
 }
 
+/** A byte of the parameter table that differs from what UHPPOTE Desk writes. */
+export interface ParameterMismatchDto {
+  index: number
+  expected: number
+  actual: number
+}
+
+/** GET /controllers/:id/expansion-board: the configuration stored in the controller. */
+export interface ExpansionBoardReadDto {
+  relays: ExpansionRelaySettings[]
+  doorOpenTooLong: number
+  duressCode: number
+  /** Alarm types handled by the controller (parameter 32). */
+  alarmEvents: number
+  recordAlarmEvents: boolean
+  /** Differences from the saved configuration; null when the board is not marked as connected. */
+  mismatches: ParameterMismatchDto[] | null
+}
+
+/** Check after writing the expansion board: null `verified` = the table could not be read back. */
+export interface ExpansionVerificationDto {
+  verified: boolean | null
+  mismatches: ParameterMismatchDto[]
+  error?: string
+}
+
 export const controllerSettingsSchema = z.object({
   interlock: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(8)]),
   antipassback: z.number().int().min(0).max(4),

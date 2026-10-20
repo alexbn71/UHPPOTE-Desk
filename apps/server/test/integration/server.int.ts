@@ -455,6 +455,53 @@ describe('synchronisation', () => {
     expect(fake.parameterWrites).toBe(before)
   })
 
+  it('expansion board: the write is verified by reading the table back', async () => {
+    const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
+    const expansionBoard = {
+      installed: true,
+      doorOpenTooLong: 20,
+      duressCode: null,
+      relays: [
+        { active: true, source: 0, mode: 1, events: 0x14, signals: 0, duration: 8 },
+        { active: false, source: 1, mode: 1, events: 0x27, signals: 0, duration: 10 },
+        { active: false, source: 2, mode: 1, events: 0x27, signals: 0, duration: 10 },
+        { active: false, source: 3, mode: 1, events: 0x27, signals: 0, duration: 10 },
+      ],
+    }
+    const r = await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard })
+    expect(r.json().expansion).toEqual({ verified: true, mismatches: [] })
+    // read from the controller: aligned
+    const read = (await api('GET', `/controllers/${controllerId}/expansion-board`)).json()
+    expect(read).toMatchObject({
+      doorOpenTooLong: 20,
+      recordAlarmEvents: true,
+      alarmEvents: 0x14 | 0x08 | 0x20,
+      mismatches: [],
+    })
+    expect(read.relays[0]).toEqual(expansionBoard.relays[0])
+    expect(read.relays[1]).toEqual({ active: false, source: 0, mode: 0, events: 0, signals: 0, duration: 0 })
+    // changed outside UHPPOTE Desk (e.g. by the vendor software): reported
+    fake.parameters[138] = 0x01
+    const changed = (await api('GET', `/controllers/${controllerId}/expansion-board`)).json()
+    expect(changed.mismatches).toEqual([{ index: 138, expected: 0x14, actual: 0x01 }])
+    // a firmware without the long-packet read: saved and sent, verification unavailable
+    fake.longPackets = false
+    try {
+      const r2 = await api('PUT', `/controllers/${controllerId}/settings`, { ...settings, expansionBoard })
+      expect(r2.statusCode).toBe(200)
+      expect(r2.json().expansion).toMatchObject({ verified: null, mismatches: [] })
+      expect((await api('GET', `/controllers/${controllerId}/expansion-board`)).statusCode).toBeGreaterThanOrEqual(500)
+    } finally {
+      fake.longPackets = true
+    }
+    // board not connected: read works, no comparison
+    await api('PUT', `/controllers/${controllerId}/settings?push=false`, {
+      ...settings,
+      expansionBoard: { ...expansionBoard, installed: false },
+    })
+    expect((await api('GET', `/controllers/${controllerId}/expansion-board`)).json().mismatches).toBeNull()
+  })
+
   it('expansion board: invalid values are rejected (400)', async () => {
     const settings = (await api('GET', `/controllers/${controllerId}/settings`)).json()
     const bad = (patch: object) =>

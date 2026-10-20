@@ -2,7 +2,13 @@
  * Capture analysis (npm run pcap) on synthetic packets: no tshark needed.
  */
 import { describe, expect, it } from 'vitest'
-import { encode, expansionBoardParameters, chunkParameters, type ExpansionBoardConfig } from '@uhppote-desk/protocol'
+import {
+  encode,
+  encodeReadParametersReply,
+  expansionBoardParameters,
+  chunkParameters,
+  type ExpansionBoardConfig,
+} from '@uhppote-desk/protocol'
 import { analyse, toConfig, type CapturedPacket } from '../src/pcap.js'
 
 const ID = 405419896
@@ -74,6 +80,32 @@ describe('pcap analysis', () => {
     expect(a.writes.filter((w) => w.ok === false).length).toBeGreaterThan(0)
     expect(a.functions.find((f) => f.code === '0x20')).toMatchObject({ events: 1, replies: 0 })
     expect(a.longPackets).toEqual([{ length: 1152, type: '0x24', code: '0x24', count: 1 }])
+  })
+
+  it('vendor long write (table + update mask) and long read reply', () => {
+    // long write: only the flagged bytes count
+    const write = Buffer.alloc(20 + 1024 + 128)
+    write[0] = 0x24
+    write[1] = 0x20
+    write.writeUInt32LE(ID, 12)
+    for (const w of expansionBoardParameters(CONFIG)) {
+      write[20 + w.index] = w.value
+      write[1044 + (w.index >> 3)]! |= 1 << (w.index & 7)
+    }
+    write[20 + 500] = 0x99 // not flagged: ignored
+    const ack = Buffer.alloc(20)
+    ack[0] = 0x24
+    ack[1] = 0x21
+    const image = new Uint8Array(1024)
+    for (const w of expansionBoardParameters(CONFIG)) image[w.index] = w.value
+    const read = encodeReadParametersReply(ID, 3, image)
+    const a = analyse([pkt(write, 50000, 60000), pkt(ack, 60000, 50000), pkt(read, 60000, 50000)], CONFIG)
+    expect(a.writes.every((w) => w.via === 'long' && w.ok === true)).toBe(true)
+    expect(a.table[500]).toBeNull()
+    expect(a.expansion).toEqual(CONFIG)
+    expect(a.comparison).toEqual({ missing: [], different: [], extra: [] })
+    expect(a.lastRead).toMatchObject({ serial: ID, alarmEvents: 0x14 | 0x02 | 0x20 | 0x08 })
+    expect(a.lastRead!.expansion.relays).toEqual(CONFIG.relays)
   })
 
   it('no relay byte written: no expansion board', () => {

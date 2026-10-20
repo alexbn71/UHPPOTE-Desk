@@ -432,7 +432,7 @@ export const fr: Messages = {
     intro:
       "Quatre relais d'alarme et une entrée incendie reliés au contrôleur. La configuration est envoyée avec les paramètres avancés et lors de la synchronisation complète.",
     experimental:
-      "Expérimental : le protocole a été reconstitué à partir du logiciel du fabricant et n'est pas encore vérifié sur tous les firmwares. Le contrôleur ne peut pas renvoyer cette configuration : UHPPOTE Desk conserve la copie qu'il envoie.",
+      'Expérimental : le protocole a été reconstitué à partir du logiciel du fabricant et vérifié sur un seul contrôleur (firmware v9.f8). Après chaque enregistrement, UHPPOTE Desk relit la configuration dans le contrôleur pour la vérifier.',
     installed: "Carte d'extension connectée",
     installedHint:
       "La configuration n'est écrite dans le contrôleur que si cette option est active. Avant de débrancher la carte, désactivez les sorties et enregistrez.",
@@ -477,6 +477,20 @@ export const fr: Messages = {
     },
     duration: 'Durée de la sortie (s)',
     noEvents: "Aucun événement sélectionné : la sortie ne s'activera jamais",
+    read: 'Lire depuis le contrôleur',
+    readHint: 'Affiche la configuration réellement stockée dans le contrôleur (lecture seule, rien n’est modifié)',
+    readTitle: 'Configuration dans le contrôleur',
+    readAligned: 'Identique à la configuration enregistrée',
+    readDifferent: '{{n}} octet(s) différent(s) de la configuration enregistrée',
+    readNotCompared: 'Carte non marquée comme connectée : pas de comparaison',
+    readOutput: 'Sortie',
+    readInactive: 'Éteinte',
+    readAlarms: "Types d'alarme",
+    readUse: 'Copier dans le formulaire',
+    verified: 'Enregistrée, envoyée et vérifiée : le contrôleur contient exactement cette configuration',
+    notVerified: "Enregistrée et envoyée, mais elle n'a pas pu être relue dans le contrôleur pour la vérifier",
+    verifyFailed:
+      'Enregistrée et envoyée, mais {{n}} octet(s) relu(s) dans le contrôleur sont différents : utilisez « Lire depuis le contrôleur »',
   },
   doors: {
     title: 'Portes',

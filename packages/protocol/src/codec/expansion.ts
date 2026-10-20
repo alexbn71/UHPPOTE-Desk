@@ -224,3 +224,16 @@ export function chunkParameters(writes: ParameterWrite[]): ParameterWrite[][] {
   for (let i = 0; i < writes.length; i += PARAMETERS_PER_PACKET) out.push(writes.slice(i, i + PARAMETERS_PER_PACKET))
   return out
 }
+
+export interface ParameterMismatch {
+  index: number
+  expected: number
+  actual: number
+}
+
+/** Bytes of `cfg` (as expansionBoardParameters writes them) that differ in a parameter table read back. */
+export function compareExpansionBoard(cfg: ExpansionBoardConfig, table: Uint8Array): ParameterMismatch[] {
+  return expansionBoardParameters(cfg)
+    .filter((w) => table[w.index] !== w.value)
+    .map((w) => ({ index: w.index, expected: w.value, actual: table[w.index]! }))
+}

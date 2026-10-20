@@ -26,11 +26,16 @@ function print(a: PcapAnalysis): void {
     console.log('\nVendor long-packet protocol:')
     for (const l of a.longPackets) console.log(`  ${l.length} bytes, type ${l.type}, code ${l.code}: ${l.count}`)
   }
-  console.log(`\n0xF2 parameter writes: ${a.writes.length}`)
+  console.log(`\nParameter writes (0xF2 and vendor long write): ${a.writes.length}`)
   for (const w of a.writes)
     console.log(
-      `  frame ${w.frame}: [${w.index}] = ${hex2(w.value)} (${w.value})${w.ok === null ? ' — no reply' : w.ok ? '' : ' — REFUSED'}`,
+      `  frame ${w.frame} ${w.via}: [${w.index}] = ${hex2(w.value)} (${w.value})${w.ok === null ? ' — no reply' : w.ok ? '' : ' — REFUSED'}`,
     )
+  if (a.lastRead) {
+    console.log(`
+Last parameter table read from the controller (frame ${a.lastRead.frame}, S/N ${a.lastRead.serial}):`)
+    console.log(JSON.stringify({ ...a.lastRead.expansion, alarmEvents: a.lastRead.alarmEvents }, null, 2))
+  }
   if (a.expansion) {
     console.log('\nExpansion board reconstructed from the capture:')
     console.log(JSON.stringify(a.expansion, null, 2))
