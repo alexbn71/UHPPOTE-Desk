@@ -201,6 +201,22 @@ test.describe.serial('UHPPOTE Desk', () => {
     await expect(read.getByRole('row', { name: /Output 2/ })).toContainText('Off')
   })
 
+  test('update notice: shown only when the server serves a newer web build', async ({ page }) => {
+    await login(page, 'admin', ADMIN_PASSWORD)
+    // same build as the page: no notice
+    const health = await (await page.request.get('/api/health')).json()
+    expect(health.build).toMatch(/^index-[\w-]+\.js$/)
+    await page.goto('/')
+    await page.waitForTimeout(1000)
+    await expect(page.getByText('New version available')).toHaveCount(0)
+    // the container was updated while the tab stayed open
+    await page.route('/api/health', (route) => route.fulfill({ json: { ...health, build: 'index-NewerBuild1.js' } }))
+    await page.goto('/')
+    await expect(page.getByText('New version available')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('button', { name: 'Reload' })).toBeVisible()
+    await page.unroute('/api/health')
+  })
+
   test('synchronisation: comparison without differences', async ({ page }) => {
     await login(page, 'admin', ADMIN_PASSWORD)
     await page.goto('/sync')

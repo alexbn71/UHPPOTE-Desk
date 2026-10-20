@@ -20,6 +20,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 - FakeController: parameter table, simulated expansion relays, `raiseAlarm` and `setFireInput`.
 - Wireshark dissector (`tools/wireshark/uhppote.lua`) and `npm run pcap`, which reconstructs the expansion board
   written in a capture and compares it with a configuration.
+- **Update notice**: a page opened before the server was updated shows *New version available* with a *Reload*
+  button. `/api/health` now also reports `build`, the entry bundle of the web build being served.
 
 ### Fixed
 - *Network and configuration*: the "send new IP" form and the listener form start from the configuration read

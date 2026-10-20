@@ -1,16 +1,31 @@
+import fs from 'node:fs'
 import os from 'node:os'
+import path from 'node:path'
 import type { FastifyInstance } from 'fastify'
 import { requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
 
 export const APP_VERSION = '1.1.0'
 
+/**
+ * Entry bundle of the web build being served (e.g. `index-Dj_MWMRy.js`): it changes at every build, unlike
+ * APP_VERSION, so a page opened before an update can tell that it runs an old copy. null without a web build.
+ */
+export function webBuild(webDir: string | null | undefined): string | null {
+  if (!webDir) return null
+  try {
+    return /\/assets\/(index-[\w-]+\.js)/.exec(fs.readFileSync(path.join(webDir, 'index.html'), 'utf8'))?.[1] ?? null
+  } catch {
+    return null
+  }
+}
+
 export function registerSystemRoutes(app: FastifyInstance, ctx: AppContext): void {
   const viewer = { preHandler: requireRole('viewer') }
   const admin = { preHandler: requireRole('admin') }
 
   /** Health check for Docker/monitoring (no authentication). */
-  app.get('/health', async () => ({ status: 'ok', version: APP_VERSION }))
+  app.get('/health', async () => ({ status: 'ok', version: APP_VERSION, build: webBuild(ctx.config.webDir) }))
 
   app.get('/system/info', viewer, async () => {
     const counts = ctx.db.get<{ people: number; cards: number; events: number; controllers: number }>(

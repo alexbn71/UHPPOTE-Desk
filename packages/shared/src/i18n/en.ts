@@ -6,6 +6,11 @@ export const en = {
   app: {
     name: 'UHPPOTE Desk',
   },
+  update: {
+    title: 'New version available',
+    message: 'UHPPOTE Desk has been updated: reload the page to use the new version.',
+    reload: 'Reload',
+  },
   common: {
     save: 'Save',
     cancel: 'Cancel',

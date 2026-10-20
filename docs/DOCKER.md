@@ -213,7 +213,7 @@ docker exec -d  uhppote-desk node hwtest/devsim.js --auto 10    # background: a 
 
 ## Updates and backups
 
-- **Update**: `docker compose pull && docker compose up -d`. On Unraid: *Check for updates* → *Update*. The database schema is upgraded automatically at startup.
+- **Update**: `docker compose pull && docker compose up -d`. On Unraid: *Check for updates* → *Update*. The database schema is upgraded automatically at startup. Browser tabs left open during the update show *New version available — Reload* (checked every 5 minutes and when the tab is shown again); until they are reloaded they keep running the old interface.
 - **Automatic backup**: every day at `BACKUP_HOUR` into `/data/backups`, or manually from *System → Create backup now*. For a complete backup, copy the data folder.
 - Before a controller factory reset, its cards are saved to `/data/backups/cards-<serial>-<date>.json`.
 

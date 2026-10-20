@@ -4,6 +4,11 @@ export const it: Messages = {
   app: {
     name: 'UHPPOTE Desk',
   },
+  update: {
+    title: 'Nuova versione disponibile',
+    message: 'UHPPOTE Desk è stato aggiornato: ricarica la pagina per usare la nuova versione.',
+    reload: 'Ricarica',
+  },
   common: {
     save: 'Salva',
     cancel: 'Annulla',
