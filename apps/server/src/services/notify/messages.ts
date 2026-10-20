@@ -38,6 +38,8 @@ const STYLE: Record<WebhookEvent, { emoji: string; priority: NotifyMessage['prio
   'controller.online': { emoji: '🟢', priority: 3, tag: 'green_circle' },
   'anomaly.unusual_time': { emoji: '🕒', priority: 4, tag: 'clock3' },
   'anomaly.repeated_denied': { emoji: '⛔', priority: 4, tag: 'no_entry_sign' },
+  'guest.opened': { emoji: '🎫', priority: 3, tag: 'ticket' },
+  'guest.refused': { emoji: '⚠️', priority: 4, tag: 'warning' },
 }
 
 /** Explanation of an unusual access: the usual window, a non-working day, or a night access. */
@@ -75,6 +77,10 @@ export function eventMessage(ev: IntegrationEvent, lang: Language): NotifyMessag
     if (ev.type === 'anomaly.unusual_time') lines.push(unusualText(t, ev.data as unknown as UnusualAccessDto))
     if (ev.type === 'anomaly.repeated_denied')
       lines.push(t.t('notify.anomaly.repeated', { n: Number(ev.data.count), minutes: Number(ev.data.windowMinutes) }))
+  } else if (ev.type === 'guest.opened' || ev.type === 'guest.refused') {
+    lines.push(t.t('notify.guest', { name: String(ev.data.guestName) }))
+    const outcome = `${when(String(ev.data.timestamp))} · ${t.t(`codes.guestOutcome.${String(ev.data.outcome)}`)}`
+    lines.push(outcome)
   } else if (ev.type === 'controller.offline') {
     if (ev.state?.lastSeenAt) lines.push(t.t('notify.lastSeen', { time: when(ev.state.lastSeenAt) }))
     if (ev.state?.lastError) lines.push(translateError(lang, ev.state.lastErrorInfo ?? ev.state.lastError))

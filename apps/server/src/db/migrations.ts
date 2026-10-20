@@ -382,4 +382,43 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       ALTER TABLE doors ADD COLUMN presence TEXT NOT NULL DEFAULT 'entry';
     `,
   },
+  {
+    id: 9,
+    name: 'guest passes: door opening from a link',
+    sql: /* sql */ `
+      CREATE TABLE guest_passes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        token_hash TEXT NOT NULL UNIQUE,
+        door_ids TEXT NOT NULL,
+        valid_from TEXT NOT NULL,
+        valid_to TEXT NOT NULL,
+        weekdays TEXT NOT NULL DEFAULT '1111111',
+        time_from TEXT,
+        time_to TEXT,
+        max_opens INTEGER,
+        pin_hash TEXT,
+        bind_device INTEGER NOT NULL DEFAULT 1,
+        device_hash TEXT,
+        bound_at TEXT,
+        failed_pins INTEGER NOT NULL DEFAULT 0,
+        locked INTEGER NOT NULL DEFAULT 0,
+        revoked_at TEXT,
+        created_by TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      );
+
+      CREATE TABLE guest_opens (
+        id INTEGER PRIMARY KEY,
+        pass_id INTEGER NOT NULL REFERENCES guest_passes(id) ON DELETE CASCADE,
+        at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        door_id INTEGER,
+        door_name TEXT,
+        outcome TEXT NOT NULL,
+        ip TEXT
+      );
+      CREATE INDEX guest_opens_pass ON guest_opens(pass_id, id);
+    `,
+  },
 ]

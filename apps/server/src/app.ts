@@ -15,6 +15,7 @@ import { registerAttendanceRoutes } from './routes/attendance.js'
 import { registerAuthRoutes } from './routes/auth.js'
 import { registerControllerRoutes } from './routes/controllers.js'
 import { registerEventRoutes } from './routes/events.js'
+import { registerGuestRoutes } from './routes/guests.js'
 import { registerPresenceRoutes } from './routes/presence.js'
 import { registerPeopleRoutes } from './routes/people.js'
 import { registerScheduleRoutes } from './routes/schedule.js'
@@ -92,6 +93,12 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     return send(fail(500, 'internal'))
   })
 
+  // guest link pages: not indexed, and the secret link never sent as Referer
+  app.addHook('onSend', async (req, reply) => {
+    if (req.url.startsWith('/g/'))
+      void reply.header('X-Robots-Tag', 'noindex, nofollow').header('Referrer-Policy', 'no-referrer')
+  })
+
   await app.register(
     async (api) => {
       registerAuthRoutes(api, ctx)
@@ -108,6 +115,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       registerAnomalyRoutes(api, ctx)
       registerRuleRoutes(api, ctx)
       registerMobileRoutes(api, ctx)
+      registerGuestRoutes(api, ctx)
     },
     { prefix: '/api' },
   )

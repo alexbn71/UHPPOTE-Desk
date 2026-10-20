@@ -32,6 +32,8 @@ export const WEBHOOK_EVENTS = [
   'controller.offline',
   'anomaly.unusual_time',
   'anomaly.repeated_denied',
+  'guest.opened',
+  'guest.refused',
 ] as const
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]
 
@@ -62,3 +64,25 @@ export type OpenConfirmation = (typeof OPEN_CONFIRMATIONS)[number]
 
 /** Login duration of remembered devices without fingerprint/Face ID (days). */
 export const MOBILE_SESSION_DAYS = [30, 60, 90, 120, 150, 180] as const
+
+/** State of a guest pass now (labels under `codes.guestStatus`). */
+export const GUEST_STATUSES = ['active', 'notYet', 'outsideHours', 'expired', 'used', 'locked', 'revoked'] as const
+export type GuestStatus = (typeof GUEST_STATUSES)[number]
+
+/**
+ * Outcome of a door opening attempted with a guest link (labels under `codes.guestOutcome`):
+ * ok, controller error, link used on another phone, wrong PIN, or the pass not usable now (its status).
+ */
+export const GUEST_OUTCOMES = [
+  'ok',
+  'error',
+  'otherDevice',
+  'wrongPin',
+  'notYet',
+  'outsideHours',
+  'expired',
+  'used',
+  'locked',
+  'revoked',
+] as const
+export type GuestOutcome = (typeof GUEST_OUTCOMES)[number]

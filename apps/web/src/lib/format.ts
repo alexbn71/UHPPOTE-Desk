@@ -16,6 +16,14 @@ export function fmtDateTime(s: string | null | undefined): string {
   return new Intl.DateTimeFormat(locale(), { dateStyle: 'short', timeStyle: 'medium' }).format(d)
 }
 
+/** 'YYYY-MM-DD HH:mm' → localised date and time, without seconds. */
+export function fmtDateTimeShort(s: string | null | undefined): string {
+  if (!s) return '—'
+  const d = parseLocal(s)
+  if (!d) return s
+  return new Intl.DateTimeFormat(locale(), { dateStyle: 'short', timeStyle: 'short' }).format(d)
+}
+
 export function fmtDate(s: string | null | undefined): string {
   if (!s) return '—'
   const d = parseLocal(s.slice(0, 10))

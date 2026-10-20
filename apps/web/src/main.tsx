@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { App } from './App'
 import { AuthProvider } from './lib/auth'
 import { UpdateNotice } from './components/UpdateNotice'
+import { GuestApp } from './pages/GuestApp'
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -39,6 +40,9 @@ function LocalizedProviders({ children }: { children: ReactNode }) {
   )
 }
 
+/** A guest link (/g/<token>) opens its own page, without login. */
+const guestToken = /^\/g\/([A-Za-z0-9_-]{16,64})\/?$/.exec(window.location.pathname)?.[1]
+
 // service worker: installable app, push notifications (production build only)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   void navigator.serviceWorker.register('/sw.js').catch(() => undefined)
@@ -51,9 +55,13 @@ createRoot(document.getElementById('root')!).render(
         <LocalizedProviders>
           <Notifications position="top-right" />
           <UpdateNotice />
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          {guestToken ? (
+            <GuestApp token={guestToken} />
+          ) : (
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          )}
         </LocalizedProviders>
       </QueryClientProvider>
     </MantineProvider>

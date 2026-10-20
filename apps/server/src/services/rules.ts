@@ -66,8 +66,9 @@ export function ruleText(rule: Pick<RuleDto, 'message' | 'trigger'>, ctx: RuleCo
     const m = eventMessage(ctx.event, lang)
     return [m.title, ...m.lines.map((l) => (typeof l === 'string' ? l : l.heading))].join('\n')
   }
+  const guest = typeof ctx.event?.data.guestName === 'string' ? ctx.event.data.guestName : null
   const values: Record<string, string> = {
-    person: e?.personName ?? (e?.card ? t.t('notify.unknownCard', { card: e.card }) : '—'),
+    person: e?.personName ?? (e?.card ? t.t('notify.unknownCard', { card: e.card }) : (guest ?? '—')),
     card: e?.card ? String(e.card) : '—',
     door: doorName,
     controller: ctx.controller.name,

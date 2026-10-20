@@ -158,6 +158,17 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
     }
   }
 
+  /** Openings and refused attempts of guest links: they do not come from the controller, the guest service publishes them. */
+  publishGuest(
+    type: 'guest.opened' | 'guest.refused',
+    controllerId: number,
+    doorNumber: number,
+    data: Record<string, unknown>,
+  ): void {
+    const c = this.controllers.get(controllerId)
+    if (c?.enabled) this.publish(type, c, doorNumber, data, null, null)
+  }
+
   private publish(
     type: WebhookEvent,
     controller: ControllerRecord,

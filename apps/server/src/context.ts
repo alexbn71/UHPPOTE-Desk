@@ -13,6 +13,7 @@ import { ControllerRepo, EventRepo, PeopleRepo, ScheduleRepo, TreeRepo } from '.
 import { ControllerGateway, LiveHub } from './gateway/gateway.js'
 import { BackupService } from './services/backup.js'
 import { EventService } from './services/events.js'
+import { GuestService } from './services/guests.js'
 import { HealthService } from './services/health.js'
 import { MqttService } from './services/mqtt.js'
 import { SyncService } from './services/sync.js'
@@ -35,6 +36,7 @@ export interface AppContext {
   devices: DeviceService
   mobile: MobileService
   push: PushService
+  guests: GuestService
   zones: TreeRepo
   departments: TreeRepo
   controllers: ControllerRepo
@@ -110,6 +112,7 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
       logger,
     ),
     tokens: new ApiTokenService(db),
+    guests: new GuestService(db, controllers, integrationEvents),
     zones,
     departments: new TreeRepo(db, 'departments'),
     controllers,

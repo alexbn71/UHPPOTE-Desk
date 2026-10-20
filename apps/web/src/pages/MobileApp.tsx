@@ -17,9 +17,9 @@ import {
   Title,
 } from '@mantine/core'
 import { browserSupportsWebAuthn, startAuthentication, startRegistration } from '@simplewebauthn/browser'
-import { IconDoor, IconFingerprint, IconLogout, IconSettings, IconHistory, IconLockOpen } from '@tabler/icons-react'
+import { IconDoor, IconFingerprint, IconLogout, IconSettings, IconHistory } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import type {
@@ -33,6 +33,7 @@ import type {
 import { LANGUAGES, WEBHOOK_EVENTS } from '@uhppote-desk/shared'
 import { GrantedBadge } from '../components/common'
 import { Credits } from '../components/Credits'
+import { HoldButton } from '../components/HoldButton'
 import { api, notifyError, notifyOk } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
@@ -188,66 +189,19 @@ function DoorsTab({ config }: { config: MobileConfigDto }) {
   )
 }
 
-const HOLD_MS = 1200
-
-/** "Hold to open": the door opens after the button has been held down for HOLD_MS. */
+/** "Hold to open" with the door opening of the operator. */
 function HoldToOpen({ door }: { door: MobileDoorDto }) {
   const { t } = useTranslation()
-  const [progress, setProgress] = useState(0)
-  const [busy, setBusy] = useState(false)
-  const timer = useRef<number | null>(null)
-  const started = useRef(0)
-
-  const cancel = () => {
-    if (timer.current) cancelAnimationFrame(timer.current)
-    timer.current = null
-    setProgress(0)
-  }
-  const tick = () => {
-    const p = Math.min(1, (Date.now() - started.current) / HOLD_MS)
-    setProgress(p)
-    if (p < 1) {
-      timer.current = requestAnimationFrame(tick)
-      return
-    }
-    timer.current = null
-    navigator.vibrate?.(40)
-    setBusy(true)
-    api
-      .post(`/doors/${door.id}/open`, {})
-      .then(() => notifyOk(t('mobile.opened', { door: door.name })))
-      .catch(notifyError)
-      .finally(() => {
-        setBusy(false)
-        setProgress(0)
-      })
-  }
-  const start = (e: PointerEvent) => {
-    if (busy) return
-    e.preventDefault()
-    started.current = Date.now()
-    timer.current = requestAnimationFrame(tick)
-  }
-
   return (
-    <Button
-      fullWidth
-      size="lg"
-      leftSection={busy ? <Loader size="xs" color="white" /> : <IconLockOpen size={20} />}
-      onPointerDown={start}
-      onPointerUp={cancel}
-      onPointerLeave={cancel}
-      onPointerCancel={cancel}
-      onContextMenu={(e) => e.preventDefault()}
-      style={{
-        backgroundImage: `linear-gradient(90deg, var(--mantine-color-green-filled) ${progress * 100}%, transparent ${progress * 100}%)`,
-        touchAction: 'none',
-        userSelect: 'none',
-      }}
-      aria-label={`${t('mobile.hold')}: ${door.name}`}
-    >
-      {busy ? t('mobile.opening') : t('mobile.hold')}
-    </Button>
+    <HoldButton
+      name={door.name}
+      onConfirm={() =>
+        api
+          .post(`/doors/${door.id}/open`, {})
+          .then(() => notifyOk(t('mobile.opened', { door: door.name })))
+          .catch(notifyError)
+      }
+    />
   )
 }
 

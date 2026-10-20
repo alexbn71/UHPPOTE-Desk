@@ -6,6 +6,13 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 ## [Unreleased]
 
 ### Added
+- **Guests**: links that open some doors without a card or an app (*Registry → Guests*, operators and
+  administrators). A pass has a validity period, optionally only some days and hours (e.g. every Tuesday
+  09:00–12:00), a maximum number of openings, is bound to the first phone that opens a door with it and can require
+  a PIN (blocked after 5 wrong ones). The guest page `/g/<code>` needs no login and has *hold to open* buttons; the
+  link is shown once, with *Share* / WhatsApp / copy, and only its hash is stored. New events `guest.opened` and
+  `guest.refused` for notifications, push, webhooks and rules; failed attempts are rate-limited per address — see
+  [docs/GUESTS.md](docs/GUESTS.md).
 - **Alarm expansion board (UT0311-01A), experimental**: new *Expansion board* tab on the controller page to
   configure the four alarm outputs (source door or burglar alarm, output mode, triggering events, signals, duration),
   the "door open too long" time and the duress code. The configuration is written with function `0xF2`

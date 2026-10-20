@@ -6,6 +6,8 @@ import {
   RULE_SEVERITIES,
   TOKEN_ACCESS,
   WEBHOOK_EVENTS,
+  type GuestOutcome,
+  type GuestStatus,
   type OpenConfirmation,
   type RuleSeverity,
   type TokenAccess,
@@ -670,6 +672,109 @@ export interface ApiTokenDto {
   lastUsedAt: string | null
   lastUsedIp: string | null
 }
+
+// ---------------------------------------------------------------------------
+// Guest passes (door opening from a link, without card or app)
+// ---------------------------------------------------------------------------
+
+/** 'YYYY-MM-DD HH:mm' (local time). */
+export const dateTimeMinutesSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2} ([01]\d|2[0-3]):[0-5]\d$/, 'Invalid date and time (YYYY-MM-DD HH:mm)')
+
+/** PIN a guest types in the link page: 4 to 8 digits. */
+export const guestPinSchema = z.string().regex(/^\d{4,8}$/, 'The PIN must have 4 to 8 digits')
+
+export const guestPassInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100),
+    note: z.string().trim().max(500).default(''),
+    doorIds: z.array(z.number().int().positive()).min(1),
+    /** First and last moment of validity ('YYYY-MM-DD HH:mm'; `validTo` excluded). */
+    validFrom: dateTimeMinutesSchema,
+    validTo: dateTimeMinutesSchema,
+    /** Days of the week (Monday first) and daily window within the validity; null times = all day. */
+    weekdays: weekdaysSchema.default([true, true, true, true, true, true, true]),
+    timeFrom: hhmmSchema.nullable().default(null),
+    timeTo: hhmmSchema.nullable().default(null),
+    /** Maximum number of openings; null = unlimited. */
+    maxOpens: z.number().int().min(1).max(10_000).nullable().default(null),
+    /** The link works only on the first phone that opens a door with it. */
+    bindDevice: z.boolean().default(true),
+    /** New PIN; null = no PIN; omitted when editing = keep the current one. */
+    pin: guestPinSchema.nullable().optional(),
+  })
+  .refine((g) => g.validFrom < g.validTo, { message: 'The start must precede the end', path: ['validTo'] })
+  .refine((g) => (g.timeFrom === null) === (g.timeTo === null), {
+    message: 'Set both times or neither',
+    path: ['timeTo'],
+  })
+export type GuestPassInput = z.infer<typeof guestPassInputSchema>
+
+export interface GuestPassDto {
+  id: number
+  name: string
+  note: string
+  doorIds: number[]
+  validFrom: string
+  validTo: string
+  weekdays: boolean[]
+  timeFrom: string | null
+  timeTo: string | null
+  maxOpens: number | null
+  bindDevice: boolean
+  hasPin: boolean
+  /** Bound to the phone that first used it (with `bindDevice`). */
+  boundAt: string | null
+  /** Too many wrong PINs: the link is blocked until an operator unlocks it. */
+  locked: boolean
+  revokedAt: string | null
+  createdBy: string
+  createdAt: string
+  /** Successful openings, and the last one. */
+  opens: number
+  lastOpenAt: string | null
+  status: GuestStatus
+}
+
+/** A new link: returned only when the pass is created or its link regenerated. */
+export interface GuestLinkDto {
+  pass: GuestPassDto
+  /** The secret part of the link. */
+  token: string
+  /** Full address to send to the guest. */
+  link: string
+}
+
+export interface GuestOpenDto {
+  id: number
+  at: string
+  doorId: number | null
+  doorName: string | null
+  outcome: GuestOutcome
+  ip: string | null
+}
+
+/** What the guest sees in the link page. */
+export interface GuestViewDto {
+  name: string
+  doors: { id: number; name: string }[]
+  validFrom: string
+  validTo: string
+  weekdays: boolean[]
+  timeFrom: string | null
+  timeTo: string | null
+  /** Openings left; null = unlimited. */
+  opensLeft: number | null
+  status: GuestStatus
+  /** The PIN must be typed (not needed on the phone the link is already bound to). */
+  pinRequired: boolean
+  /** The link is bound to another phone: it cannot be used from this one. */
+  otherDevice: boolean
+}
+
+export const guestOpenSchema = z.object({ pin: guestPinSchema.optional() })
+export const guestTokenParam = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/) })
 
 // ---------------------------------------------------------------------------
 // Notifications (Telegram, email, ntfy, Gotify)

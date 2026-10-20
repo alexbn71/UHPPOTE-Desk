@@ -37,6 +37,7 @@ import {
   IconUserCheck,
   IconSettings,
   IconSitemap,
+  IconTicket,
   IconUsers,
   IconUserShield,
   IconWebhook,
@@ -62,6 +63,7 @@ import { ControllersPage } from './pages/Controllers'
 import { DashboardPage } from './pages/Dashboard'
 import { DoorsPage } from './pages/Doors'
 import { EventsPage } from './pages/Events'
+import { GuestsPage } from './pages/Guests'
 import { LoginPage } from './pages/Login'
 import { MobileAdminPage } from './pages/MobileAdmin'
 import { MobileApp } from './pages/MobileApp'
@@ -88,6 +90,7 @@ type NavKey =
   | 'anomalies'
   | 'people'
   | 'cards'
+  | 'guests'
   | 'permissions'
   | 'structure'
   | 'controllers'
@@ -128,6 +131,7 @@ const NAV: { section: 'operations' | 'registry' | 'configuration' | 'administrat
     items: [
       { to: '/people', label: 'people', icon: <IconUsers size={18} />, role: 'viewer' },
       { to: '/cards', label: 'cards', icon: <IconId size={18} />, role: 'viewer' },
+      { to: '/guests', label: 'guests', icon: <IconTicket size={18} />, role: 'operator' },
       { to: '/permissions', label: 'permissions', icon: <IconKey size={18} />, role: 'viewer' },
       { to: '/structure', label: 'structure', icon: <IconSitemap size={18} />, role: 'viewer' },
     ],
@@ -348,6 +352,14 @@ export function App() {
                     <Route path="/anomalies" element={<AnomaliesPage />} />
                     <Route path="/people" element={<PeoplePage />} />
                     <Route path="/cards" element={<CardsPage />} />
+                    <Route
+                      path="/guests"
+                      element={
+                        <Guard role="operator">
+                          <GuestsPage />
+                        </Guard>
+                      }
+                    />
                     <Route path="/permissions" element={<PermissionsPage />} />
                     <Route path="/structure" element={<StructurePage />} />
                     <Route path="/controllers" element={<ControllersPage />} />
