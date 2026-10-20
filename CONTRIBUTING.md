@@ -40,6 +40,7 @@ the protocol and the design decisions in [ANALYSIS.md](ANALYSIS.md).
 3. Before pushing, run the same checks as the CI:
 
    ```bash
+   npm run format              # Prettier; the CI runs npm run format:check
    npm run typecheck
    npm test
    npm run test:int

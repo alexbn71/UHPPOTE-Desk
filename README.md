@@ -107,8 +107,9 @@ The user `admin` gets the password from `ADMIN_PASSWORD` (applied at every start
 | `UHPPOTED_SIM=127.0.0.1 npm run test:int` | Additionally: tests against the **official uhppoted simulator** (an independent Go implementation). Start it first: `docker compose -f docker/docker-compose.test.yml up -d` or, on Windows, `uhppote-simulator.exe --devices <dir>` (release v0.9.0 on codeberg.org/uhppoted/uhppoted-simulator) |
 | `npm run e2e` | Playwright: login and password change, discovery and adding a controller, person + card + permission → card on the controller, live monitor, every page without errors, language switching, roles |
 | `npm run typecheck` | Type checking of all packages |
+| `npm run format` / `npm run format:check` | Prettier formatting of the code (Markdown, HTML and YAML are formatted by hand) |
 
-The same checks (typecheck, unit and integration tests) run on every push in GitHub Actions, followed by the Docker image build.
+The same checks (formatting, typecheck, unit and integration tests) run on every push in GitHub Actions, followed by the Docker image build.
 
 ## Commissioning with a real controller
 
