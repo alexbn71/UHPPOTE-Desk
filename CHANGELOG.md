@@ -5,6 +5,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-21
+
 ### Added
 - **Expansion board outputs live**: for controllers with *Expansion board connected* UHPPOTE Desk reads the status
   of the manufacturer's console (long packet `0x20/0x20`, found in a capture of its *Monitor*), the only one that
@@ -134,5 +136,6 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.2.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.0
 [1.1.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.1.0
 [1.0.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.0.0

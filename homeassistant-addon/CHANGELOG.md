@@ -3,6 +3,16 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.0
+
+- **Two-factor authentication** for the operators (authenticator app), with recovery codes; administrators choose
+  who must use it on the *Operators* page.
+- **Expansion board UT0311-01A**: tested on hardware; new Home Assistant binary sensors *Expansion output 1–4*
+  (controllers with *Expansion board connected*), followed live after alarms.
+- **Fire alarm** sensor: on at once at the fire event and off a few seconds after the input is released (before:
+  up to the next status check, or never for a short alarm).
+- Licence plates (AgentDVR), guest links without card or app, persons inside, reader and door options.
+
 ## 1.1.0
 
 - First version of the Home Assistant add-on (amd64 and aarch64): MQTT broker, network addresses and time zone
