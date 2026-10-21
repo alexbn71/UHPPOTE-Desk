@@ -580,13 +580,15 @@ export const fr: Messages = {
     readNotCompared: 'Non gérées : pas de comparaison',
     fourTimes: '4 passages = toujours ouverte',
     fourTimesHint:
-      "4 passages consécutifs d'un badge valide mettent la porte en toujours ouverte ; 4 autres la remettent en normal (firmware V5.52+)",
+      "4 passages consécutifs d'un badge valide mettent la porte en toujours ouverte ; 4 autres la remettent en normal (fabricant : firmware V5.52+ ; sans effet sur le firmware UHPPOTE v9.f8 testé)",
     fourTimesProfile: 'Utilisateurs autorisés',
     allUsers: 'Tous les utilisateurs',
     silent: 'Lecteur silencieux pour les badges non valides',
-    silentHint: 'Pas de LED rouge ni de bip sur le lecteur pour un badge non valide (firmware V5.48+)',
-    swipeGap: 'Intervalle minimum entre deux passages du même badge (s)',
-    swipeGapHint: 'Nombre pair de secondes, 0 = désactivé',
+    silentHint:
+      "Le contrôleur n'allume pas la LED du lecteur pour un badge non valide (fabricant : firmware V5.48+). Seulement la LED : ces contrôleurs ont une sortie LED vers le lecteur mais pas de sortie buzzer, le bip à chaque lecture vient donc du lecteur lui-même. Le fil LED du lecteur doit être relié au contrôleur",
+    swipeGap: 'Ne pas enregistrer les passages répétés du même badge (s)',
+    swipeGapHint:
+      'Les passages suivants du même badge pendant ce temps ouvrent la porte mais ne sont pas enregistrés. Nombre pair de secondes, 0 = désactivé',
     doorAsSwitch: 'Porte comme interrupteur',
     doorAsSwitchHint: "Le badge bascule la serrure (ouverte / fermée) au lieu de l'ouvrir pendant la durée d'ouverture",
     multiCard: 'Accès multi-badges',

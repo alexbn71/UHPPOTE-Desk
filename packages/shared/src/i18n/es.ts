@@ -579,13 +579,15 @@ export const es: Messages = {
     readNotCompared: 'No gestionadas: sin comparación',
     fourTimes: '4 pasadas = siempre abierta',
     fourTimesHint:
-      '4 pasadas seguidas de una tarjeta válida ponen la puerta siempre abierta; otras 4 la devuelven a normal (firmware V5.52+)',
+      '4 pasadas seguidas de una tarjeta válida ponen la puerta siempre abierta; otras 4 la devuelven a normal (fabricante: firmware V5.52+; sin efecto en el firmware UHPPOTE v9.f8 probado)',
     fourTimesProfile: 'Usuarios permitidos',
     allUsers: 'Todos los usuarios',
     silent: 'Lector silencioso con tarjetas no válidas',
-    silentHint: 'Sin LED rojo ni pitido en el lector para una tarjeta no válida (firmware V5.48+)',
-    swipeGap: 'Intervalo mínimo entre dos pasadas de la misma tarjeta (s)',
-    swipeGapHint: 'Número par de segundos, 0 = desactivado',
+    silentHint:
+      'El controlador no enciende el LED del lector para una tarjeta no válida (fabricante: firmware V5.48+). Solo el LED: estos controladores tienen una salida LED hacia el lector pero ninguna salida de zumbador, así que el pitido en cada lectura lo hace el propio lector. El cable LED del lector debe estar conectado al controlador',
+    swipeGap: 'No registrar las pasadas repetidas de la misma tarjeta (s)',
+    swipeGapHint:
+      'Las pasadas siguientes de la misma tarjeta dentro de este tiempo abren la puerta pero no se registran. Número par de segundos, 0 = desactivado',
     doorAsSwitch: 'Puerta como interruptor',
     doorAsSwitchHint:
       'La tarjeta conmuta la cerradura (abierta / cerrada) en lugar de abrirla durante el retardo de apertura',

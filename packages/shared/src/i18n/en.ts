@@ -576,13 +576,15 @@ export const en = {
     readNotCompared: 'Not managed: not compared',
     fourTimes: 'Four swipes = normally open',
     fourTimesHint:
-      'Four swipes of a valid card in a row switch the door to normally open; four more switch it back (firmware V5.52+)',
+      'Four swipes of a valid card in a row switch the door to normally open; four more switch it back (vendor: firmware V5.52+; no effect on the tested UHPPOTE firmware v9.f8)',
     fourTimesProfile: 'Users allowed',
     allUsers: 'Every user',
     silent: 'Silent reader on invalid cards',
-    silentHint: 'No red LED and no beep on the reader for an invalid card (firmware V5.48+)',
-    swipeGap: 'Minimum gap between two swipes of the same card (s)',
-    swipeGapHint: 'Even number of seconds, 0 = off',
+    silentHint:
+      'The controller does not light the reader LED for an invalid card (vendor: firmware V5.48+). Only the LED: these controllers have an LED output to the reader but no buzzer output, so the beep at every read comes from the reader itself. Needs the reader LED wire connected to the controller',
+    swipeGap: "Don't record repeated swipes of the same card (s)",
+    swipeGapHint:
+      'Further swipes of the same card within this time open the door but are not recorded. Even number of seconds, 0 = off',
     doorAsSwitch: 'Door as switch',
     doorAsSwitchHint: 'The card toggles the lock (open / closed) instead of opening it for the open delay',
     multiCard: 'Multi-card access',

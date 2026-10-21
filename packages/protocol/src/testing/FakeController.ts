@@ -335,6 +335,15 @@ export class FakeController {
 
   /** Simulates a card swipe on the door reader. Returns the generated event. */
   swipe(card: number, door: number, direction: number = Direction.In, pin?: number): ControllerEvent {
+    // repeated swipes (parameters 52-53, units of 2 s; 0/0xFFFF = off): like the real controller (fw v9.f8), a
+    // granted swipe of the same card within the interval opens the door but is not recorded (no event; the
+    // previous event is returned)
+    const gapRaw = this.parameters[52]! | (this.parameters[53]! << 8)
+    const previous = this.lastSwipe.get(card)
+    if (previous && gapRaw !== 0 && gapRaw !== 0xffff && Date.now() - previous.at < gapRaw * 2000) {
+      if (this.authorise(card, door, pin) === Reason.Swipe) this.pulseRelay(door)
+      return previous.ev
+    }
     let reason = this.authorise(card, door, pin)
     // multi-card access (parameter 168 + door): the first N-1 different valid cards wait (reason 9)
     const needed = this.parameters[168 + door - 1]!
@@ -347,9 +356,13 @@ export class FakeController {
     const granted = reason === Reason.Swipe
     if (granted) this.pulseRelay(door)
     const ev = this.event(EventType.Swipe, granted, door, direction, card, reason)
+    this.lastSwipe.set(card, { at: Date.now(), ev })
     this.triggerExpansion(door, reason)
     return ev
   }
+
+  /** Last swipe of each card, for the minimum gap between swipes. */
+  private readonly lastSwipe = new Map<number, { at: number; ev: ControllerEvent }>()
 
   /**
    * Simulates an alarm detected by the controller on a door (forced open, open too long, threat, forced lock):
@@ -861,6 +874,8 @@ export class FakeController {
           this.parameters[index] = value
           table[index] = value
         }
+        // a new minimum gap between swipes starts from scratch
+        if (writes.some(([index]) => index === 52 || index === 53)) this.lastSwipe.clear()
         if (writes.some(([index]) => index >= 2 && index <= 13)) {
           this.doors = this.doors.map((_, i) => ({
             mode: table[10 + i]!,

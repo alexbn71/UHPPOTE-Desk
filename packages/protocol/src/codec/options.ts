@@ -14,7 +14,10 @@ export const OptionParam = {
    * multi-card access (capture: 0x55 → 0x5D for door 4); the other bits are kept. Factory value 0x55.
    */
   MultiCardDoors: 40,
-  /** Minimum gap between two swipes of the same card: uint16 LE in units of 2 s (0 = off; factory 0xFFFF = off). */
+  /**
+   * Repeated swipes of the same card within this interval are not recorded (the door still opens; tested on fw
+   * v9.f8): uint16 LE in units of 2 s (0 = off; factory 0xFFFF = off). Vendor name: "valid swipe interval".
+   */
   SwipeGap: 52,
   /** Cards needed to open, per door (0 = multi-card off). */
   MultiCardTotal: 168,
@@ -22,11 +25,14 @@ export const OptionParam = {
   MultiCardGroups: 172,
   /** Multi-card options per door: bit 3 single group, bit 4 sequence, bits 0-2 start group - 1. */
   MultiCardOptions: 218,
-  /** 0xA5 = no LED/beep on the reader for an invalid card (firmware V5.48+). */
+  /** 0xA5 = no LED/beep on the reader for an invalid card (vendor: firmware V5.48+; the UT0311-L0x has an LED output to the reader but no buzzer output, so only the LED can be affected; not verified). */
   SilentInvalidCard: 205,
   /** Doors used as a switch: bit mask of doors 1-4, stored inverted (0xFF = none). */
   DoorAsSwitch: 222,
-  /** Four valid swipes toggle normally open: bits 0-3 readers, bits 4-7 time profile (0 = all users; V5.52+). */
+  /**
+   * Four valid swipes toggle normally open: bits 0-3 readers, bits 4-7 time profile (0 = all users; vendor: V5.52+).
+   * Stored but without effect on fw v9.f8 (door stayed controlled after four granted swipes).
+   */
   FourTimesNormalOpen: 250,
 } as const
 
@@ -46,7 +52,7 @@ export interface ControllerOptions {
   }
   /** The reader stays silent (no LED, no beep) on an invalid card. */
   silentInvalidCard: boolean
-  /** Seconds before the same card is accepted again (0 = off, even values). */
+  /** Seconds during which repeated swipes of the same card are not recorded again (0 = off, even values). */
   swipeGapSeconds: number
   /** The card toggles the lock (open/closed) instead of a pulse. */
   doorAsSwitch: Quad<boolean>

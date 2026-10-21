@@ -1395,6 +1395,19 @@ async function restoreOptions(ctx: Context): Promise<boolean> {
   return true
 }
 
+/** Swipe events of a card received since index `since`. */
+const swipesOf = (ctx: Context, since: number, card: number) =>
+  ctx.events.slice(since).filter((s) => s.event?.type === 1 && s.event.card === card)
+
+const swipeData = (s: ControllerStatus) => ({ granted: s.event!.granted, reason: s.event!.reason })
+
+function describeSwipes(swipes: ControllerStatus[]): string {
+  if (!swipes.length) return 'no swipe events'
+  return `${swipes.length} event(s): ${swipes
+    .map((s) => `${s.event!.granted ? 'granted' : 'denied'} (reason ${s.event!.reason})`)
+    .join(', ')}`
+}
+
 export const L7: TestCase[] = [
   {
     id: 'L7.1',
@@ -1427,20 +1440,34 @@ export const L7: TestCase[] = [
       await withUserCardOnDoor1(ctx, t, async (card) => {
         await withOptions(ctx, t, { fourTimesNormalOpen: { readers: [true, false, false, false], timeProfile: 0 } })
         await attachListener(ctx, t)
+        let since = ctx.events.length
         await ctx.driver.perform(
           { kind: 'swipe-burst', card, door: 1, count: 4 },
-          `Swipe card ${card} on door 1 FOUR times in a row`,
+          `Swipe card ${card} on door 1 FOUR times in a row, quickly (about one per second)`,
         )
+        await sleep(2000)
+        const first = swipesOf(ctx, since, card)
+        const control1 = await ctx.client.getDoorControl(ctx.target, 1)
+        t.log(`first four: ${describeSwipes(first)}; door 1 mode ${control1.mode} (3 = controlled, 1 = normally open)`)
         const open = await ctx.driver.confirm('Does door 1 now stay UNLOCKED (normally open)?', {
           kind: 'observe-relay',
           door: 1,
         })
+        since = ctx.events.length
         await ctx.driver.perform(
           { kind: 'swipe-burst', card, door: 1, count: 4 },
-          `Swipe card ${card} on door 1 FOUR more times`,
+          `Swipe card ${card} on door 1 FOUR more times, quickly`,
         )
+        await sleep(2000)
+        const second = swipesOf(ctx, since, card)
+        t.log(`next four: ${describeSwipes(second)}`)
         const back = await ctx.driver.confirm('Is door 1 LOCKED again (controlled)?')
-        t.data({ status: statusBits(await ctx.client.getStatus(ctx.target)) })
+        t.data({
+          first: first.map(swipeData),
+          second: second.map(swipeData),
+          modeAfterFirst: control1.mode,
+          status: statusBits(await ctx.client.getStatus(ctx.target)),
+        })
         t.assert(open, 'four swipes did not set normally open')
         t.assert(back, 'four more swipes did not set controlled again')
       })
@@ -1452,44 +1479,60 @@ export const L7: TestCase[] = [
     name: 'Silent reader on an invalid card',
     physical: true,
     async run(ctx: Context, t: TestHelpers) {
-      await withOptions(ctx, t, { silentInvalidCard: true })
+      // most Wiegand readers beep by themselves at every read: only the comparison tells what the option changes
       await attachListener(ctx, t)
-      const since = ctx.events.length
-      await ctx.driver.perform(
-        { kind: 'swipe', card: null, door: 1 },
-        'Swipe on door 1 a card that is NOT registered on the controller',
+      const observed: Record<string, string> = {}
+      for (const silent of [false, true]) {
+        await withOptions(ctx, t, { silentInvalidCard: silent })
+        const since = ctx.events.length
+        await ctx.driver.perform(
+          { kind: 'swipe', card: null, door: 1 },
+          `Option ${silent ? 'ON' : 'OFF'}: swipe on door 1 a card that is NOT registered on the controller`,
+        )
+        const ev = await ctx.waitEvent(
+          (s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && !s.event.granted,
+          20_000,
+        )
+        t.assert(ev, 'denied swipe not received')
+        observed[silent ? 'on' : 'off'] = (
+          await ctx.driver.ask('What did the reader do? (e.g. "1 short beep, red LED", "nothing")')
+        ).trim()
+        t.log(`option ${silent ? 'on' : 'off'}: ${observed[silent ? 'on' : 'off'] || '(no answer)'}`)
+      }
+      t.data({ observed })
+      const quieter = await ctx.driver.confirm(
+        'With the option ON, was the "refused" signal (red LED and/or error beep) gone, compared with OFF?',
       )
-      const ev = await ctx.waitEvent(
-        (s) => ctx.events.indexOf(s) >= since && s.event?.type === 1 && !s.event.granted,
-        20_000,
-      )
-      t.assert(ev, 'denied swipe not received')
-      const silent = await ctx.driver.confirm('Did the reader stay SILENT (no beep, no red LED)?')
-      t.assert(silent, 'the reader still signalled the invalid card')
+      t.assert(quieter, 'no difference between the option off and on')
     },
   },
   {
     id: 'L7.4',
     level: 7,
-    name: 'Minimum gap between two swipes of the same card (10 s)',
+    name: 'Repeated swipes of the same card within 10 s are not recorded (the door still opens)',
     physical: true,
     async run(ctx: Context, t: TestHelpers) {
       await withUserCardOnDoor1(ctx, t, async (card) => {
         await withOptions(ctx, t, { swipeGapSeconds: 10 })
         await attachListener(ctx, t)
+        const { delay } = await ctx.client.getDoorControl(ctx.target, 1)
         const since = ctx.events.length
         await ctx.driver.perform(
           { kind: 'swipe-burst', card, door: 1, count: 2 },
-          `Swipe card ${card} on door 1 TWICE within 5 seconds`,
+          `Swipe card ${card} on door 1 ONCE, wait until the lock closes again (about ${delay} s), ` +
+            `then swipe it AGAIN at once (within 10 s of the first)`,
         )
         await sleep(3000)
-        const swipes = ctx.events.slice(since).filter((s) => s.event?.type === 1 && s.event.card === card)
+        const swipes = swipesOf(ctx, since, card)
+        t.log(`events: ${describeSwipes(swipes)}`)
+        const opened = await ctx.driver.confirm('Did the door open BOTH times?')
+        t.data({ delay, swipes: swipes.map(swipeData), openedTwice: opened })
+        t.assert(swipes.length === 1, `expected 1 recorded swipe, received ${swipes.length}`)
         t.log(
-          `events: ${swipes.map((s) => `${s.event!.granted ? 'granted' : 'denied'} (reason ${s.event!.reason})`).join(', ') || 'none'}`,
+          opened
+            ? 'second swipe not recorded, door opened: the interval filters the records only'
+            : 'second swipe not recorded and door not opened again',
         )
-        t.data({ swipes: swipes.map((s) => ({ granted: s.event!.granted, reason: s.event!.reason })) })
-        const refused = await ctx.driver.confirm('Was the SECOND swipe refused (door not opened again)?')
-        t.assert(refused, 'the second swipe within the gap was accepted')
       })
     },
   },

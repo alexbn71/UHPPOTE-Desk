@@ -55,6 +55,13 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   button. `/api/health` now also reports `build`, the entry bundle of the web build being served.
 
 ### Fixed
+- *Reader and door options*, after the hardware tests on a UT0311-L04 (firmware v9.f8): the "minimum gap between
+  two swipes" does not refuse the card — the door opens, the repeated swipes of the same card within the interval
+  are just not recorded; it is now called *Don't record repeated swipes of the same card*. *Four swipes = normally
+  open* is stored by this firmware but has no effect; *Silent reader on invalid cards* can only affect the reader LED (the
+  controller has no buzzer output: the beep comes from the reader) and needs the LED wire connected: the hints say
+  so.
+  Hardware tests L7.2–L7.4 now log the events and compare the reader with the option off and on.
 - **Fire alarm** (Home Assistant *Fire alarm* sensor, live monitor): it turned on only at the next status check
   (up to `HEALTH_INTERVAL_SEC` later, or never for a short alarm) because the packet of the fire event still has the
   fire bit clear, and turned off late because releasing the fire input sends no event. It now turns on at the event

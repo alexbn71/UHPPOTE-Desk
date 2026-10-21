@@ -576,13 +576,15 @@ export const it: Messages = {
     readNotCompared: 'Non gestite: nessun confronto',
     fourTimes: '4 passate = sempre aperta',
     fourTimesHint:
-      '4 passaggi consecutivi di una tessera valida mettono la porta in sempre aperta; altri 4 la riportano normale (firmware V5.52+)',
+      '4 passaggi consecutivi di una tessera valida mettono la porta in sempre aperta; altri 4 la riportano normale (produttore: firmware V5.52+; nessun effetto sul firmware UHPPOTE v9.f8 provato)',
     fourTimesProfile: 'Utenti abilitati',
     allUsers: 'Tutti gli utenti',
     silent: 'Lettore muto con tessere non valide',
-    silentHint: 'Nessun LED rosso e nessun bip sul lettore per una tessera non valida (firmware V5.48+)',
-    swipeGap: 'Intervallo minimo tra due passaggi della stessa tessera (s)',
-    swipeGapHint: 'Numero pari di secondi, 0 = disattivato',
+    silentHint:
+      "Il controller non accende il LED del lettore per una tessera non valida (produttore: firmware V5.48+). Solo il LED: questi controller hanno un'uscita LED verso il lettore ma nessuna uscita buzzer, quindi il bip a ogni lettura lo fa il lettore stesso. Serve il filo LED del lettore collegato al controller",
+    swipeGap: 'Non registrare i passaggi ripetuti della stessa tessera (s)',
+    swipeGapHint:
+      'I passaggi successivi della stessa tessera entro questo tempo aprono la porta ma non vengono registrati. Numero pari di secondi, 0 = disattivato',
     doorAsSwitch: 'Porta come interruttore',
     doorAsSwitchHint: 'La tessera commuta la serratura (aperta / chiusa) invece di aprirla per il ritardo di apertura',
     multiCard: 'Apertura con più tessere',

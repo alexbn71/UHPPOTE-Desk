@@ -46,7 +46,7 @@ Controller discovery and configuration, people/cards/permissions with automatic 
 
 **Licence plates**: cameras with plate recognition (e.g. AgentDVR) open the gate for the vehicles of people (with their permissions and time profiles) and guests, with a photo of every reading, notifications with the photo on Telegram and email, and a "record only" mode to test a camera — see [docs/PLATES.md](docs/PLATES.md).
 
-**Persons inside**: who is inside now, from the last swipe on entry and exit doors, with CSV export. **Reader and door options** from the manufacturer's extended functions (four swipes = normally open, silent reader on invalid cards, minimum gap between swipes, door as switch, multi-card access), verified by reading them back from the controller.
+**Persons inside**: who is inside now, from the last swipe on entry and exit doors, with CSV export. **Reader and door options** from the manufacturer's extended functions (four swipes = normally open, silent reader on invalid cards, repeated swipes not recorded, door as switch, multi-card access; four swipes has no effect on the tested UHPPOTE firmware v9.f8, the silent reader affects only the reader LED driven by the controller), verified by reading them back from the controller.
 
 **Alarm expansion board** (UT0311-01A, experimental): four alarm relays and the fire input, driven by duress code, door open too long, forced open, invalid card and fire — see [docs/EXPANSION-BOARD.md](docs/EXPANSION-BOARD.md).
 
@@ -153,7 +153,7 @@ Recommended procedure when the controller arrives:
    ```bash
    npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 6
    ```
-10. **Reader and door options** (L7): written, read back and restored exactly; guided tests of four swipes, silent reader, swipe gap, door as switch and multi-card access (a second card is asked for the last one).
+10. **Reader and door options** (L7): written, read back and restored exactly; guided tests of four swipes, silent reader, repeated swipes, door as switch and multi-card access (a second card is asked for the last one).
     ```bash
     npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 7
     ```

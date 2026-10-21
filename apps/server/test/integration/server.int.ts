@@ -588,6 +588,9 @@ describe('synchronisation', () => {
     })
     expect(bad.statusCode).toBe(400)
     await api('PUT', `/controllers/${controllerId}/settings?push=false`, settings)
+    // the simulator applies the swipe gap (30 s) like the controller: switch it off for the next tests
+    fake.parameters[52] = 0
+    fake.parameters[53] = 0
   })
 
   it('settings saved without expansionBoard (older clients) get the default', async () => {

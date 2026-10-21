@@ -580,13 +580,15 @@ export const de: Messages = {
     readNotCompared: 'Nicht verwaltet: kein Vergleich',
     fourTimes: '4× Karte = Dauer offen',
     fourTimesHint:
-      '4 aufeinanderfolgende Buchungen einer gültigen Karte schalten die Tür auf Dauer offen; 4 weitere zurück (Firmware V5.52+)',
+      '4 aufeinanderfolgende Buchungen einer gültigen Karte schalten die Tür auf Dauer offen; 4 weitere zurück (Hersteller: Firmware V5.52+; ohne Wirkung auf der getesteten UHPPOTE-Firmware v9.f8)',
     fourTimesProfile: 'Berechtigte Benutzer',
     allUsers: 'Alle Benutzer',
     silent: 'Leser stumm bei ungültigen Karten',
-    silentHint: 'Keine rote LED und kein Piepton am Leser bei einer ungültigen Karte (Firmware V5.48+)',
-    swipeGap: 'Mindestabstand zwischen zwei Buchungen derselben Karte (s)',
-    swipeGapHint: 'Gerade Anzahl Sekunden, 0 = aus',
+    silentHint:
+      'Der Controller schaltet die LED des Lesers bei einer ungültigen Karte nicht ein (Hersteller: Firmware V5.48+). Nur die LED: diese Controller haben einen LED-Ausgang zum Leser, aber keinen Summerausgang, der Piepton bei jedem Lesen kommt also vom Leser selbst. Die LED-Leitung des Lesers muss am Controller angeschlossen sein',
+    swipeGap: 'Wiederholte Buchungen derselben Karte nicht speichern (s)',
+    swipeGapHint:
+      'Weitere Buchungen derselben Karte innerhalb dieser Zeit öffnen die Tür, werden aber nicht gespeichert. Gerade Anzahl Sekunden, 0 = aus',
     doorAsSwitch: 'Tür als Schalter',
     doorAsSwitchHint:
       'Die Karte schaltet das Schloss um (offen / geschlossen), statt es für die Öffnungszeit zu öffnen',
