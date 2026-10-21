@@ -475,4 +475,24 @@ export const migrations: { id: number; name: string; sql: string }[] = [
       CREATE INDEX plate_reads_person ON plate_reads(person_id, at);
     `,
   },
+  {
+    id: 11,
+    name: 'two-factor authentication of the operators (TOTP) and recovery codes',
+    sql: /* sql */ `
+      -- totp_secret set = two-factor authentication active; totp_pending = secret being set up, not confirmed yet
+      ALTER TABLE operators ADD COLUMN totp_secret TEXT;
+      ALTER TABLE operators ADD COLUMN totp_pending TEXT;
+      -- last time step accepted, so that a code cannot be used twice
+      ALTER TABLE operators ADD COLUMN totp_last_step INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE operators ADD COLUMN totp_enabled_at TEXT;
+
+      CREATE TABLE operator_recovery_codes (
+        id INTEGER PRIMARY KEY,
+        operator_id INTEGER NOT NULL REFERENCES operators(id) ON DELETE CASCADE,
+        code_hash TEXT NOT NULL,
+        used_at TEXT
+      );
+      CREATE INDEX operator_recovery_codes_operator ON operator_recovery_codes(operator_id);
+    `,
+  },
 ]

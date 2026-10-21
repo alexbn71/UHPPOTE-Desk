@@ -6,6 +6,11 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 ## [Unreleased]
 
 ### Added
+- **Two-factor authentication** for the operators (authenticator app, TOTP): activated by each operator from the new
+  shield icon in the header with a QR code, then asked at login after the password; 10 single-use recovery codes;
+  administrators see who has it, can reset it for a lost phone and choose on the *Operators* page who must use it
+  (nobody, administrators, operators and administrators, everybody: set up at the next login) — see
+  [docs/DOCKER.md](docs/DOCKER.md#two-factor-authentication).
 - **Licence plates**: plate-reading cameras (tested with AgentDVR) open doors for known vehicles, replacing the
   Node-RED glue. Plates belong to people (*Plates* tab: their permissions and time profiles apply, evaluated by the
   server) or to guest passes (new *Vehicle plates* field). Cameras (*Operations → Licence plates → Cameras*,
@@ -50,6 +55,9 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   button. `/api/health` now also reports `build`, the entry bundle of the web build being served.
 
 ### Fixed
+- The live connection (WebSocket of the monitor) was accepted also before the forced password change; it now
+  waits, like every other request, for the password change and the mandatory two-factor setup.
+- The header buttons *Change password* and *Log out* have an accessible name (screen readers, tests).
 - *Network and configuration*: the "send new IP" form and the listener form start from the configuration read
   from the controller (address, netmask, gateway, listener) instead of a fixed netmask and an empty gateway.
 

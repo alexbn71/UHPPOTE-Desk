@@ -92,6 +92,7 @@ export const de: Messages = {
     logout: 'Abmelden',
     liveOn: 'Echtzeit-Aktualisierungen aktiv',
     liveOff: 'Echtzeitverbindung unterbrochen',
+    twoFactor: 'Zwei-Faktor-Authentifizierung',
   },
   login: {
     username: 'Benutzername',
@@ -99,6 +100,9 @@ export const de: Messages = {
     rememberHint: 'Für die mobile App: auf diesem Telefon angemeldet bleiben',
     password: 'Passwort',
     submit: 'Anmelden',
+    totp: 'Bestätigungscode',
+    totpHint: 'Der 6-stellige Code der Authenticator-App oder ein Wiederherstellungscode',
+    back: 'Zurück',
   },
   password: {
     title: 'Passwort ändern',
@@ -113,6 +117,36 @@ export const de: Messages = {
     logout: 'Abmelden',
     managedInfo:
       'Das Passwort dieses Benutzers wird durch die Umgebungsvariable ADMIN_PASSWORD des Servers festgelegt: Ändern Sie es dort und starten Sie den Server neu.',
+  },
+  twoFactor: {
+    title: 'Zwei-Faktor-Authentifizierung',
+    description:
+      'Bei der Anmeldung wird neben dem Passwort ein Code einer Authenticator-App auf dem Telefon abgefragt (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password…).',
+    statusOn: 'Aktiv',
+    statusOff: 'Nicht aktiv',
+    requiredInfo: 'Die Zwei-Faktor-Authentifizierung ist für Ihre Rolle Pflicht: richten Sie sie ein, um fortzufahren.',
+    enable: 'Aktivieren',
+    passwordPrompt: 'Bestätigen Sie zum Start Ihr Passwort',
+    continue: 'Weiter',
+    scan: 'Scannen Sie den QR-Code mit der Authenticator-App oder geben Sie den Schlüssel von Hand ein, dann den angezeigten Code.',
+    code: 'Von der App angezeigter Code',
+    copy: 'Kopieren',
+    copied: 'Kopiert',
+    download: 'Herunterladen',
+    saved: 'Ich habe sie gespeichert',
+    enabled: 'Zwei-Faktor-Authentifizierung aktiv: die anderen Sitzungen und gemerkten Geräte wurden abgemeldet',
+    disabled: 'Zwei-Faktor-Authentifizierung ausgeschaltet',
+    recoveryTitle: 'Wiederherstellungscodes',
+    recoveryInfo:
+      'Bewahren Sie diese Codes sicher und getrennt vom Telefon auf: jeder ersetzt einmal den Code der App, falls Sie das Telefon verlieren. Sie werden nicht erneut angezeigt.',
+    recoveryLeft: 'Verbleibende Wiederherstellungscodes: {{n}}',
+    recoveryLow: 'Nur noch wenige Wiederherstellungscodes: erzeugen Sie neue.',
+    newCodes: 'Neue Wiederherstellungscodes',
+    newCodesInfo:
+      'Die aktuellen Wiederherstellungscodes werden ungültig. Geben Sie zum Fortfahren einen Code der App ein.',
+    disable: 'Ausschalten',
+    disableInfo: 'Geben Sie Ihr Passwort und einen Code der App (oder einen Wiederherstellungscode) ein.',
+    requiredByPolicy: 'Von den Administratoren für Ihre Rolle vorgeschrieben: kann nicht ausgeschaltet werden.',
   },
   dashboard: {
     title: 'Übersicht',
@@ -749,6 +783,24 @@ export const de: Messages = {
     passwordOptional: 'Passwort (optional)',
     passwordHint: 'Wenn leer, wird ein temporäres Passwort erzeugt',
     activeSwitch: 'Aktiv',
+    colTotp: '2FA',
+    resetTotp: 'Zwei-Faktor-Authentifizierung zurücksetzen',
+    resetTotpTitle: 'Zwei-Faktor-Authentifizierung von {{user}} zurücksetzen',
+    resetTotpInfo:
+      'Bei verlorenem Telefon: der Benutzer meldet sich nur mit dem Passwort an und kann sie erneut aktivieren. Seine Sitzungen und gemerkten Geräte werden abgemeldet.',
+    securityTitle: 'Zwei-Faktor-Authentifizierung Pflicht für',
+    securityHint:
+      'Die Betroffenen richten sie bei der nächsten Anmeldung ein, bevor sie die App nutzen, und können sie nicht ausschalten.',
+    securityMissing: 'Noch nicht aktiviert von: {{users}}',
+    securitySelf:
+      'Sie haben die Zwei-Faktor-Authentifizierung noch nicht aktiviert: Sie müssen das direkt nach dem Speichern tun.',
+    securitySaved: 'Einstellung gespeichert',
+    require2fa: {
+      none: 'Niemand (optional)',
+      admin: 'Administratoren',
+      operator: 'Operatoren und Administratoren',
+      all: 'Alle',
+    },
   },
   webhooks: {
     title: 'Webhooks',
@@ -1730,5 +1782,14 @@ export const de: Messages = {
       sendFailed: 'Senden an {{target}} fehlgeschlagen: {{detail}}',
       listenFailed: 'Lauschen auf {{address}} nicht möglich: {{detail}}',
     },
+    totpRequired: 'Geben Sie den Bestätigungscode ein',
+    invalidTotp: 'Bestätigungscode ungültig',
+    mustSetupTotp: 'Sie müssen die Zwei-Faktor-Authentifizierung einrichten, bevor Sie fortfahren',
+    totpAlreadyEnabled: 'Die Zwei-Faktor-Authentifizierung ist bereits aktiv',
+    totpNoSetup: 'Einrichtung nicht begonnen oder abgelaufen: beginnen Sie erneut',
+    totpNotEnabled: 'Die Zwei-Faktor-Authentifizierung ist nicht aktiv',
+    totpRequiredByPolicy:
+      'Die Zwei-Faktor-Authentifizierung ist für Ihre Rolle Pflicht und kann nicht ausgeschaltet werden',
+    selfTotpReset: 'Ihre eigene Zwei-Faktor-Authentifizierung schalten Sie auf Ihrer Kontoseite aus',
   },
 }

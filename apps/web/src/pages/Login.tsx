@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { Credits } from '../components/Credits'
 import { LanguageSelect } from '../components/LanguageSelect'
 import { ThemeSelect } from '../components/ThemeSelect'
-import { api, errorMessage } from '../lib/api'
+import { api, ApiError, errorMessage } from '../lib/api'
 import type { CurrentUser } from '../lib/auth'
 import { deviceName, prefersRemember } from '../lib/device'
+import { TotpCodeInput } from './TwoFactor'
 
 export function LoginPage() {
   const qc = useQueryClient()
@@ -17,6 +18,9 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [remember, setRemember] = useState(prefersRemember)
+  /** Second step: the password was right and the operator has two-factor authentication. */
+  const [askCode, setAskCode] = useState(false)
+  const [code, setCode] = useState('')
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -28,9 +32,15 @@ export function LoginPage() {
         password,
         remember,
         deviceName: deviceName(),
+        totp: askCode ? code : undefined,
       })
       qc.setQueryData(['me'], r.user)
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'totpRequired') {
+        setAskCode(true)
+        return
+      }
+      if (askCode) setCode('')
       setError(errorMessage(err))
     } finally {
       setBusy(false)
@@ -54,30 +64,58 @@ export function LoginPage() {
                 {t('app.name')}
               </Title>
               {error && <Alert color="red">{error}</Alert>}
-              <TextInput
-                label={t('login.username')}
-                value={username}
-                onChange={(e) => setUsername(e.currentTarget.value)}
-                autoFocus
-                required
-                autoComplete="username"
-              />
-              <PasswordInput
-                label={t('login.password')}
-                value={password}
-                onChange={(e) => setPassword(e.currentTarget.value)}
-                required
-                autoComplete="current-password"
-              />
-              <Checkbox
-                label={t('login.remember')}
-                description={t('login.rememberHint')}
-                checked={remember}
-                onChange={(e) => setRemember(e.currentTarget.checked)}
-              />
-              <Button type="submit" loading={busy} fullWidth>
-                {t('login.submit')}
-              </Button>
+              {askCode ? (
+                <>
+                  <TotpCodeInput
+                    value={code}
+                    onChange={setCode}
+                    label={t('login.totp')}
+                    description={t('login.totpHint')}
+                    recovery
+                  />
+                  <Button type="submit" loading={busy} fullWidth>
+                    {t('login.submit')}
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    onClick={() => {
+                      setAskCode(false)
+                      setCode('')
+                      setPassword('')
+                      setError(null)
+                    }}
+                  >
+                    {t('login.back')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <TextInput
+                    label={t('login.username')}
+                    value={username}
+                    onChange={(e) => setUsername(e.currentTarget.value)}
+                    autoFocus
+                    required
+                    autoComplete="username"
+                  />
+                  <PasswordInput
+                    label={t('login.password')}
+                    value={password}
+                    onChange={(e) => setPassword(e.currentTarget.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                  <Checkbox
+                    label={t('login.remember')}
+                    description={t('login.rememberHint')}
+                    checked={remember}
+                    onChange={(e) => setRemember(e.currentTarget.checked)}
+                  />
+                  <Button type="submit" loading={busy} fullWidth>
+                    {t('login.submit')}
+                  </Button>
+                </>
+              )}
             </Stack>
           </form>
         </Paper>

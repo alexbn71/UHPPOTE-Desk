@@ -1,28 +1,65 @@
-import type { FastifyInstance } from 'fastify'
-import { changePasswordSchema, idParam, loginSchema, operatorInputSchema } from '@uhppote-desk/shared'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
+import QRCode from 'qrcode'
+import {
+  changePasswordSchema,
+  idParam,
+  loginSchema,
+  operatorInputSchema,
+  securitySettingsSchema,
+  totpCodeSchema,
+  totpDisableSchema,
+  totpSetupSchema,
+} from '@uhppote-desk/shared'
 import { HttpError, requireSession, SESSION_COOKIE } from '../auth/auth.js'
 import { DEVICE_COOKIE } from '../auth/devices.js'
 import { randomPassword } from '../auth/password.js'
 import type { AppContext } from '../context.js'
 import { requestErrorText } from '../util/lang.js'
 
+/** Name shown by the authenticator apps. */
+const TOTP_ISSUER = 'UHPPOTE Desk'
+
 export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void {
+  // failed attempts (passwords and codes) per address and user: 5 wrong ones block that pair for 5 minutes
   const failures = new Map<string, { count: number; until: number }>()
+  const assertNotBlocked = (key: string) => {
+    const f = failures.get(key)
+    if (f && f.until > Date.now()) throw new HttpError(429, 'tooManyAttempts')
+  }
+  const recordFailure = (key: string) => {
+    const count = (failures.get(key)?.count ?? 0) + 1
+    failures.set(key, { count, until: count >= 5 ? Date.now() + 5 * 60_000 : 0 })
+  }
 
   app.post('/auth/login', async (req, reply) => {
     const body = loginSchema.parse(req.body)
     const key = `${req.ip}|${body.username.toLowerCase()}`
-    const f = failures.get(key)
-    if (f && f.until > Date.now()) throw new HttpError(429, 'tooManyAttempts')
+    assertNotBlocked(key)
 
-    const user = await ctx.auth.authenticate(body.username, body.password)
+    const user = await ctx.auth.authenticate(body.username, body.password, false)
     if (!user) {
-      const count = (f?.count ?? 0) + 1
-      failures.set(key, { count, until: count >= 5 ? Date.now() + 5 * 60_000 : 0 })
+      recordFailure(key)
       ctx.audit.log(null, 'login-failed', `operator:${body.username}`, { ip: req.ip })
       throw new HttpError(401, 'invalidCredentials')
     }
+    if (user.totpEnabled) {
+      // the client asks for the code and sends password and code again
+      if (!body.totp) throw new HttpError(401, 'totpRequired')
+      const how = ctx.auth.verifySecondFactor(user.id!, body.totp)
+      if (!how) {
+        recordFailure(key)
+        ctx.audit.log(null, 'login-failed', `operator:${body.username}`, { ip: req.ip, reason: 'totp' })
+        throw new HttpError(401, 'invalidTotp')
+      }
+      if (how === 'recovery') {
+        ctx.audit.log(user, 'recovery-code-used', `operator:${user.username}`, {
+          ip: req.ip,
+          left: ctx.auth.recoveryCodesLeft(user.id!),
+        })
+      }
+    }
     failures.delete(key)
+    ctx.auth.recordLogin(user.id!)
     const cookie = { path: '/', httpOnly: true, sameSite: 'strict' as const, secure: ctx.config.secureCookies }
     // a remembered device found in this browser is replaced by the new login
     const previous = ctx.devices.resolve(req.cookies[DEVICE_COOKIE], req.ip)
@@ -78,9 +115,120 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     return { ok: true }
   })
 
+  // --- two-factor authentication of the logged-in operator ---------------------
+
+  /** Operator of the request (not an API token). */
+  const self = (req: FastifyRequest) => {
+    if (!req.user) throw new HttpError(401, 'unauthenticated')
+    if (req.user.id === null) throw new HttpError(403, 'tokenNotAllowed')
+    return { ...req.user, id: req.user.id }
+  }
+  const selfKey = (req: FastifyRequest, id: number) => `${req.ip}|#${id}`
+
+  app.get('/auth/totp', async (req) => {
+    const user = self(req)
+    return {
+      enabled: user.totpEnabled,
+      required: ctx.auth.totpRequiredFor(user.role),
+      recoveryCodesLeft: user.totpEnabled ? ctx.auth.recoveryCodesLeft(user.id) : 0,
+    }
+  })
+
+  app.post('/auth/totp/setup', async (req) => {
+    const user = self(req)
+    const body = totpSetupSchema.parse(req.body)
+    const key = selfKey(req, user.id)
+    assertNotBlocked(key)
+    if (!(await ctx.auth.checkPassword(user.id, body.password))) {
+      recordFailure(key)
+      throw new HttpError(400, 'wrongPassword')
+    }
+    const { secret, uri } = ctx.auth.beginTotpSetup(user.id, TOTP_ISSUER)
+    const qr = await QRCode.toString(uri, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' })
+    return { secret, uri, qr }
+  })
+
+  app.post('/auth/totp/enable', async (req) => {
+    const user = self(req)
+    const body = totpCodeSchema.parse(req.body)
+    const key = selfKey(req, user.id)
+    assertNotBlocked(key)
+    const recoveryCodes = ctx.auth.confirmTotpSetup(user.id, body.code)
+    if (!recoveryCodes) {
+      recordFailure(key)
+      throw new HttpError(400, 'invalidTotp')
+    }
+    failures.delete(key)
+    // the other sessions and remembered devices logged in without the second factor: they log in again
+    ctx.auth.revokeSessions(user.id, req.cookies[SESSION_COOKIE])
+    ctx.devices.revokeAll(user.id, user.deviceId)
+    ctx.audit.log(req.user, 'totp-enable', `operator:${user.username}`)
+    return { recoveryCodes }
+  })
+
+  app.post('/auth/totp/recovery-codes', async (req) => {
+    const user = self(req)
+    const body = totpCodeSchema.parse(req.body)
+    const key = selfKey(req, user.id)
+    assertNotBlocked(key)
+    if (!user.totpEnabled) throw new HttpError(400, 'totpNotEnabled')
+    if (!ctx.auth.verifySecondFactor(user.id, body.code)) {
+      recordFailure(key)
+      throw new HttpError(400, 'invalidTotp')
+    }
+    failures.delete(key)
+    const recoveryCodes = ctx.auth.replaceRecoveryCodes(user.id)
+    ctx.audit.log(req.user, 'totp-recovery-codes', `operator:${user.username}`)
+    return { recoveryCodes }
+  })
+
+  app.post('/auth/totp/disable', async (req) => {
+    const user = self(req)
+    const body = totpDisableSchema.parse(req.body)
+    const key = selfKey(req, user.id)
+    assertNotBlocked(key)
+    if (!user.totpEnabled) throw new HttpError(400, 'totpNotEnabled')
+    if (ctx.auth.totpRequiredFor(user.role)) throw new HttpError(400, 'totpRequiredByPolicy')
+    if (!(await ctx.auth.checkPassword(user.id, body.password))) {
+      recordFailure(key)
+      throw new HttpError(400, 'wrongPassword')
+    }
+    if (!ctx.auth.verifySecondFactor(user.id, body.code)) {
+      recordFailure(key)
+      throw new HttpError(400, 'invalidTotp')
+    }
+    failures.delete(key)
+    ctx.auth.disableTotp(user.id)
+    ctx.audit.log(req.user, 'totp-disable', `operator:${user.username}`)
+    return { ok: true }
+  })
+
   // --- operator management (admin only, not with API tokens) ------------------
 
   const admin = { preHandler: requireSession('admin') }
+
+  /** Security settings: who must use two-factor authentication. */
+  app.get('/security/settings', admin, async () => ctx.auth.securitySettings())
+
+  app.put('/security/settings', admin, async (req) => {
+    const s = securitySettingsSchema.parse(req.body)
+    ctx.auth.saveSecuritySettings(s)
+    ctx.audit.log(req.user, 'update-security-settings', null, s)
+    return s
+  })
+
+  /** Lost phone: an administrator switches off the two-factor authentication of another operator. */
+  app.post('/operators/:id/reset-totp', admin, async (req) => {
+    const { id } = idParam.parse(req.params)
+    if (id === req.user!.id) throw new HttpError(400, 'selfTotpReset')
+    if (!ctx.auth.hasTotp(id)) throw new HttpError(400, 'totpNotEnabled')
+    ctx.auth.disableTotp(id)
+    // whoever has the phone may also have a remembered device or an open session on it
+    ctx.auth.revokeSessions(id)
+    ctx.devices.revokeAll(id)
+    ctx.audit.log(req.user, 'totp-reset', `operator:${id}`)
+    return { ok: true }
+  })
 
   app.get('/operators', admin, async () => ctx.auth.listOperators())
 

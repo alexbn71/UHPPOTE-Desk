@@ -53,6 +53,11 @@ export function registerEventRoutes(app: FastifyInstance, ctx: AppContext): void
       socket.close(4401, 'Autenticazione richiesta')
       return
     }
+    // like requireRole: nothing before the forced password change or two-factor setup
+    if (req.user.mustChangePassword || req.user.mustSetupTotp) {
+      socket.close(4403, 'Forbidden')
+      return
+    }
     const send = (msg: WsMessage) => {
       if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(msg))
     }

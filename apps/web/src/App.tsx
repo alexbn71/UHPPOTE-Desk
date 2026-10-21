@@ -37,6 +37,7 @@ import {
   IconReportAnalytics,
   IconUserCheck,
   IconSettings,
+  IconShieldLock,
   IconSitemap,
   IconTicket,
   IconUsers,
@@ -81,6 +82,7 @@ import { SyncPage } from './pages/Sync'
 import { SystemPage } from './pages/System'
 import { TasksPage } from './pages/Tasks'
 import { TimeProfilesPage } from './pages/TimeProfiles'
+import { TwoFactorPage } from './pages/TwoFactor'
 import { WebhooksPage } from './pages/Webhooks'
 
 type NavKey =
@@ -247,13 +249,18 @@ function Shell({ children }: { children: ReactNode }) {
             <LanguageSelect />
             {!user?.passwordManaged && (
               <Tooltip label={t('nav.changePassword')}>
-                <UnstyledButton onClick={() => navigate('/password')}>
+                <UnstyledButton onClick={() => navigate('/password')} aria-label={t('nav.changePassword')}>
                   <IconKey size={20} />
                 </UnstyledButton>
               </Tooltip>
             )}
+            <Tooltip label={t('nav.twoFactor')}>
+              <UnstyledButton onClick={() => navigate('/two-factor')} aria-label={t('nav.twoFactor')}>
+                <IconShieldLock size={20} color={user?.totpEnabled ? 'var(--mantine-color-green-6)' : undefined} />
+              </UnstyledButton>
+            </Tooltip>
             <Tooltip label={t('nav.logout')}>
-              <UnstyledButton onClick={() => void logout()}>
+              <UnstyledButton onClick={() => void logout()} aria-label={t('nav.logout')}>
                 <IconLogout size={20} />
               </UnstyledButton>
             </Tooltip>
@@ -338,6 +345,8 @@ export function App() {
         </Routes>
       ) : user.mustChangePassword ? (
         <ChangePasswordPage forced />
+      ) : user.mustSetupTotp ? (
+        <TwoFactorPage forced />
       ) : (
         <LiveProvider enabled>
           <Routes>
@@ -438,6 +447,7 @@ export function App() {
                     />
                     <Route path="/system" element={<SystemPage />} />
                     <Route path="/password" element={<ChangePasswordPage />} />
+                    <Route path="/two-factor" element={<TwoFactorPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Shell>

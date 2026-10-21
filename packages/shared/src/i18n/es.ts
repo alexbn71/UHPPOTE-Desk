@@ -92,6 +92,7 @@ export const es: Messages = {
     logout: 'Cerrar sesión',
     liveOn: 'Actualizaciones en tiempo real activas',
     liveOff: 'Conexión en tiempo real perdida',
+    twoFactor: 'Autenticación en dos pasos',
   },
   login: {
     username: 'Usuario',
@@ -99,6 +100,9 @@ export const es: Messages = {
     rememberHint: 'Para la app móvil: mantener la sesión en este teléfono',
     password: 'Contraseña',
     submit: 'Entrar',
+    totp: 'Código de verificación',
+    totpHint: 'El código de 6 dígitos de la app de autenticación, o un código de recuperación',
+    back: 'Volver',
   },
   password: {
     title: 'Cambiar contraseña',
@@ -113,6 +117,36 @@ export const es: Messages = {
     logout: 'Cerrar sesión',
     managedInfo:
       'La contraseña de este usuario la define la variable de entorno ADMIN_PASSWORD del servidor: cámbiela allí y reinicie el servidor.',
+  },
+  twoFactor: {
+    title: 'Autenticación en dos pasos',
+    description:
+      'Al iniciar sesión, además de la contraseña, se pide un código de una app de autenticación en el teléfono (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password…).',
+    statusOn: 'Activa',
+    statusOff: 'No activa',
+    requiredInfo: 'La autenticación en dos pasos es obligatoria para tu rol: configúrala para continuar.',
+    enable: 'Activar',
+    passwordPrompt: 'Confirma tu contraseña para empezar',
+    continue: 'Continuar',
+    scan: 'Escanea el código QR con la app de autenticación, o escribe la clave a mano, y luego el código que muestra.',
+    code: 'Código mostrado por la app',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    download: 'Descargar',
+    saved: 'Los he guardado',
+    enabled: 'Autenticación en dos pasos activa: las demás sesiones y dispositivos recordados se han cerrado',
+    disabled: 'Autenticación en dos pasos desactivada',
+    recoveryTitle: 'Códigos de recuperación',
+    recoveryInfo:
+      'Guarda estos códigos en un lugar seguro, lejos del teléfono: cada uno sustituye una vez el código de la app si pierdes el teléfono. No se volverán a mostrar.',
+    recoveryLeft: 'Códigos de recuperación restantes: {{n}}',
+    recoveryLow: 'Quedan pocos códigos de recuperación: genera otros nuevos.',
+    newCodes: 'Nuevos códigos de recuperación',
+    newCodesInfo:
+      'Los códigos de recuperación actuales dejarán de funcionar. Introduce un código de la app para continuar.',
+    disable: 'Desactivar',
+    disableInfo: 'Introduce tu contraseña y un código de la app (o un código de recuperación).',
+    requiredByPolicy: 'Obligatoria para tu rol por decisión de los administradores: no se puede desactivar.',
   },
   dashboard: {
     title: 'Panel',
@@ -745,6 +779,23 @@ export const es: Messages = {
     passwordOptional: 'Contraseña (opcional)',
     passwordHint: 'Si está vacía se genera una contraseña temporal',
     activeSwitch: 'Activo',
+    colTotp: '2FA',
+    resetTotp: 'Restablecer autenticación en dos pasos',
+    resetTotpTitle: 'Restablecer autenticación en dos pasos de {{user}}',
+    resetTotpInfo:
+      'Para un teléfono perdido: el usuario entra solo con la contraseña y puede volver a activarla. Se cierran sus sesiones y dispositivos recordados.',
+    securityTitle: 'Autenticación en dos pasos obligatoria para',
+    securityHint:
+      'Los afectados la configuran en su próximo inicio de sesión, antes de usar la app, y no pueden desactivarla.',
+    securityMissing: 'Aún no activada por: {{users}}',
+    securitySelf: 'Aún no has activado la autenticación en dos pasos: tendrás que hacerlo justo después de guardar.',
+    securitySaved: 'Ajuste guardado',
+    require2fa: {
+      none: 'Nadie (opcional)',
+      admin: 'Administradores',
+      operator: 'Operadores y administradores',
+      all: 'Todos',
+    },
   },
   webhooks: {
     title: 'Webhooks',
@@ -1718,5 +1769,13 @@ export const es: Messages = {
       sendFailed: 'El envío a {{target}} ha fallado: {{detail}}',
       listenFailed: 'No se puede escuchar en {{address}}: {{detail}}',
     },
+    totpRequired: 'Introduce el código de verificación',
+    invalidTotp: 'Código de verificación no válido',
+    mustSetupTotp: 'Debes configurar la autenticación en dos pasos antes de continuar',
+    totpAlreadyEnabled: 'La autenticación en dos pasos ya está activa',
+    totpNoSetup: 'Configuración no iniciada o caducada: vuelve a empezar',
+    totpNotEnabled: 'La autenticación en dos pasos no está activa',
+    totpRequiredByPolicy: 'La autenticación en dos pasos es obligatoria para tu rol y no se puede desactivar',
+    selfTotpReset: 'Tu propia autenticación en dos pasos se desactiva desde la página de tu cuenta',
   },
 }

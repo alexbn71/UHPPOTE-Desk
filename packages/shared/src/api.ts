@@ -42,7 +42,28 @@ export const loginSchema = z.object({
   /** Remember this device: long login with a device cookie (mobile app). */
   remember: z.boolean().optional(),
   deviceName: z.string().trim().max(100).optional(),
+  /** Second factor, when the operator has two-factor authentication: code of the app or a recovery code. */
+  totp: z.string().trim().max(40).optional(),
 })
+
+/** Start of the two-factor setup: the password is asked again. */
+export const totpSetupSchema = z.object({ password: z.string().min(1) })
+
+/** A code of the authenticator app (or a recovery code where accepted). */
+export const totpCodeSchema = z.object({ code: z.string().trim().min(6).max(40) })
+
+/** Switching two-factor authentication off: password and a current code (or a recovery code). */
+export const totpDisableSchema = z.object({ password: z.string().min(1), code: z.string().trim().min(6).max(40) })
+
+/** Who must use two-factor authentication: nobody, administrators, operators and administrators, everybody. */
+export const REQUIRE_2FA_LEVELS = ['none', 'admin', 'operator', 'all'] as const
+export type Require2fa = (typeof REQUIRE_2FA_LEVELS)[number]
+
+/** Security settings, changed by the administrators. */
+export const securitySettingsSchema = z.object({
+  require2fa: z.enum(REQUIRE_2FA_LEVELS).default('none'),
+})
+export type SecuritySettings = z.infer<typeof securitySettingsSchema>
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
@@ -423,6 +444,8 @@ export interface OperatorDto {
   mustChangePassword: boolean
   zoneIds: number[]
   lastLoginAt: string | null
+  /** Two-factor authentication active. */
+  totpEnabled: boolean
 }
 
 export interface ControllerDto {

@@ -14,6 +14,10 @@ export interface CurrentUser {
   /** Remembered device (mobile app); null for a normal session. */
   deviceId: number | null
   canOpenDoors: boolean
+  /** Two-factor authentication active. */
+  totpEnabled: boolean
+  /** Two-factor authentication required for the role and not set up yet. */
+  mustSetupTotp: boolean
 }
 
 interface AuthState {

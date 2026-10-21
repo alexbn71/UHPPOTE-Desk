@@ -118,6 +118,8 @@ export class ApiTokenService {
       role: ROLE[t.access],
       mustChangePassword: false,
       passwordManaged: true,
+      totpEnabled: false,
+      mustSetupTotp: false,
       zoneIds: t.zoneIds,
       doorIds: t.doorIds,
       canOpenDoors: t.access !== 'read',

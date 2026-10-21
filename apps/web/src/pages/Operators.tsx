@@ -16,14 +16,15 @@ import {
   TextInput,
 } from '@mantine/core'
 import { modals } from '@mantine/modals'
-import { IconEdit, IconKey, IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconEdit, IconKey, IconPlus, IconShieldOff, IconTrash } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { OperatorDto, Role } from '@uhppote-desk/shared'
-import { ROLES } from '@uhppote-desk/shared'
+import type { OperatorDto, Require2fa, Role, SecuritySettings } from '@uhppote-desk/shared'
+import { REQUIRE_2FA_LEVELS, ROLES } from '@uhppote-desk/shared'
 import { IconButton, PageHeader } from '../components/common'
-import { api, notifyError } from '../lib/api'
+import { api, notifyError, notifyOk } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { useCodes } from '../lib/codes'
 import { fmtDateTime } from '../lib/format'
 import { treeOptions, useZones } from '../lib/queries'
@@ -38,9 +39,78 @@ interface Form {
   zoneIds: string[]
 }
 
+const RANK: Record<Role, number> = { viewer: 0, operator: 1, admin: 2 }
+
+/** Whether the "required for" level applies to the role. */
+function concerns(level: Require2fa, role: Role): boolean {
+  if (level === 'none') return false
+  return RANK[role] >= RANK[level === 'all' ? 'viewer' : level]
+}
+
+/** Security settings: who must use two-factor authentication. */
+function SecurityCard({ operators }: { operators: OperatorDto[] }) {
+  const { t } = useTranslation()
+  const { user, refresh } = useAuth()
+  const qc = useQueryClient()
+  const settings = useQuery({
+    queryKey: ['security-settings'],
+    queryFn: () => api.get<SecuritySettings>('/security/settings'),
+  })
+  const current = settings.data?.require2fa ?? 'none'
+  const missing = operators.filter((o) => o.active && !o.totpEnabled && concerns(current, o.role))
+
+  const save = async (level: Require2fa) => {
+    try {
+      await api.put('/security/settings', { require2fa: level })
+      notifyOk(t('operators.securitySaved'))
+      void qc.invalidateQueries({ queryKey: ['security-settings'] })
+      // if it now applies to the administrator, the setup page opens at once
+      await refresh()
+    } catch (err) {
+      notifyError(err)
+    }
+  }
+
+  const change = (v: string | null) => {
+    const level = (v ?? 'none') as Require2fa
+    if (level === current) return
+    if (user && !user.totpEnabled && concerns(level, user.role)) {
+      modals.openConfirmModal({
+        title: t('operators.securityTitle'),
+        children: <Text size="sm">{t('operators.securitySelf')}</Text>,
+        labels: { confirm: t('common.confirm'), cancel: t('common.cancel') },
+        onConfirm: () => void save(level),
+      })
+    } else void save(level)
+  }
+
+  return (
+    <Card withBorder mb="md">
+      <Stack gap="xs">
+        <Select
+          label={t('operators.securityTitle')}
+          description={t('operators.securityHint')}
+          data={REQUIRE_2FA_LEVELS.map((l) => ({ value: l, label: t(`operators.require2fa.${l}`) }))}
+          value={current}
+          onChange={change}
+          allowDeselect={false}
+          disabled={!settings.data}
+          maw={420}
+        />
+        {missing.length > 0 && (
+          <Text size="sm" c="yellow.8">
+            {t('operators.securityMissing', { users: missing.map((o) => o.username).join(', ') })}
+          </Text>
+        )}
+      </Stack>
+    </Card>
+  )
+}
+
 export function OperatorsPage() {
   const { t } = useTranslation()
   const codes = useCodes()
+  const { user } = useAuth()
   const qc = useQueryClient()
   const zones = useZones()
   const operators = useQuery({ queryKey: ['operators'], queryFn: () => api.get<OperatorDto[]>('/operators') })
@@ -79,6 +149,19 @@ export function OperatorsPage() {
         api
           .post<{ password: string }>(`/operators/${o.id}/reset-password`)
           .then((r) => setGenerated({ username: o.username, password: r.password }))
+          .catch(notifyError),
+    })
+
+  const resetTotp = (o: OperatorDto) =>
+    modals.openConfirmModal({
+      title: t('operators.resetTotpTitle', { user: o.username }),
+      children: <Text size="sm">{t('operators.resetTotpInfo')}</Text>,
+      labels: { confirm: t('operators.resetTotp'), cancel: t('common.cancel') },
+      confirmProps: { color: 'red' },
+      onConfirm: () =>
+        api
+          .post(`/operators/${o.id}/reset-totp`)
+          .then(() => qc.invalidateQueries({ queryKey: ['operators'] }))
           .catch(notifyError),
     })
 
@@ -122,6 +205,7 @@ export function OperatorsPage() {
           <Code>{t('operators.tempPassword', { user: generated.username, password: generated.password })}</Code>
         </Alert>
       )}
+      <SecurityCard operators={operators.data ?? []} />
       <Card withBorder>
         <Table>
           <Table.Thead>
@@ -130,6 +214,7 @@ export function OperatorsPage() {
               <Table.Th>{t('operators.colName')}</Table.Th>
               <Table.Th>{t('operators.colRole')}</Table.Th>
               <Table.Th>{t('operators.colZones')}</Table.Th>
+              <Table.Th>{t('operators.colTotp')}</Table.Th>
               <Table.Th>{t('operators.colLastLogin')}</Table.Th>
               <Table.Th />
             </Table.Tr>
@@ -149,6 +234,11 @@ export function OperatorsPage() {
                     ? o.zoneIds.map((z) => zones.data?.find((x) => x.id === z)?.name ?? z).join(', ')
                     : t('operators.allZones')}
                 </Table.Td>
+                <Table.Td>
+                  <Badge variant="light" color={o.totpEnabled ? 'green' : 'gray'}>
+                    {o.totpEnabled ? t('common.yes') : t('common.no')}
+                  </Badge>
+                </Table.Td>
                 <Table.Td>{fmtDateTime(o.lastLoginAt)}</Table.Td>
                 <Table.Td>
                   <Group gap={0} justify="flex-end">
@@ -161,6 +251,11 @@ export function OperatorsPage() {
                     <IconButton label={t('operators.resetPassword')} onClick={() => resetPassword(o)}>
                       <IconKey size={16} />
                     </IconButton>
+                    {o.totpEnabled && o.id !== user?.id && (
+                      <IconButton label={t('operators.resetTotp')} onClick={() => resetTotp(o)}>
+                        <IconShieldOff size={16} />
+                      </IconButton>
+                    )}
                     <IconButton label={t('common.delete')} color="red" onClick={() => remove(o)}>
                       <IconTrash size={16} />
                     </IconButton>

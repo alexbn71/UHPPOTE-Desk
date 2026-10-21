@@ -92,6 +92,7 @@ export const fr: Messages = {
     logout: 'Se déconnecter',
     liveOn: 'Mises à jour en temps réel actives',
     liveOff: 'Connexion en temps réel interrompue',
+    twoFactor: 'Authentification à deux facteurs',
   },
   login: {
     username: 'Utilisateur',
@@ -99,6 +100,9 @@ export const fr: Messages = {
     rememberHint: "Pour l'app mobile : rester connecté sur ce téléphone",
     password: 'Mot de passe',
     submit: 'Se connecter',
+    totp: 'Code de vérification',
+    totpHint: "Le code à 6 chiffres de l'application d'authentification, ou un code de récupération",
+    back: 'Retour',
   },
   password: {
     title: 'Changer le mot de passe',
@@ -113,6 +117,37 @@ export const fr: Messages = {
     logout: 'Se déconnecter',
     managedInfo:
       "Le mot de passe de cet utilisateur est défini par la variable d'environnement ADMIN_PASSWORD du serveur : modifiez-la à cet endroit puis redémarrez le serveur.",
+  },
+  twoFactor: {
+    title: 'Authentification à deux facteurs',
+    description:
+      "À la connexion, en plus du mot de passe, un code d'une application d'authentification sur le téléphone est demandé (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password…).",
+    statusOn: 'Active',
+    statusOff: 'Inactive',
+    requiredInfo: "L'authentification à deux facteurs est obligatoire pour votre rôle : configurez-la pour continuer.",
+    enable: 'Activer',
+    passwordPrompt: 'Confirmez votre mot de passe pour commencer',
+    continue: 'Continuer',
+    scan: "Scannez le QR code avec l'application d'authentification, ou saisissez la clé à la main, puis le code affiché.",
+    code: "Code affiché par l'application",
+    copy: 'Copier',
+    copied: 'Copié',
+    download: 'Télécharger',
+    saved: 'Je les ai enregistrés',
+    enabled: 'Authentification à deux facteurs active : les autres sessions et appareils mémorisés ont été déconnectés',
+    disabled: 'Authentification à deux facteurs désactivée',
+    recoveryTitle: 'Codes de récupération',
+    recoveryInfo:
+      "Conservez ces codes en lieu sûr, loin du téléphone : chacun remplace une fois le code de l'application si vous perdez le téléphone. Ils ne seront plus affichés.",
+    recoveryLeft: 'Codes de récupération restants : {{n}}',
+    recoveryLow: 'Il reste peu de codes de récupération : générez-en de nouveaux.',
+    newCodes: 'Nouveaux codes de récupération',
+    newCodesInfo:
+      "Les codes de récupération actuels ne fonctionneront plus. Saisissez un code de l'application pour continuer.",
+    disable: 'Désactiver',
+    disableInfo: "Saisissez votre mot de passe et un code de l'application (ou un code de récupération).",
+    requiredByPolicy:
+      'Obligatoire pour votre rôle par décision des administrateurs : elle ne peut pas être désactivée.',
   },
   dashboard: {
     title: 'Tableau de bord',
@@ -746,6 +781,24 @@ export const fr: Messages = {
     passwordOptional: 'Mot de passe (facultatif)',
     passwordHint: "S'il est vide, un mot de passe temporaire est généré",
     activeSwitch: 'Actif',
+    colTotp: '2FA',
+    resetTotp: "Réinitialiser l'authentification à deux facteurs",
+    resetTotpTitle: "Réinitialiser l'authentification à deux facteurs de {{user}}",
+    resetTotpInfo:
+      "Pour un téléphone perdu : l'utilisateur se connecte avec le seul mot de passe et peut la réactiver. Ses sessions et appareils mémorisés sont déconnectés.",
+    securityTitle: 'Authentification à deux facteurs obligatoire pour',
+    securityHint:
+      "Les personnes concernées la configurent à leur prochaine connexion, avant d'utiliser l'application, et ne peuvent pas la désactiver.",
+    securityMissing: 'Pas encore activée par : {{users}}',
+    securitySelf:
+      "Vous n'avez pas encore activé l'authentification à deux facteurs : vous devrez le faire juste après l'enregistrement.",
+    securitySaved: 'Paramètre enregistré',
+    require2fa: {
+      none: 'Personne (facultative)',
+      admin: 'Administrateurs',
+      operator: 'Opérateurs et administrateurs',
+      all: 'Tout le monde',
+    },
   },
   webhooks: {
     title: 'Webhooks',
@@ -1726,5 +1779,14 @@ export const fr: Messages = {
       sendFailed: "L'envoi vers {{target}} a échoué : {{detail}}",
       listenFailed: "Impossible d'écouter sur {{address}} : {{detail}}",
     },
+    totpRequired: 'Saisissez le code de vérification',
+    invalidTotp: 'Code de vérification non valide',
+    mustSetupTotp: "Vous devez configurer l'authentification à deux facteurs avant de continuer",
+    totpAlreadyEnabled: "L'authentification à deux facteurs est déjà active",
+    totpNoSetup: 'Configuration non commencée ou expirée : recommencez',
+    totpNotEnabled: "L'authentification à deux facteurs n'est pas active",
+    totpRequiredByPolicy:
+      "L'authentification à deux facteurs est obligatoire pour votre rôle et ne peut pas être désactivée",
+    selfTotpReset: 'Votre propre authentification à deux facteurs se désactive depuis la page de votre compte',
   },
 }
