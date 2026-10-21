@@ -1,5 +1,5 @@
 /**
- * Vendor long-packet protocol: CRC-16/ARC and the parameter table read.
+ * Vendor long-packet protocol: CRC-16/ARC, the parameter table read and the status of the vendor console.
  * The expected requests are the ones sent by the vendor software (Wireshark captures, firmware v9.f8).
  */
 import { describe, expect, it } from 'vitest'
@@ -7,7 +7,10 @@ import {
   ANY_CONTROLLER,
   CodecError,
   crc16arc,
+  decodeLongStatusReply,
   decodeReadParametersReply,
+  encodeLongStatusReply,
+  encodeReadLongStatus,
   encodeReadParameters,
   encodeReadParametersReply,
   isReadParametersReply,
@@ -49,5 +52,73 @@ describe('long-packet protocol', () => {
 
   it('rejects a table of the wrong size', () => {
     expect(() => encodeReadParametersReply(1, 1, new Uint8Array(10))).toThrow(CodecError)
+  })
+
+  it('status request is byte-identical to the vendor console (capture 010, xid 0x66)', () => {
+    expect(encodeReadLongStatus(425050067, 0x66).toString('hex')).toBe(
+      '20201bbd6600000000000000d3bf551900810200ffffffff0f000000',
+    )
+  })
+
+  it('decodes real status replies: at rest, and during a fire alarm with output 4 on (capture 010)', () => {
+    // 20:30:03, nothing active: doors 2-4 have no sensor (reported open)
+    const rest = decodeLongStatusReply(
+      Buffer.from(
+        '2021dea666000000d3bf551900000000a1090200261021032030050062c806000000000000904c00a301000001000000' +
+          '0000000000000000e000800000000000a20100006d9fa6000000000055356ca208000000a10100006d9fa60000000000' +
+          '553541a208000000a00100006d9fa600000000005535f6a1080000009f0100006d9fa600000000005535d4a108000000' +
+          '9e010000fdf4f700000000005535c1a1080000009d010000fdf4f700000000005535a2a1080000009c010000fdf4f700' +
+          '00000000553595a1000000009b010000b7c0bb0000000000553536a1089200009a010000b7c0bb0000000000553535a1' +
+          '0892000099010000b7c0bb0000000000553535a108920000000000000000000000000000000000000000000000000000' +
+          '000000000000000000000000010000000000000000000000000000000000400000000000000000000000000000000000' +
+          '00000000000000000000809e55353c900000300e50080000',
+        'hex',
+      ),
+    )
+    expect(rest).toMatchObject({
+      controller: 425050067,
+      lastEventIndex: 419,
+      doorOpen: [false, true, true, true],
+      relayUnlocked: [false, false, false, false],
+      expansionOutputs: [false, false, false, false],
+      expansionFireInput: false,
+      fireAlarm: false,
+    })
+    // 20:31:03, fire input of the board active: doors released, output 4 (fire, 20 s) on
+    const fire = decodeLongStatusReply(
+      Buffer.from(
+        '2021d51a72000000d3bf55190000000057090200261021032031050021d406000000000000904c00a401000001000000' +
+          '0000000000000000e00f080000000000a301000056000000000000005535dda302800000a20100006d9fa60000000000' +
+          '55356ca208000000a10100006d9fa60000000000553541a208000000a00100006d9fa600000000005535f6a108000000' +
+          '9f0100006d9fa600000000005535d4a1080000009e010000fdf4f700000000005535c1a1080000009d010000fdf4f700' +
+          '000000005535a2a1080000009c010000fdf4f70000000000553595a1000000009b010000b7c0bb0000000000553536a1' +
+          '089200009a010000b7c0bb0000000000553535a108920000000000000000000000000000000000000000000000000000' +
+          '000000000000000000000000010000000000000000000000000000000000400000000000000000000000000000000000' +
+          '00000000000000000000829e55353c900000300e50080000',
+        'hex',
+      ),
+    )
+    expect(fire).toMatchObject({
+      lastEventIndex: 420,
+      relayUnlocked: [true, true, true, true],
+      expansionOutputs: [false, false, false, true],
+      expansionFireInput: true,
+      fireAlarm: true,
+    })
+  })
+
+  it('status reply round trip', () => {
+    const status = {
+      controller: 425050067,
+      lastEventIndex: 1234,
+      doorOpen: [true, false, false, true] as [boolean, boolean, boolean, boolean],
+      buttonPressed: [false, true, false, false] as [boolean, boolean, boolean, boolean],
+      relayUnlocked: [true, false, false, false] as [boolean, boolean, boolean, boolean],
+      expansionOutputs: [false, true, true, false] as [boolean, boolean, boolean, boolean],
+      expansionFireInput: false,
+      fireAlarm: false,
+      forceLock: true,
+    }
+    expect(decodeLongStatusReply(encodeLongStatusReply(9, status))).toEqual({ ...status, xid: 9 })
   })
 })

@@ -92,6 +92,13 @@ function ControllerCard({ c, live, canOpen }: { c: ControllerDto; live?: Control
           <ControllerStatusBadge enabled={c.enabled} online={online} />
           {live?.fireAlarm && <Badge color="red">{t('dashboard.fireAlarm')}</Badge>}
           {live?.forceLock && <Badge color="orange">{t('dashboard.forcedLock')}</Badge>}
+          {live?.expansion?.outputs.some(Boolean) && (
+            <Badge color="grape">
+              {t('dashboard.expansionOutputsOn', {
+                list: live.expansion.outputs.flatMap((on, i) => (on ? [i + 1] : [])).join(', '),
+              })}
+            </Badge>
+          )}
         </Group>
         <Text size="xs" c="dimmed">
           S/N {c.serial} · {c.host ?? t('controllers.broadcast')}

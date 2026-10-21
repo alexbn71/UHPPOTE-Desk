@@ -76,6 +76,8 @@ interface Info {
 function Diagnostics({ id }: { id: number }) {
   const { t } = useTranslation()
   const codes = useCodes()
+  // outputs of the expansion board: only in the live state (vendor status), null without a board
+  const expansion = useLive().states[id]?.expansion ?? null
   const info = useQuery({
     queryKey: ['controller-info', id],
     queryFn: () => api.get<Info>(`/controllers/${id}/info`),
@@ -238,6 +240,25 @@ function Diagnostics({ id }: { id: number }) {
                   {d.status.fireAlarm && t('controllerDetail.fireAlarmActive')}{' '}
                   {d.status.forceLock && t('controllerDetail.forcedLockActive')}
                 </Alert>
+              )}
+              {expansion && (
+                <>
+                  <Text size="sm" fw={500} mt="sm">
+                    {t('controllerDetail.expansionOutputs')}
+                  </Text>
+                  <Group gap="xs" mt={4}>
+                    {expansion.outputs.map((on, i) => (
+                      <Badge key={i} color={on ? 'grape' : 'gray'} variant={on ? 'filled' : 'light'}>
+                        {i + 1}: {on ? t('controllerDetail.outputOn') : t('controllerDetail.outputOff')}
+                      </Badge>
+                    ))}
+                  </Group>
+                  {expansion.fireInput && (
+                    <Alert color="red" mt="sm">
+                      {t('controllerDetail.expansionFireInput')}
+                    </Alert>
+                  )}
+                </>
               )}
             </Card>
           </Grid.Col>

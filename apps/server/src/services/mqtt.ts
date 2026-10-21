@@ -212,6 +212,7 @@ export class MqttService {
         driftSeconds: s.driftSeconds,
         forceLock: s.forceLock,
         fireAlarm: s.fireAlarm,
+        expansion: s.expansion,
         systemError: s.systemError,
         doors: Object.fromEntries(
           s.doors.map((d) => [String(d.door), { open: d.open, unlocked: d.unlocked, button: d.button }]),
@@ -312,6 +313,19 @@ export class MqttService {
       value_template: "{{ 'ON' if value_json.forceLock else 'OFF' }}",
       device: controllerDevice,
     })
+    // outputs of the UT0311-01A expansion board (vendor status): only on controllers configured with it
+    if (this.controllers.settings(c.id).expansionBoard.installed) {
+      for (const n of [1, 2, 3, 4]) {
+        add('binary_sensor', `${id}_expansion_output_${n}`, {
+          name: t('mqtt.expansionOutput', { n }),
+          icon: 'mdi:electric-switch',
+          ...availability,
+          state_topic: state,
+          value_template: `{{ 'ON' if value_json.expansion and value_json.expansion.outputs[${n - 1}] else 'OFF' }}`,
+          device: controllerDevice,
+        })
+      }
+    }
     add('binary_sensor', `${id}_problem`, {
       name: null,
       device_class: 'problem',

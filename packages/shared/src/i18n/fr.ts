@@ -184,6 +184,7 @@ export const fr: Messages = {
     accessesN: '{{n}} accès',
     fewer: 'Moins',
     more: 'Plus',
+    expansionOutputsOn: 'Sorties de la carte allumées : {{list}}',
   },
   monitor: {
     title: 'Moniteur',
@@ -471,6 +472,10 @@ export const fr: Messages = {
     resetPlaceholder: 'Numéro de série',
     resetButton: 'Réinitialiser',
     resetDone: 'Paramètres réinitialisés : {{n}} badges sauvegardés dans {{file}} (dossier de sauvegarde du serveur)',
+    expansionOutputs: "Sorties de la carte d'extension",
+    expansionFireInput: "Entrée incendie de la carte d'extension active.",
+    outputOff: 'Éteinte',
+    outputOn: 'Allumée',
   },
   expansion: {
     title: "Carte d'extension d'alarmes (UT0311-01A)",
@@ -1271,6 +1276,7 @@ export const fr: Messages = {
     access: 'Accès',
     lastAccess: 'Dernier accès',
     clockDrift: "Décalage de l'horloge",
+    expansionOutput: 'Sortie extension {{n}}',
   },
   push: {
     title: 'Enregistré, mais non envoyé à tous les contrôleurs',

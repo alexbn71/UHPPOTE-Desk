@@ -44,6 +44,7 @@ Adding, renaming, disabling or deleting controllers and doors in UHPPOTE Desk up
 | Connectivity | binary sensor (diagnostic) | Controller reachable |
 | Fire alarm | binary sensor (`safety`) | Fire alarm input active |
 | Forced lock | binary sensor | Forced lock active |
+| Expansion output 1–4 | binary sensor | Output of the UT0311-01A expansion board on (only with *Expansion board connected*) |
 | Problem | binary sensor (diagnostic) | Controller reports a system error (code in the attributes) |
 | Clock drift | sensor (diagnostic, disabled by default) | Controller clock difference, seconds |
 

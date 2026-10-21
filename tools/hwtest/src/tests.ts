@@ -1298,7 +1298,7 @@ export const L6: TestCase[] = [
   {
     id: 'L6.10',
     level: 6,
-    name: 'Outputs following the door 1 lock relay; are they in the status? (door 1 opened remotely 4 times)',
+    name: 'Outputs following the door 1 lock relay, read back in the vendor status (door 1 opened remotely 4 times)',
     physical: true,
     async run(ctx: Context, t: TestHelpers) {
       await requireBoard(ctx, t)
@@ -1306,9 +1306,10 @@ export const L6: TestCase[] = [
         t.skip('remote opening of door 1 not allowed')
       const { delay } = await ctx.client.getDoorControl(ctx.target, 1)
       const watchMs = (Math.min(Math.max(delay, 1), 10) + 2) * 1000
-      const baseline = (await ctx.client.getStatus(ctx.target)).relays
-      t.log(`door 1 open delay ${delay} s; relays byte at rest 0x${baseline.toString(16).padStart(2, '0')}`)
-      const seen: Record<string, number[]> = {}
+      const mask = (q: readonly boolean[]) => q.reduce((acc, on, i) => (on ? acc | (1 << i) : acc), 0)
+      const atRest = mask((await ctx.client.readLongStatus(ctx.target)).expansionOutputs)
+      t.log(`door 1 open delay ${delay} s; board outputs at rest 0x${atRest.toString(16)}`)
+      const seen: number[] = []
       const switched: boolean[] = []
       for (let n = 1; n <= 4; n++) {
         // output n follows the lock relay of door 1: on exactly while the door is unlocked
@@ -1319,12 +1320,12 @@ export const L6: TestCase[] = [
           duration: 0,
         })
         await ctx.client.openDoor(ctx.target, 1)
-        // the status is polled while the question is on screen (the output is on only while the door is unlocked)
-        const values = new Set<number>()
+        // the vendor status (0x20/0x20) is polled while the question is on screen
+        let outputs = 0
         const poll = (async () => {
           const end = Date.now() + watchMs
           while (Date.now() < end) {
-            values.add((await ctx.client.getStatus(ctx.target)).relays)
+            outputs |= mask((await ctx.client.readLongStatus(ctx.target)).expansionOutputs)
             await sleep(250)
           }
         })()
@@ -1335,24 +1336,15 @@ export const L6: TestCase[] = [
           }),
         )
         await poll
-        seen[`output${n}`] = [...values]
-        const extra = [...values].reduce((acc, v) => acc | (v & ~baseline & ~0x01), 0)
-        t.log(
-          `output ${n}: relays seen ${[...values].map((v) => `0x${v.toString(16).padStart(2, '0')}`).join(', ')}` +
-            ` → bits beyond door 1: 0x${extra.toString(16).padStart(2, '0')}`,
-        )
+        seen.push(outputs)
+        t.log(`output ${n}: outputs reported 0x${outputs.toString(16)} (expected 0x${(1 << (n - 1)).toString(16)})`)
       }
-      t.data({ baseline, delay, seen, switched })
+      t.data({ delay, atRest, seen, switched })
       const missing = switched.flatMap((ok, i) => (ok ? [] : [i + 1]))
       t.assert(!missing.length, `outputs not switched by the door 1 lock relay: ${missing.join(', ')}`)
-      t.log('"any signal" mode with the lock relay confirmed on all four outputs')
-      // whether the status reports the outputs (bit 4 + n - 1 of the relays byte was the hypothesis)
-      const reported = [1, 2, 3, 4].map((n) => seen[`output${n}`]!.reduce((acc, v) => acc | (v & ~baseline & ~0x01), 0))
-      if (reported.every((bits) => bits === 0)) {
-        t.log('the status (get-status) does not report the expansion outputs: the relays byte has the door locks only')
-      } else {
-        t.log(`status bits while each output was on: ${reported.map((b) => `0x${b.toString(16)}`).join(', ')}`)
-      }
+      const wrong = seen.flatMap((bits, i) => (bits === 1 << i ? [] : [i + 1]))
+      t.assert(!wrong.length, `outputs not reported by the vendor status as expected: ${wrong.join(', ')}`)
+      t.log('"any signal" mode confirmed; the vendor status reports outputs 1-4 in bits 0-3 of byte 58')
     },
   },
 ]

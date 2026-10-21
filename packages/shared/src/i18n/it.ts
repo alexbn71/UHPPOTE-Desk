@@ -183,6 +183,7 @@ export const it: Messages = {
     accessesN: '{{n}} accessi',
     fewer: 'Meno',
     more: 'Più',
+    expansionOutputsOn: 'Uscite scheda accese: {{list}}',
   },
   monitor: {
     title: 'Monitor',
@@ -468,6 +469,10 @@ export const it: Messages = {
     resetPlaceholder: 'Numero di serie',
     resetButton: 'Ripristina',
     resetDone: 'Parametri ripristinati: {{n}} tessere salvate in {{file}} (cartella backup del server)',
+    expansionOutputs: 'Uscite della scheda di espansione',
+    expansionFireInput: 'Ingresso incendio della scheda di espansione attivo.',
+    outputOff: 'Spenta',
+    outputOn: 'Accesa',
   },
   expansion: {
     title: 'Scheda di espansione allarmi (UT0311-01A)',
@@ -1256,6 +1261,7 @@ export const it: Messages = {
     access: 'Accesso',
     lastAccess: 'Ultimo accesso',
     clockDrift: 'Scarto orologio',
+    expansionOutput: 'Uscita scheda espansione {{n}}',
   },
   push: {
     title: 'Salvato, ma non inviato a tutti i controller',

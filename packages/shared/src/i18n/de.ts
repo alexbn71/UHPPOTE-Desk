@@ -183,6 +183,7 @@ export const de: Messages = {
     accessesN: '{{n}} Zutritte',
     fewer: 'Weniger',
     more: 'Mehr',
+    expansionOutputsOn: 'Ausgänge der Erweiterung an: {{list}}',
   },
   monitor: {
     title: 'Monitor',
@@ -470,6 +471,10 @@ export const de: Messages = {
     resetPlaceholder: 'Seriennummer',
     resetButton: 'Zurücksetzen',
     resetDone: 'Parameter zurückgesetzt: {{n}} Karten in {{file}} gesichert (Sicherungsordner des Servers)',
+    expansionOutputs: 'Ausgänge der Erweiterungsplatine',
+    expansionFireInput: 'Brandeingang der Erweiterungsplatine aktiv.',
+    outputOff: 'Aus',
+    outputOn: 'An',
   },
   expansion: {
     title: 'Alarm-Erweiterungskarte (UT0311-01A)',
@@ -1272,6 +1277,7 @@ export const de: Messages = {
     access: 'Zutritt',
     lastAccess: 'Letzter Zutritt',
     clockDrift: 'Uhrabweichung',
+    expansionOutput: 'Erweiterungsausgang {{n}}',
   },
   push: {
     title: 'Gespeichert, aber nicht an alle Controller gesendet',

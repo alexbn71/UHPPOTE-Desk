@@ -6,6 +6,11 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 ## [Unreleased]
 
 ### Added
+- **Expansion board outputs live**: for controllers with *Expansion board connected* UHPPOTE Desk reads the status
+  of the manufacturer's console (long packet `0x20/0x20`, found in a capture of its *Monitor*), the only one that
+  reports the four board outputs and its fire input. They are shown on the dashboard, in the controller
+  *Diagnostics* and as Home Assistant binary sensors *Expansion output 1–4*; after an event, or while something is
+  on, they are followed every 2 s until off. Hardware test L6.10 checks every output against it.
 - **Two-factor authentication** for the operators (authenticator app, TOTP): activated by each operator from the new
   shield icon in the header with a QR code, then asked at login after the password; 10 single-use recovery codes;
   administrators see who has it, can reset it for a lost phone and choose on the *Operators* page who must use it

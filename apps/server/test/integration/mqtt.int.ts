@@ -237,6 +237,34 @@ describe('events and commands', () => {
     await waitFor(() => fire() === false, 5000)
   })
 
+  it('expansion board: an entity per output, state from the vendor status, followed after an alarm', async () => {
+    const settings = ctx.controllers.settings(controllerId)
+    ctx.controllers.saveSettings(controllerId, {
+      ...settings,
+      expansionBoard: { ...settings.expansionBoard, installed: true },
+    })
+    try {
+      ctx.mqtt!.refresh(0)
+      await waitFor(() => seen.has(configTopic('binary_sensor', 'expansion_output_4')))
+      expect(json(configTopic('binary_sensor', 'expansion_output_1')).value_template).toContain('outputs[0]')
+      // the health check reads the vendor status
+      await ctx.health.check(controllerId)
+      await waitFor(() => !!json(`uhd/${SERIAL}/state`).expansion)
+      expect(json(`uhd/${SERIAL}/state`).expansion).toEqual({ outputs: [false, false, false, false], fireInput: false })
+      // an output switched by an alarm is seen without waiting for the next health check, and its end too
+      fake.expansionOutputs[1] = true
+      fake.raiseAlarm(1, 38)
+      await waitFor(() => json(`uhd/${SERIAL}/state`).expansion?.outputs[1] === true, 4000)
+      fake.expansionOutputs[1] = false
+      await waitFor(() => json(`uhd/${SERIAL}/state`).expansion?.outputs[1] === false, 4000)
+    } finally {
+      ctx.controllers.saveSettings(controllerId, settings)
+      ctx.mqtt!.refresh(0)
+    }
+    // without the board the output entities are removed
+    await waitFor(() => seen.get(configTopic('binary_sensor', 'expansion_output_1')) === '')
+  })
+
   it('ignores commands for a deactivated door', async () => {
     const before = fake.requestCount.get(OPEN_DOOR) ?? 0
     await ha.publishAsync(`uhd/${SERIAL}/door/3/open`, 'OPEN')

@@ -28,6 +28,7 @@ export class LiveHub extends EventEmitter<{ message: [WsMessage] }> {
         doors: [1, 2, 3, 4].map((door) => ({ door, open: false, button: false, unlocked: false })),
         forceLock: false,
         fireAlarm: false,
+        expansion: null,
         systemError: 0,
         lastError: null,
         lastErrorInfo: null,

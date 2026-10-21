@@ -183,6 +183,7 @@ export const es: Messages = {
     accessesN: '{{n}} accesos',
     fewer: 'Menos',
     more: 'Más',
+    expansionOutputsOn: 'Salidas de la placa activas: {{list}}',
   },
   monitor: {
     title: 'Monitor',
@@ -470,6 +471,10 @@ export const es: Messages = {
     resetPlaceholder: 'Número de serie',
     resetButton: 'Restablecer',
     resetDone: 'Parámetros restablecidos: {{n}} tarjetas guardadas en {{file}} (carpeta de copias del servidor)',
+    expansionOutputs: 'Salidas de la placa de expansión',
+    expansionFireInput: 'Entrada de incendio de la placa de expansión activa.',
+    outputOff: 'Apagada',
+    outputOn: 'Encendida',
   },
   expansion: {
     title: 'Placa de expansión de alarmas (UT0311-01A)',
@@ -1263,6 +1268,7 @@ export const es: Messages = {
     access: 'Acceso',
     lastAccess: 'Último acceso',
     clockDrift: 'Desfase del reloj',
+    expansionOutput: 'Salida de expansión {{n}}',
   },
   push: {
     title: 'Guardado, pero no enviado a todos los controladores',

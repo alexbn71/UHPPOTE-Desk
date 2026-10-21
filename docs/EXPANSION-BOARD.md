@@ -16,9 +16,12 @@ UHPPOTE Desk configures it from *Controllers → (controller) → Expansion boar
 > the board inputs ExtA1–ExtA3.
 >
 >
-> The state of the outputs is not reported reliably, so UHPPOTE Desk does not show it: bits 4–7 of the *relays*
-> byte of the status were set while a fire alarm was on (`0xf0`, all four bits with only output 4 configured), but
-> stayed clear while outputs followed the door lock relay.
+> **Live state of the outputs.** The normal status does not report the outputs reliably, but the status read by
+> the manufacturer's console (*Monitor*, long packet `0x20/0x20`) does: byte 58, bits 0–3 = outputs 1–4, bit 7 =
+> fire input of the board idle. Verified output by output (hardware test L6.10) and during a fire alarm. UHPPOTE
+> Desk reads it for the controllers with *Expansion board connected*: at every status check and, after any event
+> or while something is on, every 2 s until everything is off. The outputs are shown on the dashboard, in the
+> controller *Diagnostics* and in Home Assistant (*Expansion output 1–4*).
 >
 > **Fire alarm.** The fire event (reason 39) is sent at once, but its packet still has the fire bit clear; the bit is
 > set right after and cleared when the input is released, without any event. UHPPOTE Desk therefore marks the fire

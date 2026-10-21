@@ -24,7 +24,17 @@ import {
   type ExpansionBoardConfig,
   type ParameterWrite,
 } from './codec/expansion.js'
-import { decodeReadParametersReply, encodeReadParameters, isReadParametersReply, LongPacket } from './codec/long.js'
+import {
+  decodeLongStatusReply,
+  decodeReadParametersReply,
+  encodeReadLongStatus,
+  encodeReadParameters,
+  isLongStatusReply,
+  isReadParametersReply,
+  LongPacket,
+  LongStatusPacket,
+  type LongStatus,
+} from './codec/long.js'
 import { controllerOptionsParameters, decodeControllerOptions, type ControllerOptions } from './codec/options.js'
 import { EventOverwrittenError, NotFoundError, OperationFailedError, TimeoutError, TransportError } from './errors.js'
 import type { Logger } from './logger.js'
@@ -512,6 +522,24 @@ export class UhppoteClient {
       },
     })
     return decodeReadParametersReply(reply!).table
+  }
+
+  /**
+   * Status as the vendor console reads it (long packet 0x20/0x20, UDP only): unlike getStatus it reports the
+   * outputs and the fire input of the UT0311-01A expansion board.
+   */
+  async readLongStatus(t: ControllerTarget): Promise<LongStatus> {
+    const xid = this.xid++ >>> 0
+    const reply = await this.exchange(t, 'read-long-status', encodeReadLongStatus(t.id, xid), {
+      idempotent: true,
+      raw: {
+        validate: isLongStatusReply,
+        accept: (b) => b.readUInt32LE(8) === t.id && b.readUInt32LE(4) === xid,
+        functionCode: LongStatusPacket.Request,
+      },
+    })
+    const { xid: _xid, ...status } = decodeLongStatusReply(reply!)
+    return status
   }
 
   /**

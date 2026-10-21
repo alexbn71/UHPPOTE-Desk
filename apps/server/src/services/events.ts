@@ -18,8 +18,11 @@ import { localDateTime, parseLocal } from '../util/time.js'
  */
 export const RECENT_EVENT_MS = 10 * 60_000
 
-/** Status polling interval while a fire alarm is active (its end sends no event). */
-export const FIRE_POLL_MS = 2000
+/**
+ * Status polling interval while a fire alarm is active (its end sends no event) or, with an expansion board,
+ * while its outputs may be switching after an event.
+ */
+export const ALARM_POLL_MS = 2000
 
 export function isRecentEvent(e: Pick<EventDto, 'timestamp'>, now = Date.now()): boolean {
   return !e.timestamp || now - parseLocal(e.timestamp).getTime() <= RECENT_EVENT_MS
@@ -40,8 +43,8 @@ export interface CollectResult {
 export class EventService {
   private listener: EventListener | null = null
   private readonly running = new Map<number, Promise<CollectResult>>()
-  /** Controllers whose status is polled quickly because of a fire alarm. */
-  private readonly fireWatch = new Map<number, NodeJS.Timeout>()
+  /** Controllers whose status is polled quickly because of a fire alarm or of the expansion board outputs. */
+  private readonly watching = new Map<number, NodeJS.Timeout>()
 
   constructor(
     private readonly gateway: ControllerGateway,
@@ -63,8 +66,8 @@ export class EventService {
   async stopListener(): Promise<void> {
     await this.listener?.stop()
     this.listener = null
-    for (const timer of this.fireWatch.values()) clearTimeout(timer)
-    this.fireWatch.clear()
+    for (const timer of this.watching.values()) clearTimeout(timer)
+    this.watching.clear()
   }
 
   /** Handles a received status/event (from the listener or from polling). */
@@ -81,7 +84,9 @@ export class EventService {
     // status keeps reporting the last event long after the alarm is over.
     const pushedFire = fromAddress !== undefined && s.event?.reason === Reason.Fire
     this.gateway.hub.updateFromStatus(c.id, pushedFire ? { ...s, fireAlarm: true } : s, now)
-    if (pushedFire || s.fireAlarm) this.watchFire(c.id)
+    // with an expansion board, any pushed event may switch an output: follow them until they are off
+    const boardEvent = fromAddress !== undefined && s.event !== null && this.hasBoard(c.id)
+    if (pushedFire || s.fireAlarm || boardEvent) this.watch(c.id)
     if (!s.event) return
     const ev = s.event
     const last = c.lastCollectedIndex
@@ -100,30 +105,57 @@ export class EventService {
     else pull() // first contact (backfill) or gap in the indexes
   }
 
+  /** Whether the controller is configured with the UT0311-01A expansion board. */
+  private hasBoard(controllerId: number): boolean {
+    return this.controllers.settings(controllerId).expansionBoard.installed
+  }
+
   /**
-   * While a fire alarm is on, polls the status every FIRE_POLL_MS so that its end (which sends no event) is seen
-   * at once instead of at the next health check; stops after two polls without the fire bit.
+   * Reads the outputs and the fire input of the expansion board (vendor status, long packet) into the live state;
+   * null when the controller has no board. Returns whether something is on.
    */
-  private watchFire(controllerId: number): void {
-    if (this.fireWatch.has(controllerId)) return
+  async refreshExpansion(controllerId: number): Promise<boolean> {
+    if (!this.hasBoard(controllerId)) {
+      if (this.gateway.hub.state(controllerId).expansion) this.gateway.hub.patch(controllerId, { expansion: null })
+      return false
+    }
+    const ls = await this.gateway.run(null, controllerId, 'health', null, (client, t) => client.readLongStatus(t), {
+      audit: false,
+    })
+    this.gateway.hub.patch(controllerId, {
+      expansion: { outputs: ls.expansionOutputs, fireInput: ls.expansionFireInput },
+    })
+    const active = ls.expansionFireInput || ls.expansionOutputs.some(Boolean)
+    if (active) this.watch(controllerId)
+    return active
+  }
+
+  /**
+   * While a fire alarm or an output of the expansion board is on, polls the status every ALARM_POLL_MS so that
+   * the end (which sends no event) is seen at once instead of at the next health check; stops after two polls
+   * with nothing active.
+   */
+  private watch(controllerId: number): void {
+    if (this.watching.has(controllerId)) return
     let quiet = 0
     const poll = async () => {
       try {
         const s = await this.gateway.run(null, controllerId, 'health', null, (client, t) => client.getStatus(t), {
           audit: false,
         })
-        quiet = s.fireAlarm ? 0 : quiet + 1
         this.onStatus(s)
+        const board = await this.refreshExpansion(controllerId).catch(() => false)
+        quiet = s.fireAlarm || board ? 0 : quiet + 1
       } catch {
         quiet = 2 // offline: the health check takes over
       }
-      if (quiet >= 2 || !this.fireWatch.has(controllerId)) {
-        this.fireWatch.delete(controllerId)
+      if (quiet >= 2 || !this.watching.has(controllerId)) {
+        this.watching.delete(controllerId)
         return
       }
-      this.fireWatch.set(controllerId, setTimeout(() => void poll(), FIRE_POLL_MS).unref())
+      this.watching.set(controllerId, setTimeout(() => void poll(), ALARM_POLL_MS).unref())
     }
-    this.fireWatch.set(controllerId, setTimeout(() => void poll(), FIRE_POLL_MS).unref())
+    this.watching.set(controllerId, setTimeout(() => void poll(), ALARM_POLL_MS).unref())
   }
 
   /** Saves the event; true if it was new. */

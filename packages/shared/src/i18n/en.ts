@@ -183,6 +183,7 @@ export const en = {
     accessesN: '{{n}} accesses',
     fewer: 'Fewer',
     more: 'More',
+    expansionOutputsOn: 'Board outputs on: {{list}}',
   },
   monitor: {
     title: 'Monitor',
@@ -468,6 +469,10 @@ export const en = {
     resetPlaceholder: 'Serial number',
     resetButton: 'Reset',
     resetDone: 'Parameters reset: {{n}} cards saved in {{file}} (server backup folder)',
+    expansionOutputs: 'Expansion board outputs',
+    expansionFireInput: 'Fire input of the expansion board active.',
+    outputOff: 'Off',
+    outputOn: 'On',
   },
   expansion: {
     title: 'Alarm expansion board (UT0311-01A)',
@@ -1251,6 +1256,7 @@ export const en = {
     access: 'Access',
     lastAccess: 'Last access',
     clockDrift: 'Clock drift',
+    expansionOutput: 'Expansion output {{n}}',
   },
   push: {
     title: 'Saved, but not sent to every controller',

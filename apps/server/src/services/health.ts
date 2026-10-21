@@ -66,6 +66,10 @@ export class HealthService {
         audit: false,
       })
       this.events.onStatus(status)
+      // the expansion board outputs are only in the vendor status (long packet): its failure is not "offline"
+      await this.events
+        .refreshExpansion(controllerId)
+        .catch((err) => this.opts.logger?.debug?.(`expansion status ${controllerId}: ${(err as Error).message}`))
       if (!wasOnline) await this.onBackOnline(controllerId)
       await this.checkTime(controllerId)
     } catch (err) {

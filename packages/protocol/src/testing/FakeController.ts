@@ -13,7 +13,15 @@ import {
   decodeExpansionBoard,
   type ExpansionBoardConfig,
 } from '../codec/expansion.js'
-import { ANY_CONTROLLER, encodeReadParametersReply, LongPacket, longPacketCrcOk } from '../codec/long.js'
+import {
+  ANY_CONTROLLER,
+  encodeLongStatusReply,
+  encodeReadParametersReply,
+  LONG_STATUS_REQUEST_SIZE,
+  LongPacket,
+  longPacketCrcOk,
+  LongStatusPacket,
+} from '../codec/long.js'
 import {
   DELETED_CARD,
   validatePacket,
@@ -546,8 +554,28 @@ export class FakeController {
     return this.dispatch(r)
   }
 
-  /** Vendor long-packet protocol: only the parameter table read (type 0x24, code 0x10). */
+  /** Vendor long-packet protocol: the parameter table read (type 0x24, code 0x10) and the status (0x20/0x20). */
   private handleLong(msg: Buffer): Buffer | null {
+    if (
+      msg.length === LONG_STATUS_REQUEST_SIZE &&
+      msg[0] === LongStatusPacket.Type &&
+      msg[1] === LongStatusPacket.Request &&
+      longPacketCrcOk(msg)
+    ) {
+      const to = msg.readUInt32LE(12)
+      if (!this.longPackets || (to !== this.id && to !== ANY_CONTROLLER)) return null
+      return encodeLongStatusReply(msg.readUInt32LE(4), {
+        controller: this.id,
+        lastEventIndex: this.lastEventIndex,
+        doorOpen: [...this.doorOpen] as Quad<boolean>,
+        buttonPressed: [false, false, false, false],
+        relayUnlocked: [0, 1, 2, 3].map((i) => (this.relays & (1 << i)) !== 0) as Quad<boolean>,
+        expansionOutputs: [...this.expansionOutputs] as Quad<boolean>,
+        expansionFireInput: (this.inputs & 0x02) !== 0,
+        fireAlarm: (this.inputs & 0x02) !== 0,
+        forceLock: (this.inputs & 0x01) !== 0,
+      })
+    }
     if (
       msg.length !== 20 ||
       msg[0] !== LongPacket.Type ||
