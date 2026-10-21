@@ -9,9 +9,21 @@ UHPPOTE Desk configures it from *Controllers → (controller) → Expansion boar
 
 > **Experimental.** The commands for the board are not part of the public controller protocol (uhppoted does not
 > support them). They were reconstructed from the manufacturer's Windows software for interoperability; no
-> manufacturer code is included in UHPPOTE Desk. Verified so far on one UT0311 controller with firmware v9.f8
-> (write with `0xF2`, address mapping, read-back of the parameter table); the behaviour of the relays still has to
-> be confirmed with a board connected ([hardware tests](#hardware-tests-level-6)).
+> manufacturer code is included in UHPPOTE Desk. Verified on one UT0311-L04 controller (firmware v9.f8) with a
+> UT0311-01A board connected ([hardware tests](#hardware-tests-level-6)): write with `0xF2`, address mapping,
+> read-back of the parameter table, and the relays switching on forced open, door open too long, invalid card,
+> fire input and in "any signal" mode with the door lock relay. Not tested yet: duress code, burglar alarm (ARM),
+> the board inputs ExtA1–ExtA3.
+>
+>
+> The state of the outputs is not reported reliably, so UHPPOTE Desk does not show it: bits 4–7 of the *relays*
+> byte of the status were set while a fire alarm was on (`0xf0`, all four bits with only output 4 configured), but
+> stayed clear while outputs followed the door lock relay.
+>
+> **Fire alarm.** The fire event (reason 39) is sent at once, but its packet still has the fire bit clear; the bit is
+> set right after and cleared when the input is released, without any event. UHPPOTE Desk therefore marks the fire
+> alarm on at the event and polls the controller every 2 s while it lasts, so the end of the alarm is seen within a
+> few seconds (Home Assistant *Fire alarm* sensor, live monitor).
 
 ## Using it
 
@@ -177,6 +189,7 @@ npm run hw -- --serial 423187757 --ip 192.168.1.100 --level 6 --destructive
 | L6.7 | output 3 on an **invalid card** at door 1 | board, an unregistered card |
 | L6.8 | **fire input** of the board: fire flag/event 39, doors released, output 4, flag cleared afterwards | board |
 | L6.9 | **duress code** on the door 1 keypad (output 1); logs the events the controller sends | board, PIN keypad, `--destructive` |
+| L6.10 | each output in turn follows the **door 1 lock relay** ("any signal" mode); door 1 is opened remotely 4 times; logs whether the status reports the outputs | board |
 
 Before every physical test the configuration is read back: the test does not start if the controller did not
 store it.

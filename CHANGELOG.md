@@ -55,6 +55,10 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   button. `/api/health` now also reports `build`, the entry bundle of the web build being served.
 
 ### Fixed
+- **Fire alarm** (Home Assistant *Fire alarm* sensor, live monitor): it turned on only at the next status check
+  (up to `HEALTH_INTERVAL_SEC` later, or never for a short alarm) because the packet of the fire event still has the
+  fire bit clear, and turned off late because releasing the fire input sends no event. It now turns on at the event
+  and, while it lasts, the controller is polled every 2 s. Found with the UT0311-01A board fire input.
 - The live connection (WebSocket of the monitor) was accepted also before the forced password change; it now
   waits, like every other request, for the password change and the mandatory two-factor setup.
 - The header buttons *Change password* and *Log out* have an accessible name (screen readers, tests).

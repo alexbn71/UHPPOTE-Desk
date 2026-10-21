@@ -136,7 +136,7 @@ describe('hardware suite against FakeController', () => {
     expect(results.filter((r) => r.status === 'fail').map((f) => `${f.id}: ${f.details.join(' / ')}`)).toEqual([])
     // the simulator does not answer 0xC2: a warning, not a failure
     expect(byId['L6.1']!.status).toBe('warn')
-    for (const id of ['L6.2', 'L6.3', 'L6.4', 'L6.5', 'L6.6', 'L6.7', 'L6.8', 'L6.9'])
+    for (const id of ['L6.2', 'L6.3', 'L6.4', 'L6.5', 'L6.6', 'L6.7', 'L6.8', 'L6.9', 'L6.10'])
       expect(byId[id]!.status, id).toBe('pass')
     expect(fake.doors[0].delay).toBe(delayBefore)
     expect(fake.expansionBoard().relays.every((r) => !r.active)).toBe(true)

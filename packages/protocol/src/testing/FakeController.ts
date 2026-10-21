@@ -4,6 +4,8 @@ import { Reader, Writer } from '../codec/bytes.js'
 import { Direction, EventType, FunctionCode as F, MAGIC, PACKET_SIZE, Reason } from '../codec/constants.js'
 import {
   ExpansionEvent,
+  ExpansionOutputMode,
+  ExpansionSignal,
   ExpansionSource,
   PARAMETER_ADDRESS_OFFSET,
   PARAMETER_TABLE_SIZE,
@@ -362,8 +364,9 @@ export class FakeController {
   /** Simulates the fire input (controller or expansion board): status bit, event, relays. */
   setFireInput(active: boolean): void {
     if (active) {
+      // like the real controller: the event is pushed before the fire bit is set
+      this.event(EventType.Alarm, false, 1, Direction.In, 0, Reason.Fire)
       this.inputs |= 0x02
-      this.event(EventType.Alarm, true, 1, Direction.In, 0, Reason.Fire, false)
       this.triggerExpansion(null, Reason.Fire)
     } else {
       this.inputs &= ~0x02
@@ -409,13 +412,25 @@ export class FakeController {
   private pulseRelay(door: number): void {
     const bit = 1 << (door - 1)
     this.relays |= bit
+    this.followLockRelay(door, true)
     const delay = this.doors[door - 1]!.delay
     setTimeout(
       () => {
-        if (this.doors[door - 1]!.mode !== 1) this.relays &= ~bit
+        if (this.doors[door - 1]!.mode !== 1) {
+          this.relays &= ~bit
+          this.followLockRelay(door, false)
+        }
       },
       Math.min(delay, 2) * 1000,
     ).unref()
+  }
+
+  /** Expansion outputs in "any signal" mode with the lock relay of their source door follow that relay. */
+  private followLockRelay(door: number, on: boolean): void {
+    this.expansionBoard().relays.forEach((r, i) => {
+      if (!r.active || r.mode !== ExpansionOutputMode.AnySignal || r.source + 1 !== door) return
+      if (r.signals & ExpansionSignal.LockRelay) this.expansionOutputs[i] = on
+    })
   }
 
   private authorise(cardNo: number, door: number, pin?: number): number {

@@ -2,6 +2,7 @@ import {
   EventListener,
   EventOverwrittenError,
   NotFoundError,
+  Reason,
   type ControllerEvent,
   type ControllerStatus,
   type Logger,
@@ -16,6 +17,9 @@ import { localDateTime, parseLocal } from '../util/time.js'
  * but do not trigger integrations (MQTT event entities, webhooks).
  */
 export const RECENT_EVENT_MS = 10 * 60_000
+
+/** Status polling interval while a fire alarm is active (its end sends no event). */
+export const FIRE_POLL_MS = 2000
 
 export function isRecentEvent(e: Pick<EventDto, 'timestamp'>, now = Date.now()): boolean {
   return !e.timestamp || now - parseLocal(e.timestamp).getTime() <= RECENT_EVENT_MS
@@ -36,6 +40,8 @@ export interface CollectResult {
 export class EventService {
   private listener: EventListener | null = null
   private readonly running = new Map<number, Promise<CollectResult>>()
+  /** Controllers whose status is polled quickly because of a fire alarm. */
+  private readonly fireWatch = new Map<number, NodeJS.Timeout>()
 
   constructor(
     private readonly gateway: ControllerGateway,
@@ -57,6 +63,8 @@ export class EventService {
   async stopListener(): Promise<void> {
     await this.listener?.stop()
     this.listener = null
+    for (const timer of this.fireWatch.values()) clearTimeout(timer)
+    this.fireWatch.clear()
   }
 
   /** Handles a received status/event (from the listener or from polling). */
@@ -68,7 +76,12 @@ export class EventService {
     }
     const now = localDateTime()
     this.controllers.markSeen(c.id, now)
-    this.gateway.hub.updateFromStatus(c.id, s, now)
+    // the packet of a fire event (fire input of the controller or of the expansion board) is sent before the
+    // controller sets its fire bit: the event itself says that the alarm is on. Only pushed packets: a polled
+    // status keeps reporting the last event long after the alarm is over.
+    const pushedFire = fromAddress !== undefined && s.event?.reason === Reason.Fire
+    this.gateway.hub.updateFromStatus(c.id, pushedFire ? { ...s, fireAlarm: true } : s, now)
+    if (pushedFire || s.fireAlarm) this.watchFire(c.id)
     if (!s.event) return
     const ev = s.event
     const last = c.lastCollectedIndex
@@ -85,6 +98,32 @@ export class EventService {
     this.store(c.id, c.eventEpoch, ev)
     if (last > 0 && ev.index === last + 1) this.controllers.setCollectedIndex(c.id, ev.index)
     else pull() // first contact (backfill) or gap in the indexes
+  }
+
+  /**
+   * While a fire alarm is on, polls the status every FIRE_POLL_MS so that its end (which sends no event) is seen
+   * at once instead of at the next health check; stops after two polls without the fire bit.
+   */
+  private watchFire(controllerId: number): void {
+    if (this.fireWatch.has(controllerId)) return
+    let quiet = 0
+    const poll = async () => {
+      try {
+        const s = await this.gateway.run(null, controllerId, 'health', null, (client, t) => client.getStatus(t), {
+          audit: false,
+        })
+        quiet = s.fireAlarm ? 0 : quiet + 1
+        this.onStatus(s)
+      } catch {
+        quiet = 2 // offline: the health check takes over
+      }
+      if (quiet >= 2 || !this.fireWatch.has(controllerId)) {
+        this.fireWatch.delete(controllerId)
+        return
+      }
+      this.fireWatch.set(controllerId, setTimeout(() => void poll(), FIRE_POLL_MS).unref())
+    }
+    this.fireWatch.set(controllerId, setTimeout(() => void poll(), FIRE_POLL_MS).unref())
   }
 
   /** Saves the event; true if it was new. */

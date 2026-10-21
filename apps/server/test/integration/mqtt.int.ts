@@ -224,6 +224,19 @@ describe('events and commands', () => {
     expect(JSON.parse(audit!.details)).toMatchObject({ door: 2, source: 'mqtt' })
   })
 
+  it('turns the fire sensor on at the fire event and off soon after the input is released', async () => {
+    const fire = () => json(`uhd/${SERIAL}/state`).fireAlarm as boolean
+    // like the real controller: the pushed event has the fire bit still clear, releasing it sends nothing;
+    // the health check runs once an hour here, so only the event and the fast polling can change the sensor
+    fake.setFireInput(true)
+    await waitFor(() => fire() === true, 1000)
+    // the fast polling keeps it on while the input is active
+    await new Promise((r) => setTimeout(r, 2500))
+    expect(fire()).toBe(true)
+    fake.setFireInput(false)
+    await waitFor(() => fire() === false, 5000)
+  })
+
   it('ignores commands for a deactivated door', async () => {
     const before = fake.requestCount.get(OPEN_DOOR) ?? 0
     await ha.publishAsync(`uhd/${SERIAL}/door/3/open`, 'OPEN')
