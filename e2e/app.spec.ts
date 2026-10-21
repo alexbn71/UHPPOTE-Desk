@@ -229,7 +229,7 @@ test.describe.serial('UHPPOTE Desk', () => {
     const card = page.getByTestId('controller-options')
     await card.getByLabel('Managed by UHPPOTE Desk').check({ force: true })
     await card.getByLabel('Silent reader on invalid cards').check({ force: true })
-    await card.getByLabel('Minimum gap between two swipes of the same card (s)').fill('10')
+    await card.getByLabel("Don't record repeated swipes of the same card (s)").fill('10')
     await page.getByRole('button', { name: 'Save and send to the controller' }).click()
     await expect(page.getByText('Settings saved, sent and verified in the controller')).toBeVisible({ timeout: 10_000 })
     const settings = await (await page.request.get('/api/controllers/1/settings')).json()
