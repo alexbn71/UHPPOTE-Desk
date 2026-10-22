@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+
+const VERSION = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version
 
 const ADMIN_PASSWORD = 'Admin-E2E-Password-1'
 
@@ -39,7 +42,7 @@ test.describe.serial('UHPPOTE Desk', () => {
   test('author credits on the login page, the main app and the mobile app', async ({ page }) => {
     const credits = page.getByTestId('credits')
     await page.goto('/')
-    await expect(credits).toHaveText('UHPPOTE Desk © 2026 Alessandro Blason · AGPL-3.0 · Source code')
+    await expect(credits).toHaveText(`UHPPOTE Desk v${VERSION} © 2026 Alessandro Blason · AGPL-3.0 · Source code`)
     await expect(credits.getByRole('link', { name: 'Source code' })).toHaveAttribute(
       'href',
       'https://github.com/alexbn71/UHPPOTE-Desk',
