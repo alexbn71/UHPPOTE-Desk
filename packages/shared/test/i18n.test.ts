@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   errorInfo,
+  inputEventOf,
   KNOWN_REASONS,
   LANGUAGES,
   normalizeLanguage,
@@ -105,5 +106,14 @@ describe('translateError', () => {
     expect(translateError('it', system)).toBe('connect ECONNREFUSED')
     expect(translateError('it', new CodedError('raw text', 'no.such.key', {}))).toBe('raw text')
     expect(translateError('it', 'plain string')).toBe('plain string')
+  })
+})
+
+describe('inputEventOf', () => {
+  it('decodes the server reasons of the expansion board inputs', () => {
+    expect(inputEventOf(201)).toEqual({ input: 1, open: true })
+    expect(inputEventOf(203)).toEqual({ input: 3, open: true })
+    expect(inputEventOf(212)).toEqual({ input: 2, open: false })
+    for (const r of [0, 1, 39, 200, 204, 210, 214, 221]) expect(inputEventOf(r), `reason ${r}`).toBeNull()
   })
 })

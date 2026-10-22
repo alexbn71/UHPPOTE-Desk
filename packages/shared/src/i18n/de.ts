@@ -560,6 +560,10 @@ export const de: Messages = {
       'Der Alarm „ungültige Karte“ wird erst nach 3 ungültigen Versuchen in Folge statt bei jedem ausgelöst (Firmware V8.96 oder neuer)',
     duressAfterCard: 'Bedrohungscode nur nach einer registrierten Karte',
     duressAfterCardHint: 'Der Bedrohungscode wird nur direkt nach dem Vorhalten einer registrierten Karte angenommen',
+    inputEvents: 'Eingänge A1-A3',
+    inputEventsHint:
+      'Eingänge in Gebrauch: Öffnen und Schließen werden im Ereignisverlauf protokolliert und können Regeln, Benachrichtigungen und Webhooks auslösen. Der Controller sendet für sie kein Ereignis: UHPPOTE Desk liest sie alle 2 s. Nicht angeschlossene Eingänge ausgeschaltet lassen (sie erscheinen offen).',
+    inputEvent: 'A{{n}} in Gebrauch',
     noAlarmOptions: 'Keine Alarmoption aktiviert',
   },
   presence: {
@@ -981,6 +985,8 @@ export const de: Messages = {
     plateNotOpened: 'Nicht geöffnet: die Kamera zeichnet nur auf',
     guest: 'Gast: {{name}}',
     title: {
+      input_opened: 'Erweiterungseingang geöffnet',
+      input_closed: 'Erweiterungseingang geschlossen',
       plate_granted: 'Fahrzeug eingelassen',
       plate_denied: 'Kennzeichen abgelehnt',
       guest_opened: 'Mit Gastlink geöffnet',
@@ -1514,6 +1520,8 @@ export const de: Messages = {
       admin: 'Administrator',
     },
     webhookEvent: {
+      input_opened: 'Erweiterungseingang geöffnet (A1-A3 in Gebrauch)',
+      input_closed: 'Erweiterungseingang wieder geschlossen',
       plate_granted: 'Kennzeichen erkannt, Tür geöffnet',
       plate_denied: 'Kennzeichen abgelehnt (unbekannt, keine Berechtigung, außerhalb der Zeiten…)',
       guest_opened: 'Tür mit einem Gastlink geöffnet',
@@ -1565,6 +1573,12 @@ export const de: Messages = {
       '43': 'Notfall',
       '44': 'Fernöffnung',
       '45': 'Fernöffnung (USB-Leser)',
+      '201': 'Erweiterungseingang A1 geöffnet',
+      '202': 'Erweiterungseingang A2 geöffnet',
+      '203': 'Erweiterungseingang A3 geöffnet',
+      '211': 'Erweiterungseingang A1 geschlossen',
+      '212': 'Erweiterungseingang A2 geschlossen',
+      '213': 'Erweiterungseingang A3 geschlossen',
       unknown: 'Grund {{code}}',
     },
     eventType: {
@@ -1572,6 +1586,7 @@ export const de: Messages = {
       '1': 'Karte',
       '2': 'Tür',
       '3': 'Alarm',
+      '4': 'Eingang',
       '255': 'Überschrieben',
     },
     direction: {

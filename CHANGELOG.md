@@ -5,6 +5,12 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+### Added
+- **Events for the expansion board inputs A1–A3**: inputs marked *in use* on the *Expansion board* tab are recorded
+  when they open or close (new event type *Input*, reasons 201–203 / 211–213, recorded by the server since the
+  controller sends none), shown in the monitor and the event history (new *Input* type filter) and available to
+  rules, notifications, mobile-app push and webhooks as `input.opened` / `input.closed`.
+
 ## [1.2.2] - 2026-10-22
 
 ### Added

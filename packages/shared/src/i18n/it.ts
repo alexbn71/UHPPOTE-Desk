@@ -555,6 +555,10 @@ export const it: Messages = {
       'L\'allarme "tessera non valida" scatta dopo 3 passaggi non validi consecutivi invece che a ogni passaggio (firmware V8.96 o successivo)',
     duressAfterCard: 'Codice coercizione solo dopo una tessera registrata',
     duressAfterCardHint: 'Il codice di coercizione è accettato solo subito dopo il passaggio di una tessera registrata',
+    inputEvents: 'Ingressi A1-A3',
+    inputEventsHint:
+      'Ingressi in uso: aperture e chiusure vengono registrate nello storico eventi e possono attivare regole, notifiche e webhook. Il controller non invia eventi per questi ingressi: UHPPOTE Desk li legge ogni 2 s. Lascia spenti gli ingressi non collegati (risultano aperti).',
+    inputEvent: 'A{{n}} in uso',
     noAlarmOptions: 'Nessuna opzione allarmi attiva',
   },
   presence: {
@@ -967,6 +971,8 @@ export const it: Messages = {
     plateNotOpened: 'Non aperto: la telecamera registra soltanto',
     guest: 'Ospite: {{name}}',
     title: {
+      input_opened: 'Ingresso della scheda aperto',
+      input_closed: 'Ingresso della scheda chiuso',
       plate_granted: 'Veicolo entrato',
       plate_denied: 'Targa rifiutata',
       guest_opened: 'Aperta con link ospite',
@@ -1493,6 +1499,8 @@ export const it: Messages = {
       admin: 'Amministratore',
     },
     webhookEvent: {
+      input_opened: 'Ingresso della scheda aperto (A1-A3 in uso)',
+      input_closed: 'Ingresso della scheda di nuovo chiuso',
       plate_granted: 'Targa riconosciuta, porta aperta',
       plate_denied: 'Targa rifiutata (sconosciuta, senza permesso, fuori orario…)',
       guest_opened: 'Porta aperta con un link ospite',
@@ -1544,6 +1552,12 @@ export const it: Messages = {
       '43': 'Emergenza',
       '44': 'Apertura remota',
       '45': 'Apertura remota (lettore USB)',
+      '201': 'Ingresso A1 della scheda aperto',
+      '202': 'Ingresso A2 della scheda aperto',
+      '203': 'Ingresso A3 della scheda aperto',
+      '211': 'Ingresso A1 della scheda chiuso',
+      '212': 'Ingresso A2 della scheda chiuso',
+      '213': 'Ingresso A3 della scheda chiuso',
       unknown: 'Motivo {{code}}',
     },
     eventType: {
@@ -1551,6 +1565,7 @@ export const it: Messages = {
       '1': 'Tessera',
       '2': 'Porta',
       '3': 'Allarme',
+      '4': 'Ingresso',
       '255': 'Sovrascritto',
     },
     direction: {

@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events'
 import type { Logger } from '@uhppote-desk/protocol'
 import {
   ALARM_REASONS,
+  inputEventOf,
   translator,
   type ControllerLiveState,
   type DoorDto,
@@ -108,15 +109,20 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
     if (!isRecentEvent(e)) return
     // alarms are recognised by their reason (door open too long, forced, fire, …); other
     // controller events (power on, reset) are not forwarded
-    const type: WebhookEvent | null = ALARM_REASONS.has(e.reason)
-      ? 'alarm'
-      : e.type === 1
-        ? e.granted
-          ? 'access.granted'
-          : 'access.denied'
-        : e.type === 2
-          ? 'door.event'
-          : null
+    const input = inputEventOf(e.reason)
+    const type: WebhookEvent | null = input
+      ? input.open
+        ? 'input.opened'
+        : 'input.closed'
+      : ALARM_REASONS.has(e.reason)
+        ? 'alarm'
+        : e.type === 1
+          ? e.granted
+            ? 'access.granted'
+            : 'access.denied'
+          : e.type === 2
+            ? 'door.event'
+            : null
     const c = type && this.controllers.get(e.controllerId)
     if (!type || !c?.enabled) return
     const door = e.door >= 1 && e.door <= 4 ? e.door : null
@@ -131,6 +137,7 @@ export class IntegrationEvents extends EventEmitter<{ event: [IntegrationEvent] 
       reasonCode: e.reason,
       reason: en.reason(e.reason),
       timestamp: e.timestamp,
+      ...(input && { input: `A${input.input}`, open: input.open }),
     }
     this.publish(type, c, door, data, e, null)
 

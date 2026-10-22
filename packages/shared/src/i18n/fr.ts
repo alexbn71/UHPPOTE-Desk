@@ -559,6 +559,10 @@ export const fr: Messages = {
       "L'alarme « badge non valide » se déclenche après 3 passages non valides consécutifs au lieu de chaque passage (firmware V8.96 ou ultérieur)",
     duressAfterCard: 'Code de contrainte seulement après un badge enregistré',
     duressAfterCardHint: "Le code de contrainte n'est accepté que juste après le passage d'un badge enregistré",
+    inputEvents: 'Entrées A1-A3',
+    inputEventsHint:
+      "Entrées utilisées : leurs ouvertures et fermetures sont enregistrées dans l'historique et peuvent déclencher des règles, notifications et webhooks. Le contrôleur n'envoie aucun événement pour elles : UHPPOTE Desk les lit toutes les 2 s. Laissez désactivées les entrées non raccordées (elles apparaissent ouvertes).",
+    inputEvent: 'A{{n}} utilisée',
     noAlarmOptions: "Aucune option d'alarme activée",
   },
   presence: {
@@ -978,6 +982,8 @@ export const fr: Messages = {
     plateNotOpened: 'Pas ouvert : la caméra enregistre seulement',
     guest: 'Invité : {{name}}',
     title: {
+      input_opened: "Entrée d'extension ouverte",
+      input_closed: "Entrée d'extension fermée",
       plate_granted: 'Véhicule entré',
       plate_denied: 'Plaque refusée',
       guest_opened: 'Ouverte avec un lien invité',
@@ -1510,6 +1516,8 @@ export const fr: Messages = {
       admin: 'Administrateur',
     },
     webhookEvent: {
+      input_opened: "Entrée d'extension ouverte (A1-A3 utilisées)",
+      input_closed: "Entrée d'extension refermée",
       plate_granted: 'Plaque reconnue, porte ouverte',
       plate_denied: 'Plaque refusée (inconnue, sans autorisation, hors horaires…)',
       guest_opened: 'Porte ouverte avec un lien invité',
@@ -1561,6 +1569,12 @@ export const fr: Messages = {
       '43': 'Urgence',
       '44': 'Ouverture à distance',
       '45': 'Ouverture à distance (lecteur USB)',
+      '201': 'Entrée extension A1 ouverte',
+      '202': 'Entrée extension A2 ouverte',
+      '203': 'Entrée extension A3 ouverte',
+      '211': 'Entrée extension A1 fermée',
+      '212': 'Entrée extension A2 fermée',
+      '213': 'Entrée extension A3 fermée',
       unknown: 'Motif {{code}}',
     },
     eventType: {
@@ -1568,6 +1582,7 @@ export const fr: Messages = {
       '1': 'Badge',
       '2': 'Porte',
       '3': 'Alarme',
+      '4': 'Entrée',
       '255': 'Écrasé',
     },
     direction: {

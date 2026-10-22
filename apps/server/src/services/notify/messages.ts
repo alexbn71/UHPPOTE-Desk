@@ -44,6 +44,8 @@ const STYLE: Record<WebhookEvent, { emoji: string; priority: NotifyMessage['prio
   'guest.refused': { emoji: '⚠️', priority: 4, tag: 'warning' },
   'plate.granted': { emoji: '🚗', priority: 2, tag: 'car' },
   'plate.denied': { emoji: '🚫', priority: 4, tag: 'no_entry' },
+  'input.opened': { emoji: '🔔', priority: 4, tag: 'bell' },
+  'input.closed': { emoji: '🔕', priority: 2, tag: 'no_bell' },
 }
 
 /** Explanation of an unusual access: the usual window, a non-working day, or a night access. */

@@ -25,6 +25,12 @@ UHPPOTE Desk configures it from *Controllers → (controller) → Expansion boar
 > controller *Diagnostics*, the outputs on the dashboard, both in Home Assistant (*Expansion output 1–4*,
 > *Expansion input A1–A3*).
 >
+> **Input events.** On the *Expansion board* tab each input A1–A3 can be marked *in use*: UHPPOTE Desk then records
+> an event when it opens or closes (type 4 *Input*, reasons 201–203 opened, 211–213 closed, numbered by the server in
+> a separate series), shown in the monitor and the event history and sent to rules, notifications and webhooks as
+> `input.opened` / `input.closed`. The first reading after a start only sets the state. Unconnected inputs read open:
+> leave them off.
+>
 > **Fire alarm.** The fire event (reason 39) is sent at once, but its packet still has the fire bit clear; the bit is
 > set right after and cleared when the input is released, without any event. UHPPOTE Desk therefore marks the fire
 > alarm on at the event and polls the controller every 2 s while it lasts, so the end of the alarm is seen within a

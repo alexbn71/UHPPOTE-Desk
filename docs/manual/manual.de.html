@@ -625,6 +625,7 @@
   </table>
   <p>Auslösende Ereignisse: <b>Bedrohungscode</b>, <b>Tür zu lange offen</b>, <b>gewaltsames Öffnen</b> (Tür ohne gültigen Zutritt geöffnet; benötigt einen Türkontakt), <b>Zwangsverriegelung</b>, <b>ungültige Karte</b> und <b>Feueralarm</b>. Der Feueralarm öffnet außerdem alle Türen des Controllers und wird als Ereignis 39 gespeichert.</p>
   <p><b>Live-Zustand.</b> Für einen Controller mit <i>Erweiterungskarte angeschlossen</i> zeigt das Register <span class="ui">Diagnose</span> unter der Türtabelle die vier Ausgänge (<i>An</i>/<i>Aus</i>) und die Eingänge A1–A3 (<i>Offen</i>/<i>Geschlossen</i>), und die Kachel in der Übersicht zeigt, welche Ausgänge eingeschaltet sind. Sie werden alle 2 Sekunden aus demselben Status gelesen, den die Konsole des Herstellers verwendet: Die Eingänge A1–A3 senden kein Ereignis, daher ist dies der einzige Weg, sie zu sehen. Nicht angeschlossene Eingänge erscheinen als <i>Offen</i>, da es Öffnerkontakte sind. Der Feueralarm erscheint sofort und verschwindet wenige Sekunden nach dem Lösen des Eingangs.</p>
+  <p><b>Eingangsereignisse.</b> Unter <i>Eingänge A1–A3</i> die verwendeten Eingänge einschalten: UHPPOTE Desk protokolliert bei jedem Öffnen oder Schließen ein Ereignis (Typ <i>Eingang</i>), sichtbar im Monitor und im Ereignisverlauf und nutzbar in Regeln, Benachrichtigungen und Webhooks (<i>Erweiterungseingang geöffnet</i> / <i>wieder geschlossen</i>). Nicht angeschlossene Eingänge ausgeschaltet lassen: Sie erscheinen offen.</p>
   <div class="box warn"><b>Rekonstruiertes Protokoll</b><p>Die Befehle für die Erweiterungskarte gehören nicht zum öffentlichen Protokoll des Controllers: Sie wurden aus der Herstellersoftware rekonstruiert. Geprüft wurden sie an einem UT0311-L04 (Firmware v9.f8) mit angeschlossener UT0311-01A: Gewaltsames Öffnen, Tür zu lange offen, ungültige Karte, Brandeingang und einem Signal folgende Ausgänge schalten die Relais, und der Zustand der Ausgänge wird korrekt gelesen. Noch nicht geprüft: der Bedrohungscode, die Quelle <b>Einbruchmeldung</b> und die Eingänge A1–A3. Eine mit der Herstellersoftware erstellte Konfiguration wird beim nächsten Speichern ersetzt: Lesen Sie sie vorher ein und übernehmen Sie sie in das Formular, wenn Sie sie behalten möchten. Bevor Sie die Karte entfernen, deaktivieren Sie die Ausgänge und speichern Sie.</p></div>
 
   <h3>Wartung</h3>
@@ -835,6 +836,7 @@
     <tr><td>40</td><td>Zwangsverriegelt</td><td>Eingang Zwangsverriegelung aktiv</td></tr>
     <tr><td>41–43</td><td>Einbruchschutz · 24-h-Zone · Notfall</td><td>Alarmeingänge</td></tr>
     <tr><td>44 / 45</td><td>Fernöffnung</td><td>aus der Anwendung geöffnet (oder von einem USB-Leser)</td></tr>
+    <tr><td>201–203 / 211–213</td><td>Erweiterungseingang A1–A3 geöffnet / geschlossen</td><td>von UHPPOTE Desk für die verwendeten Eingänge protokolliert (Typ <i>Eingang</i>)</td></tr>
   </table>
   <p>Zeilen mit verweigerten Zutritten und Alarmen sind in Übersicht, Monitor und Verlauf rot hervorgehoben.</p>
 </section>

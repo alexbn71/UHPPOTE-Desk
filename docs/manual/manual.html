@@ -629,6 +629,7 @@
   </table>
   <p>Triggering events: <b>duress code</b>, <b>door open too long</b>, <b>forced open</b> (door opened without a valid access; requires a door sensor), <b>forced lock</b>, <b>invalid card</b> and <b>fire alarm</b>. The fire alarm also opens all the doors of the controller and is recorded as event 39.</p>
   <p><b>Live state.</b> For a controller with <i>Expansion board connected</i>, the <span class="ui">Diagnostics</span> tab shows the four outputs (<i>On</i>/<i>Off</i>) and the inputs A1–A3 (<i>Open</i>/<i>Closed</i>) under the door table, and the dashboard card shows which outputs are on. They are read every 2 seconds from the same status the manufacturer's console uses: the inputs A1–A3 send no event, so this is the only way to see them. Unconnected inputs are shown <i>Open</i>, because they are normally closed contacts. The fire alarm is shown at once and cleared a few seconds after the fire input is released.</p>
+  <p><b>Input events.</b> Under <i>Inputs A1–A3</i> switch on the inputs you use: UHPPOTE Desk records an event every time one of them opens or closes (type <i>Input</i>), shown in the monitor and the event history, and usable in rules, notifications and webhooks (<i>Expansion input opened</i> / <i>closed again</i>). Leave unconnected inputs off: they read open.</p>
   <div class="box warn"><b>Reconstructed protocol</b><p>The commands for the expansion board are not part of the public controller protocol: they were reconstructed from the manufacturer's software. They have been verified on a UT0311-L04 (firmware v9.f8) with a UT0311-01A board connected: forced open, door open too long, invalid card, fire input and outputs following a signal switch the relays, and the live state of the outputs is read correctly. Not verified yet: the duress code, the <b>burglar alarm</b> source and the inputs A1–A3. A configuration made with the manufacturer's software is replaced at the next save: read it and copy it into the form first if you want to keep it. Before removing the board, deactivate the outputs and save.</p></div>
 
   <h3>Maintenance</h3>
@@ -840,6 +841,7 @@
     <tr><td>40</td><td>Forced closed</td><td>forced lock input active</td></tr>
     <tr><td>41–43</td><td>Theft prevention · 24×7 zone · Emergency</td><td>alarm inputs</td></tr>
     <tr><td>44 / 45</td><td>Remote opening</td><td>opened from the application (or a USB reader)</td></tr>
+    <tr><td>201–203 / 211–213</td><td>Expansion input A1–A3 opened / closed</td><td>recorded by UHPPOTE Desk for the inputs in use (type <i>Input</i>)</td></tr>
   </table>
   <p>Rows of denied accesses and alarms are highlighted in red in the dashboard, monitor and history.</p>
 </section>

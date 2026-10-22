@@ -625,6 +625,7 @@
   </table>
   <p>Événements déclencheurs : <b>code sous contrainte</b>, <b>porte ouverte trop longtemps</b>, <b>ouverture forcée</b> (porte ouverte sans accès valide ; nécessite un capteur de porte), <b>verrouillage forcé</b>, <b>badge non valide</b> et <b>alarme incendie</b>. L'alarme incendie ouvre aussi toutes les portes du contrôleur et est enregistrée comme événement 39.</p>
   <p><b>État en direct.</b> Pour un contrôleur avec <i>Carte d'extension connectée</i>, l'onglet <span class="ui">Diagnostic</span> affiche sous le tableau des portes les quatre sorties (<i>Allumée</i>/<i>Éteinte</i>) et les entrées A1–A3 (<i>Ouverte</i>/<i>Fermée</i>), et la tuile du tableau de bord indique les sorties allumées. Elles sont lues toutes les 2 secondes dans le même état que celui utilisé par la console du fabricant : les entrées A1–A3 n'envoient pas d'événement, c'est donc le seul moyen de les voir. Les entrées non raccordées apparaissent <i>Ouverte</i>, car ce sont des contacts normalement fermés. L'alarme incendie s'affiche aussitôt et disparaît quelques secondes après le relâchement de l'entrée.</p>
+  <p><b>Événements des entrées.</b> Dans <i>Entrées A1–A3</i>, activez les entrées que vous utilisez : UHPPOTE Desk enregistre un événement chaque fois que l'une d'elles s'ouvre ou se ferme (type <i>Entrée</i>), visible dans le moniteur et l'historique, et utilisable dans les règles, notifications et webhooks (<i>Entrée d'extension ouverte</i> / <i>refermée</i>). Laissez désactivées les entrées non raccordées : elles apparaissent ouvertes.</p>
   <div class="box warn"><b>Protocole reconstitué</b><p>Les commandes de la carte d'extension ne font pas partie du protocole public du contrôleur : elles ont été reconstituées à partir du logiciel du fabricant. Elles ont été vérifiées sur un UT0311-L04 (firmware v9.f8) avec une carte UT0311-01A connectée : ouverture forcée, porte ouverte trop longtemps, badge non valide, entrée incendie et sorties qui suivent un signal font commuter les relais, et l'état des sorties est lu correctement. Pas encore vérifiés : le code sous contrainte, la source <b>alarme anti-intrusion</b> et les entrées A1–A3. Une configuration faite avec le logiciel du fabricant est remplacée au prochain enregistrement : si vous voulez la garder, lisez-la d'abord et copiez-la dans le formulaire. Avant de retirer la carte, désactivez les sorties et enregistrez.</p></div>
 
   <h3>Maintenance</h3>
@@ -835,6 +836,7 @@
     <tr><td>40</td><td>Fermeture forcée</td><td>entrée de verrouillage forcé active</td></tr>
     <tr><td>41–43</td><td>Anti-intrusion · Zone 24 h · Urgence</td><td>entrées d'alarme</td></tr>
     <tr><td>44 / 45</td><td>Ouverture à distance</td><td>ouverte depuis l'application (ou un lecteur USB)</td></tr>
+    <tr><td>201–203 / 211–213</td><td>Entrée extension A1–A3 ouverte / fermée</td><td>enregistrée par UHPPOTE Desk pour les entrées utilisées (type <i>Entrée</i>)</td></tr>
   </table>
   <p>Les lignes des accès refusés et des alarmes sont surlignées en rouge dans le tableau de bord, le moniteur et l'historique.</p>
 </section>

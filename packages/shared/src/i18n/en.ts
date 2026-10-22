@@ -555,6 +555,10 @@ export const en = {
       'The "invalid card" alarm starts after 3 invalid swipes in a row instead of at every one (firmware V8.96 or later)',
     duressAfterCard: 'Duress code only after a registered card',
     duressAfterCardHint: 'The duress code is accepted only right after the swipe of a registered card',
+    inputEvents: 'Inputs A1-A3',
+    inputEventsHint:
+      'Inputs in use: their openings and closings are recorded in the event history and can trigger rules, notifications and webhooks. The controller sends no event for them: UHPPOTE Desk reads them every 2 s. Leave unconnected inputs off (they read open).',
+    inputEvent: 'A{{n}} in use',
     noAlarmOptions: 'No alarm option enabled',
   },
   presence: {
@@ -963,6 +967,8 @@ export const en = {
     plateNotOpened: 'Not opened: the camera only records',
     guest: 'Guest: {{name}}',
     title: {
+      input_opened: 'Expansion input opened',
+      input_closed: 'Expansion input closed',
       plate_granted: 'Vehicle let in',
       plate_denied: 'Plate refused',
       guest_opened: 'Opened with a guest link',
@@ -1487,6 +1493,8 @@ export const en = {
       admin: 'Administrator',
     },
     webhookEvent: {
+      input_opened: 'Expansion input opened (A1-A3 in use)',
+      input_closed: 'Expansion input closed again',
       plate_granted: 'Plate recognised, door opened',
       plate_denied: 'Plate refused (unknown, no permission, outside hours…)',
       guest_opened: 'Door opened with a guest link',
@@ -1538,6 +1546,12 @@ export const en = {
       '43': 'Emergency',
       '44': 'Remote opening',
       '45': 'Remote opening (USB reader)',
+      '201': 'Expansion input A1 opened',
+      '202': 'Expansion input A2 opened',
+      '203': 'Expansion input A3 opened',
+      '211': 'Expansion input A1 closed',
+      '212': 'Expansion input A2 closed',
+      '213': 'Expansion input A3 closed',
       unknown: 'Reason {{code}}',
     },
     eventType: {
@@ -1545,6 +1559,7 @@ export const en = {
       '1': 'Card',
       '2': 'Door',
       '3': 'Alarm',
+      '4': 'Input',
       '255': 'Overwritten',
     },
     direction: {

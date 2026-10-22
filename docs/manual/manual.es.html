@@ -625,6 +625,7 @@
   </table>
   <p>Eventos que activan las salidas: <b>código de coacción</b>, <b>puerta abierta demasiado tiempo</b>, <b>apertura forzada</b> (puerta abierta sin un acceso válido; requiere sensor de puerta), <b>bloqueo forzado</b>, <b>tarjeta no válida</b> y <b>alarma de incendio</b>. La alarma de incendio también abre todas las puertas del controlador y se registra como evento 39.</p>
   <p><b>Estado en directo.</b> Para un controlador con <i>Placa de expansión conectada</i>, la pestaña <span class="ui">Diagnóstico</span> muestra bajo la tabla de puertas las cuatro salidas (<i>Encendida</i>/<i>Apagada</i>) y las entradas A1–A3 (<i>Abierta</i>/<i>Cerrada</i>), y el recuadro del panel indica qué salidas están encendidas. Se leen cada 2 segundos del mismo estado que usa la consola del fabricante: las entradas A1–A3 no envían eventos, así que es la única forma de verlas. Las entradas no conectadas aparecen como <i>Abierta</i>, porque son contactos normalmente cerrados. La alarma de incendio aparece en el momento y desaparece unos segundos después de soltar la entrada.</p>
+  <p><b>Eventos de las entradas.</b> En <i>Entradas A1–A3</i> active las entradas que usa: UHPPOTE Desk registra un evento cada vez que una se abre o se cierra (tipo <i>Entrada</i>), visible en el monitor y el historial de eventos, y utilizable en reglas, notificaciones y webhooks (<i>Entrada de expansión abierta</i> / <i>cerrada de nuevo</i>). Deje apagadas las entradas no conectadas: aparecen abiertas.</p>
   <div class="box warn"><b>Protocolo reconstruido</b><p>Las órdenes de la placa de expansión no forman parte del protocolo público del controlador: se reconstruyeron a partir del software del fabricante. Se han verificado en un UT0311-L04 (firmware v9.f8) con una placa UT0311-01A conectada: apertura forzada, puerta abierta demasiado tiempo, tarjeta no válida, entrada de incendio y salidas que siguen una señal conmutan los relés, y el estado de las salidas se lee correctamente. Aún sin verificar: el código de coacción, el origen <b>alarma antirrobo</b> y las entradas A1–A3. Una configuración hecha con el software del fabricante se sustituye al siguiente guardado: si quiere conservarla, léala antes y cópiela en el formulario. Antes de quitar la placa, desactive las salidas y guarde.</p></div>
 
   <h3>Mantenimiento</h3>
@@ -835,6 +836,7 @@
     <tr><td>40</td><td>Cierre forzado</td><td>entrada de bloqueo forzado activa</td></tr>
     <tr><td>41–43</td><td>Antirrobo · Zona 24 h · Emergencia</td><td>entradas de alarma</td></tr>
     <tr><td>44 / 45</td><td>Apertura remota</td><td>abierta desde la aplicación (o un lector USB)</td></tr>
+    <tr><td>201–203 / 211–213</td><td>Entrada de expansión A1–A3 abierta / cerrada</td><td>registrada por UHPPOTE Desk para las entradas en uso (tipo <i>Entrada</i>)</td></tr>
   </table>
   <p>Las filas de accesos denegados y alarmas se resaltan en rojo en el panel, el monitor y el historial.</p>
 </section>

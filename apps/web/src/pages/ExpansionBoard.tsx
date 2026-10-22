@@ -379,6 +379,30 @@ export function ExpansionBoardPanel({ id }: { id: number }) {
               />
             ))}
           </Stack>
+          <Stack gap={6}>
+            <Text size="sm" fw={500}>
+              {t('expansion.inputEvents')}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {t('expansion.inputEventsHint')}
+            </Text>
+            <Group>
+              {x.inputEvents.map((on, i) => (
+                <Switch
+                  key={i}
+                  size="sm"
+                  label={t('expansion.inputEvent', { n: i + 1 })}
+                  checked={on}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const inputEvents = [...x.inputEvents] as typeof x.inputEvents
+                    inputEvents[i] = e.currentTarget.checked
+                    setX({ ...x, inputEvents })
+                  }}
+                />
+              ))}
+            </Group>
+          </Stack>
           <Group>
             <Button
               variant="default"

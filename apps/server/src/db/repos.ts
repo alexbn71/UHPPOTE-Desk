@@ -784,6 +784,15 @@ export class EventRepo {
     return row ? mapEvent(row) : null
   }
 
+  /** Next index of the events numbered by the server (an epoch the controller never uses). */
+  nextIndex(controllerId: number, epoch: number): number {
+    const r = this.db.get<{ n: number | null }>(
+      'SELECT MAX(idx) AS n FROM events WHERE controller_id = ? AND epoch = ?',
+      [controllerId, epoch],
+    )
+    return (r?.n ?? 0) + 1
+  }
+
   exists(controllerId: number, epoch: number, index: number): boolean {
     return !!this.db.get('SELECT 1 FROM events WHERE controller_id = ? AND epoch = ? AND idx = ?', [
       controllerId,

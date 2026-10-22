@@ -6,10 +6,28 @@
 /** Reasons that indicate an alarm/anomaly to highlight in the monitor. */
 export const ALARM_REASONS = new Set([34, 37, 38, 39, 40, 41, 42, 43])
 
+/**
+ * Events recorded by the server, not by the controller: inputs A1-A3 of the expansion board opened or closed
+ * (the controller sends no event for them). Stored with epoch SERVER_EVENT_EPOCH, numbered by the server.
+ */
+export const EVENT_TYPE_INPUT = 4
+export const SERVER_EVENT_EPOCH = -1
+/** Reasons 201-203: input A1-A3 opened (normally closed contact open); 211-213: closed again. */
+export const INPUT_OPENED_REASON = 200
+export const INPUT_CLOSED_REASON = 210
+/** Input number (1-3) and state of an input event reason, null for other reasons. */
+export function inputEventOf(reason: number): { input: 1 | 2 | 3; open: boolean } | null {
+  const n = reason % 10
+  if (n < 1 || n > 3) return null
+  if (reason - n === INPUT_OPENED_REASON) return { input: n as 1 | 2 | 3, open: true }
+  if (reason - n === INPUT_CLOSED_REASON) return { input: n as 1 | 2 | 3, open: false }
+  return null
+}
+
 /** Reason codes that have a dedicated label. */
 export const KNOWN_REASONS = [
   1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 18, 20, 23, 24, 25, 28, 29, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43,
-  44, 45,
+  44, 45, 201, 202, 203, 211, 212, 213,
 ] as const
 
 export const DOOR_MODES = [1, 2, 3] as const
@@ -36,6 +54,8 @@ export const WEBHOOK_EVENTS = [
   'guest.refused',
   'plate.granted',
   'plate.denied',
+  'input.opened',
+  'input.closed',
 ] as const
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]
 

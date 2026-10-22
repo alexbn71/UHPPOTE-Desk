@@ -120,7 +120,7 @@ export function EventsPage() {
           <Select
             label={t('common.type')}
             clearable
-            data={[1, 2, 3].map((n) => ({ value: String(n), label: codes.eventType(n) }))}
+            data={[1, 2, 3, 4].map((n) => ({ value: String(n), label: codes.eventType(n) }))}
             value={type}
             onChange={(v) => {
               setType(v)

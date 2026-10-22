@@ -559,6 +559,10 @@ export const es: Messages = {
       'La alarma "tarjeta no válida" se activa tras 3 pasadas no válidas seguidas en lugar de en cada una (firmware V8.96 o posterior)',
     duressAfterCard: 'Código de coacción solo tras una tarjeta registrada',
     duressAfterCardHint: 'El código de coacción solo se acepta justo después de pasar una tarjeta registrada',
+    inputEvents: 'Entradas A1-A3',
+    inputEventsHint:
+      'Entradas en uso: sus aperturas y cierres se registran en el historial de eventos y pueden activar reglas, notificaciones y webhooks. El controlador no envía eventos para ellas: UHPPOTE Desk las lee cada 2 s. Deje apagadas las entradas no conectadas (aparecen abiertas).',
+    inputEvent: 'A{{n}} en uso',
     noAlarmOptions: 'Ninguna opción de alarma activada',
   },
   presence: {
@@ -974,6 +978,8 @@ export const es: Messages = {
     plateNotOpened: 'No abierta: la cámara solo registra',
     guest: 'Invitado: {{name}}',
     title: {
+      input_opened: 'Entrada de expansión abierta',
+      input_closed: 'Entrada de expansión cerrada',
       plate_granted: 'Vehículo admitido',
       plate_denied: 'Matrícula rechazada',
       guest_opened: 'Abierta con enlace de invitado',
@@ -1500,6 +1506,8 @@ export const es: Messages = {
       admin: 'Administrador',
     },
     webhookEvent: {
+      input_opened: 'Entrada de expansión abierta (A1-A3 en uso)',
+      input_closed: 'Entrada de expansión cerrada de nuevo',
       plate_granted: 'Matrícula reconocida, puerta abierta',
       plate_denied: 'Matrícula rechazada (desconocida, sin permiso, fuera de horario…)',
       guest_opened: 'Puerta abierta con un enlace de invitado',
@@ -1551,6 +1559,12 @@ export const es: Messages = {
       '43': 'Emergencia',
       '44': 'Apertura remota',
       '45': 'Apertura remota (lector USB)',
+      '201': 'Entrada de expansión A1 abierta',
+      '202': 'Entrada de expansión A2 abierta',
+      '203': 'Entrada de expansión A3 abierta',
+      '211': 'Entrada de expansión A1 cerrada',
+      '212': 'Entrada de expansión A2 cerrada',
+      '213': 'Entrada de expansión A3 cerrada',
       unknown: 'Motivo {{code}}',
     },
     eventType: {
@@ -1558,6 +1572,7 @@ export const es: Messages = {
       '1': 'Tarjeta',
       '2': 'Puerta',
       '3': 'Alarma',
+      '4': 'Entrada',
       '255': 'Sobrescrito',
     },
     direction: {

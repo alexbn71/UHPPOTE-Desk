@@ -12,6 +12,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { FakeController } from '@uhppote-desk/protocol/testing'
 import type { AppConfig } from '../../src/config.js'
 import { createContext, type AppContext } from '../../src/context.js'
+import type { IntegrationEvent } from '../../src/services/integrationEvents.js'
+import { EVENT_TYPE_INPUT } from '@uhppote-desk/shared'
 
 const LISTEN_PORT = 60032
 const SERIAL = 423187758
@@ -273,6 +275,45 @@ describe('events and commands', () => {
     }
     // without the board the output entities are removed
     await waitFor(() => seen.get(configTopic('binary_sensor', 'expansion_output_1')) === '')
+  })
+
+  it('expansion board: inputs in use recorded as server events (opened/closed), others ignored', async () => {
+    const settings = ctx.controllers.settings(controllerId)
+    ctx.controllers.saveSettings(controllerId, {
+      ...settings,
+      expansionBoard: { ...settings.expansionBoard, installed: true, inputEvents: [true, false, false] },
+    })
+    const bus: string[] = []
+    const onBus = (ev: IntegrationEvent) => {
+      if (ev.type.startsWith('input.')) bus.push(`${ev.type} ${String(ev.data.input)}`)
+    }
+    ctx.integrationEvents.start()
+    ctx.integrationEvents.on('event', onBus)
+    const inputEvents = () =>
+      ctx.events
+        .query({ controllerId, type: EVENT_TYPE_INPUT, limit: 50, offset: 0 })
+        .rows.map((e) => e.reason)
+        .reverse()
+    try {
+      // the first reading sets the starting state: no event
+      await ctx.health.check(controllerId)
+      await waitFor(() => !!ctx.hub.state(controllerId).expansion)
+      fake.setExpansionInput(2, true) // not in use
+      fake.setExpansionInput(1, true)
+      await waitFor(() => inputEvents().length === 1, 5000)
+      fake.setExpansionInput(1, false)
+      await waitFor(() => inputEvents().length === 2, 5000)
+      expect(inputEvents()).toEqual([201, 211])
+      const [opened] = ctx.events.query({ controllerId, type: EVENT_TYPE_INPUT, limit: 1, offset: 0 }).rows
+      expect(opened).toMatchObject({ door: 0, card: 0, granted: false })
+      await waitFor(() => bus.length === 2)
+      expect(bus).toEqual(['input.opened A1', 'input.closed A1'])
+    } finally {
+      ctx.integrationEvents.off('event', onBus)
+      fake.setExpansionInput(2, false)
+      ctx.controllers.saveSettings(controllerId, settings)
+      ctx.mqtt!.refresh(0)
+    }
   })
 
   it('ignores commands for a deactivated door', async () => {

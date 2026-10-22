@@ -249,6 +249,8 @@ export const expansionBoardSchema = z.object({
   invalidCardAlarmAfter3: z.boolean().default(false),
   /** The duress code counts only after a registered card (vendor "Threat Code Valid After Card Swipe"). */
   duressAfterCard: z.boolean().default(false),
+  /** Inputs A1-A3 in use: their openings and closings are recorded as events (server side, not sent). */
+  inputEvents: z.tuple([z.boolean(), z.boolean(), z.boolean()]).default([false, false, false]),
 })
 export type ExpansionBoardSettings = z.infer<typeof expansionBoardSchema>
 
@@ -268,6 +270,7 @@ export const DEFAULT_EXPANSION_BOARD: ExpansionBoardSettings = {
   openTooLongAlarm: false,
   invalidCardAlarmAfter3: false,
   duressAfterCard: false,
+  inputEvents: [false, false, false],
 }
 
 /** A byte of the parameter table that differs from what UHPPOTE Desk writes. */

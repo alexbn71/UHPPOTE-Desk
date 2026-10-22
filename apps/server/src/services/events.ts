@@ -9,7 +9,14 @@ import {
 } from '@uhppote-desk/protocol'
 import type { ControllerRepo, EventRepo } from '../db/repos.js'
 import type { ControllerGateway } from '../gateway/gateway.js'
-import type { EventDto } from '@uhppote-desk/shared'
+import {
+  EVENT_TYPE_INPUT,
+  INPUT_CLOSED_REASON,
+  INPUT_OPENED_REASON,
+  SERVER_EVENT_EPOCH,
+  type ControllerLiveState,
+  type EventDto,
+} from '@uhppote-desk/shared'
 import { localDateTime, parseLocal } from '../util/time.js'
 
 /**
@@ -141,12 +148,39 @@ export class EventService {
     const ls = await this.gateway.run(null, controllerId, 'health', null, (client, t) => client.readLongStatus(t), {
       audit: false,
     })
+    this.recordInputChanges(controllerId, this.gateway.hub.state(controllerId).expansion, ls.expansionInputs)
     this.gateway.hub.patch(controllerId, {
       expansion: { outputs: ls.expansionOutputs, fireInput: ls.expansionFireInput, inputs: ls.expansionInputs },
     })
     const active = ls.expansionFireInput || ls.expansionOutputs.some(Boolean)
     if (active) this.watch(controllerId)
     return active
+  }
+
+  /**
+   * Records an event for every input A1-A3 in use that changed since the previous reading (the controller sends
+   * none). The first reading only sets the starting state.
+   */
+  private recordInputChanges(
+    controllerId: number,
+    before: ControllerLiveState['expansion'],
+    inputs: [boolean, boolean, boolean],
+  ): void {
+    if (!before) return
+    const inUse = this.controllers.settings(controllerId).expansionBoard.inputEvents
+    inputs.forEach((open, i) => {
+      if (!inUse[i] || before.inputs[i] === open) return
+      this.store(controllerId, SERVER_EVENT_EPOCH, {
+        index: this.events.nextIndex(controllerId, SERVER_EVENT_EPOCH),
+        type: EVENT_TYPE_INPUT,
+        granted: false,
+        door: 0,
+        direction: 0,
+        card: 0,
+        timestamp: localDateTime() as ControllerEvent['timestamp'],
+        reason: (open ? INPUT_OPENED_REASON : INPUT_CLOSED_REASON) + i + 1,
+      })
+    })
   }
 
   /**
