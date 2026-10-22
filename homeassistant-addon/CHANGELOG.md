@@ -3,6 +3,13 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.1
+
+- New option **Emergency access without two-factor authentication**: administrators log in with the password only
+  and can switch off their own two-factor authentication (lost phone and recovery codes). Operators still need
+  their code. Turn it off again right after.
+- Italian: *Sincronizza orologio* instead of the ambiguous *Sincronizza ora*.
+
 ## 1.2.0
 
 - **Two-factor authentication** for the operators (authenticator app), with recovery codes; administrators choose

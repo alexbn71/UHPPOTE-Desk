@@ -5,7 +5,7 @@ import type { FastifyInstance } from 'fastify'
 import { requireRole } from '../auth/auth.js'
 import type { AppContext } from '../context.js'
 
-export const APP_VERSION = '1.2.0'
+export const APP_VERSION = '1.2.1'
 
 /**
  * Entry bundle of the web build being served (e.g. `index-Dj_MWMRy.js`): it changes at every build, unlike

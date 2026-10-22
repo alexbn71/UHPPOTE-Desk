@@ -5,6 +5,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-22
+
 ### Added
 - **Emergency access for administrators** (`ADMIN_2FA_BYPASS=true`, add-on option *Emergency access without
   two-factor authentication*): administrators log in with the password only and can switch off their own
@@ -146,6 +148,7 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.2.1]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.1
 [1.2.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.0
 [1.1.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.1.0
 [1.0.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.0.0
