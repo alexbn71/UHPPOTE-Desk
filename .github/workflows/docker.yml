@@ -236,4 +236,8 @@ jobs:
         run: |
           # on a manual release the tag does not exist yet: it is created on the built commit
           gh release create "$TAG" --target "$GITHUB_SHA" --title "UHPPOTE Desk $TAG" --notes-file notes.md \
-            "docs/UHPPOTE-Desk-Manual.pdf#User manual (PDF)"
+            "docs/UHPPOTE-Desk-Manual.pdf#User manual (PDF, English)" \
+            "docs/UHPPOTE-Desk-Manual-it.pdf#Manuale utente (PDF, italiano)" \
+            "docs/UHPPOTE-Desk-Manual-de.pdf#Benutzerhandbuch (PDF, Deutsch)" \
+            "docs/UHPPOTE-Desk-Manual-fr.pdf#Manuel utilisateur (PDF, français)" \
+            "docs/UHPPOTE-Desk-Manual-es.pdf#Manual de usuario (PDF, español)"

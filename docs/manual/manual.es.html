@@ -39,12 +39,13 @@
 
   /* cover */
   .cover { height: 263mm; display: flex; flex-direction: column; justify-content: space-between; padding: 0 18mm; break-after: page; }
-  .cover .band { margin-top: 10mm; border-radius: 6mm; padding: 16mm 14mm 14mm; color: #fff; background: linear-gradient(135deg, #1557a8 0%, #2b8ae6 60%, #34c38f 130%); position: relative; overflow: hidden; }
-  .cover .band::after { content: ""; position: absolute; right: -30mm; bottom: -40mm; width: 110mm; height: 110mm; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .cover .band { margin-top: 10mm; border-radius: 6mm; padding: 16mm 14mm 14mm; color: #fff; background: linear-gradient(135deg, #1557a8 0%, #2b8ae6 60%, #34c38f 130%); }
+  /* no transparency on the cover (no opacity, no rgba, no clipping): some PDF viewers drew the band and then
+     hid it */
   .cover img { width: 30mm; height: 30mm; background: #fff; border-radius: 7mm; padding: 2mm; }
   .cover h1 { color: #fff; border: 0; font-size: 34pt; margin: 8mm 0 0; padding: 0; }
-  .cover .subtitle { font-size: 16pt; opacity: 0.95; margin-top: 1mm; }
-  .cover .tagline { margin-top: 10mm; font-size: 11pt; max-width: 130mm; opacity: 0.95; }
+  .cover .subtitle { font-size: 16pt; color: #f2f7fd; margin-top: 1mm; }
+  .cover .tagline { margin-top: 10mm; font-size: 11pt; max-width: 130mm; color: #f2f7fd; }
   .cover .meta { color: var(--muted); font-size: 9.5pt; border-top: 1px solid var(--line); padding-top: 4mm; display: flex; justify-content: space-between; }
   .cover .chips { display: flex; gap: 3mm; flex-wrap: wrap; margin: 8mm 0 0; }
   .cover .chip { background: var(--blue-soft); color: var(--blue); border-radius: 10mm; padding: 1.5mm 4mm; font-size: 9pt; font-weight: 600; }
@@ -59,9 +60,9 @@
 
   /* part opener */
   .opener { border-radius: 5mm; padding: 10mm 12mm; margin: 4mm 0 6mm; color: #fff; }
-  .opener .label { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9pt; opacity: 0.9; }
+  .opener .label { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9pt; color: #eaf2fb; }
   .opener h1 { color: #fff; border: 0; margin: 1mm 0 2mm; padding: 0; font-size: 24pt; }
-  .opener p { margin: 0; opacity: 0.95; }
+  .opener p { margin: 0; color: #f2f7fd; }
   .o-blue { background: linear-gradient(135deg, #1557a8, #2b8ae6); }
   .o-green { background: linear-gradient(135deg, #1f7a52, #34c38f); }
   .o-violet { background: linear-gradient(135deg, #5235b8, #8c6ff0); }
@@ -79,7 +80,7 @@
 
   /* figures */
   figure { margin: 3mm 0 5mm; break-inside: avoid; }
-  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(20, 50, 90, 0.10); margin: 0 auto; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; margin: 0 auto; }
   figure.narrow img { max-width: 70%; }
   figure.half img { max-width: 52%; }
   figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
@@ -108,7 +109,9 @@
 
   /* steps */
   ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
-  ol.steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.2mm; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.2mm; break-inside: avoid; }
+  /* a list item is never split across two pages (the step number would be cut in half) */
+  li { break-inside: avoid; }
   ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0.2mm; width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--blue2); color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
 
   /* concept cards */
@@ -250,9 +253,9 @@
         <rect x="255" y="30" width="230" height="210" rx="14" fill="url(#gs)"/>
         <text x="370" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Servidor UHPPOTE Desk</text>
         <text x="370" y="76" text-anchor="middle" font-size="10.5" fill="#dbe9fb">Docker en servidor / NAS</text>
-        <rect x="275" y="90" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#1557a8">Base de datos (referencia)</text>
-        <rect x="275" y="132" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="154" text-anchor="middle" font-size="11.5" fill="#1557a8">Sincronización · Eventos</text>
-        <rect x="275" y="174" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="196" text-anchor="middle" font-size="11.5" fill="#1557a8">Asistencia · Registro · Copias</text>
+        <rect x="275" y="90" width="190" height="34" rx="6" fill="#f4f8fd"/><text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#1557a8">Base de datos (referencia)</text>
+        <rect x="275" y="132" width="190" height="34" rx="6" fill="#f4f8fd"/><text x="370" y="154" text-anchor="middle" font-size="11.5" fill="#1557a8">Sincronización · Eventos</text>
+        <rect x="275" y="174" width="190" height="34" rx="6" fill="#f4f8fd"/><text x="370" y="196" text-anchor="middle" font-size="11.5" fill="#1557a8">Asistencia · Registro · Copias</text>
       </g>
       <g>
         <rect x="580" y="30" width="170" height="100" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
