@@ -41,7 +41,8 @@ export function UpdateNotice() {
           message: (
             <Group justify="space-between" wrap="nowrap" gap="sm">
               <Text size="sm">{t('update.message')}</Text>
-              <Button size="xs" onClick={() => location.reload()}>
+              {/* the text shrinks and wraps, never the button (its label was cut in narrow notifications) */}
+              <Button size="xs" style={{ flexShrink: 0 }} onClick={() => location.reload()}>
                 {t('update.reload')}
               </Button>
             </Group>
