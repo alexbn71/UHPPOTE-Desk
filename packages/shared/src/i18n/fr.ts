@@ -148,6 +148,12 @@ export const fr: Messages = {
     disableInfo: "Saisissez votre mot de passe et un code de l'application (ou un code de récupération).",
     requiredByPolicy:
       'Obligatoire pour votre rôle par décision des administrateurs : elle ne peut pas être désactivée.',
+    bypassTitle: "Accès d'urgence actif",
+    bypassBanner:
+      'ADMIN_2FA_BYPASS est définie : les administrateurs se connectent sans second facteur. Réinitialisez votre authentification à deux facteurs (page Authentification à deux facteurs), puis supprimez la variable et redémarrez UHPPOTE Desk.',
+    bypassInfo:
+      "Accès d'urgence (ADMIN_2FA_BYPASS) : vous pouvez désactiver l'authentification à deux facteurs sans code, même si elle est obligatoire. Si elle est obligatoire, vous la reconfigurez avec le nouveau téléphone à la prochaine connexion.",
+    bypassDisableInfo: "Saisissez votre mot de passe pour la désactiver (aucun code pendant l'accès d'urgence).",
   },
   dashboard: {
     title: 'Tableau de bord',

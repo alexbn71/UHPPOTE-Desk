@@ -27,6 +27,8 @@ interface TotpStatus {
   enabled: boolean
   required: boolean
   recoveryCodesLeft: number
+  /** Emergency access (ADMIN_2FA_BYPASS) for this administrator: reset without a code. */
+  bypass: boolean
 }
 
 type Step =
@@ -119,7 +121,7 @@ export function TwoFactorPage({ forced = false }: { forced?: boolean }) {
   })
 
   const disable = run(async () => {
-    await api.post('/auth/totp/disable', { password, code })
+    await api.post('/auth/totp/disable', { password, code: code || undefined })
     notifyOk(t('twoFactor.disabled'))
     go({ kind: 'idle' })
     void qc.invalidateQueries({ queryKey: ['totp'] })
@@ -151,6 +153,7 @@ export function TwoFactorPage({ forced = false }: { forced?: boolean }) {
             {t('twoFactor.description')}
           </Text>
           {forced && <Alert color="blue">{t('twoFactor.requiredInfo')}</Alert>}
+          {s?.bypass && <Alert color="red">{t('twoFactor.bypassInfo')}</Alert>}
           {error && <Alert color="red">{error}</Alert>}
           {status.isLoading && <Loader size="sm" />}
 
@@ -166,7 +169,7 @@ export function TwoFactorPage({ forced = false }: { forced?: boolean }) {
                 <Button variant="default" onClick={() => go({ kind: 'newCodes' })}>
                   {t('twoFactor.newCodes')}
                 </Button>
-                {s.required ? (
+                {s.required && !s.bypass ? (
                   <Text size="xs" c="dimmed">
                     {t('twoFactor.requiredByPolicy')}
                   </Text>
@@ -270,7 +273,7 @@ export function TwoFactorPage({ forced = false }: { forced?: boolean }) {
           {step.kind === 'disable' && (
             <form onSubmit={disable}>
               <Stack>
-                <Text size="sm">{t('twoFactor.disableInfo')}</Text>
+                <Text size="sm">{s?.bypass ? t('twoFactor.bypassDisableInfo') : t('twoFactor.disableInfo')}</Text>
                 <PasswordInput
                   label={t('login.password')}
                   value={password}
@@ -279,14 +282,16 @@ export function TwoFactorPage({ forced = false }: { forced?: boolean }) {
                   autoFocus
                   autoComplete="current-password"
                 />
-                <TotpCodeInput
-                  value={code}
-                  onChange={setCode}
-                  label={t('login.totp')}
-                  description={t('login.totpHint')}
-                  recovery
-                  autoFocus={false}
-                />
+                {!s?.bypass && (
+                  <TotpCodeInput
+                    value={code}
+                    onChange={setCode}
+                    label={t('login.totp')}
+                    description={t('login.totpHint')}
+                    recovery
+                    autoFocus={false}
+                  />
+                )}
                 <Group>
                   <Button type="submit" color="red" loading={busy}>
                     {t('twoFactor.disable')}

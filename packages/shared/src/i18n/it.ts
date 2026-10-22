@@ -147,6 +147,12 @@ export const it: Messages = {
     disable: 'Disattiva',
     disableInfo: "Inserisci la password e un codice dell'app (oppure un codice di recupero).",
     requiredByPolicy: 'Obbligatoria per il tuo ruolo per decisione degli amministratori: non si può disattivare.',
+    bypassTitle: 'Accesso di emergenza attivo',
+    bypassBanner:
+      'ADMIN_2FA_BYPASS è impostata: gli amministratori accedono senza secondo fattore. Reimposta la tua autenticazione a due fattori (pagina Autenticazione a due fattori), poi togli la variabile e riavvia UHPPOTE Desk.',
+    bypassInfo:
+      "Accesso di emergenza (ADMIN_2FA_BYPASS): puoi disattivare l'autenticazione a due fattori senza codice, anche se è obbligatoria. Se è obbligatoria, la riconfiguri con il nuovo telefono al prossimo accesso.",
+    bypassDisableInfo: "Inserisci la password per disattivarla (durante l'accesso di emergenza il codice non serve).",
   },
   dashboard: {
     title: 'Panoramica',

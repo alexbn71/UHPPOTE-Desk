@@ -52,8 +52,14 @@ export const totpSetupSchema = z.object({ password: z.string().min(1) })
 /** A code of the authenticator app (or a recovery code where accepted). */
 export const totpCodeSchema = z.object({ code: z.string().trim().min(6).max(40) })
 
-/** Switching two-factor authentication off: password and a current code (or a recovery code). */
-export const totpDisableSchema = z.object({ password: z.string().min(1), code: z.string().trim().min(6).max(40) })
+/**
+ * Switching two-factor authentication off: password and a current code (or a recovery code); the code is not asked
+ * to administrators during the emergency access (ADMIN_2FA_BYPASS).
+ */
+export const totpDisableSchema = z.object({
+  password: z.string().min(1),
+  code: z.string().trim().min(6).max(40).optional(),
+})
 
 /** Who must use two-factor authentication: nobody, administrators, operators and administrators, everybody. */
 export const REQUIRE_2FA_LEVELS = ['none', 'admin', 'operator', 'all'] as const

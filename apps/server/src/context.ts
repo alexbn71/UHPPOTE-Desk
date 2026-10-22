@@ -79,7 +79,7 @@ export function createContext(config: AppConfig, logger: Logger, dbFile?: string
   const notifications = new NotificationRepo(db)
   const rules = new RuleRepo(db)
   const mobile = new MobileService(db)
-  const auth = new AuthService(db, config.sessionHours)
+  const auth = new AuthService(db, config.sessionHours, config.admin2faBypass ?? false)
   const zones = new TreeRepo(db, 'zones')
   const protoLogger: Logger = config.uhppote.debug
     ? logger

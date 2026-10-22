@@ -18,6 +18,8 @@ export interface CurrentUser {
   totpEnabled: boolean
   /** Two-factor authentication required for the role and not set up yet. */
   mustSetupTotp: boolean
+  /** Emergency access (ADMIN_2FA_BYPASS): administrator logged in without the second factor. */
+  totpBypass: boolean
 }
 
 interface AuthState {

@@ -44,4 +44,5 @@ schema:
   public_url: url?
   secure_cookies: bool?
   packet_debug: bool?
+  admin_2fa_bypass: bool?
   log_level: list(debug|info|warn|error)

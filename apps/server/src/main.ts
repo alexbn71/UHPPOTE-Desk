@@ -46,6 +46,13 @@ async function main(): Promise<void> {
     logger.info!("Password of user 'admin' set from ADMIN_PASSWORD")
   }
 
+  if (config.admin2faBypass) {
+    logger.warn!(
+      'ADMIN_2FA_BYPASS is set: administrators log in WITHOUT the second factor. ' +
+        'Reset two-factor authentication, then remove the variable and restart',
+    )
+  }
+
   const app = await buildApp(ctx, { logger: level === 'debug' })
 
   try {

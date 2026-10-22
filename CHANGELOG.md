@@ -5,6 +5,13 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+### Added
+- **Emergency access for administrators** (`ADMIN_2FA_BYPASS=true`, add-on option *Emergency access without
+  two-factor authentication*): administrators log in with the password only and can switch off their own
+  two-factor authentication without a code, also when it is mandatory — for the only administrator who lost phone
+  and recovery codes. Operators and read-only users still need their code. Red banner in the app, warning at start,
+  logins marked in the audit log.
+
 ### Fixed
 - Italian: "Sincronizza ora" (clock) read as "synchronise now": it is now *Sincronizza orologio*.
 

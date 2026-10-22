@@ -147,6 +147,13 @@ export const de: Messages = {
     disable: 'Ausschalten',
     disableInfo: 'Geben Sie Ihr Passwort und einen Code der App (oder einen Wiederherstellungscode) ein.',
     requiredByPolicy: 'Von den Administratoren für Ihre Rolle vorgeschrieben: kann nicht ausgeschaltet werden.',
+    bypassTitle: 'Notfallzugang aktiv',
+    bypassBanner:
+      'ADMIN_2FA_BYPASS ist gesetzt: Administratoren melden sich ohne zweiten Faktor an. Setzen Sie Ihre Zwei-Faktor-Authentifizierung zurück (Seite Zwei-Faktor-Authentifizierung), entfernen Sie dann die Variable und starten Sie UHPPOTE Desk neu.',
+    bypassInfo:
+      'Notfallzugang (ADMIN_2FA_BYPASS): Sie können die Zwei-Faktor-Authentifizierung ohne Code ausschalten, auch wenn sie Pflicht ist. Ist sie Pflicht, richten Sie sie bei der nächsten Anmeldung mit dem neuen Telefon wieder ein.',
+    bypassDisableInfo:
+      'Geben Sie Ihr Passwort ein, um sie auszuschalten (während des Notfallzugangs ist kein Code nötig).',
   },
   dashboard: {
     title: 'Übersicht',

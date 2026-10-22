@@ -59,6 +59,7 @@ In the examples the server has IP `192.168.1.10` and the controllers are on the 
 | `SECURE_COOKIES` | `false` | `true` if the interface is published over HTTPS through a reverse proxy. |
 | `PUBLIC_URL` | — | Public HTTPS address behind the reverse proxy (e.g. `https://doors.example.com`), used by the [mobile app](MOBILE.md) for fingerprint/Face ID and push notifications. |
 | `SESSION_HOURS` | `12` | Operator session duration. |
+| `ADMIN_2FA_BYPASS` | `false` | **Emergency access**: `true` lets **administrators** log in with the password only and switch off their own [two-factor authentication](#two-factor-authentication) without a code (lost phone and recovery codes). Operators and read-only users still need their code. A red banner is shown and every such login is in the audit log; remove the variable as soon as access is restored. |
 | `HEALTH_INTERVAL_SEC` | `15` | Interval for checking controller status (online/offline, doors). |
 | `COLLECT_INTERVAL_SEC` | `300` | Interval at which events are also downloaded from the controller, as a safety net in case a pushed event is lost. |
 | `TIME_SYNC_THRESHOLD_SEC` | `30` | Difference in seconds beyond which the controller clock is corrected automatically (`0` = never). |
@@ -199,8 +200,12 @@ for the 6-digit code of the app.
   and administrators, everybody). Those concerned must set it up at their next login before using the app (an open
   session is stopped at its next request), and cannot turn it off. Changes are recorded in the audit log.
 - **Lost phone**: a recovery code; or an administrator (*Operators*, shield icon) resets it for another operator,
-  closing their sessions and devices. Keep at least two administrators, or keep the recovery codes safe: nobody can
-  reset the two-factor authentication of the only administrator.
+  closing their sessions and devices.
+- **Emergency access for administrators**: `ADMIN_2FA_BYPASS=true` (add-on option *Emergency access without
+  two-factor authentication*) lets administrators log in with the password only and switch off their own two-factor
+  authentication without a code, also when it is mandatory (it is then set up again with the new phone at the next
+  login). Operators and read-only users are not concerned: they still need their code. While it is set, a red banner
+  is shown, a warning is logged at start and every such login is marked in the audit log. Remove it right after.
 - API tokens, plate readers and guest links do not use it: they have their own secrets.
 - Codes are checked by the server (RFC 6238, SHA-1, 30 s): a code is accepted once, and wrong codes count as failed
   login attempts (5 block the user from that address for 5 minutes).
@@ -253,6 +258,6 @@ docker exec -d  uhppote-desk node hwtest/devsim.js --auto 10    # background: a 
 | Wrong time on the controllers or in reports | `TZ` not set | Set `TZ`, e.g. `Europe/Rome` |
 | *System* shows MQTT "not connected"; log `MQTT: broker … unreachable` | Wrong `MQTT_URL`, credentials or firewall | Check the URL and the user in the broker; see [HOME-ASSISTANT.md](HOME-ASSISTANT.md#troubleshooting) |
 | Forgotten `admin` password | — | Set `ADMIN_PASSWORD` and restart the container: the new password is applied |
-| Lost the phone with the authenticator app | — | Log in with a recovery code, or have another administrator use *Operators → Reset two-factor authentication* |
+| Lost the phone with the authenticator app | — | Log in with a recovery code, or have another administrator use *Operators → Reset two-factor authentication*; the only administrator: set `ADMIN_2FA_BYPASS=true`, restart, switch it off on the *Two-factor authentication* page, remove the variable and restart |
 | "Verification code not valid" with the right app | The clock of the server or of the phone is wrong | Codes change every 30 s and the server accepts one step before and after: synchronise both clocks (NTP). `TZ` does not matter, codes use UTC |
 | Log warning "INITIAL_ADMIN_PASSWORD is deprecated" | Old variable name | Rename it to `ADMIN_PASSWORD` (the old name still works as a fallback) |

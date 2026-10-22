@@ -62,6 +62,8 @@ export function buildEnv({ options = {}, mqtt = null, network = null, ports = nu
   if (publicUrl) env.PUBLIC_URL = publicUrl
   if (options.secure_cookies === true) env.SECURE_COOKIES = 'true'
   if (options.packet_debug === true) env.UHPPOTE_DEBUG = 'true'
+  // emergency access: administrators log in without the second factor (lost phone)
+  if (options.admin_2fa_bypass === true) env.ADMIN_2FA_BYPASS = 'true'
   if (['debug', 'info', 'warn', 'error'].includes(options.log_level)) env.LOG_LEVEL = options.log_level
   // the database and the backups live in /data, which Home Assistant includes in its own backups
   env.PUID = '0'

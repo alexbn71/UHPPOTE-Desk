@@ -46,6 +46,11 @@ export interface AppConfig {
   publicUrl: string | null
   /** Days the photos of plate readings are kept (0 = none are taken); 30 when not set. */
   platePhotoDays?: number
+  /**
+   * Emergency access (ADMIN_2FA_BYPASS): administrators log in with the password only and may switch off or reset
+   * their own two-factor authentication without a code. For a lost phone; to be removed afterwards.
+   */
+  admin2faBypass?: boolean
 }
 
 export interface MqttConfig {
@@ -125,5 +130,6 @@ export function loadConfig(): AppConfig {
     mqtt: loadMqtt(),
     publicUrl: process.env.PUBLIC_URL ? process.env.PUBLIC_URL.replace(/\/+$/, '') : null,
     platePhotoDays: int('PLATE_PHOTO_DAYS', 30),
+    admin2faBypass: bool('ADMIN_2FA_BYPASS', false),
   }
 }

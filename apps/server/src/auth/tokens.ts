@@ -120,6 +120,7 @@ export class ApiTokenService {
       passwordManaged: true,
       totpEnabled: false,
       mustSetupTotp: false,
+      totpBypass: false,
       zoneIds: t.zoneIds,
       doorIds: t.doorIds,
       canOpenDoors: t.access !== 'read',

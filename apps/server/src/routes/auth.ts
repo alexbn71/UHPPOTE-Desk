@@ -42,7 +42,10 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
       ctx.audit.log(null, 'login-failed', `operator:${body.username}`, { ip: req.ip })
       throw new HttpError(401, 'invalidCredentials')
     }
-    if (user.totpEnabled) {
+    if (user.totpEnabled && user.totpBypass) {
+      // emergency access (ADMIN_2FA_BYPASS): administrators without the second factor, always audited
+      ctx.logger.warn?.(`login of administrator ${user.username} without the second factor (ADMIN_2FA_BYPASS)`)
+    } else if (user.totpEnabled) {
       // the client asks for the code and sends password and code again
       if (!body.totp) throw new HttpError(401, 'totpRequired')
       const how = ctx.auth.verifySecondFactor(user.id!, body.totp)
@@ -71,14 +74,21 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
         body.deviceName ?? (req.headers['user-agent'] ?? '').slice(0, 100),
         req.ip,
       )
-      ctx.audit.log(user, 'login', `operator:${user.username}`, { ip: req.ip, device: device.deviceId })
+      ctx.audit.log(user, 'login', `operator:${user.username}`, {
+        ip: req.ip,
+        device: device.deviceId,
+        ...(user.totpEnabled && user.totpBypass ? { totpBypass: true } : {}),
+      })
       reply.clearCookie(SESSION_COOKIE, { path: '/' })
       // the server decides when the device expires; the cookie itself lasts ten years
       reply.setCookie(DEVICE_COOKIE, device.token, { ...cookie, maxAge: 10 * 365 * 86_400 })
       return { user: { ...user, deviceId: device.deviceId } }
     }
     const sessionId = ctx.auth.createSession(user.id!, req.ip, req.headers['user-agent'] ?? '')
-    ctx.audit.log(user, 'login', `operator:${user.username}`, { ip: req.ip })
+    ctx.audit.log(user, 'login', `operator:${user.username}`, {
+      ip: req.ip,
+      ...(user.totpEnabled && user.totpBypass ? { totpBypass: true } : {}),
+    })
     reply.clearCookie(DEVICE_COOKIE, { path: '/' })
     reply.setCookie(SESSION_COOKIE, sessionId, { ...cookie, maxAge: ctx.config.sessionHours * 3600 })
     return { user }
@@ -131,6 +141,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
       enabled: user.totpEnabled,
       required: ctx.auth.totpRequiredFor(user.role),
       recoveryCodesLeft: user.totpEnabled ? ctx.auth.recoveryCodesLeft(user.id) : 0,
+      bypass: user.totpBypass,
     }
   })
 
@@ -188,18 +199,20 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     const key = selfKey(req, user.id)
     assertNotBlocked(key)
     if (!user.totpEnabled) throw new HttpError(400, 'totpNotEnabled')
-    if (ctx.auth.totpRequiredFor(user.role)) throw new HttpError(400, 'totpRequiredByPolicy')
+    // emergency access: no code (the phone is lost) and allowed also when it is mandatory, so that it can be set up
+    // again with a new phone at the next login
+    if (!user.totpBypass && ctx.auth.totpRequiredFor(user.role)) throw new HttpError(400, 'totpRequiredByPolicy')
     if (!(await ctx.auth.checkPassword(user.id, body.password))) {
       recordFailure(key)
       throw new HttpError(400, 'wrongPassword')
     }
-    if (!ctx.auth.verifySecondFactor(user.id, body.code)) {
+    if (!user.totpBypass && !ctx.auth.verifySecondFactor(user.id, body.code ?? '')) {
       recordFailure(key)
       throw new HttpError(400, 'invalidTotp')
     }
     failures.delete(key)
     ctx.auth.disableTotp(user.id)
-    ctx.audit.log(req.user, 'totp-disable', `operator:${user.username}`)
+    ctx.audit.log(req.user, 'totp-disable', `operator:${user.username}`, user.totpBypass ? { totpBypass: true } : {})
     return { ok: true }
   })
 

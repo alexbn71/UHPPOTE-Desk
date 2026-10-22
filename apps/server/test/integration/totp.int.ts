@@ -16,7 +16,7 @@ const PASSWORD = 'Totp-Test-Pass-1'
 const quiet = { info: () => undefined, warn: () => undefined, error: () => undefined, debug: () => undefined }
 const open: { ctx: AppContext; app: FastifyInstance; dir: string }[] = []
 
-function config(dir: string): AppConfig {
+function config(dir: string, admin2faBypass = false): AppConfig {
   return {
     httpPort: 0,
     httpHost: '127.0.0.1',
@@ -43,11 +43,12 @@ function config(dir: string): AppConfig {
     backupKeep: 1,
     mqtt: null,
     publicUrl: null,
+    admin2faBypass,
   }
 }
 
-async function start(dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uhd-totp-'))) {
-  const ctx = createContext(config(dir), quiet, path.join(dir, 'db.sqlite'))
+async function start(dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uhd-totp-')), admin2faBypass = false) {
+  const ctx = createContext(config(dir, admin2faBypass), quiet, path.join(dir, 'db.sqlite'))
   await ctx.auth.ensureAdmin(PASSWORD)
   const app = await buildApp(ctx)
   open.push({ ctx, app, dir })
@@ -112,7 +113,7 @@ describe('two-factor authentication', () => {
     expect(ok.statusCode).toBe(200)
     expect(ok.json().recoveryCodes).toHaveLength(10)
     const status = await app.inject({ method: 'GET', url: '/api/auth/totp', headers: { cookie: s.cookie } })
-    expect(status.json()).toEqual({ enabled: true, required: false, recoveryCodesLeft: 10 })
+    expect(status.json()).toEqual({ enabled: true, required: false, recoveryCodesLeft: 10, bypass: false })
     // a second setup is refused while active
     expect((await post(app, s.cookie, '/auth/totp/setup', { password: PASSWORD })).json().code).toBe(
       'totpAlreadyEnabled',
@@ -336,5 +337,76 @@ describe('two-factor authentication required (security settings)', () => {
       payload: { require2fa: 'none' },
     })
     expect(blocked.json().code).toBe('mustSetupTotp')
+  })
+})
+
+describe('ADMIN_2FA_BYPASS (emergency access)', () => {
+  /** Restarts on the same data folder with or without the variable. */
+  async function restart(entry: { ctx: AppContext; app: FastifyInstance; dir: string }, bypass: boolean) {
+    open.splice(open.indexOf(open.find((e) => e.dir === entry.dir)!), 1)
+    await entry.app.close()
+    entry.ctx.db.close()
+    return start(entry.dir, bypass)
+  }
+
+  it('administrators log in without the code and reset their own, operators still need the code', async () => {
+    const first = await start()
+    const { cookie: adminCookie } = await enable(first.app)
+    // an operator with two-factor authentication too
+    await post(first.app, adminCookie, '/operators', {
+      username: 'mario',
+      displayName: 'Mario',
+      role: 'operator',
+      active: true,
+      password: 'Mario-Pass-123',
+      zoneIds: [],
+    })
+    let m = await login(first.app, {}, 'mario', 'Mario-Pass-123')
+    await post(first.app, m.cookie, '/auth/password', {
+      currentPassword: 'Mario-Pass-123',
+      newPassword: 'Mario-Pass-456',
+    })
+    const { secret } = (await post(first.app, m.cookie, '/auth/totp/setup', { password: 'Mario-Pass-456' })).json()
+    await post(first.app, m.cookie, '/auth/totp/enable', { code: hotp(secret, currentStep()) })
+    // two-factor authentication required for administrators
+    first.ctx.auth.saveSecuritySettings({ require2fa: 'admin' })
+
+    // lost phone: restart with the variable
+    const { app, ctx } = await restart(first, true)
+    const admin = await login(app)
+    expect(admin.status).toBe(200)
+    expect(admin.body.user).toMatchObject({ totpEnabled: true, totpBypass: true })
+    const audit = ctx.db.get<{ details: string }>(
+      "SELECT details FROM audit_log WHERE action = 'login' ORDER BY id DESC LIMIT 1",
+    )!
+    expect(JSON.parse(audit.details)).toMatchObject({ totpBypass: true })
+    // the operator is not concerned: the code is still asked
+    m = await login(app, {}, 'mario', 'Mario-Pass-456')
+    expect(m.body.code).toBe('totpRequired')
+    expect(m.body.user).toBeUndefined()
+
+    // reset: switched off with the password only, although mandatory for administrators
+    const status = await app.inject({ method: 'GET', url: '/api/auth/totp', headers: { cookie: admin.cookie } })
+    expect(status.json()).toMatchObject({ enabled: true, required: true, bypass: true })
+    expect((await post(app, admin.cookie, '/auth/totp/disable', { password: 'wrong' })).json().code).toBe(
+      'wrongPassword',
+    )
+    expect((await post(app, admin.cookie, '/auth/totp/disable', { password: PASSWORD })).statusCode).toBe(200)
+    // mandatory: set up again with the new phone before anything else
+    expect((await login(app)).body.user).toMatchObject({ totpEnabled: false, mustSetupTotp: true })
+
+    // the operator cannot switch it off without the code, even with the variable
+    m = await login(app, { totp: freshCode(ctx, 'mario') }, 'mario', 'Mario-Pass-456')
+    expect((await post(app, m.cookie, '/auth/totp/disable', { password: 'Mario-Pass-456' })).json().code).toBe(
+      'invalidTotp',
+    )
+  })
+
+  it('without the variable the administrator needs the code again', async () => {
+    const first = await start(undefined, true)
+    await enable(first.app)
+    expect((await login(first.app)).status).toBe(200)
+    const { app } = await restart(first, false)
+    expect((await login(app)).body.code).toBe('totpRequired')
   })
 })

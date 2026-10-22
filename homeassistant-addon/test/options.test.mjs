@@ -54,6 +54,7 @@ describe('Home Assistant add-on options', () => {
         public_url: 'https://doors.example.com',
         secure_cookies: true,
         packet_debug: true,
+        admin_2fa_bypass: true,
       },
       mqtt,
       network,
@@ -68,6 +69,7 @@ describe('Home Assistant add-on options', () => {
       PUBLIC_URL: 'https://doors.example.com',
       SECURE_COOKIES: 'true',
       UHPPOTE_DEBUG: 'true',
+      ADMIN_2FA_BYPASS: 'true',
     })
     expect(env.MQTT_URL).toBeUndefined()
   })

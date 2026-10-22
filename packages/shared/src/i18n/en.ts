@@ -148,6 +148,12 @@ export const en = {
     disable: 'Turn off',
     disableInfo: 'Enter your password and a code from the app (or a recovery code).',
     requiredByPolicy: 'Required for your role by the administrators: it cannot be turned off.',
+    bypassTitle: 'Emergency access active',
+    bypassBanner:
+      'ADMIN_2FA_BYPASS is set: administrators log in without the second factor. Reset your two-factor authentication (Two-factor authentication page), then remove the variable and restart UHPPOTE Desk.',
+    bypassInfo:
+      'Emergency access (ADMIN_2FA_BYPASS): you can switch two-factor authentication off without a code, also if it is mandatory. If it is mandatory, you set it up again with the new phone at the next login.',
+    bypassDisableInfo: 'Enter your password to switch it off (no code needed during the emergency access).',
   },
   dashboard: {
     title: 'Dashboard',

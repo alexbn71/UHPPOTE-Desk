@@ -36,6 +36,11 @@ configuration:
   packet_debug:
     name: Packet debug
     description: Write every packet exchanged with the controllers to the log, in hexadecimal.
+  admin_2fa_bypass:
+    name: Emergency access without two-factor authentication
+    description: >-
+      Administrators log in with the password only, to reset two-factor authentication after losing the phone.
+      Operators still need their code. Turn it off again right after.
   log_level:
     name: Log level
 network:

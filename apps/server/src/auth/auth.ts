@@ -52,6 +52,8 @@ export interface SessionUser {
   totpEnabled: boolean
   /** Two-factor authentication is mandatory for the role (security settings) and not active yet: set it up first. */
   mustSetupTotp: boolean
+  /** Emergency access (ADMIN_2FA_BYPASS) applies to this user: an administrator, no second factor asked. */
+  totpBypass: boolean
 }
 
 declare module 'fastify' {
@@ -90,6 +92,8 @@ export class AuthService {
   constructor(
     private readonly db: Db,
     private readonly sessionHours: number,
+    /** ADMIN_2FA_BYPASS: administrators skip the second factor (emergency access). */
+    private readonly admin2faBypass = false,
   ) {}
 
   /** Security settings, read once and kept in memory (they are checked at every request). */
@@ -368,6 +372,7 @@ export class AuthService {
       canOpenDoors: ROLE_RANK[row.role] >= ROLE_RANK.operator,
       totpEnabled: !!row.totp_secret,
       mustSetupTotp: !row.totp_secret && this.totpRequiredFor(row.role),
+      totpBypass: this.admin2faBypass && row.role === 'admin',
     }
   }
 

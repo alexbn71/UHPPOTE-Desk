@@ -1,4 +1,5 @@
 import {
+  Alert,
   AppShell,
   Badge,
   Burger,
@@ -314,6 +315,11 @@ function Shell({ children }: { children: ReactNode }) {
         </ScrollArea>
       </AppShell.Navbar>
       <AppShell.Main>
+        {user?.totpBypass && (
+          <Alert color="red" mb="md" title={t('twoFactor.bypassTitle')}>
+            {t('twoFactor.bypassBanner')}
+          </Alert>
+        )}
         {children}
         <Credits />
       </AppShell.Main>

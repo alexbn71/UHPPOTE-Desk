@@ -36,6 +36,11 @@ configuration:
   packet_debug:
     name: Debug dei pacchetti
     description: Scrive nel registro ogni pacchetto scambiato con i controller, in esadecimale.
+  admin_2fa_bypass:
+    name: Accesso di emergenza senza autenticazione a due fattori
+    description: >-
+      Gli amministratori accedono con la sola password, per reimpostare l'autenticazione a due fattori dopo aver perso
+      il telefono. Gli operatori devono comunque inserire il codice. Disattivala subito dopo.
   log_level:
     name: Livello di log
 network:
