@@ -16,6 +16,7 @@ import { chromium, type Page } from '@playwright/test'
 import { FakeController } from '@uhppote-desk/protocol/testing'
 import { buildApp } from '../../apps/server/src/app.js'
 import { createContext } from '../../apps/server/src/context.js'
+import { currentStep, hotp } from '../../apps/server/src/auth/totp.js'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const MANUAL_DIR = path.join(ROOT, 'docs/manual')
@@ -485,6 +486,97 @@ await call('POST', `/doors/${door(1)}/open`)
 await call('POST', `/controllers/${controller.id}/sync/all`)
 await sleep(500)
 
+// guests, licence plates, rules, notifications, webhooks, API tokens, two-factor authentication
+const at = (d: Date, hhmm: string) => `${ymd(d)} ${hhmm}`
+const inAWeek = new Date(today.getTime() + 7 * 86_400_000)
+const guest = await call<{ token: string }>('POST', '/guests', {
+  name: 'Plumber (Fixit Ltd)',
+  note: 'Boiler maintenance',
+  doorIds: [door(1), door(3)],
+  validFrom: at(today, '00:00'),
+  validTo: at(inAWeek, '00:00'),
+  weekdays: [true, true, true, true, true, false, false],
+  timeFrom: '08:00',
+  timeTo: '18:00',
+  maxOpens: 20,
+  bindDevice: true,
+  pin: '4821',
+  plates: ['AB123CD'],
+})
+await call('POST', '/guests', {
+  name: 'Cleaning company',
+  doorIds: [door(1)],
+  validFrom: at(today, '00:00'),
+  validTo: at(new Date(today.getTime() + 30 * 86_400_000), '00:00'),
+  weekdays: [true, false, true, false, true, false, false],
+  timeFrom: '19:00',
+  timeTo: '21:00',
+  bindDevice: true,
+})
+const camera = await call<{ key: string }>('POST', '/plate-readers', {
+  name: 'Gate camera',
+  doorId: door(1),
+  snapshotUrl: '',
+  debounceSeconds: 0,
+  openDoor: true,
+})
+await call('POST', '/plates', { plate: 'FG456HJ', personId: rossi.id, note: 'Company car' })
+await call('POST', '/plates', { plate: 'LM789NP', personId: smith.id })
+for (const plate of ['FG456HJ', 'ZZ999ZZ', 'LM789NP', 'AB123CD']) {
+  await fetch(`${BASE}/api/plates/read?key=${encodeURIComponent(camera.key)}&plate=${plate}`)
+  await sleep(300)
+}
+await call('POST', '/rules', {
+  name: 'Denied card at the main entrance after hours',
+  severity: 'alarm',
+  trigger: { type: 'access.denied' },
+  conditions: {
+    doorIds: [door(1)],
+    personIds: [],
+    cards: [],
+    timeFrom: '20:00',
+    timeTo: '07:00',
+    weekdays: [true, true, true, true, true, true, true],
+  },
+  message: 'Denied card {card} at {door} at {time}',
+  cooldownSeconds: 300,
+})
+await call('POST', '/rules', {
+  name: 'Warehouse door left open',
+  severity: 'warning',
+  trigger: { type: 'door.open_for', seconds: 300 },
+  conditions: {
+    doorIds: [door(3)],
+    personIds: [],
+    cards: [],
+    timeFrom: null,
+    timeTo: null,
+    weekdays: [true, true, true, true, true, true, true],
+  },
+})
+// local addresses that never answer: nothing leaves the machine while the manual is built
+await call('POST', '/notifications', {
+  name: 'Facility manager phone (ntfy)',
+  events: ['controller.offline', 'anomaly.repeated_denied'],
+  dailyReport: true,
+  reportHour: 20,
+  config: { type: 'ntfy', serverUrl: 'http://127.0.0.1:9', topic: 'acme-doors' },
+})
+await call('POST', '/webhooks', {
+  name: 'n8n — access log',
+  url: 'http://127.0.0.1:9/webhook/doors',
+  events: ['controller.offline', 'controller.online'],
+})
+await call('POST', '/tokens', { name: 'Home dashboard', access: 'read' })
+await call('POST', '/tokens', { name: 'Intercom', access: 'doors', doorIds: [door(1)] })
+// the reception operator has two-factor authentication (shown in the Operators page)
+const reception = ctx.db.get<{ id: number }>("SELECT id FROM operators WHERE username = 'reception'")!.id
+const { secret } = ctx.auth.beginTotpSetup(reception, 'UHPPOTE Desk')
+ctx.auth.confirmTotpSetup(reception, hotp(secret, currentStep()))
+// output 4 of the expansion board is on (dashboard badge, diagnostics)
+fake.expansionOutputs[3] = true
+await ctx.eventService.refreshExpansion(controller.id).catch(() => undefined)
+
 // --- README screenshots ------------------------------------------------------------------------------------
 if (process.argv.includes('--readme')) {
   await readmeScreenshots()
@@ -636,6 +728,12 @@ await go('/presence', 'Persons inside')
 await page.getByTestId('presence-count').waitFor()
 await shot('presence', { maxHeight: 900 })
 
+await go('/plates', 'Licence plates')
+await page.getByText('FG456HJ').first().waitFor({ timeout: 10_000 })
+await shot('plates', { maxHeight: 700 })
+await page.getByRole('tab', { name: 'Cameras' }).click()
+await shot('plate-cameras', { maxHeight: 520 })
+
 await go('/people', 'People')
 await shot('people')
 await page.getByRole('cell', { name: 'E001' }).click()
@@ -653,6 +751,9 @@ await go('/permissions', 'Access permissions')
 await shot('permissions')
 await go('/structure', 'Departments and zones')
 await shot('structure')
+await go('/guests', 'Guests')
+await page.getByText('Plumber (Fixit Ltd)').first().waitFor()
+await shot('guests', { maxHeight: 640 })
 
 await go('/controllers', 'Controllers')
 await shot('controllers', { maxHeight: 420 })
@@ -716,14 +817,57 @@ for (const [tab, name] of [
 }
 
 await go('/operators', 'Operators')
-await shot('operators', { maxHeight: 480 })
+await shot('operators', { maxHeight: 560 })
+await go('/rules', 'Rules')
+await shot('rules', { maxHeight: 560 })
+await go('/notifications', 'Notifications')
+await shot('notifications', { maxHeight: 560 })
+await go('/webhooks', 'Webhooks')
+await shot('webhooks', { maxHeight: 560 })
+await go('/api-tokens', 'API tokens')
+await shot('api-tokens', { maxHeight: 560 })
+await go('/mobile-app', 'Mobile app')
+await shot('mobile-admin', { maxHeight: 900 })
 await go('/audit', 'Audit log')
 await shot('audit', { maxHeight: 760 })
 await go('/system', 'System')
 await shot('system', { maxHeight: 1600 })
 await go('/password', 'Change password')
 await shot('password', { maxHeight: 520 })
+await go('/two-factor', 'Two-factor authentication')
+await page.getByRole('button', { name: 'Activate' }).click()
+await page.getByRole('textbox', { name: 'Confirm your password to start', exact: true }).fill(PASSWORD)
+await page.getByRole('button', { name: 'Continue' }).click()
+await page.getByAltText('QR').waitFor()
+await shot('two-factor', { maxHeight: 900 })
 await context.close()
+
+// the phone screens: mobile app of an operator and the page of a guest link
+const phone = await browser.newContext({
+  viewport: { width: 390, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  colorScheme: 'light',
+  locale: 'en-GB',
+})
+const mobile = await phone.newPage()
+await mobile.goto(BASE)
+await mobile.getByRole('textbox', { name: 'Username', exact: true }).fill('admin')
+await mobile.getByRole('textbox', { name: 'Password', exact: true }).fill(PASSWORD)
+await mobile.getByRole('button', { name: 'Log in' }).click()
+await mobile.getByRole('heading', { name: 'Dashboard' }).waitFor()
+await mobile.goto(`${BASE}/m`)
+await mobile.getByText('Main entrance').first().waitFor({ timeout: 10_000 })
+await sleep(500)
+await mobile.screenshot({ path: path.join(SHOTS, 'mobile.png') })
+console.log('  mobile')
+await mobile.goto(`${BASE}/g/${guest.token}`)
+await mobile.getByRole('heading', { name: /Plumber/ }).waitFor({ timeout: 10_000 })
+await sleep(500)
+await mobile.screenshot({ path: path.join(SHOTS, 'guest-page.png') })
+console.log('  guest-page')
+await phone.close()
 
 // --- PDF -----------------------------------------------------------------------------------------------------------
 console.log('Rendering the PDF…')
