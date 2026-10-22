@@ -237,7 +237,7 @@ describe('events and commands', () => {
     await waitFor(() => fire() === false, 5000)
   })
 
-  it('expansion board: an entity per output, state from the vendor status, followed after an alarm', async () => {
+  it('expansion board: an entity per output and input, state from the vendor status, followed after an alarm', async () => {
     const settings = ctx.controllers.settings(controllerId)
     ctx.controllers.saveSettings(controllerId, {
       ...settings,
@@ -245,12 +245,22 @@ describe('events and commands', () => {
     })
     try {
       ctx.mqtt!.refresh(0)
-      await waitFor(() => seen.has(configTopic('binary_sensor', 'expansion_output_4')))
+      await waitFor(() => seen.has(configTopic('binary_sensor', 'expansion_input_3')))
       expect(json(configTopic('binary_sensor', 'expansion_output_1')).value_template).toContain('outputs[0]')
+      expect(json(configTopic('binary_sensor', 'expansion_input_1')).value_template).toContain('inputs[0]')
       // the health check reads the vendor status
       await ctx.health.check(controllerId)
       await waitFor(() => !!json(`uhd/${SERIAL}/state`).expansion)
-      expect(json(`uhd/${SERIAL}/state`).expansion).toEqual({ outputs: [false, false, false, false], fireInput: false })
+      expect(json(`uhd/${SERIAL}/state`).expansion).toEqual({
+        outputs: [false, false, false, false],
+        fireInput: false,
+        inputs: [false, false, false],
+      })
+      // inputs A1-A3 send no event: the board status is polled
+      fake.setExpansionInput(1, true)
+      await waitFor(() => json(`uhd/${SERIAL}/state`).expansion?.inputs[0] === true, 5000)
+      fake.setExpansionInput(1, false)
+      await waitFor(() => json(`uhd/${SERIAL}/state`).expansion?.inputs[0] === false, 5000)
       // an output switched by an alarm is seen without waiting for the next health check, and its end too
       fake.expansionOutputs[1] = true
       fake.raiseAlarm(1, 38)

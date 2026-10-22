@@ -24,7 +24,8 @@
   .page { padding: 0 18mm; }
   h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
   h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
-  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; break-after: avoid; break-inside: avoid; }
+  h2::before { content: ""; display: inline-block; width: 5px; height: 1.15em; margin-right: 3mm; vertical-align: -0.2em; background: var(--blue2); }
   h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
   h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
   p { margin: 0 0 2.5mm; }
@@ -623,7 +624,7 @@
     <tr><td>Ein beliebiges Signal / Alle Signale</td><td>solange mindestens eines (oder alle) der gewählten Signale aktiv ist: Schlossrelais, Türkontakt, Ausgangstaster, Eingang Zwangsverriegelung, Eingänge A1–A3 und Brandeingang der Karte</td></tr>
   </table>
   <p>Auslösende Ereignisse: <b>Bedrohungscode</b>, <b>Tür zu lange offen</b>, <b>gewaltsames Öffnen</b> (Tür ohne gültigen Zutritt geöffnet; benötigt einen Türkontakt), <b>Zwangsverriegelung</b>, <b>ungültige Karte</b> und <b>Feueralarm</b>. Der Feueralarm öffnet außerdem alle Türen des Controllers und wird als Ereignis 39 gespeichert.</p>
-  <p><b>Live-Zustand.</b> Für einen Controller mit <i>Erweiterungskarte angeschlossen</i> zeigt das Register <span class="ui">Diagnose</span> die vier Ausgänge (<i>An</i>/<i>Aus</i>, unter der Türtabelle), und die Kachel in der Übersicht zeigt, welche eingeschaltet sind. Sie werden aus demselben Status gelesen, den die Konsole des Herstellers verwendet, bei jeder Statusprüfung und nach jedem Ereignis bzw. solange etwas eingeschaltet ist alle 2 Sekunden, bis alles aus ist. Der Feueralarm erscheint sofort und verschwindet wenige Sekunden nach dem Lösen des Eingangs.</p>
+  <p><b>Live-Zustand.</b> Für einen Controller mit <i>Erweiterungskarte angeschlossen</i> zeigt das Register <span class="ui">Diagnose</span> unter der Türtabelle die vier Ausgänge (<i>An</i>/<i>Aus</i>) und die Eingänge A1–A3 (<i>Offen</i>/<i>Geschlossen</i>), und die Kachel in der Übersicht zeigt, welche Ausgänge eingeschaltet sind. Sie werden alle 2 Sekunden aus demselben Status gelesen, den die Konsole des Herstellers verwendet: Die Eingänge A1–A3 senden kein Ereignis, daher ist dies der einzige Weg, sie zu sehen. Nicht angeschlossene Eingänge erscheinen als <i>Offen</i>, da es Öffnerkontakte sind. Der Feueralarm erscheint sofort und verschwindet wenige Sekunden nach dem Lösen des Eingangs.</p>
   <div class="box warn"><b>Rekonstruiertes Protokoll</b><p>Die Befehle für die Erweiterungskarte gehören nicht zum öffentlichen Protokoll des Controllers: Sie wurden aus der Herstellersoftware rekonstruiert. Geprüft wurden sie an einem UT0311-L04 (Firmware v9.f8) mit angeschlossener UT0311-01A: Gewaltsames Öffnen, Tür zu lange offen, ungültige Karte, Brandeingang und einem Signal folgende Ausgänge schalten die Relais, und der Zustand der Ausgänge wird korrekt gelesen. Noch nicht geprüft: der Bedrohungscode, die Quelle <b>Einbruchmeldung</b> und die Eingänge A1–A3. Eine mit der Herstellersoftware erstellte Konfiguration wird beim nächsten Speichern ersetzt: Lesen Sie sie vorher ein und übernehmen Sie sie in das Formular, wenn Sie sie behalten möchten. Bevor Sie die Karte entfernen, deaktivieren Sie die Ausgänge und speichern Sie.</p></div>
 
   <h3>Wartung</h3>
@@ -794,6 +795,7 @@
     <tr><td>Feueralarm</td><td>Feueralarm aktiv: sofort an beim Brandereignis, aus wenige Sekunden nach dem Lösen des Eingangs</td></tr>
     <tr><td>Zwangsverriegelung</td><td>Zwangsverriegelung aktiv</td></tr>
     <tr><td>Erweiterungsausgang 1–4</td><td>Ausgänge der UT0311-01A (nur mit <i>Erweiterungskarte angeschlossen</i>)</td></tr>
+    <tr><td>Erweiterungseingang A1–A3</td><td>Eingänge A1–A3 der Karte, <i>offen</i>, wenn der Öffnerkontakt offen ist; alle 2 Sekunden gelesen (sie senden kein Ereignis)</td></tr>
     <tr><td colspan="2"><b>Tür</b> (eine pro aktiver Tür)</td></tr>
     <tr><td>Tür, Schloss</td><td>Türkontakt (an = offen); Relais (an = entriegelt)</td></tr>
     <tr><td>Öffnen</td><td>Schaltfläche, die die Tür öffnet (abschaltbar mit <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>

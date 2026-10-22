@@ -479,6 +479,9 @@ export const it: Messages = {
     expansionFireInput: 'Ingresso incendio della scheda di espansione attivo.',
     outputOff: 'Spenta',
     outputOn: 'Accesa',
+    expansionInputs: 'Ingressi della scheda di espansione (A1-A3)',
+    inputOpen: 'Aperto',
+    inputClosed: 'Chiuso',
   },
   expansion: {
     title: 'Scheda di espansione allarmi (UT0311-01A)',
@@ -1268,6 +1271,7 @@ export const it: Messages = {
     lastAccess: 'Ultimo accesso',
     clockDrift: 'Scarto orologio',
     expansionOutput: 'Uscita scheda espansione {{n}}',
+    expansionInput: 'Ingresso scheda espansione A{{n}}',
   },
   push: {
     title: 'Salvato, ma non inviato a tutti i controller',

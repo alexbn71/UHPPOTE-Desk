@@ -217,6 +217,8 @@ export function registerControllerRoutes(app: FastifyInstance, ctx: AppContext):
     const s = controllerSettingsSchema.parse(req.body)
     ctx.controllers.saveSettings(id, s)
     ctx.audit.log(req.user, 'update-settings', `controller:${id}`, s)
+    // the expansion board adds or removes the Home Assistant entities of its outputs
+    ctx.mqtt?.refresh()
     const push = (req.query as { push?: string }).push !== 'false'
     let verification = { expansion: null, options: null } as Awaited<ReturnType<typeof ctx.sync.pushSettings>>
     if (push) {

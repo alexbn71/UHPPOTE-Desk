@@ -9,6 +9,14 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 - **User manual in every language**: Italian, German, French and Spanish besides English
   (`docs/UHPPOTE-Desk-Manual-<lang>.pdf`), with the screenshots taken in that language. `npm run manual` builds all
   five; `docs/manual/renumber.py` renumbers parts, chapters, figures and contents of a translated source.
+- **Expansion board inputs A1–A3**: shown live in the controller *Diagnostics* (*Open*/*Closed*) and as Home
+  Assistant binary sensors *Expansion input A1–A3* (`opening`: on = normally closed contact open). Found with a
+  probe on the real board (byte 58 of the console status, bits 4–6, set at rest); since they send no event, the
+  board status is now read every 2 s for the controllers with *Expansion board connected*.
+
+### Fixed
+- Turning *Expansion board connected* on or off now adds or removes its Home Assistant entities at once (before:
+  only after a restart of the server or of the MQTT connection).
 
 ## [1.2.1] - 2026-10-22
 

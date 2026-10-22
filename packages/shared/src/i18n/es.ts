@@ -482,6 +482,9 @@ export const es: Messages = {
     expansionFireInput: 'Entrada de incendio de la placa de expansión activa.',
     outputOff: 'Apagada',
     outputOn: 'Encendida',
+    expansionInputs: 'Entradas de la placa de expansión (A1-A3)',
+    inputOpen: 'Abierta',
+    inputClosed: 'Cerrada',
   },
   expansion: {
     title: 'Placa de expansión de alarmas (UT0311-01A)',
@@ -1276,6 +1279,7 @@ export const es: Messages = {
     lastAccess: 'Último acceso',
     clockDrift: 'Desfase del reloj',
     expansionOutput: 'Salida de expansión {{n}}',
+    expansionInput: 'Entrada de expansión A{{n}}',
   },
   push: {
     title: 'Guardado, pero no enviado a todos los controladores',

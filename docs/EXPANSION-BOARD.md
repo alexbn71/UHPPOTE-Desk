@@ -17,11 +17,13 @@ UHPPOTE Desk configures it from *Controllers → (controller) → Expansion boar
 >
 >
 > **Live state of the outputs.** The normal status does not report the outputs reliably, but the status read by
-> the manufacturer's console (*Monitor*, long packet `0x20/0x20`) does: byte 58, bits 0–3 = outputs 1–4, bit 7 =
-> fire input of the board idle. Verified output by output (hardware test L6.10) and during a fire alarm. UHPPOTE
-> Desk reads it for the controllers with *Expansion board connected*: at every status check and, after any event
-> or while something is on, every 2 s until everything is off. The outputs are shown on the dashboard, in the
-> controller *Diagnostics* and in Home Assistant (*Expansion output 1–4*).
+> the manufacturer's console (*Monitor*, long packet `0x20/0x20`) does: byte 58, bits 0–3 = outputs 1–4, bits 4–6 =
+> inputs A1–A3 at rest (normally closed contact closed), bit 7 = fire input of the board idle. Outputs verified one
+> by one (hardware test L6.10) and during a fire alarm; inputs verified by bridging A1, A2, A3 to GND in turn
+> (2026-10-22). The inputs A1–A3 send **no event**, also when an output follows them: UHPPOTE Desk therefore reads
+> this status every 2 s for the controllers with *Expansion board connected*. Outputs and inputs are shown in the
+> controller *Diagnostics*, the outputs on the dashboard, both in Home Assistant (*Expansion output 1–4*,
+> *Expansion input A1–A3*).
 >
 > **Fire alarm.** The fire event (reason 39) is sent at once, but its packet still has the fire bit clear; the bit is
 > set right after and cleared when the input is released, without any event. UHPPOTE Desk therefore marks the fire

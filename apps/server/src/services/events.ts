@@ -20,7 +20,8 @@ export const RECENT_EVENT_MS = 10 * 60_000
 
 /**
  * Status polling interval while a fire alarm is active (its end sends no event) or, with an expansion board,
- * while its outputs may be switching after an event.
+ * while its outputs may be switching after an event; also the polling interval of the board status, since its
+ * inputs A1-A3 send no event.
  */
 export const ALARM_POLL_MS = 2000
 
@@ -45,6 +46,8 @@ export class EventService {
   private readonly running = new Map<number, Promise<CollectResult>>()
   /** Controllers whose status is polled quickly because of a fire alarm or of the expansion board outputs. */
   private readonly watching = new Map<number, NodeJS.Timeout>()
+  /** Polling of the expansion board status (inputs A1-A3, outputs), while the listener runs. */
+  private boardPoll: NodeJS.Timeout | null = null
 
   constructor(
     private readonly gateway: ControllerGateway,
@@ -60,12 +63,28 @@ export class EventService {
     this.listener.on('invalid', (_pkt, from) =>
       this.opts.logger?.warn?.(`unrecognised packet from ${from.address}:${from.port}`),
     )
-    return this.listener.start()
+    const address = await this.listener.start()
+    this.pollBoards()
+    return address
+  }
+
+  /** Reads the status of every expansion board every ALARM_POLL_MS: its inputs A1-A3 send no event. */
+  private pollBoards(): void {
+    this.boardPoll = setTimeout(async () => {
+      const ids = this.controllers
+        .list()
+        .filter((c) => c.enabled && this.hasBoard(c.id) && this.gateway.hub.state(c.id).online)
+        .map((c) => c.id)
+      await Promise.all(ids.map((id) => this.refreshExpansion(id).catch(() => false)))
+      if (this.boardPoll) this.pollBoards()
+    }, ALARM_POLL_MS).unref()
   }
 
   async stopListener(): Promise<void> {
     await this.listener?.stop()
     this.listener = null
+    if (this.boardPoll) clearTimeout(this.boardPoll)
+    this.boardPoll = null
     for (const timer of this.watching.values()) clearTimeout(timer)
     this.watching.clear()
   }
@@ -111,8 +130,8 @@ export class EventService {
   }
 
   /**
-   * Reads the outputs and the fire input of the expansion board (vendor status, long packet) into the live state;
-   * null when the controller has no board. Returns whether something is on.
+   * Reads the outputs and the inputs of the expansion board (vendor status, long packet) into the live state;
+   * null when the controller has no board. Returns whether an output or the fire input is on.
    */
   async refreshExpansion(controllerId: number): Promise<boolean> {
     if (!this.hasBoard(controllerId)) {
@@ -123,7 +142,7 @@ export class EventService {
       audit: false,
     })
     this.gateway.hub.patch(controllerId, {
-      expansion: { outputs: ls.expansionOutputs, fireInput: ls.expansionFireInput },
+      expansion: { outputs: ls.expansionOutputs, fireInput: ls.expansionFireInput, inputs: ls.expansionInputs },
     })
     const active = ls.expansionFireInput || ls.expansionOutputs.some(Boolean)
     if (active) this.watch(controllerId)

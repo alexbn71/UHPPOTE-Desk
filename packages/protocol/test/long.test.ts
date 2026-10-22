@@ -82,6 +82,8 @@ describe('long-packet protocol', () => {
       relayUnlocked: [false, false, false, false],
       expansionOutputs: [false, false, false, false],
       expansionFireInput: false,
+      // inputs A1-A3 not wired: normally closed contacts open
+      expansionInputs: [true, true, true],
       fireAlarm: false,
     })
     // 20:31:03, fire input of the board active: doors released, output 4 (fire, 20 s) on
@@ -103,6 +105,7 @@ describe('long-packet protocol', () => {
       relayUnlocked: [true, true, true, true],
       expansionOutputs: [false, false, false, true],
       expansionFireInput: true,
+      expansionInputs: [true, true, true],
       fireAlarm: true,
     })
   })
@@ -116,9 +119,33 @@ describe('long-packet protocol', () => {
       relayUnlocked: [true, false, false, false] as [boolean, boolean, boolean, boolean],
       expansionOutputs: [false, true, true, false] as [boolean, boolean, boolean, boolean],
       expansionFireInput: false,
+      expansionInputs: [false, true, false] as [boolean, boolean, boolean],
       fireAlarm: false,
       forceLock: true,
     }
     expect(decodeLongStatusReply(encodeLongStatusReply(9, status))).toEqual({ ...status, xid: 9 })
+  })
+
+  it('inputs A1-A3 of the board: bits 4-6 of byte 58, set at rest (probe 2026-10-22: A1 bridged to GND → 0x90)', () => {
+    const base = {
+      controller: 425050067,
+      lastEventIndex: 1,
+      doorOpen: [false, false, false, false] as [boolean, boolean, boolean, boolean],
+      buttonPressed: [false, false, false, false] as [boolean, boolean, boolean, boolean],
+      relayUnlocked: [false, false, false, false] as [boolean, boolean, boolean, boolean],
+      expansionOutputs: [false, false, false, false] as [boolean, boolean, boolean, boolean],
+      expansionFireInput: false,
+      fireAlarm: false,
+      forceLock: false,
+    }
+    // A1 closed (at rest), A2 and A3 open; output 3 on
+    const a1 = encodeLongStatusReply(1, {
+      ...base,
+      expansionOutputs: [false, false, true, false],
+      expansionInputs: [false, true, true],
+    })
+    expect(a1[58]).toBe(0x94)
+    expect(encodeLongStatusReply(1, { ...base, expansionInputs: [true, true, true] })[58]).toBe(0x80)
+    expect(encodeLongStatusReply(1, { ...base, expansionInputs: [false, false, false] })[58]).toBe(0xf0)
   })
 })

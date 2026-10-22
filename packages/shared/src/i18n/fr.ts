@@ -482,6 +482,9 @@ export const fr: Messages = {
     expansionFireInput: "Entrée incendie de la carte d'extension active.",
     outputOff: 'Éteinte',
     outputOn: 'Allumée',
+    expansionInputs: "Entrées de la carte d'extension (A1-A3)",
+    inputOpen: 'Ouverte',
+    inputClosed: 'Fermée',
   },
   expansion: {
     title: "Carte d'extension d'alarmes (UT0311-01A)",
@@ -1283,6 +1286,7 @@ export const fr: Messages = {
     lastAccess: 'Dernier accès',
     clockDrift: "Décalage de l'horloge",
     expansionOutput: 'Sortie extension {{n}}',
+    expansionInput: 'Entrée extension A{{n}}',
   },
   push: {
     title: 'Enregistré, mais non envoyé à tous les contrôleurs',

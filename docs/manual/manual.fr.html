@@ -24,7 +24,8 @@
   .page { padding: 0 18mm; }
   h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
   h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
-  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; break-after: avoid; break-inside: avoid; }
+  h2::before { content: ""; display: inline-block; width: 5px; height: 1.15em; margin-right: 3mm; vertical-align: -0.2em; background: var(--blue2); }
   h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
   h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
   p { margin: 0 0 2.5mm; }
@@ -623,7 +624,7 @@
     <tr><td>Un signal quelconque / Tous les signaux</td><td>tant qu'au moins un (ou tous) des signaux choisis est actif : relais de serrure, capteur de porte, bouton de sortie, entrée de verrouillage forcé, entrées A1–A3 et entrée incendie de la carte</td></tr>
   </table>
   <p>Événements déclencheurs : <b>code sous contrainte</b>, <b>porte ouverte trop longtemps</b>, <b>ouverture forcée</b> (porte ouverte sans accès valide ; nécessite un capteur de porte), <b>verrouillage forcé</b>, <b>badge non valide</b> et <b>alarme incendie</b>. L'alarme incendie ouvre aussi toutes les portes du contrôleur et est enregistrée comme événement 39.</p>
-  <p><b>État en direct.</b> Pour un contrôleur avec <i>Carte d'extension connectée</i>, l'onglet <span class="ui">Diagnostic</span> affiche les quatre sorties (<i>Allumée</i>/<i>Éteinte</i>, sous le tableau des portes) et la tuile du tableau de bord indique celles qui sont allumées. Elles sont lues dans le même état que celui utilisé par la console du fabricant, à chaque vérification et, après un événement ou tant que quelque chose est allumé, toutes les 2 secondes jusqu'à ce que tout soit éteint. L'alarme incendie s'affiche aussitôt et disparaît quelques secondes après le relâchement de l'entrée.</p>
+  <p><b>État en direct.</b> Pour un contrôleur avec <i>Carte d'extension connectée</i>, l'onglet <span class="ui">Diagnostic</span> affiche sous le tableau des portes les quatre sorties (<i>Allumée</i>/<i>Éteinte</i>) et les entrées A1–A3 (<i>Ouverte</i>/<i>Fermée</i>), et la tuile du tableau de bord indique les sorties allumées. Elles sont lues toutes les 2 secondes dans le même état que celui utilisé par la console du fabricant : les entrées A1–A3 n'envoient pas d'événement, c'est donc le seul moyen de les voir. Les entrées non raccordées apparaissent <i>Ouverte</i>, car ce sont des contacts normalement fermés. L'alarme incendie s'affiche aussitôt et disparaît quelques secondes après le relâchement de l'entrée.</p>
   <div class="box warn"><b>Protocole reconstitué</b><p>Les commandes de la carte d'extension ne font pas partie du protocole public du contrôleur : elles ont été reconstituées à partir du logiciel du fabricant. Elles ont été vérifiées sur un UT0311-L04 (firmware v9.f8) avec une carte UT0311-01A connectée : ouverture forcée, porte ouverte trop longtemps, badge non valide, entrée incendie et sorties qui suivent un signal font commuter les relais, et l'état des sorties est lu correctement. Pas encore vérifiés : le code sous contrainte, la source <b>alarme anti-intrusion</b> et les entrées A1–A3. Une configuration faite avec le logiciel du fabricant est remplacée au prochain enregistrement : si vous voulez la garder, lisez-la d'abord et copiez-la dans le formulaire. Avant de retirer la carte, désactivez les sorties et enregistrez.</p></div>
 
   <h3>Maintenance</h3>
@@ -794,6 +795,7 @@
     <tr><td>Alarme incendie</td><td>alarme incendie active : allumée dès l'événement incendie, éteinte quelques secondes après le relâchement de l'entrée</td></tr>
     <tr><td>Verrouillage forcé</td><td>verrouillage forcé actif</td></tr>
     <tr><td>Sortie extension 1–4</td><td>sorties de la carte UT0311-01A (seulement avec <i>Carte d'extension connectée</i>)</td></tr>
+    <tr><td>Entrée extension A1–A3</td><td>entrées A1–A3 de la carte, <i>ouverte</i> quand le contact normalement fermé est ouvert ; lues toutes les 2 secondes (elles n'envoient pas d'événement)</td></tr>
     <tr><td colspan="2"><b>Porte</b> (une par porte active)</td></tr>
     <tr><td>Porte, Serrure</td><td>capteur de porte (allumé = ouverte) ; relais (allumé = déverrouillée)</td></tr>
     <tr><td>Ouvrir</td><td>bouton qui ouvre la porte (désactivable avec <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>

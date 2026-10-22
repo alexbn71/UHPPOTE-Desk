@@ -479,6 +479,9 @@ export const en = {
     expansionFireInput: 'Fire input of the expansion board active.',
     outputOff: 'Off',
     outputOn: 'On',
+    expansionInputs: 'Expansion board inputs (A1-A3)',
+    inputOpen: 'Open',
+    inputClosed: 'Closed',
   },
   expansion: {
     title: 'Alarm expansion board (UT0311-01A)',
@@ -1263,6 +1266,7 @@ export const en = {
     lastAccess: 'Last access',
     clockDrift: 'Clock drift',
     expansionOutput: 'Expansion output {{n}}',
+    expansionInput: 'Expansion input A{{n}}',
   },
   push: {
     title: 'Saved, but not sent to every controller',

@@ -482,6 +482,9 @@ export const de: Messages = {
     expansionFireInput: 'Brandeingang der Erweiterungsplatine aktiv.',
     outputOff: 'Aus',
     outputOn: 'An',
+    expansionInputs: 'Eingänge der Erweiterungsplatine (A1-A3)',
+    inputOpen: 'Offen',
+    inputClosed: 'Geschlossen',
   },
   expansion: {
     title: 'Alarm-Erweiterungskarte (UT0311-01A)',
@@ -1285,6 +1288,7 @@ export const de: Messages = {
     lastAccess: 'Letzter Zutritt',
     clockDrift: 'Uhrabweichung',
     expansionOutput: 'Erweiterungsausgang {{n}}',
+    expansionInput: 'Erweiterungseingang A{{n}}',
   },
   push: {
     title: 'Gespeichert, aber nicht an alle Controller gesendet',

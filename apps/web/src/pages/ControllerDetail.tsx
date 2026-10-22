@@ -76,7 +76,7 @@ interface Info {
 function Diagnostics({ id }: { id: number }) {
   const { t } = useTranslation()
   const codes = useCodes()
-  // outputs of the expansion board: only in the live state (vendor status), null without a board
+  // outputs and inputs of the expansion board: only in the live state (vendor status), null without a board
   const expansion = useLive().states[id]?.expansion ?? null
   const info = useQuery({
     queryKey: ['controller-info', id],
@@ -250,6 +250,16 @@ function Diagnostics({ id }: { id: number }) {
                     {expansion.outputs.map((on, i) => (
                       <Badge key={i} color={on ? 'grape' : 'gray'} variant={on ? 'filled' : 'light'}>
                         {i + 1}: {on ? t('controllerDetail.outputOn') : t('controllerDetail.outputOff')}
+                      </Badge>
+                    ))}
+                  </Group>
+                  <Text size="sm" fw={500} mt="sm">
+                    {t('controllerDetail.expansionInputs')}
+                  </Text>
+                  <Group gap="xs" mt={4}>
+                    {expansion.inputs.map((open, i) => (
+                      <Badge key={i} color={open ? 'orange' : 'gray'} variant={open ? 'filled' : 'light'}>
+                        A{i + 1}: {open ? t('controllerDetail.inputOpen') : t('controllerDetail.inputClosed')}
                       </Badge>
                     ))}
                   </Group>

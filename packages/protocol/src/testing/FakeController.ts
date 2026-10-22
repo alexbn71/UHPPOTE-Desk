@@ -158,6 +158,8 @@ export class FakeController {
   parameters = new Uint8Array(PARAMETER_TABLE_SIZE)
   /** Simulated state of the 4 relays of the expansion board (not reported by the real controller). */
   expansionOutputs: Quad<boolean> = [false, false, false, false]
+  /** Inputs A1-A3 of the expansion board active (normally closed contact open): see setExpansionInput. */
+  expansionInputs: [boolean, boolean, boolean] = [false, false, false]
   private readonly expansionTimers: (NodeJS.Timeout | null)[] = [null, null, null, null]
   /** Cards already swiped per door while multi-card access waits for the others. */
   private multiCardPending: number[][] = [[], [], [], []]
@@ -446,6 +448,18 @@ export class FakeController {
     ).unref()
   }
 
+  /**
+   * Simulates input A1-A3 (n = 1-3) of the expansion board: no event, like the real controller; outputs in "any
+   * signal" mode with that input among their signals follow it.
+   */
+  setExpansionInput(n: 1 | 2 | 3, active: boolean): void {
+    this.expansionInputs[n - 1] = active
+    const signal = ExpansionSignal.ExtA1 << (n - 1)
+    this.expansionBoard().relays.forEach((r, i) => {
+      if (r.active && r.mode === ExpansionOutputMode.AnySignal && r.signals & signal) this.expansionOutputs[i] = active
+    })
+  }
+
   /** Expansion outputs in "any signal" mode with the lock relay of their source door follow that relay. */
   private followLockRelay(door: number, on: boolean): void {
     this.expansionBoard().relays.forEach((r, i) => {
@@ -572,6 +586,7 @@ export class FakeController {
         relayUnlocked: [0, 1, 2, 3].map((i) => (this.relays & (1 << i)) !== 0) as Quad<boolean>,
         expansionOutputs: [...this.expansionOutputs] as Quad<boolean>,
         expansionFireInput: (this.inputs & 0x02) !== 0,
+        expansionInputs: [...this.expansionInputs] as [boolean, boolean, boolean],
         fireAlarm: (this.inputs & 0x02) !== 0,
         forceLock: (this.inputs & 0x01) !== 0,
       })

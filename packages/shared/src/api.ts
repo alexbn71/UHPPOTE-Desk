@@ -563,7 +563,12 @@ export interface ControllerLiveState {
   forceLock: boolean
   fireAlarm: boolean
   /** UT0311-01A expansion board (vendor status); null when the controller has none. */
-  expansion: { outputs: [boolean, boolean, boolean, boolean]; fireInput: boolean } | null
+  expansion: {
+    outputs: [boolean, boolean, boolean, boolean]
+    fireInput: boolean
+    /** Inputs A1-A3 active (normally closed contact open). */
+    inputs: [boolean, boolean, boolean]
+  } | null
   systemError: number
   /** Last communication error, in English (MQTT, webhooks); `lastErrorInfo` is the translatable form. */
   lastError: string | null

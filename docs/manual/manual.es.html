@@ -24,7 +24,8 @@
   .page { padding: 0 18mm; }
   h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
   h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
-  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; break-after: avoid; break-inside: avoid; }
+  h2::before { content: ""; display: inline-block; width: 5px; height: 1.15em; margin-right: 3mm; vertical-align: -0.2em; background: var(--blue2); }
   h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
   h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
   p { margin: 0 0 2.5mm; }
@@ -623,7 +624,7 @@
     <tr><td>Cualquier señal / Todas las señales</td><td>mientras al menos una (o todas) de las señales elegidas está activa: relé de cerradura, sensor de puerta, pulsador de salida, entrada de bloqueo forzado, entradas A1–A3 y entrada de incendio de la placa</td></tr>
   </table>
   <p>Eventos que activan las salidas: <b>código de coacción</b>, <b>puerta abierta demasiado tiempo</b>, <b>apertura forzada</b> (puerta abierta sin un acceso válido; requiere sensor de puerta), <b>bloqueo forzado</b>, <b>tarjeta no válida</b> y <b>alarma de incendio</b>. La alarma de incendio también abre todas las puertas del controlador y se registra como evento 39.</p>
-  <p><b>Estado en directo.</b> Para un controlador con <i>Placa de expansión conectada</i>, la pestaña <span class="ui">Diagnóstico</span> muestra las cuatro salidas (<i>Encendida</i>/<i>Apagada</i>, bajo la tabla de puertas) y el recuadro del panel indica cuáles están encendidas. Se leen del mismo estado que usa la consola del fabricante, en cada comprobación y, tras un evento o mientras algo está encendido, cada 2 segundos hasta que todo se apaga. La alarma de incendio aparece en el momento y desaparece unos segundos después de soltar la entrada.</p>
+  <p><b>Estado en directo.</b> Para un controlador con <i>Placa de expansión conectada</i>, la pestaña <span class="ui">Diagnóstico</span> muestra bajo la tabla de puertas las cuatro salidas (<i>Encendida</i>/<i>Apagada</i>) y las entradas A1–A3 (<i>Abierta</i>/<i>Cerrada</i>), y el recuadro del panel indica qué salidas están encendidas. Se leen cada 2 segundos del mismo estado que usa la consola del fabricante: las entradas A1–A3 no envían eventos, así que es la única forma de verlas. Las entradas no conectadas aparecen como <i>Abierta</i>, porque son contactos normalmente cerrados. La alarma de incendio aparece en el momento y desaparece unos segundos después de soltar la entrada.</p>
   <div class="box warn"><b>Protocolo reconstruido</b><p>Las órdenes de la placa de expansión no forman parte del protocolo público del controlador: se reconstruyeron a partir del software del fabricante. Se han verificado en un UT0311-L04 (firmware v9.f8) con una placa UT0311-01A conectada: apertura forzada, puerta abierta demasiado tiempo, tarjeta no válida, entrada de incendio y salidas que siguen una señal conmutan los relés, y el estado de las salidas se lee correctamente. Aún sin verificar: el código de coacción, el origen <b>alarma antirrobo</b> y las entradas A1–A3. Una configuración hecha con el software del fabricante se sustituye al siguiente guardado: si quiere conservarla, léala antes y cópiela en el formulario. Antes de quitar la placa, desactive las salidas y guarde.</p></div>
 
   <h3>Mantenimiento</h3>
@@ -794,6 +795,7 @@
     <tr><td>Alarma de incendio</td><td>alarma de incendio activa: se enciende en el momento del evento de incendio, se apaga unos segundos después de soltar la entrada</td></tr>
     <tr><td>Bloqueo forzado</td><td>bloqueo forzado activo</td></tr>
     <tr><td>Salida de expansión 1–4</td><td>salidas de la placa UT0311-01A (solo con <i>Placa de expansión conectada</i>)</td></tr>
+    <tr><td>Entrada de expansión A1–A3</td><td>entradas A1–A3 de la placa, <i>abierta</i> cuando el contacto normalmente cerrado está abierto; se leen cada 2 segundos (no envían eventos)</td></tr>
     <tr><td colspan="2"><b>Puerta</b> (una por puerta activa)</td></tr>
     <tr><td>Puerta, Cerradura</td><td>sensor de puerta (encendido = abierta); relé (encendido = desbloqueada)</td></tr>
     <tr><td>Abrir</td><td>botón que abre la puerta (se puede desactivar con <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>

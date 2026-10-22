@@ -313,7 +313,7 @@ export class MqttService {
       value_template: "{{ 'ON' if value_json.forceLock else 'OFF' }}",
       device: controllerDevice,
     })
-    // outputs of the UT0311-01A expansion board (vendor status): only on controllers configured with it
+    // outputs and inputs of the UT0311-01A expansion board (vendor status): only on controllers configured with it
     if (this.controllers.settings(c.id).expansionBoard.installed) {
       for (const n of [1, 2, 3, 4]) {
         add('binary_sensor', `${id}_expansion_output_${n}`, {
@@ -322,6 +322,17 @@ export class MqttService {
           ...availability,
           state_topic: state,
           value_template: `{{ 'ON' if value_json.expansion and value_json.expansion.outputs[${n - 1}] else 'OFF' }}`,
+          device: controllerDevice,
+        })
+      }
+      // inputs A1-A3 [NC]: on = contact open
+      for (const n of [1, 2, 3]) {
+        add('binary_sensor', `${id}_expansion_input_${n}`, {
+          name: t('mqtt.expansionInput', { n }),
+          device_class: 'opening',
+          ...availability,
+          state_topic: state,
+          value_template: `{{ 'ON' if value_json.expansion and value_json.expansion.inputs[${n - 1}] else 'OFF' }}`,
           device: controllerDevice,
         })
       }

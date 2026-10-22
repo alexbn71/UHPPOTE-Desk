@@ -24,7 +24,8 @@
   .page { padding: 0 18mm; }
   h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
   h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
-  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; break-after: avoid; break-inside: avoid; }
+  h2::before { content: ""; display: inline-block; width: 5px; height: 1.15em; margin-right: 3mm; vertical-align: -0.2em; background: var(--blue2); }
   h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
   h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
   p { margin: 0 0 2.5mm; }
@@ -627,7 +628,7 @@
     <tr><td>Any signal / All signals</td><td>while at least one (or all) of the selected signals is active: lock relay, door sensor, exit button, force lock input, inputs A1–A3 and fire input of the board</td></tr>
   </table>
   <p>Triggering events: <b>duress code</b>, <b>door open too long</b>, <b>forced open</b> (door opened without a valid access; requires a door sensor), <b>forced lock</b>, <b>invalid card</b> and <b>fire alarm</b>. The fire alarm also opens all the doors of the controller and is recorded as event 39.</p>
-  <p><b>Live state.</b> For a controller with <i>Expansion board connected</i>, the <span class="ui">Diagnostics</span> tab shows the four outputs (<i>On</i>/<i>Off</i>, under the door table) and the dashboard card shows which ones are on. They are read from the same status the manufacturer's console uses, at every status check and, after any event or while something is on, every 2 seconds until everything is off. The fire alarm is shown at once and cleared a few seconds after the fire input is released.</p>
+  <p><b>Live state.</b> For a controller with <i>Expansion board connected</i>, the <span class="ui">Diagnostics</span> tab shows the four outputs (<i>On</i>/<i>Off</i>) and the inputs A1–A3 (<i>Open</i>/<i>Closed</i>) under the door table, and the dashboard card shows which outputs are on. They are read every 2 seconds from the same status the manufacturer's console uses: the inputs A1–A3 send no event, so this is the only way to see them. Unconnected inputs are shown <i>Open</i>, because they are normally closed contacts. The fire alarm is shown at once and cleared a few seconds after the fire input is released.</p>
   <div class="box warn"><b>Reconstructed protocol</b><p>The commands for the expansion board are not part of the public controller protocol: they were reconstructed from the manufacturer's software. They have been verified on a UT0311-L04 (firmware v9.f8) with a UT0311-01A board connected: forced open, door open too long, invalid card, fire input and outputs following a signal switch the relays, and the live state of the outputs is read correctly. Not verified yet: the duress code, the <b>burglar alarm</b> source and the inputs A1–A3. A configuration made with the manufacturer's software is replaced at the next save: read it and copy it into the form first if you want to keep it. Before removing the board, deactivate the outputs and save.</p></div>
 
   <h3>Maintenance</h3>
@@ -799,6 +800,7 @@
     <tr><td>Fire alarm</td><td>fire alarm active: on at once at the fire event, off a few seconds after the input is released</td></tr>
     <tr><td>Forced lock</td><td>forced lock active</td></tr>
     <tr><td>Expansion output 1–4</td><td>outputs of the UT0311-01A board (only with <i>Expansion board connected</i>)</td></tr>
+    <tr><td>Expansion input A1–A3</td><td>inputs A1–A3 of the board, <i>open</i> when the normally closed contact is open; read every 2 seconds (they send no event)</td></tr>
     <tr><td colspan="2"><b>Door</b> (one per active door)</td></tr>
     <tr><td>Door, Lock</td><td>door sensor (on = open); relay (on = unlocked)</td></tr>
     <tr><td>Open</td><td>button that opens the door (can be disabled with <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>

@@ -111,7 +111,10 @@ export const LongStatusOffset = {
   DoorInputs: 56,
   /** Bits 0-3 lock relays of doors 1-4 (1 = unlocked). */
   Locks: 57,
-  /** Bits 0-3 expansion board outputs 1-4 (1 = on); bit 7 = board fire input idle (0 = fire). */
+  /**
+   * Bits 0-3 expansion board outputs 1-4 (1 = on); bits 4-6 board inputs A1-A3 and bit 7 board fire input, each 1 when
+   * the input is at rest (A1-A3 [NC] closed, fire [NO] open). Inputs A1-A3 verified on 2026-10-22 by bridging each to GND.
+   */
   Expansion: 58,
   /** Inputs: bit 0 force lock, bit 1 fire alarm (like the 64-byte status inputs byte). */
   Inputs: 346,
@@ -127,6 +130,8 @@ export interface LongStatus {
   expansionOutputs: Quad<boolean>
   /** The fire input of the expansion board is active. */
   expansionFireInput: boolean
+  /** Inputs A1-A3 of the expansion board active (normally closed contact open); they send no event. */
+  expansionInputs: [boolean, boolean, boolean]
   fireAlarm: boolean
   forceLock: boolean
 }
@@ -162,7 +167,10 @@ export function encodeLongStatusReply(xid: number, s: LongStatus): Buffer {
   b.writeUInt32LE(s.lastEventIndex >>> 0, LongStatusOffset.LastEventIndex)
   b[LongStatusOffset.DoorInputs] = bitsOf(s.buttonPressed) | bitsOf(s.doorOpen, 4)
   b[LongStatusOffset.Locks] = bitsOf(s.relayUnlocked)
-  b[LongStatusOffset.Expansion] = bitsOf(s.expansionOutputs) | (s.expansionFireInput ? 0 : 0x80)
+  b[LongStatusOffset.Expansion] =
+    bitsOf(s.expansionOutputs) |
+    s.expansionInputs.reduce((acc, active, i) => (active ? acc : acc | (0x10 << i)), 0) |
+    (s.expansionFireInput ? 0 : 0x80)
   b[LongStatusOffset.Inputs] = 0x80 | (s.forceLock ? 0x01 : 0) | (s.fireAlarm ? 0x02 : 0)
   return withCrc(b)
 }
@@ -190,6 +198,7 @@ export function decodeLongStatusReply(buf: Buffer): LongStatus & { xid: number }
     relayUnlocked: quadBits(buf[LongStatusOffset.Locks]!),
     expansionOutputs: quadBits(expansion),
     expansionFireInput: (expansion & 0x80) === 0,
+    expansionInputs: [0, 1, 2].map((i) => (expansion & (0x10 << i)) === 0) as [boolean, boolean, boolean],
     fireAlarm: (inputs & 0x02) !== 0,
     forceLock: (inputs & 0x01) !== 0,
   }
