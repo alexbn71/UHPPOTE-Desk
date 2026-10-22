@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>UHPPOTE Desk — Manuel utilisateur</title>
+<style>
+  :root {
+    --blue: #1557a8;
+    --blue2: #2b8ae6;
+    --blue-soft: #e8f1fc;
+    --green: #2f9e6e;
+    --green-soft: #e6f6ee;
+    --orange: #d9480f;
+    --orange-soft: #fff1e6;
+    --violet: #6741d9;
+    --violet-soft: #f0ebff;
+    --ink: #1d2733;
+    --muted: #5d6b7d;
+    --line: #dbe3ee;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.2pt/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color: var(--ink); }
+  .page { padding: 0 18mm; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
+  h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  b, strong { color: #14212f; }
+  code, .k { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: #eef3f9; padding: 0.2mm 1.2mm; border-radius: 1mm; }
+  .ui { font-weight: 600; color: var(--blue); }
+  .part { break-before: page; }
+  .chapter { break-before: auto; }
+  .avoid { break-inside: avoid; }
+
+  /* cover */
+  .cover { height: 263mm; display: flex; flex-direction: column; justify-content: space-between; padding: 0 18mm; break-after: page; }
+  .cover .band { margin-top: 10mm; border-radius: 6mm; padding: 16mm 14mm 14mm; color: #fff; background: linear-gradient(135deg, #1557a8 0%, #2b8ae6 60%, #34c38f 130%); position: relative; overflow: hidden; }
+  .cover .band::after { content: ""; position: absolute; right: -30mm; bottom: -40mm; width: 110mm; height: 110mm; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .cover img { width: 30mm; height: 30mm; background: #fff; border-radius: 7mm; padding: 2mm; }
+  .cover h1 { color: #fff; border: 0; font-size: 34pt; margin: 8mm 0 0; padding: 0; }
+  .cover .subtitle { font-size: 16pt; opacity: 0.95; margin-top: 1mm; }
+  .cover .tagline { margin-top: 10mm; font-size: 11pt; max-width: 130mm; opacity: 0.95; }
+  .cover .meta { color: var(--muted); font-size: 9.5pt; border-top: 1px solid var(--line); padding-top: 4mm; display: flex; justify-content: space-between; }
+  .cover .chips { display: flex; gap: 3mm; flex-wrap: wrap; margin: 8mm 0 0; }
+  .cover .chip { background: var(--blue-soft); color: var(--blue); border-radius: 10mm; padding: 1.5mm 4mm; font-size: 9pt; font-weight: 600; }
+
+  /* table of contents */
+  .toc ol { list-style: none; padding: 0; }
+  .toc > ol > li { margin: 3mm 0 1mm; font-weight: 700; color: var(--blue); }
+  .toc ol ol { padding-left: 6mm; font-weight: 400; columns: 2; column-gap: 8mm; }
+  .toc ol ol li { margin: 0.6mm 0; break-inside: avoid; }
+  .toc a { color: inherit; text-decoration: none; }
+  .toc .num { display: inline-block; min-width: 9mm; color: var(--muted); }
+
+  /* part opener */
+  .opener { border-radius: 5mm; padding: 10mm 12mm; margin: 4mm 0 6mm; color: #fff; }
+  .opener .label { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9pt; opacity: 0.9; }
+  .opener h1 { color: #fff; border: 0; margin: 1mm 0 2mm; padding: 0; font-size: 24pt; }
+  .opener p { margin: 0; opacity: 0.95; }
+  .o-blue { background: linear-gradient(135deg, #1557a8, #2b8ae6); }
+  .o-green { background: linear-gradient(135deg, #1f7a52, #34c38f); }
+  .o-violet { background: linear-gradient(135deg, #5235b8, #8c6ff0); }
+  .o-orange { background: linear-gradient(135deg, #b8390a, #f08c3a); }
+  .o-slate { background: linear-gradient(135deg, #2f3e52, #5d7290); }
+
+  /* section badges per menu group */
+  .grp { display: block; width: fit-content; break-after: avoid; margin-top: 7mm; font-size: 8pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 1.5mm; padding: 0.6mm 2.2mm; margin-bottom: 1mm; }
+  .grp + h2 { margin-top: 1.5mm; }
+  td .grp { margin-top: 0; }
+  .g-ops { background: var(--green-soft); color: var(--green); }
+  .g-reg { background: var(--violet-soft); color: var(--violet); }
+  .g-cfg { background: var(--blue-soft); color: var(--blue); }
+  .g-adm { background: var(--orange-soft); color: var(--orange); }
+
+  /* figures */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(20, 50, 90, 0.10); margin: 0 auto; }
+  figure.narrow img { max-width: 70%; }
+  figure.half img { max-width: 52%; }
+  figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
+  figcaption b { color: var(--blue); }
+
+  /* callouts */
+  .box { border-radius: 2.5mm; padding: 2.5mm 4mm 2.5mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; border-left: 4px solid; }
+  .box > b:first-child { display: block; margin-bottom: 0.5mm; }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .tip { background: var(--green-soft); border-color: var(--green); }
+  .tip > b:first-child { color: var(--green); }
+  .note { background: var(--blue-soft); border-color: var(--blue2); }
+  .note > b:first-child { color: var(--blue); }
+  .warn { background: var(--orange-soft); border-color: var(--orange); }
+  .warn > b:first-child { color: var(--orange); }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; break-inside: auto; }
+  th { background: var(--blue); color: #fff; text-align: left; font-weight: 600; padding: 1.6mm 2.4mm; }
+  td { padding: 1.4mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f9fd; }
+  tr { break-inside: avoid; }
+  td.c, th.c { text-align: center; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: #b0b9c6; }
+
+  /* steps */
+  ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.2mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0.2mm; width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--blue2); color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+
+  /* concept cards */
+  .cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 3mm 0 4mm; }
+  .concept { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; background: #fbfdff; }
+  .concept h4 { margin-top: 0; display: flex; align-items: center; gap: 2mm; }
+  .concept h4 .dot { width: 3mm; height: 3mm; border-radius: 50%; display: inline-block; }
+  .concept p { margin-bottom: 0; font-size: 9.5pt; }
+  .diagram { margin: 3mm 0 5mm; break-inside: avoid; }
+  .diagram svg { width: 100%; height: auto; }
+  .kbd { border: 1px solid #c3cddb; border-bottom-width: 2px; border-radius: 1mm; padding: 0 1.4mm; font-size: 8.5pt; background: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ===================================================================== COVER -->
+<section class="cover">
+  <div class="band">
+    <img src="../../apps/web/public/icon.svg" alt="">
+    <h1>UHPPOTE Desk</h1>
+    <div class="subtitle">Manuel utilisateur</div>
+    <div class="tagline">Application web pour gérer les contrôleurs d'accès UHPPOTE UT0311-L0x : portes, badges, autorisations, plages horaires, surveillance en temps réel, historique des événements et présences.</div>
+  </div>
+  <div>
+    <div class="chips">
+      <span class="chip">Contrôle d'accès</span><span class="chip">Moniteur en direct</span><span class="chip">Plages horaires</span><span class="chip">Présences</span><span class="chip">Multi-opérateurs</span><span class="chip">EN · IT · ES · FR · DE</span>
+    </div>
+  </div>
+  <div class="meta"><span>Version <span data-version>0.1.0</span> · <span data-date></span></span><span>github.com/alexbn71/UHPPOTE-Desk</span></div>
+</section>
+
+<!-- ===================================================================== CONTENTS -->
+<section class="page toc">
+  <h1>Sommaire</h1>
+  <ol>
+    <li><a href="#part1">Partie 1 — Comprendre UHPPOTE Desk</a>
+      <ol>
+        <li><a href="#what"><span class="num">1</span>Qu'est-ce que UHPPOTE Desk</a></li>
+        <li><a href="#how"><span class="num">2</span>Fonctionnement du système</a></li>
+        <li><a href="#concepts"><span class="num">3</span>Notions de base</a></li>
+        <li><a href="#roles"><span class="num">4</span>Opérateurs et rôles</a></li>
+        <li><a href="#interface"><span class="num">5</span>L'interface</a></li>
+        <li><a href="#start"><span class="num">6</span>Premiers pas</a></li>
+      </ol>
+    </li>
+    <li><a href="#part2">Partie 2 — Exploitation</a>
+      <ol>
+        <li><a href="#dashboard"><span class="num">7</span>Tableau de bord</a></li>
+        <li><a href="#monitor"><span class="num">8</span>Moniteur</a></li>
+        <li><a href="#events"><span class="num">9</span>Historique des événements</a></li>
+        <li><a href="#attendance"><span class="num">10</span>Présences</a></li>
+        <li><a href="#plates"><span class="num">11</span>Plaques</a></li>
+      </ol>
+    </li>
+    <li><a href="#part3">Partie 3 — Référentiel</a>
+      <ol>
+        <li><a href="#people"><span class="num">12</span>Personnes</a></li>
+        <li><a href="#cards"><span class="num">13</span>Badges</a></li>
+        <li><a href="#permissions"><span class="num">14</span>Autorisations</a></li>
+        <li><a href="#structure"><span class="num">15</span>Services et zones</a></li>
+        <li><a href="#guests"><span class="num">16</span>Invités</a></li>
+      </ol>
+    </li>
+    <li><a href="#part4">Partie 4 — Configuration</a>
+      <ol>
+        <li><a href="#controllers"><span class="num">17</span>Contrôleurs</a></li>
+        <li><a href="#doors"><span class="num">18</span>Portes</a></li>
+        <li><a href="#profiles"><span class="num">19</span>Plages horaires</a></li>
+        <li><a href="#tasks"><span class="num">20</span>Tâches planifiées</a></li>
+        <li><a href="#sync"><span class="num">21</span>Synchronisation</a></li>
+      </ol>
+    </li>
+    <li><a href="#part5">Partie 5 — Administration</a>
+      <ol>
+        <li><a href="#operators"><span class="num">22</span>Opérateurs</a></li>
+        <li><a href="#audit"><span class="num">23</span>Journal d'audit</a></li>
+        <li><a href="#system"><span class="num">24</span>Système</a></li>
+        <li><a href="#password"><span class="num">25</span>Changer le mot de passe</a></li>
+        <li><a href="#twofactor"><span class="num">26</span>Authentification à deux facteurs</a></li>
+      </ol>
+    </li>
+    <li><a href="#partauto">Partie 6 — Automatisation et intégrations</a>
+      <ol>
+        <li><a href="#rules"><span class="num">27</span>Règles</a></li>
+        <li><a href="#notifications"><span class="num">28</span>Notifications</a></li>
+        <li><a href="#webhooks"><span class="num">29</span>Webhooks</a></li>
+        <li><a href="#tokens"><span class="num">30</span>Jetons API</a></li>
+        <li><a href="#mobile"><span class="num">31</span>App mobile</a></li>
+        <li><a href="#homeassistant"><span class="num">32</span>Home Assistant</a></li>
+      </ol>
+    </li>
+    <li><a href="#part6">Partie 7 — Référence</a>
+      <ol>
+        <li><a href="#reasons"><span class="num">33</span>Motifs des événements</a></li>
+        <li><a href="#modes"><span class="num">34</span>Modes des portes et règles d'accès</a></li>
+        <li><a href="#trouble"><span class="num">35</span>Dépannage</a></li>
+        <li><a href="#glossary"><span class="num">36</span>Glossaire</a></li>
+      </ol>
+    </li>
+  </ol>
+  <div class="box note"><b>À propos de ce manuel</b>
+    <p>Les captures d'écran proviennent d'une installation de démonstration avec un contrôleur simulé à 4 portes et des personnes fictives : vos noms, numéros et dates seront différents. L'installation (Docker, réseau, variables d'environnement) est décrite dans un guide séparé, <code>docs/DOCKER.md</code> dans le dépôt du projet.</p>
+  </div>
+  <div class="box note"><b>Remerciements</b><p>UHPPOTE Desk s'appuie sur la connaissance du protocole publiée par le projet open source <b>uhppoted</b> (codeberg.org/uhppoted). UHPPOTE Desk est un projet indépendant, sans lien avec uhppoted ni avec le fabricant des contrôleurs.</p></div>
+</section>
+
+<!-- ===================================================================== PART 1 -->
+<section class="page part" id="part1">
+  <div class="opener o-blue"><div class="label">Partie 1</div><h1>Comprendre UHPPOTE Desk</h1><p>Ce que fait l'application, comment elle dialogue avec les contrôleurs d'accès et les quelques notions à connaître avant de l'utiliser.</p></div>
+
+  <h2 id="what">1 · Qu'est-ce que UHPPOTE Desk</h2>
+  <p>UHPPOTE Desk est une <b>application web</b> pour gérer les contrôleurs d'accès UHPPOTE <b>UT0311-L0x</b> (1, 2 ou 4 portes ; ce manuel utilise le modèle 4 portes UT0311-L04). Elle remplace le programme Windows fourni avec les contrôleurs ("Access Control", N3000) par une application moderne qui :</p>
+  <ul>
+    <li>tourne sur un serveur ou un NAS (normalement en conteneur Docker) et s'utilise depuis n'importe quel <b>navigateur</b> — PC, tablette ou téléphone — sans rien installer ;</li>
+    <li>est utilisée par <b>plusieurs opérateurs en même temps</b>, chacun avec un rôle (administrateur, opérateur, lecture seule) et, si besoin, limité à certaines zones du bâtiment ;</li>
+    <li>conserve personnes, badges et autorisations dans sa propre <b>base de données</b> et envoie automatiquement chaque modification aux contrôleurs ;</li>
+    <li>reçoit les passages et les alarmes <b>en temps réel</b>, garde l'<b>historique</b> complet des événements et calcule les <b>présences</b> (heures travaillées, retards, absences) ;</li>
+    <li>est disponible en <b>anglais, italien, espagnol, français et allemand</b> ; chaque utilisateur choisit sa langue.</li>
+  </ul>
+
+  <h2 id="how">2 · Fonctionnement du système</h2>
+  <p>Une installation de contrôle d'accès comporte trois éléments : les <b>contrôleurs</b> installés près des portes, le <b>serveur</b> où tourne UHPPOTE Desk et les <b>navigateurs</b> des opérateurs.</p>
+  <div class="diagram">
+    <svg viewBox="0 0 760 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+      <defs>
+        <linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1557a8"/><stop offset="1" stop-color="#2b8ae6"/></linearGradient>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5d6b7d"/></marker>
+        <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f9e6e"/></marker>
+      </defs>
+      <g>
+        <rect x="10" y="40" width="150" height="190" rx="14" fill="#f0ebff" stroke="#c9bdf5"/>
+        <text x="85" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="#6741d9">Opérateurs</text>
+        <rect x="32" y="82" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="107" text-anchor="middle" font-size="12" fill="#1d2733">Navigateur (PC)</text>
+        <rect x="32" y="132" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="157" text-anchor="middle" font-size="12" fill="#1d2733">Tablette / téléphone</text>
+        <text x="85" y="200" text-anchor="middle" font-size="10.5" fill="#5d6b7d">utilisateurs illimités</text>
+        <text x="85" y="214" text-anchor="middle" font-size="10.5" fill="#5d6b7d">avec des rôles</text>
+      </g>
+      <g>
+        <rect x="255" y="30" width="230" height="210" rx="14" fill="url(#gs)"/>
+        <text x="370" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Serveur UHPPOTE Desk</text>
+        <text x="370" y="76" text-anchor="middle" font-size="10.5" fill="#dbe9fb">Docker sur serveur / NAS</text>
+        <rect x="275" y="90" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#1557a8">Base de données (référence)</text>
+        <rect x="275" y="132" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="154" text-anchor="middle" font-size="11.5" fill="#1557a8">Synchronisation · Événements</text>
+        <rect x="275" y="174" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="196" text-anchor="middle" font-size="11.5" fill="#1557a8">Présences · Journal · Sauvegardes</text>
+      </g>
+      <g>
+        <rect x="580" y="30" width="170" height="100" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Contrôleur 1</text>
+        <text x="665" y="76" text-anchor="middle" font-size="10.5" fill="#1d2733">UT0311-L04 · 4 portes</text>
+        <text x="665" y="94" text-anchor="middle" font-size="10.5" fill="#5d6b7d">lecteurs · serrures · capteurs</text>
+        <text x="665" y="110" text-anchor="middle" font-size="10.5" fill="#5d6b7d">boutons de sortie</text>
+        <rect x="580" y="145" width="170" height="85" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="172" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Contrôleur 2 …</text>
+        <text x="665" y="192" text-anchor="middle" font-size="10.5" fill="#1d2733">décide seul,</text>
+        <text x="665" y="208" text-anchor="middle" font-size="10.5" fill="#1d2733">même hors ligne</text>
+      </g>
+      <line x1="162" y1="120" x2="250" y2="120" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="250" y1="150" x2="164" y2="150" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="206" y="112" text-anchor="middle" font-size="10" fill="#5d6b7d">HTTP</text>
+      <text x="206" y="168" text-anchor="middle" font-size="10" fill="#5d6b7d">mises à jour en direct</text>
+      <line x1="488" y1="90" x2="575" y2="80" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="531" y="74" text-anchor="middle" font-size="10" fill="#5d6b7d">commandes</text>
+      <line x1="575" y1="190" x2="490" y2="180" stroke="#2f9e6e" stroke-width="2" marker-end="url(#ag)"/>
+      <text x="531" y="203" text-anchor="middle" font-size="10" fill="#2f9e6e">événements</text>
+      <text x="531" y="140" text-anchor="middle" font-size="9.5" fill="#5d6b7d">LAN · UDP 60000 / 60001</text>
+    </svg>
+  </div>
+  <ul>
+    <li><b>Les contrôleurs décident.</b> Quand un badge est présenté, c'est le contrôleur lui-même qui vérifie si ce badge peut ouvrir cette porte à ce moment, et qui ouvre la serrure. Il ne demande rien au serveur : les portes fonctionnent même si le serveur ou le réseau sont arrêtés.</li>
+    <li><b>Le serveur est la référence.</b> Personnes, badges, autorisations, plages horaires et réglages sont dans la base de données de UHPPOTE Desk. Chaque modification faite dans l'application est envoyée immédiatement aux contrôleurs joignables. Un contrôleur qui était hors ligne est remis à jour par la <span class="ui">Synchronisation</span>.</li>
+    <li><b>Les événements remontent.</b> Chaque passage, ouverture ou alarme est enregistré dans la mémoire du contrôleur et envoyé au serveur, qui le stocke dans l'historique et l'affiche en direct. Si le réseau était coupé, les événements manquants sont téléchargés dès que le contrôleur redevient joignable : aucun n'est perdu.</li>
+  </ul>
+  <div class="box note"><b>Pourquoi c'est important</b>
+    <p>Ne modifiez pas les contrôleurs avec d'autres programmes (le logiciel Windows d'origine ou la page web du contrôleur) tant que UHPPOTE Desk les gère : à la synchronisation suivante, l'application annulerait ces modifications, car sa base de données est la référence.</p>
+  </div>
+
+  <h2 id="concepts" class="chapter">3 · Notions de base</h2>
+  <div class="cards2">
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Contrôleur</h4><p>La carte électronique qui gère 1, 2 ou 4 portes. Il est identifié par son <b>numéro de série</b> (9 chiffres sur l'étiquette S/N) et joint sur le réseau par son adresse IP. Il stocke des dizaines de milliers de badges et d'événements.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Porte</h4><p>Chaque sortie du contrôleur : un <b>lecteur</b> de badges, une <b>serrure</b> électrique (relais), éventuellement un <b>capteur de porte</b> (ouverte/fermée) et un <b>bouton de sortie</b>. Dans l'application, une porte a un nom, un mode de fonctionnement et un temps d'ouverture.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Personne</h4><p>Quelqu'un qui passe les portes : matricule, nom, service, période de validité, code PIN facultatif pour le clavier, photo et horaire pour les présences.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Badge</h4><p>Une carte de proximité ou un porte-clés. Son <b>numéro</b> a 8 chiffres au format Wiegand-26 : code site × 100000 + code badge, par exemple <code>10058400</code> = site 100, code 58400. Un badge peut être attribué à une personne ou enregistré comme libre.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Autorisation</h4><p>Le droit d'une personne d'ouvrir une porte : <b>toujours</b>, ou seulement dans une <b>plage horaire</b>. Les autorisations appartiennent à la personne et valent pour tous ses badges.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Plage horaire</h4><p>Une fenêtre de temps (jours de la semaine, jusqu'à 3 intervalles horaires, dates de validité) numérotée de 2 à 254. Elle peut être liée à une autre plage pour l'étendre, par exemple jours ouvrés + samedi matin.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Événement</h4><p>Tout ce que le contrôleur enregistre : passages de badge (autorisés ou refusés, avec le motif), porte ouverte/fermée, bouton de sortie, alarmes, mise sous tension, ouverture à distance.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Synchronisation</h4><p>L'alignement d'un contrôleur sur la base de données. Elle a lieu automatiquement à chaque modification ; la page <span class="ui">Synchronisation</span> vérifie et corrige les différences (par exemple après une longue période hors ligne).</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Zone et service</h4><p>Les <b>zones</b> regroupent les contrôleurs (bâtiments, étages) et peuvent limiter ce qu'un opérateur peut commander. Les <b>services</b> organisent les personnes et filtrent les rapports de présence.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Présences</h4><p>Les passages sur les lecteurs marqués pour les présences deviennent des pointages d'entrée/sortie. Avec les horaires, jours fériés et absences, l'application calcule heures travaillées, heures supplémentaires et retards.</p></div>
+  </div>
+  <h3>Comment un accès est décidé</h3>
+  <p>Quand un badge est présenté sur une porte, le contrôleur n'accorde l'accès que si <b>toutes</b> ces conditions sont réunies ; sinon il le refuse et enregistre le motif (voir <a href="#reasons">Motifs des événements</a>) :</p>
+  <ol class="steps">
+    <li>le badge est enregistré dans le contrôleur (les badges d'une personne inactive, perdus ou désactivés sont retirés des contrôleurs) ;</li>
+    <li>aujourd'hui est dans la période de validité du titulaire ;</li>
+    <li>la personne a une autorisation sur cette porte — toujours, ou avec une plage horaire qui inclut le jour et l'heure actuels ;</li>
+    <li>les règles de la porte le permettent : mode de la porte, interverrouillage, anti-passback, premier badge, et le PIN quand le lecteur a un clavier.</li>
+  </ol>
+</section>
+
+<section class="page chapter">
+  <h2 id="roles">4 · Opérateurs et rôles</h2>
+  <p>Chaque utilisateur de l'application se connecte avec son propre compte d'<b>opérateur</b>. Chaque opérateur a l'un de trois rôles. Les administrateurs peuvent aussi limiter un opérateur à certaines <b>zones</b> : l'ouverture à distance et la synchronisation ne sont alors permises que sur les contrôleurs de ces zones.</p>
+  <table>
+    <thead><tr><th>Ce que l'opérateur peut faire</th><th class="c">Lecture seule</th><th class="c">Opérateur</th><th class="c">Administrateur</th></tr></thead>
+    <tr><td>Voir tableau de bord, moniteur, historique, rapports de présence, personnes, badges, autorisations, contrôleurs, portes, plages horaires, tâches, informations système</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Exporter événements et présences en CSV</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Créer et modifier personnes, badges, photos, autorisations ; importer des personnes depuis un CSV ; services</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Ouvrir les portes à distance</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Liens invités ; plaques des personnes</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Présences : horaires, jours fériés, absences, pointages manuels</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Comparer et aligner les badges, synchroniser l'heure, télécharger les événements</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Contrôleurs (ajout, réseau, réglages avancés, réinitialisation), portes, plages horaires, tâches planifiées, zones, synchronisation complète</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Opérateurs, journal d'audit, sauvegardes</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Règles, notifications, webhooks, jetons API, réglages de l'app mobile, caméras de plaques</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Authentification à deux facteurs sur son propre compte</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+  </table>
+  <p>Les pages et boutons qu'un rôle ne peut pas utiliser sont masqués ou désactivés. Chaque modification et chaque commande envoyée à un contrôleur est enregistrée dans le <a href="#audit">Journal d'audit</a> avec le nom de l'opérateur.</p>
+
+  <h2 id="interface">5 · L'interface</h2>
+  <figure><img src="shots/dashboard.png"><figcaption><b>Figure 1</b> — La fenêtre principale : en-tête en haut, menu à gauche, la page choisie à droite.</figcaption></figure>
+  <h3>En-tête</h3>
+  <ul>
+    <li><b>Indicateur LIVE</b> — vert quand le navigateur reçoit les mises à jour en temps réel du serveur (événements, état des portes, progression des synchronisations). Il devient rouge, <span class="ui">Hors ligne</span>, si la connexion au serveur est perdue, et se reconnecte tout seul. Il concerne la connexion entre votre navigateur et le serveur, pas les contrôleurs.</li>
+    <li><b>Nom et rôle</b> de l'opérateur connecté.</li>
+    <li><b>Langue</b> (icône <span class="kbd">文A</span>) — English, Italiano, Español, Français, Deutsch. Le choix est mémorisé par le navigateur ; à la première visite, la langue du navigateur est utilisée.</li>
+    <li><b>Changer le mot de passe</b> (icône clé), <b>Authentification à deux facteurs</b> (icône bouclier) et <b>Se déconnecter</b>.</li>
+  </ul>
+  <figure class="half"><img src="shots/language.png"><figcaption><b>Figure 2</b> — Le menu des langues.</figcaption></figure>
+  <h3>Menu</h3>
+  <p>Le menu de gauche est divisé en quatre groupes, qui sont aussi les parties de ce manuel :</p>
+  <table>
+    <thead><tr><th>Groupe</th><th>Pages</th><th>Sert à</th></tr></thead>
+    <tr><td><span class="grp g-ops">Exploitation</span></td><td>Tableau de bord, Moniteur, Historique des événements, Personnes présentes, Plaques, Présences, Anomalies</td><td>la surveillance quotidienne</td></tr>
+    <tr><td><span class="grp g-reg">Référentiel</span></td><td>Personnes, Badges, Invités, Autorisations, Services et zones</td><td>qui peut aller où</td></tr>
+    <tr><td><span class="grp g-cfg">Configuration</span></td><td>Contrôleurs, Portes, Plages horaires, Tâches planifiées, Synchronisation</td><td>matériel et règles</td></tr>
+    <tr><td><span class="grp g-adm">Administration</span></td><td>Opérateurs, Journal d'audit, Règles, Notifications, Webhooks, App mobile, Jetons API, Système</td><td>utilisateurs, intégrations et maintenance</td></tr>
+  </table>
+  <p>Les messages apparaissent en haut à droite : verts pour les opérations réussies, rouges pour les erreurs. Le message jaune <span class="ui">Enregistré, mais non envoyé à tous les contrôleurs</span> signifie que la modification est dans la base mais qu'un contrôleur était injoignable ; il sera aligné à la prochaine synchronisation.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="start">6 · Premiers pas</h2>
+  <h3>Connexion</h3>
+  <figure class="half"><img src="shots/login.png"><figcaption><b>Figure 3</b> — La page de connexion.</figcaption></figure>
+  <p>Ouvrez l'adresse du serveur dans le navigateur (par exemple <code>http://192.168.1.10:8080</code>) et connectez-vous. Le premier administrateur est <code>admin</code> :</p>
+  <ul>
+    <li>si le serveur a été installé avec la variable <code>ADMIN_PASSWORD</code>, utilisez ce mot de passe. Il ne peut être changé qu'en modifiant la variable et en redémarrant le serveur ;</li>
+    <li>sinon, un mot de passe temporaire a été généré au premier démarrage et écrit dans le journal du serveur. Il vous est demandé immédiatement d'en choisir un nouveau.</li>
+  </ul>
+  <p>Après plusieurs mots de passe erronés, le compte est bloqué quelques minutes. Les sessions expirent après quelques heures d'utilisation (12 par défaut).</p>
+  <h3>Première configuration — étapes</h3>
+  <ol class="steps">
+    <li><b>Contrôleurs</b> → <span class="ui">Rechercher sur le réseau</span> : trouvez les contrôleurs, ajoutez-les et nommez-les (<a href="#controllers">chapitre 17</a>). Si un contrôleur a une adresse IP d'usine hors de votre réseau, changez-la depuis sa page.</li>
+    <li><b>Portes</b> : donnez à chaque porte un nom parlant, vérifiez mode et temps d'ouverture et indiquez les lecteurs à utiliser pour les présences (<a href="#doors">chapitre 18</a>).</li>
+    <li><b>Plages horaires</b> : créez les fenêtres horaires nécessaires, par exemple "Heures de bureau" (<a href="#profiles">chapitre 19</a>). Les autorisations valables "toujours" n'en ont pas besoin.</li>
+    <li><b>Services et zones</b> : créez l'organisation de l'entreprise et, si vous le souhaitez, les zones du bâtiment (<a href="#structure">chapitre 15</a>).</li>
+    <li><b>Personnes</b> : créez-les une par une ou importez un fichier CSV ; attribuez badges et autorisations (<a href="#people">chapitre 12</a>). On lit le numéro d'un nouveau badge simplement en le présentant à un lecteur quelconque.</li>
+    <li><b>Opérateurs</b> : créez un compte pour chaque utilisateur de l'application avec le bon rôle (<a href="#operators">chapitre 22</a>).</li>
+    <li>Vérifiez dans le <b>Moniteur</b> que les passages apparaissent en temps réel. Sinon, voir <a href="#trouble">Dépannage</a>.</li>
+  </ol>
+  <div class="box tip"><b>Astuce</b><p>Avant l'arrivée du matériel, vous pouvez tout essayer avec le simulateur de contrôleur inclus dans l'image Docker (voir <code>docs/DOCKER.md</code>, "Trying the app without a controller").</p></div>
+</section>
+
+<!-- ===================================================================== PART 2 -->
+<section class="page part" id="part2">
+  <div class="opener o-green"><div class="label">Partie 2</div><h1>Exploitation</h1><p>La surveillance quotidienne : état des contrôleurs, passages en direct, historique des événements, présences et plaques.</p></div>
+
+  <span class="grp g-ops">Exploitation</span>
+  <h2 id="dashboard">7 · Tableau de bord</h2>
+  <p>La première page après la connexion. Pour chaque contrôleur, elle affiche un panneau avec :</p>
+  <ul>
+    <li>le nom, l'état <span class="ui">En ligne</span>/<span class="ui">Hors ligne</span>, le numéro de série et l'adresse IP, et l'heure du dernier contact. Si l'horloge du contrôleur se trompe de plus de quelques secondes, l'écart est affiché (l'heure est corrigée automatiquement) ;</li>
+    <li>une tuile pour chaque porte active avec son <b>mode</b> (Contrôlée, Normalement ouverte, Normalement fermée), l'état du <b>capteur de porte</b> (Ouverte/Fermée) et l'icône de la <b>serrure</b>, orange quand le relais est actif (serrure libérée) ;</li>
+    <li>le bouton pour ouvrir la porte à distance (opérateurs et administrateurs) : après confirmation, la serrure est libérée pendant le temps d'ouverture de la porte et un événement "Ouverture à distance" est enregistré ;</li>
+    <li>des indicateurs rouges pour <b>Alarme incendie</b> ou <b>Verrouillage forcé</b> quand ces entrées du contrôleur sont actives, et les sorties allumées de la carte d'extension.</li>
+  </ul>
+  <p>En dessous, <span class="ui">Derniers événements</span> liste les événements les plus récents de tous les contrôleurs ; les accès refusés sont surlignés en rouge. <span class="ui">Ouvrir le moniteur</span> mène au moniteur en direct.</p>
+  <p>Le tableau de bord de la Figure 1 montre une journée type : une ouverture à distance, une porte ouverte puis refermée, un bouton de sortie et un badge non enregistré.</p>
+
+  <span class="grp g-ops">Exploitation</span>
+  <h2 id="monitor">8 · Moniteur</h2>
+  <figure><img src="shots/monitor.png"><figcaption><b>Figure 4</b> — Moniteur en direct : le dernier passage avec la photo de la personne, et les événements de la session.</figcaption></figure>
+  <p>Le moniteur affiche passages et alarmes au moment où le contrôleur les envoie — l'équivalent du "Monitor" du logiciel d'origine, par exemple pour un accueil.</p>
+  <ul>
+    <li><b>Dernier passage</b> : photo (ou initiales), nom et badge de la personne, résultat (<span class="yes">AUTORISÉ</span> / <span style="color:#d9480f;font-weight:700">REFUSÉ</span>), motif, porte et sens (Entrée/Sortie), heure. Un badge non enregistré est indiqué comme tel.</li>
+    <li><b>Événements de la session</b> : chaque événement reçu depuis l'ouverture de la page (jusqu'aux 300 plus récents), du plus récent au plus ancien.</li>
+    <li>Filtres en haut : un seul contrôleur, et <span class="ui">Passages de badge uniquement</span> pour masquer les événements de porte et les alarmes.</li>
+  </ul>
+  <div class="box note"><b>Remarque</b><p>Le moniteur n'affiche que ce qui arrive pendant qu'il est ouvert. Tout est enregistré de toute façon : les événements plus anciens sont dans l'<a href="#events">Historique des événements</a>. Si les passages n'apparaissent pas ici mais apparaissent plus tard dans l'historique, le serveur ne reçoit pas les événements en temps réel — voir <a href="#trouble">Dépannage</a>.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Exploitation</span>
+  <h2 id="events">9 · Historique des événements</h2>
+  <figure><img src="shots/events.png"><figcaption><b>Figure 5</b> — Historique des événements avec filtres.</figcaption></figure>
+  <p>Tous les événements collectés auprès des contrôleurs, du plus récent au plus ancien. Utilisez les filtres pour trouver ce que vous cherchez :</p>
+  <ul>
+    <li><b>Du / Au</b> — période ;</li>
+    <li><b>Contrôleur</b> et <b>Porte</b> ;</li>
+    <li><b>Personne</b> ou <b>Numéro de badge</b> ;</li>
+    <li><b>Résultat</b> — autorisés ou refusés uniquement.</li>
+  </ul>
+  <p>Chaque ligne indique date et heure (heure du contrôleur), contrôleur, porte avec la flèche du sens (↘ entrée, ↗ sortie), type (Badge, Porte, Alarme), personne ou badge, résultat, motif et index de l'événement dans la mémoire du contrôleur. <span class="ui">Exporter en CSV</span> télécharge les événements filtrés dans la langue courante, prêts pour Excel.</p>
+  <div class="box note"><b>D'où viennent les événements</b><p>Les événements arrivent en temps réel depuis les contrôleurs et sont aussi téléchargés automatiquement toutes les quelques minutes et chaque fois qu'un contrôleur redevient joignable : l'historique est complet même après des coupures du réseau ou du serveur. La mémoire du contrôleur est circulaire : si un contrôleur reste déconnecté si longtemps qu'elle se remplit, les événements les plus anciens sont écrasés.</p></div>
+
+  <h3>Personnes présentes</h3>
+  <figure><img src="shots/presence.png"><figcaption><b>Figure 6</b> — Qui est à l'intérieur maintenant.</figcaption></figure>
+  <p>La page <span class="ui">Personnes présentes</span> montre qui est à l'intérieur maintenant : pour chaque personne, le dernier passage de badge <b>autorisé</b> sur une porte qui compte pour la présence. Un passage sur une porte d'<b>entrée</b> met la personne à l'intérieur ; un passage sur une porte de <b>sortie</b> (ou sur le lecteur de sortie d'une porte à deux lecteurs) la met à l'extérieur. Le rôle de chaque porte se règle sur la page <a href="#doors">Portes</a> : <i>Entrée</i> (par défaut), <i>Sortie</i> ou <i>Non comptée</i>.</p>
+  <p>Choisissez la période (aujourd'hui, 8 ou 24 dernières heures) : les personnes dont le dernier passage est plus ancien ne sont pas comptées. La page se rafraîchit seule toutes les 30 secondes ; <span class="ui">Exporter en CSV</span> télécharge la liste, par exemple pour l'appel lors d'une évacuation. Les personnes qui sortent avec le bouton de sortie (sans badge) ne sont pas visibles : pour un comptage exact, il faut un lecteur côté sortie.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Exploitation</span>
+  <h2 id="attendance">10 · Présences</h2>
+  <p>UHPPOTE Desk calcule le temps de travail à partir des passages sur les lecteurs marqués comme <b>lecteurs de présence</b> (sur la page <a href="#doors">Portes</a>) — en général l'entrée principale. Seuls les passages <b>autorisés</b> comptent. La page a cinq onglets.</p>
+  <h3>Rapport</h3>
+  <figure><img src="shots/attendance-report.png"><figcaption><b>Figure 7</b> — Rapport de présence : synthèse de la période et détail quotidien.</figcaption></figure>
+  <p>Choisissez la période (du premier du mois en cours à aujourd'hui par défaut) et, si vous le souhaitez, un service ou une personne. La <b>Synthèse de la période</b> indique par personne : heures travaillées, heures prévues, heures supplémentaires, total des retards, jours d'absence et jours avec anomalies. Le <b>Détail quotidien</b> montre chaque jour avec son statut (Présent, Absent, Jour férié, Jour non travaillé, Congés, Permission, Maladie, Déplacement, Anomalie), première entrée, dernière sortie, heures travaillées, retard et tous les pointages ; ceux saisis à la main sont marqués d'un <b>*</b>. <span class="ui">Exporter en CSV</span> télécharge le détail.</p>
+  <div class="box note"><b>Comment les heures sont calculées</b>
+    <ul>
+      <li>Les pointages sont appariés dans l'ordre chronologique : entrée, sortie, entrée, sortie… Le sens du lecteur n'est pas nécessaire.</li>
+      <li>Avec une seule paire de pointages dans la journée, la <b>pause</b> de l'horaire est déduite automatiquement ; avec deux paires ou plus, la pause réelle est utilisée.</li>
+      <li>Un nombre impair de pointages (par exemple une sortie oubliée) est une <b>anomalie</b> : le dernier pointage est ignoré jusqu'à sa correction par un pointage manuel.</li>
+      <li>Retards et sorties anticipées tiennent compte de la <b>tolérance</b> de l'horaire. Le temps au-delà des heures prévues est en heures supplémentaires ; les jours non travaillés et fériés, tout le temps travaillé l'est.</li>
+      <li>Les horaires de nuit (finissant après minuit) sont attribués au jour où ils ont commencé.</li>
+      <li>Une personne sans horaire n'a pas d'heures prévues : seules les heures travaillées sont calculées.</li>
+    </ul>
+  </div>
+  <h3>Horaires</h3>
+  <figure><img src="shots/attendance-shifts.png"><figcaption><b>Figure 8</b> — Horaires de travail.</figcaption></figure>
+  <p>Un horaire définit heure de début et de fin, pause (minutes), tolérance (minutes) et jours travaillés. Un horaire qui se termine avant de commencer (par exemple 22:00–06:00) est un horaire de nuit. L'horaire s'attribue dans les détails de chaque personne (<a href="#people">Personnes</a>).</p>
+  <h3>Jours fériés</h3>
+  <figure><img src="shots/attendance-holidays.png"><figcaption><b>Figure 9</b> — Jours fériés.</figcaption></figure>
+  <p>Les jours où personne ne doit travailler. Ajoutez-les un par un (date et description) ou importez en un clic les jours fériés italiens d'une année, Pâques compris. Ajoutez au besoin les jours fériés locaux, fermetures et ponts.</p>
+  <h3>Congés et absences</h3>
+  <figure><img src="shots/attendance-leaves.png"><figcaption><b>Figure 10</b> — Congés et absences.</figcaption></figure>
+  <p>Enregistrez congés, permissions, maladies, déplacements et autres absences d'une personne pour une plage de dates. Ces jours ne comptent plus comme des absences dans le rapport.</p>
+  <h3>Pointages manuels</h3>
+  <figure><img src="shots/attendance-punches.png"><figcaption><b>Figure 11</b> — Pointages manuels.</figcaption></figure>
+  <p>Ajoutez un pointage que le lecteur n'a pas enregistré — par exemple une sortie oubliée — avec personne, date et heure, sens et motif. Les pointages manuels sont marqués d'un * dans le rapport et enregistrés dans le journal d'audit.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Exploitation</span>
+  <h2 id="plates">11 · Plaques</h2>
+  <figure><img src="shots/plates.png"><figcaption><b>Figure 12</b> — Lectures de plaques : qui a été laissé entrer et qui a été refusé.</figcaption></figure>
+  <p>Une caméra avec reconnaissance de plaques (testée avec <b>AgentDVR</b>) envoie chaque plaque lue à UHPPOTE Desk, qui décide si le véhicule peut entrer, ouvre la porte, prend une photo depuis la caméra et enregistre la lecture. La page a trois onglets.</p>
+  <ul>
+    <li><b>Lectures</b> — chaque plaque lue, avec photo, heure, propriétaire, résultat (<i>Autorisé</i>, <i>Plaque inconnue</i>, <i>Hors plage horaire</i>…) et caméra. Filtrez par résultat ou cherchez par plaque ou nom. Les photos sont conservées 30 jours par défaut (<code>PLATE_PHOTO_DAYS</code>).</li>
+    <li><b>Plaques</b> — les plaques connues du système. Une plaque appartient à une <b>personne</b> (ajoutée dans l'onglet <i>Plaques</i> de la personne : le véhicule passe là où la personne a une autorisation, dans sa plage horaire) ou à un <b>lien invité</b> (champ <i>Plaques des véhicules</i> : le véhicule passe tant que le lien est valable). Les plaques sont comparées en ignorant espaces, tirets et les caractères que les lecteurs confondent le plus (B/8, O/0, I/1, Z/2, S/5).</li>
+    <li><b>Caméras</b> (administrateurs) — une ligne par caméra : la porte qu'elle ouvre, l'adresse de la photo, la pause après une ouverture (la voiture est encore devant la caméra) et <i>Ouvrir la porte</i> (désactivé = les lectures sont seulement enregistrées, pour tester une nouvelle caméra).</li>
+  </ul>
+  <figure><img src="shots/plate-cameras.png"><figcaption><b>Figure 13</b> — Caméras de lecture de plaques.</figcaption></figure>
+  <p>À la création d'une caméra, UHPPOTE Desk affiche deux adresses contenant la clé secrète de la caméra, à copier dans AgentDVR (liste des plaques connues et "Call URL") : la clé n'est affichée qu'une fois. Les lectures sont aussi publiées comme <code>plate.granted</code> / <code>plate.denied</code> pour les notifications, règles et webhooks ; les notifications Telegram et e-mail contiennent la photo. La configuration pas à pas est dans <code>docs/PLATES.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 3 -->
+<section class="page part" id="part3">
+  <div class="opener o-violet"><div class="label">Partie 3</div><h1>Référentiel</h1><p>Personnes, badges, invités et autorisations d'accès : qui peut aller où, et quand.</p></div>
+
+  <span class="grp g-reg">Référentiel</span>
+  <h2 id="people">12 · Personnes</h2>
+  <figure><img src="shots/people.png"><figcaption><b>Figure 14</b> — La liste des personnes.</figcaption></figure>
+  <p>La liste montre matricule, nom, service, badges, validité et statut. Cherchez par nom, matricule ou numéro de badge. Cliquez sur une ligne pour ouvrir les détails ; <span class="ui">Nouvelle personne</span> en crée une.</p>
+  <h3>Détails</h3>
+  <figure class="narrow"><img src="shots/person-details.png"><figcaption><b>Figure 15</b> — Détails d'une personne.</figcaption></figure>
+  <ul>
+    <li><b>Matricule</b> (unique) et <b>nom/prénom</b> ; service, e-mail, téléphone, notes.</li>
+    <li><b>Accès valable du / au</b> — en dehors de cette période, tous les badges de la personne sont refusés par les contrôleurs.</li>
+    <li><b>Code PIN clavier</b> (jusqu'à 6 chiffres, 0 = aucun) — demandé par les lecteurs à clavier quand la porte fonctionne en mode "badge + PIN".</li>
+    <li><b>Horaire</b> — pour les présences.</li>
+    <li><b>Photo</b> — JPEG, PNG ou WebP ; elle est affichée dans le moniteur.</li>
+    <li><b>Active</b> — désactivée, les badges de la personne sont retirés de tous les contrôleurs (l'historique est conservé). Pour les personnes qui partent, temporairement ou définitivement.</li>
+  </ul>
+  <h3>Badges d'une personne</h3>
+  <figure class="narrow"><img src="shots/person-cards.png"><figcaption><b>Figure 16</b> — Onglet Badges.</figcaption></figure>
+  <p>Saisissez le numéro à 8 chiffres et <span class="ui">Ajouter</span>, ou utilisez <b>Capturer depuis un lecteur</b> : présentez le nouveau badge à un lecteur quelconque, il apparaît parmi les badges inconnus lus dans les 10 dernières minutes ; cliquez dessus pour l'attribuer. Une personne peut avoir plusieurs badges.</p>
+  <ul>
+    <li><span class="ui">Perdu</span> — remplace un badge perdu : l'ancien est marqué perdu et retiré des contrôleurs, le nouveau numéro reçoit aussitôt les mêmes autorisations.</li>
+    <li><b>Supprimer</b> — retire le badge de la base et de tous les contrôleurs.</li>
+  </ul>
+  <h3>Autorisations d'une personne</h3>
+  <figure class="narrow"><img src="shots/person-permissions.png"><figcaption><b>Figure 17</b> — Onglet Autorisations.</figcaption></figure>
+  <p>Une ligne par porte de chaque contrôleur. Cochez les portes que la personne peut ouvrir et choisissez pour chacune <b>Toujours</b> ou une <b>plage horaire</b>. <b>Premier badge</b> permet à la personne d'"ouvrir" une porte qui utilise la fonction premier badge (voir <a href="#controllers">Contrôleurs → Réglages avancés</a>). <span class="ui">Enregistrer les autorisations</span> les envoie aussitôt aux contrôleurs.</p>
+  <h3>Importer des personnes depuis un fichier CSV</h3>
+  <p><span class="ui">Importer un CSV</span> lit un fichier avec une ligne d'en-tête ; le séparateur (point-virgule, virgule ou tabulation) est détecté automatiquement. Colonnes reconnues :</p>
+  <table>
+    <thead><tr><th>Colonne</th><th>Noms d'en-tête acceptés</th><th>Remarques</th></tr></thead>
+    <tr><td>Matricule</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>obligatoire ; un matricule existant met à jour cette personne</td></tr>
+    <tr><td>Nom</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>obligatoire</td></tr>
+    <tr><td>Prénom</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
+    <tr><td>Badge</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>numéro Wiegand-26 à 8 chiffres</td></tr>
+    <tr><td>Service</td><td><code>department</code>, <code>reparto</code></td><td>créé s'il manque ; sous-services avec <code>\</code>, par exemple <code>Production\Assemblage</code></td></tr>
+  </table>
+  <p>Le résultat indique combien de personnes et de badges ont été créés ou mis à jour, et les lignes en erreur. Les personnes importées n'ont pas d'autorisations : attribuez-les ensuite, par exemple avec l'attribution groupée de la page <a href="#permissions">Autorisations</a>. Un export du logiciel Windows d'origine s'importe en général directement.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Référentiel</span>
+  <h2 id="cards">13 · Badges</h2>
+  <figure><img src="shots/cards.png"><figcaption><b>Figure 18</b> — Tous les badges enregistrés.</figcaption></figure>
+  <p>Tous les badges connus de l'application, attribués ou libres, avec statut (Actif, Perdu, Désactivé) et date d'enregistrement. Le filtre <span class="ui">Libres</span> montre les badges pas encore attribués ; un badge libre peut être attribué depuis la liste.</p>
+  <ul>
+    <li><b>Badges lus mais non enregistrés (dernière heure)</b> — chaque badge inconnu présenté à un lecteur apparaît ici : cliquez pour l'enregistrer, libre ou directement attribué à une personne. Les numéros qui ne sont pas des badges Wiegand-26 valides sont grisés et ne peuvent pas être enregistrés.</li>
+    <li><b>Enregistrement par lot</b> — enregistre toute une plage de numéros comme badges libres (jusqu'à 1000), par exemple une nouvelle boîte de badges aux numéros consécutifs.</li>
+  </ul>
+  <div class="box note"><b>Numéros de badge</b><p>Les contrôleurs n'acceptent que des numéros Wiegand-26 : code site 0–255 et code badge 0–65535, écrits site × 100000 + code. Le numéro imprimé sur beaucoup de badges (par exemple <code>100,58400</code> ou <code>0006612288</code>) correspond à ce format ; en cas de doute, présentez le badge et lisez son numéro dans la liste des badges inconnus.</p></div>
+
+  <span class="grp g-reg">Référentiel</span>
+  <h2 id="permissions">14 · Autorisations</h2>
+  <figure><img src="shots/permissions.png"><figcaption><b>Figure 19</b> — Matrice personnes × portes, et attribution groupée.</figcaption></figure>
+  <p>L'équivalent de "Access Privilege" du logiciel d'origine : une matrice avec une ligne par personne et une colonne par porte. <b>✓</b> signifie toujours autorisé, un nombre signifie autorisé dans cette plage horaire. Filtrez les personnes pour trouver quelqu'un rapidement.</p>
+  <p>Avec l'<b>attribution groupée</b>, vous choisissez plusieurs personnes et plusieurs portes, éventuellement une plage horaire, et <span class="ui">Accorder</span> ou <span class="ui">Révoquer</span> applique toutes ces autorisations d'un coup — par exemple pour donner l'accès à l'entrée à tout un nouveau service.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Référentiel</span>
+  <h2 id="structure">15 · Services et zones</h2>
+  <figure><img src="shots/structure.png"><figcaption><b>Figure 20</b> — Services et zones sont des arbres.</figcaption></figure>
+  <ul>
+    <li>Les <b>services</b> organisent le personnel : ils servent à filtrer la liste des personnes et les rapports de présence. Un service peut appartenir à un autre (par exemple Production → Assemblage).</li>
+    <li>Les <b>zones</b> regroupent les contrôleurs, par exemple par bâtiment ou étage. Elles servent à limiter les opérateurs : un opérateur limité à une zone (et à ses sous-zones) ne peut ouvrir les portes et synchroniser que les contrôleurs de cette zone.</li>
+  </ul>
+  <p>Utilisez <span class="ui">Nouveau</span>, modifier et supprimer ; supprimer un élément supprime aussi ses sous-éléments. Les personnes et contrôleurs d'un service ou d'une zone supprimés sont conservés, sans service ni zone.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Référentiel</span>
+  <h2 id="guests">16 · Invités</h2>
+  <figure><img src="shots/guests.png"><figcaption><b>Figure 21</b> — Liens invités.</figcaption></figure>
+  <p>Un lien invité ouvre certaines portes pendant un temps donné, <b>sans badge, application ni connexion</b> : un livreur ou un technicien aujourd'hui, une entreprise de nettoyage chaque mardi soir, un ami pour le week-end. Les opérateurs ne créent des liens que pour les portes qu'ils peuvent eux-mêmes ouvrir ; les administrateurs les voient tous.</p>
+  <ul>
+    <li><b>Portes</b> et <b>validité</b> (du, au ; boutons <i>Aujourd'hui</i>, <i>7 jours</i>…), éventuellement <b>seulement certains jours et heures</b> (par exemple lundi–vendredi 08:00–18:00) et un <b>nombre maximal d'ouvertures</b>.</li>
+    <li><span class="ui">Seulement sur le premier téléphone qui l'utilise</span> (activé par défaut) : un lien transféré ne fonctionne pas sur un autre téléphone, et la tentative est enregistrée et notifiée.</li>
+    <li><b>PIN</b> (4–8 chiffres), à donner séparément du lien ; après 5 PIN erronés, le lien est bloqué jusqu'à son déblocage.</li>
+    <li><b>Plaques des véhicules</b> : les caméras de plaques ouvrent les portes du lien pour ces véhicules (voir <a href="#plates">Plaques</a>).</li>
+  </ul>
+  <p>Après l'enregistrement, le message à envoyer s'affiche avec les boutons <span class="ui">Partager</span>, <span class="ui">WhatsApp</span> et de copie. <b>Le lien n'est affiché qu'à ce moment</b> (seul son hachage est conservé) : s'il est perdu, <span class="ui">Nouveau lien</span> le remplace et l'ancien cesse de fonctionner. Depuis la liste, vous pouvez aussi révoquer un lien, le libérer du téléphone auquel il est lié et voir ses ouvertures.</p>
+  <figure class="narrow"><img src="shots/guest-page.png"><figcaption><b>Figure 22</b> — Ce que l'invité voit sur son téléphone : un bouton "Maintenez pour ouvrir" par porte.</figcaption></figure>
+  <p>La page de l'invité affiche le nom, la validité et un bouton <span class="ui">Maintenez pour ouvrir</span> par porte (un appui bref n'ouvre pas). Quand le lien n'est pas utilisable, elle explique pourquoi : pas encore valable, hors horaires, expiré, épuisé, révoqué ou bloqué. Ouvertures et refus apparaissent dans l'historique et sont publiés comme <code>guest.opened</code> / <code>guest.refused</code>. Détails : <code>docs/GUESTS.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 4 -->
+<section class="page part" id="part4">
+  <div class="opener o-blue"><div class="label">Partie 4</div><h1>Configuration</h1><p>Contrôleurs, portes et les règles qu'ils appliquent. La plupart de ces pages sont réservées aux administrateurs.</p></div>
+
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="controllers">17 · Contrôleurs</h2>
+  <figure><img src="shots/controllers.png"><figcaption><b>Figure 23</b> — Les contrôleurs configurés dans l'application.</figcaption></figure>
+  <p>La liste des contrôleurs avec nom, numéro de série, adresse, firmware, état et dernier contact. Cliquez sur une ligne pour ouvrir sa page.</p>
+  <h3>Trouver et ajouter un contrôleur</h3>
+  <figure><img src="shots/discovery.png"><figcaption><b>Figure 24</b> — Recherche sur le réseau.</figcaption></figure>
+  <ol class="steps">
+    <li>Cliquez sur <span class="ui">Rechercher sur le réseau</span>, puis <span class="ui">Lancer la recherche</span>. Le serveur envoie un broadcast sur le réseau local et liste chaque contrôleur qui répond en quelques secondes, avec numéro de série, IP, MAC et firmware.</li>
+    <li>Cliquez sur <span class="ui">Ajouter</span> à côté d'un contrôleur. Donnez-lui un nom, vérifiez adresse IP et port (60000), transport (UDP ; TCP seulement avec un firmware récent) et éventuellement une zone.</li>
+    <li>Enregistrez : le contrôleur apparaît en ligne en quelques secondes. L'application le programme pour qu'il lui envoie ses événements, synchronise son horloge et télécharge ses événements stockés.</li>
+  </ol>
+  <p>Un contrôleur peut aussi être ajouté manuellement avec son numéro de série. La recherche ne fonctionne que si le serveur est sur le même segment réseau que les contrôleurs ; avec Docker, le conteneur doit utiliser le réseau "host".</p>
+  <div class="box tip"><b>Contrôleur déjà utilisé ?</b><p>Si le contrôleur contient déjà des badges (par exemple du logiciel d'origine) et que la base de l'application n'en a pas, rien n'est supprimé à l'ajout. Importez d'abord les personnes, puis utilisez <a href="#sync">Synchronisation → Comparer</a> pour voir les différences avant d'aligner.</p></div>
+
+  <h3>Page du contrôleur — Diagnostic</h3>
+  <figure><img src="shots/controller-diagnostics.png"><figcaption><b>Figure 25</b> — Diagnostic : tout est lu en direct depuis le contrôleur.</figcaption></figure>
+  <p>Lus directement depuis le contrôleur : numéro de série, IP, passerelle, MAC, version et date du firmware, heure du contrôleur, nombre de badges stockés, dernier événement, signet de téléchargement, destination des événements (où le contrôleur envoie ses événements), anti-passback et erreur système. Le tableau <b>Portes</b> montre mode, délai d'ouverture, capteur et relais de chaque porte, tels qu'enregistrés dans le contrôleur.</p>
+  <ul>
+    <li><span class="ui">Relire depuis le contrôleur</span> rafraîchit les données.</li>
+    <li><span class="ui">Synchroniser l'heure</span> règle l'horloge du contrôleur sur l'heure du serveur. Cela se fait aussi automatiquement quand l'écart dépasse 30 secondes.</li>
+    <li><span class="ui">Télécharger les événements</span> télécharge tout de suite les événements pas encore collectés.</li>
+  </ul>
+
+  <h3>Réseau et configuration</h3>
+  <figure><img src="shots/controller-network.png"><figcaption><b>Figure 26</b> — Configuration dans l'application, IP du contrôleur et destination des événements.</figcaption></figure>
+  <ul>
+    <li><b>Configuration dans l'application</b> — comment l'application joint le contrôleur : numéro de série, nom, IP et port (IP vide = broadcast), transport, zone et <b>Activé</b> (un contrôleur désactivé n'est ni surveillé ni synchronisé). <span class="ui">Retirer</span> supprime le contrôleur et son historique de la base, sans modifier le contrôleur.</li>
+    <li><b>Adresse IP du contrôleur</b> — modifie l'IP, le masque et la passerelle enregistrés <b>dans le contrôleur</b>. Elle sert à passer un nouveau contrôleur de son adresse d'usine à votre réseau. La commande est envoyée en broadcast, donc elle fonctionne même si l'adresse actuelle est injoignable ; ensuite l'application vérifie la nouvelle adresse.</li>
+    <li><b>Destination des événements (listener)</b> — l'adresse à laquelle le contrôleur envoie chaque événement : le serveur. Elle est réglée automatiquement quand le serveur est configuré avec <code>UHPPOTE_LISTENER_PUBLIC</code> ; <span class="ui">Configurer automatiquement</span> l'applique tout de suite, <span class="ui">Définir manuellement</span> règle une autre adresse et l'intervalle d'envoi automatique de l'état.</li>
+  </ul>
+  <div class="box warn"><b>Attention</b><p>Une adresse IP, un masque ou une passerelle erronés rendent le contrôleur injoignable. Il ne pourra alors être reconfiguré que depuis un ordinateur sur le même segment réseau, par une recherche sur le réseau.</p></div>
+
+  <h3>Réglages avancés</h3>
+  <figure><img src="shots/controller-advanced.png"><figcaption><b>Figure 27</b> — Règles d'accès, claviers et premier badge.</figcaption></figure>
+  <p>Réglages valables pour tout le contrôleur. Ils sont enregistrés dans la base et envoyés au contrôleur avec <span class="ui">Enregistrer et envoyer au contrôleur</span>.</p>
+  <ul>
+    <li><b>Interverrouillage</b> — les portes d'un groupe ne peuvent pas être ouvertes en même temps (sas, par exemple portes 1 et 2) : une porte ne s'ouvre que lorsque les autres de son groupe sont fermées. Nécessite des capteurs de porte.</li>
+    <li><b>Anti-passback</b> — empêche de repasser un badge à quelqu'un d'autre : après être entré par un lecteur d'un groupe, le badge doit sortir par un lecteur de l'autre groupe avant de pouvoir entrer à nouveau. Les groupements sont au <a href="#modes">chapitre 34</a>.</li>
+    <li><b>Enregistrer les événements de porte et de bouton</b> — enregistre aussi porte ouverte/fermée et bouton de sortie (recommandé).</li>
+    <li><b>Contrôle par PC</b> — le contrôleur interroge le serveur avant d'accorder l'accès. Déconseillé : les portes ne fonctionnent plus quand le serveur est injoignable.</li>
+    <li><b>Envoi automatique de l'état</b> — le contrôleur envoie son état au serveur toutes les N secondes en plus des événements (0 = événements seulement).</li>
+    <li><b>Claviers</b> — cochez les lecteurs qui ont un clavier. <b>Codes de porte</b> : jusqu'à 4 codes par porte (jusqu'à 6 chiffres) qui ouvrent la porte saisis au clavier, sans badge.</li>
+    <li><b>Premier badge</b> — aux heures et jours choisis, la porte reste fermée jusqu'à ce que la première personne autorisée avec l'autorisation "Premier badge" passe ; la porte passe alors au mode choisi (par exemple normalement ouverte) jusqu'à la fin de la période. Usage typique : l'entrée d'un magasin qui n'ouvre au public qu'après l'arrivée du responsable.</li>
+    <li><b>Options des lecteurs et des portes</b> — les <i>fonctions étendues</i> correspondantes du logiciel du fabricant, écrites seulement quand <span class="ui">Gérées par UHPPOTE Desk</span> est activé et vérifiées par relecture : <b>quatre passages = normalement ouverte</b> (quatre passages d'affilée d'un badge valide maintiennent la porte ouverte, quatre autres la referment ; enregistré mais sans effet sur le firmware v9.f8 testé), <b>lecteur silencieux</b> sur les badges non valides (le contrôleur n'allume pas la LED du lecteur ; ces contrôleurs n'ont pas de sortie buzzer, donc le bip que le lecteur émet à chaque lecture reste), <b>ne pas enregistrer les passages répétés</b> du même badge (les passages suivants dans l'intervalle ouvrent la porte mais ne sont pas enregistrés à nouveau), <b>porte en interrupteur</b> (un passage bascule la serrure) et <b>accès multi-badges</b> (2–10 badges différents nécessaires pour ouvrir). <span class="ui">Lire depuis le contrôleur</span> affiche les valeurs que le contrôleur enregistre.</li>
+  </ul>
+
+  <h3>Carte d'extension</h3>
+  <figure><img src="shots/controller-expansion.png"><figcaption><b>Figure 28</b> — Carte d'extension d'alarme : quatre sorties et l'entrée incendie.</figcaption></figure>
+  <p>La carte d'extension d'alarme UHPPOTE <b>UT0311-01A</b> (vendue aussi sous le nom ACM-EC05) ajoute au contrôleur quatre relais d'alarme et une entrée incendie : on peut allumer une sirène, un voyant ou envoyer un signal à une centrale anti-intrusion ou incendie quand il se passe quelque chose aux portes. La configuration est dans l'onglet <span class="ui">Carte d'extension</span> ; <span class="ui">Enregistrer et envoyer au contrôleur</span> l'écrit puis la relit depuis le contrôleur pour la vérifier (le message indique <i>vérifiée</i> quand le contrôleur enregistre exactement ce qui a été envoyé) ; la synchronisation complète la réécrit.</p>
+  <ul>
+    <li><span class="ui">Carte d'extension connectée</span> — la configuration n'est écrite dans le contrôleur que si cette option est activée : les contrôleurs sans carte ne sont jamais touchés.</li>
+    <li><b>Porte ouverte trop longtemps après</b> — secondes après lesquelles une porte laissée ouverte déclenche l'alarme <i>Porte ouverte trop longtemps</i> (25 s par défaut).</li>
+    <li><b>Code sous contrainte</b> — un code saisi au clavier sous la menace : la porte s'ouvre normalement et l'alarme de <i>contrainte</i> se déclenche. Laissez vide pour garder le code enregistré dans le contrôleur.</li>
+    <li>Pour chaque <b>sortie</b> : la <b>source</b> (l'une des quatre portes, ou l'alarme anti-intrusion), le <b>mode de sortie</b>, les <b>événements déclencheurs</b> et la <b>durée</b>.</li>
+    <li><b>Options d'alarme</b> — <b>porte ouverte trop longtemps déclenche une alarme</b> (sinon une porte laissée ouverte est seulement enregistrée ; nécessaire pour que les sorties réagissent), <b>alarme badge non valide seulement après 3 tentatives</b> et <b>code sous contrainte seulement après un badge enregistré</b>. Ce sont les options correspondantes des <i>fonctions étendues</i> du fabricant.</li>
+    <li><span class="ui">Lire depuis le contrôleur</span> — affiche la configuration que le contrôleur enregistre réellement (lecture seule, rien n'est modifié), avec une indication si elle est identique à celle enregistrée. <span class="ui">Copier dans le formulaire</span> la prend comme point de départ, par exemple une configuration faite avec le logiciel du fabricant ; enregistrez pour l'appliquer.</li>
+  </ul>
+  <table>
+    <thead><tr><th style="width:52mm">Mode de sortie</th><th>Le relais reste activé…</th></tr></thead>
+    <tr><td>Pendant la durée</td><td>pendant le nombre de secondes réglé</td></tr>
+    <tr><td>Pendant la durée et jusqu'à réinitialisation</td><td>au moins le temps réglé, et jusqu'à disparition de la cause de l'alarme</td></tr>
+    <tr><td>Jusqu'à réinitialisation de l'événement</td><td>jusqu'à disparition de la cause de l'alarme (par exemple la porte est refermée)</td></tr>
+    <tr><td>Un signal quelconque / Tous les signaux</td><td>tant qu'au moins un (ou tous) des signaux choisis est actif : relais de serrure, capteur de porte, bouton de sortie, entrée de verrouillage forcé, entrées A1–A3 et entrée incendie de la carte</td></tr>
+  </table>
+  <p>Événements déclencheurs : <b>code sous contrainte</b>, <b>porte ouverte trop longtemps</b>, <b>ouverture forcée</b> (porte ouverte sans accès valide ; nécessite un capteur de porte), <b>verrouillage forcé</b>, <b>badge non valide</b> et <b>alarme incendie</b>. L'alarme incendie ouvre aussi toutes les portes du contrôleur et est enregistrée comme événement 39.</p>
+  <p><b>État en direct.</b> Pour un contrôleur avec <i>Carte d'extension connectée</i>, l'onglet <span class="ui">Diagnostic</span> affiche les quatre sorties (<i>Allumée</i>/<i>Éteinte</i>, sous le tableau des portes) et la tuile du tableau de bord indique celles qui sont allumées. Elles sont lues dans le même état que celui utilisé par la console du fabricant, à chaque vérification et, après un événement ou tant que quelque chose est allumé, toutes les 2 secondes jusqu'à ce que tout soit éteint. L'alarme incendie s'affiche aussitôt et disparaît quelques secondes après le relâchement de l'entrée.</p>
+  <div class="box warn"><b>Protocole reconstitué</b><p>Les commandes de la carte d'extension ne font pas partie du protocole public du contrôleur : elles ont été reconstituées à partir du logiciel du fabricant. Elles ont été vérifiées sur un UT0311-L04 (firmware v9.f8) avec une carte UT0311-01A connectée : ouverture forcée, porte ouverte trop longtemps, badge non valide, entrée incendie et sorties qui suivent un signal font commuter les relais, et l'état des sorties est lu correctement. Pas encore vérifiés : le code sous contrainte, la source <b>alarme anti-intrusion</b> et les entrées A1–A3. Une configuration faite avec le logiciel du fabricant est remplacée au prochain enregistrement : si vous voulez la garder, lisez-la d'abord et copiez-la dans le formulaire. Avant de retirer la carte, désactivez les sorties et enregistrez.</p></div>
+
+  <h3>Maintenance</h3>
+  <figure><img src="shots/controller-maintenance.png"><figcaption><b>Figure 29</b> — Historique des synchronisations et réinitialisation d'usine.</figcaption></figure>
+  <p>L'<b>historique des synchronisations</b> liste les synchronisations de ce contrôleur, avec opérateur, résultat et résumé. La <b>réinitialisation d'usine</b> efface les réglages réseau, la destination des événements, les badges et les événements du contrôleur. Les badges stockés sont d'abord enregistrés dans un fichier du dossier de sauvegarde du serveur ; pour confirmer, saisissez le numéro de série. Après une réinitialisation, le contrôleur doit être reconfiguré (IP, puis synchronisation).</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="doors">18 · Portes</h2>
+  <figure><img src="shots/doors.png"><figcaption><b>Figure 30</b> — Les portes de tous les contrôleurs.</figcaption></figure>
+  <p>Chaque porte de chaque contrôleur avec nom, mode, temps d'ouverture, état en direct et indication des présences. On peut l'ouvrir à distance d'ici. En modifiant une porte, vous changez :</p>
+  <ul>
+    <li><b>Nom</b> — utilisé partout dans l'application (tableau de bord, événements, autorisations).</li>
+    <li><b>Mode</b> — <i>Contrôlée</i> (normal : s'ouvre avec un badge autorisé), <i>Normalement ouverte</i> (toujours déverrouillée) ou <i>Normalement fermée</i> (toujours verrouillée, même pour les badges valides).</li>
+    <li><b>Temps d'ouverture</b> — secondes pendant lesquelles la serrure reste libérée après un passage autorisé, le bouton de sortie ou une ouverture à distance.</li>
+    <li><b>Active</b> — les portes inactives (par exemple sorties non utilisées) sont masquées du tableau de bord et des autorisations.</li>
+    <li><b>Lecteur utilisé pour les présences</b> — les passages sur ce lecteur deviennent des pointages.</li>
+    <li><b>Personnes présentes</b> — <i>Entrée</i>, <i>Sortie</i> ou <i>Non comptée</i> : comment les passages sur cette porte comptent dans la page <a href="#events">Personnes présentes</a>.</li>
+  </ul>
+  <p>Mode et temps d'ouverture sont envoyés aussitôt au contrôleur.</p>
+
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="profiles">19 · Plages horaires</h2>
+  <figure><img src="shots/time-profiles.png"><figcaption><b>Figure 31</b> — Plages horaires.</figcaption></figure>
+  <p>Une plage horaire indique <b>quand</b> une autorisation est valable. Chaque plage a :</p>
+  <ul>
+    <li>un <b>ID</b> de 2 à 254 (le numéro enregistré dans le contrôleur) et un nom ;</li>
+    <li>une période de validité (<b>Valable du / au</b>) ;</li>
+    <li>les <b>jours</b> de la semaine ;</li>
+    <li>jusqu'à trois <b>intervalles horaires</b>, par exemple 08:00–12:30 et 13:30–18:00 ;</li>
+    <li>éventuellement une <b>plage liée</b> : si un passage ne tombe pas dans cette plage, la plage liée est vérifiée aussi. La liaison permet de combiner des horaires différents selon les jours.</li>
+  </ul>
+  <figure class="narrow"><img src="shots/time-profile-edit.png"><figcaption><b>Figure 32</b> — Modification d'une plage : "Saturday morning" est liée à "Office hours".</figcaption></figure>
+  <p>À l'enregistrement d'une plage, toutes les plages sont renvoyées à chaque contrôleur. Une plage utilisée par une autorisation ne peut pas être supprimée.</p>
+  <div class="box tip"><b>Exemple</b><p>"Heures de bureau" (2) = lun–ven 07:30–19:00 ; "Samedi matin" (4) = sam 08:00–12:30, liée à 2. Une autorisation avec la plage 4 permet l'accès les jours ouvrés aux heures de bureau <i>et</i> le samedi matin.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="tasks">20 · Tâches planifiées</h2>
+  <figure><img src="shots/tasks.png"><figcaption><b>Figure 33</b> — Tâches planifiées exécutées par les contrôleurs.</figcaption></figure>
+  <p>Des actions qu'un contrôleur exécute <b>de lui-même</b> à une heure donnée, les jours choisis et dans une période de validité — par exemple la porte de l'entrepôt <i>normalement ouverte</i> à 07:00 et de nouveau <i>contrôlée</i> à 18:00. Chaque tâche a contrôleur, porte, action, heure de début, jours, validité et un interrupteur Active. Actions disponibles :</p>
+  <table>
+    <thead><tr><th>Action</th><th>Effet à partir de l'heure de début</th></tr></thead>
+    <tr><td>Porte contrôlée / normalement ouverte / normalement fermée</td><td>change le mode de la porte</td></tr>
+    <tr><td>Désactiver / activer les plages horaires</td><td>les plages horaires sont ignorées (badges valables à toute heure) ou de nouveau appliquées</td></tr>
+    <tr><td>Badge seul (sans PIN) · Badge + code PIN en entrée · Badge + PIN</td><td>comment les lecteurs à clavier demandent le PIN</td></tr>
+    <tr><td>Activer / désactiver le multi-badges</td><td>l'accès exige plusieurs badges autorisés différents à la suite (nombre fixé dans la tâche)</td></tr>
+    <tr><td>Ouverture unique</td><td>ouvre la porte une fois</td></tr>
+    <tr><td>Désactiver / activer le bouton de sortie</td><td>ignore ou réactive le bouton de sortie</td></tr>
+  </table>
+
+  <span class="grp g-cfg">Configuration</span>
+  <h2 id="sync">21 · Synchronisation</h2>
+  <figure><img src="shots/sync.png"><figcaption><b>Figure 34</b> — Comparaison de la base avec un contrôleur.</figcaption></figure>
+  <p>Chaque modification est envoyée aux contrôleurs au moment où elle est faite. Si un contrôleur était injoignable à ce moment (éteint, panne réseau), on l'aligne ici. La page liste les contrôleurs avec leur état et ces commandes :</p>
+  <ul>
+    <li><span class="ui">Comparer</span> — lit tous les badges du contrôleur et montre les différences : badges à ajouter, à mettre à jour (autorisations, validité, PIN) et à retirer (présents dans le contrôleur mais pas dans la base). Rien n'est modifié.</li>
+    <li><span class="ui">Aligner les badges</span> — applique ces différences aux badges.</li>
+    <li><span class="ui">Synchronisation complète</span> (administrateurs) — renvoie configuration des portes, plages horaires, tâches, réglages avancés, carte d'extension et tous les badges. Avec beaucoup de badges cela peut prendre quelques minutes ; la progression est affichée en direct.</li>
+  </ul>
+  <div class="box note"><b>Récupération automatique</b><p>Quand un contrôleur redevient joignable <b>sans aucun badge</b> alors que la base en attend (réinitialisation d'usine, contrôleur remplacé), l'application lance d'elle-même une synchronisation complète. Toute autre différence est seulement signalée dans le journal du serveur, pour que des badges ne soient jamais supprimés sans la décision d'un opérateur.</p></div>
+</section>
+
+<!-- ===================================================================== PART 5 -->
+<section class="page part" id="part5">
+  <div class="opener o-orange"><div class="label">Partie 5</div><h1>Administration</h1><p>Utilisateurs de l'application, traçabilité, maintenance du serveur et sécurité des comptes.</p></div>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="operators">22 · Opérateurs</h2>
+  <figure><img src="shots/operators.png"><figcaption><b>Figure 35</b> — Les opérateurs de l'application.</figcaption></figure>
+  <p>Les comptes qui peuvent se connecter à l'application. Pour chaque opérateur : nom d'utilisateur, nom affiché, rôle (voir <a href="#roles">chapitre 4</a>), zones et dernière connexion.</p>
+  <ul>
+    <li><span class="ui">Nouvel opérateur</span> — choisissez nom d'utilisateur, nom, rôle et éventuellement les zones. Si vous laissez le mot de passe vide, un mot de passe temporaire est généré et affiché une fois : donnez-le à la personne, qui devra le changer à la première connexion.</li>
+    <li><b>Réinitialiser le mot de passe</b> — génère un nouveau mot de passe temporaire.</li>
+    <li><b>Actif</b> — un opérateur désactivé ne peut pas se connecter ; ses opérations restent dans le journal, comme lorsqu'un opérateur est supprimé.</li>
+    <li><span class="ui">Authentification à deux facteurs obligatoire pour</span> — personne (facultative), administrateurs, opérateurs et administrateurs, ou tout le monde. Les personnes concernées doivent la configurer à leur prochaine connexion, avant d'utiliser l'application, et ne peuvent pas la désactiver. Le changement est enregistré dans le journal.</li>
+    <li>Colonne <b>2FA</b> — qui a l'authentification à deux facteurs active. L'icône <b>bouclier barré</b> la réinitialise pour un autre opérateur qui a perdu son téléphone : il se connecte avec le seul mot de passe et peut la reconfigurer ; ses sessions et appareils mémorisés sont fermés.</li>
+  </ul>
+  <p>Vous ne pouvez pas abaisser votre propre rôle, ni vous désactiver ou vous supprimer : il reste ainsi toujours au moins un administrateur.</p>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="audit">23 · Journal d'audit</h2>
+  <figure><img src="shots/audit.png"><figcaption><b>Figure 36</b> — Chaque modification et chaque commande, avec opérateur et résultat.</figcaption></figure>
+  <p>Le journal de chaque modification faite dans l'application et de chaque commande envoyée aux contrôleurs : date et heure, opérateur (ou <i>system</i> pour les opérations automatiques), action (par exemple <code>open-door</code>, <code>put-card</code>, <code>sync-cards</code>, <code>login</code>), cible, résultat et détails. Filtrez par action pour répondre à des questions comme "qui a ouvert hier la porte du bureau arrière ?".</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Administration</span>
+  <h2 id="system">24 · Système</h2>
+  <figure><img src="shots/system.png"><figcaption><b>Figure 37</b> — Informations sur le serveur.</figcaption></figure>
+  <ul>
+    <li><b>Serveur</b> — version, nom d'hôte, durée de fonctionnement, interfaces réseau et volume de données (contrôleurs, personnes, badges, événements).</li>
+    <li><b>Communication avec les contrôleurs</b> — les réglages réseau du serveur : adresse locale, broadcast de recherche, port de réception des événements et <b>destination programmée</b>, c'est-à-dire l'adresse à laquelle les contrôleurs envoient leurs événements. Si elle n'est pas définie, un avertissement s'affiche : les événements n'arrivent alors qu'avec le téléchargement périodique, pas en temps réel.</li>
+    <li><b>Home Assistant (MQTT)</b> — l'état de la connexion au broker, quand il est configuré (voir <a href="#homeassistant">Home Assistant</a>).</li>
+    <li><b>Sauvegarde de la base</b> — une copie de la base est faite chaque nuit (à 02:00 par défaut, les 14 dernières sont conservées) dans le dossier <code>backups</code> des données du serveur. <span class="ui">Créer une sauvegarde maintenant</span> en fait une immédiatement, par exemple avant un gros import. Administrateurs uniquement.</li>
+  </ul>
+
+  <h2 id="password">25 · Changer le mot de passe</h2>
+  <figure class="narrow"><img src="shots/password.png"><figcaption><b>Figure 38</b> — Changer son mot de passe.</figcaption></figure>
+  <p>Depuis l'icône clé de l'en-tête. Saisissez le mot de passe actuel et deux fois le nouveau (au moins 8 caractères). Vos autres sessions ouvertes sont fermées. Si le mot de passe de <code>admin</code> est fixé par la variable <code>ADMIN_PASSWORD</code> du serveur, la page explique qu'il ne peut être changé que là.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Votre compte</span>
+  <h2 id="twofactor">26 · Authentification à deux facteurs</h2>
+  <figure class="narrow"><img src="shots/two-factor.png"><figcaption><b>Figure 39</b> — Activation de l'authentification à deux facteurs : scannez le QR code avec une application d'authentification.</figcaption></figure>
+  <p>En plus du mot de passe, la connexion demande un code à 6 chiffres d'une application d'authentification sur votre téléphone (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password…). Chaque opérateur l'active depuis l'<b>icône bouclier</b> de l'en-tête (verte quand elle est active) :</p>
+  <ol>
+    <li><span class="ui">Activer</span> et confirmez votre mot de passe.</li>
+    <li>Scannez le QR code avec l'application, ou saisissez la clé affichée dessous, puis entrez le code affiché par l'application et <span class="ui">Confirmer</span>.</li>
+    <li>Sauvegardez les <b>10 codes de récupération</b> (copiez-les ou téléchargez-les) et gardez-les loin du téléphone : chacun remplace une fois le code de l'application, et ils ne sont plus affichés.</li>
+  </ol>
+  <p>Dès lors, la connexion demande le code après le mot de passe ; les autres sessions ouvertes et appareils mémorisés (app mobile) sont déconnectés et se reconnectent avec le code. Un code n'est accepté qu'une fois, et les codes erronés comptent comme tentatives de connexion échouées. Sur la même page, vous pouvez générer de <b>nouveaux codes de récupération</b> ou la <b>désactiver</b> (mot de passe et code).</p>
+  <p><b>Téléphone perdu.</b> Connectez-vous avec un code de récupération, ou un autre administrateur la réinitialise depuis la page <a href="#operators">Opérateurs</a>.</p>
+  <div class="box warn"><b>Accès d'urgence pour les administrateurs</b><p>Si le seul administrateur a perdu à la fois le téléphone et les codes de récupération, définissez <code>ADMIN_2FA_BYPASS=true</code> sur le serveur (module complémentaire Home Assistant : option <i>Emergency access without two-factor authentication</i>) et redémarrez. Les administrateurs se connectent alors avec le seul mot de passe et peuvent désactiver leur authentification à deux facteurs sans code, même si elle est obligatoire (elle est alors reconfigurée avec le nouveau téléphone à la connexion suivante). Les opérateurs et les utilisateurs en lecture seule ne sont pas concernés : ils doivent toujours saisir leur code. Tant que la variable est définie, un bandeau rouge s'affiche sur chaque page et chaque connexion de ce type est marquée dans le journal. Retirez la variable et redémarrez dès que l'accès est rétabli.</p></div>
+</section>
+
+<!-- ===================================================================== PART: AUTOMATION AND INTEGRATIONS -->
+<section class="page part" id="partauto">
+  <div class="opener o-violet"><div class="label">Partie 6</div><h1>Automatisation et intégrations</h1><p>Règles, notifications, webhooks, jetons API, l'app mobile et Home Assistant. Administrateurs uniquement.</p></div>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="rules">27 · Règles</h2>
+  <figure><img src="shots/rules.png"><figcaption><b>Figure 40</b> — Règles d'automatisation.</figcaption></figure>
+  <p>Une règle dit <b>quand</b> il se passe quelque chose, <b>seulement si</b> certaines conditions sont réunies, <b>alors</b> faire quelque chose. Par exemple : un badge refusé à l'entrée principale après 20:00 → notification d'alarme ; la porte de l'entrepôt ouverte plus de 5 minutes → avertissement.</p>
+  <ul>
+    <li><b>Quand</b> — un événement quelconque (accès autorisé ou refusé, événement de porte, alarme, porte ouverte ou fermée, contrôleur hors ligne ou de nouveau en ligne, horaire inhabituel, refus répétés, lien invité, plaque) ou <b>porte ouverte plus de</b> un nombre de secondes (nécessite le capteur de porte).</li>
+    <li><b>Seulement si</b> — portes, personnes ou badges, une plage d'heures (elle peut passer minuit) et des jours de la semaine.</li>
+    <li><b>Alors</b> — envoyer une notification à certains canaux, appeler certains webhooks, ouvrir certaines portes. Chaque déclenchement s'affiche aussi dans l'application web : les alarmes restent à l'écran jusqu'à leur fermeture.</li>
+    <li>La <b>gravité</b> (information, avertissement, alarme) fixe l'emoji et la priorité des notifications ; le <b>message</b> peut utiliser <code>{person}</code>, <code>{card}</code>, <code>{door}</code>, <code>{time}</code>… ; la <b>pause</b> évite les déclenchements répétés.</li>
+  </ul>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="notifications">28 · Notifications</h2>
+  <figure><img src="shots/notifications.png"><figcaption><b>Figure 41</b> — Canaux de notification.</figcaption></figure>
+  <p>Messages sur <b>Telegram</b>, par <b>e-mail</b>, ou vers <b>ntfy</b> et <b>Gotify</b> (serveurs push qui peuvent tourner sur votre propre NAS). Chaque canal a les événements qui envoient un message, un filtre de portes facultatif, la langue et le <b>rapport quotidien</b> facultatif (qui est entré, accès refusés, alarmes et anomalies des dernières 24 heures). Sur Telegram, les messages concernant une porte peuvent porter un bouton <b>Ouvrir la porte</b>, utilisable seulement par les utilisateurs Telegram indiqués dans le canal et pendant 15 minutes. <span class="ui">Envoyer un test</span> vérifie aussitôt le canal. Configuration de chaque type : <code>docs/NOTIFICATIONS.md</code>.</p>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="webhooks">29 · Webhooks</h2>
+  <figure><img src="shots/webhooks.png"><figcaption><b>Figure 42</b> — Webhooks sortants.</figcaption></figure>
+  <p>Une requête HTTP <code>POST</code> vers d'autres systèmes (n8n, Node-RED, Make, un déclencheur webhook de Home Assistant, votre propre service) quand il se passe quelque chose : l'URL, les événements, un filtre de portes facultatif et des en-têtes supplémentaires. Chaque requête est signée avec le secret du webhook (<code>X-UHPPOTE-Signature</code>). <span class="ui">Envoyer un test</span> envoie une requête de test ; <span class="ui">Envois</span> liste les 100 dernières requêtes avec code de statut et contenu. Contenus et signature : <code>docs/WEBHOOKS.md</code>.</p>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="tokens">30 · Jetons API</h2>
+  <figure><img src="shots/api-tokens.png"><figcaption><b>Figure 43</b> — Jetons API pour d'autres systèmes et scripts.</figcaption></figure>
+  <p>Un jeton permet à un autre système d'utiliser l'API de UHPPOTE Desk sans connexion d'un opérateur : une domotique qui ouvre le portail, un script qui lit les événements, un logiciel RH qui crée des personnes. Niveaux d'accès : <b>lecture seule</b>, <b>lecture + ouverture des portes</b>, <b>opérateur</b>, <b>administrateur</b> ; éventuellement limité à certaines zones ou aux portes qu'il peut ouvrir, et avec une date d'expiration. Le jeton (<code>uhd_…</code>) n'est affiché qu'une fois ; désactivez-le ou supprimez-le pour le révoquer. Tout ce qui est fait avec un jeton est dans le journal comme <code>token:&lt;nom&gt;</code>. Points d'accès : <code>docs/API-TOKENS.md</code>.</p>
+
+  <span class="grp g-adm">Administration</span>
+  <h2 id="mobile">31 · App mobile</h2>
+  <figure class="half"><img src="shots/mobile.png"><figcaption><b>Figure 44</b> — L'app mobile sur un téléphone.</figcaption></figure>
+  <p>La page <code>/m</code> est faite pour les téléphones et s'installe sur l'écran d'accueil comme une application. Elle montre les portes avec leur état en direct, les ouvre avec une confirmation, liste les derniers événements et reçoit des <b>notifications push</b>. L'icône téléphone de l'en-tête l'ouvre.</p>
+  <ul>
+    <li><span class="ui">Mémoriser cet appareil</span> à la connexion donne au téléphone sa propre connexion longue : sans expiration avec empreinte/Face ID enregistrés, sinon 30–180 jours.</li>
+    <li>L'ouverture d'une porte se confirme en <b>maintenant le bouton</b> ou, si l'administrateur le choisit, avec l'<b>empreinte/Face ID</b> du téléphone.</li>
+    <li>Installation, empreinte/Face ID et notifications push nécessitent HTTPS (<code>PUBLIC_URL</code> et un reverse proxy).</li>
+  </ul>
+  <figure><img src="shots/mobile-admin.png"><figcaption><b>Figure 45</b> — Réglages de l'app mobile et appareils mémorisés.</figcaption></figure>
+  <p>Dans <span class="ui">Administration → App mobile</span>, les administrateurs choisissent la confirmation d'ouverture et la durée de connexion, et voient chaque appareil mémorisé (opérateur, dernière utilisation, empreinte/Face ID, push) pour le révoquer. Détails : <code>docs/MOBILE.md</code>.</p>
+
+  <h2 id="homeassistant">32 · Home Assistant</h2>
+  <p>UHPPOTE Desk publie ses contrôleurs et ses portes sur un broker MQTT avec la <b>découverte MQTT de Home Assistant</b> : les appareils apparaissent tout seuls dans Home Assistant. Sous Home Assistant OS, le plus simple est le <b>module complémentaire UHPPOTE Desk</b> (dépôt <code>https://github.com/alexbn71/UHPPOTE-Desk</code>) : avec le module Mosquitto broker, la connexion se configure toute seule. Avec Docker, définissez <code>MQTT_URL</code>, <code>MQTT_USERNAME</code> et <code>MQTT_PASSWORD</code> ; l'état est sur la page <a href="#system">Système</a>.</p>
+  <table>
+    <thead><tr><th style="width:46mm">Entité</th><th>Signification</th></tr></thead>
+    <tr><td colspan="2"><b>Contrôleur</b></td></tr>
+    <tr><td>Connectivité, Problème</td><td>contrôleur joignable ; erreur système signalée</td></tr>
+    <tr><td>Alarme incendie</td><td>alarme incendie active : allumée dès l'événement incendie, éteinte quelques secondes après le relâchement de l'entrée</td></tr>
+    <tr><td>Verrouillage forcé</td><td>verrouillage forcé actif</td></tr>
+    <tr><td>Sortie extension 1–4</td><td>sorties de la carte UT0311-01A (seulement avec <i>Carte d'extension connectée</i>)</td></tr>
+    <tr><td colspan="2"><b>Porte</b> (une par porte active)</td></tr>
+    <tr><td>Porte, Serrure</td><td>capteur de porte (allumé = ouverte) ; relais (allumé = déverrouillée)</td></tr>
+    <tr><td>Ouvrir</td><td>bouton qui ouvre la porte (désactivable avec <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>
+    <tr><td>Accès</td><td>entité événement : autorisé, refusé, porte, alarme — avec personne, badge, sens et motif</td></tr>
+    <tr><td>Dernier accès</td><td>nom de la dernière personne passée</td></tr>
+  </table>
+  <p>Les noms des entités suivent <code>MQTT_LANGUAGE</code> (option <i>MQTT language</i> du module). Exemples d'automatisations : <code>docs/HOME-ASSISTANT.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 6 -->
+<section class="page part" id="part6">
+  <div class="opener o-slate"><div class="label">Partie 7</div><h1>Référence</h1><p>Motifs des événements, modes des portes et règles, dépannage et glossaire.</p></div>
+
+  <h2 id="reasons">33 · Motifs des événements</h2>
+  <p>Chaque événement porte un code de motif, affiché en texte dans le moniteur et l'historique.</p>
+  <table>
+    <thead><tr><th style="width:12mm">Code</th><th style="width:58mm">Motif</th><th>Signification</th></tr></thead>
+    <tr><td>1</td><td>Passage de badge</td><td>accès autorisé avec un badge</td></tr>
+    <tr><td>6</td><td>Pas de droit d'accès</td><td>badge inconnu du contrôleur, ou pas d'autorisation sur cette porte</td></tr>
+    <tr><td>7</td><td>Mot de passe incorrect</td><td>PIN erroné au clavier</td></tr>
+    <tr><td>8</td><td>Anti-passback</td><td>le badge doit d'abord passer par un lecteur de l'autre groupe</td></tr>
+    <tr><td>9</td><td>Multi-badges</td><td>d'autres badges sont nécessaires pour ouvrir</td></tr>
+    <tr><td>10</td><td>Premier badge</td><td>porte en attente du premier badge autorisé</td></tr>
+    <tr><td>11</td><td>Porte normalement fermée</td><td>la porte est réglée sur normalement fermée</td></tr>
+    <tr><td>12</td><td>Interverrouillage</td><td>une autre porte du groupe d'interverrouillage est ouverte</td></tr>
+    <tr><td>13</td><td>Hors plage horaire</td><td>l'autorisation n'est pas valable à ce jour / cette heure</td></tr>
+    <tr><td>15</td><td>Plage horaire non valide</td><td>la plage horaire n'est pas définie dans le contrôleur</td></tr>
+    <tr><td>18</td><td>Accès refusé</td><td>accès refusé par le contrôleur pour un motif non couvert par les autres codes</td></tr>
+    <tr><td>20</td><td>Bouton de sortie</td><td>porte ouverte avec le bouton de sortie</td></tr>
+    <tr><td>23 / 24</td><td>Porte ouverte / Porte fermée</td><td>capteur de porte (avec "Enregistrer les événements de porte et de bouton")</td></tr>
+    <tr><td>25</td><td>Porte ouverte (mot de passe superviseur)</td><td>ouverte avec un code de porte</td></tr>
+    <tr><td>28 / 29</td><td>Mise sous tension / réinitialisation du contrôleur</td><td>le contrôleur a été allumé ou réinitialisé</td></tr>
+    <tr><td>31–34</td><td>Bouton non valide</td><td>bouton de sortie refusé (porte verrouillée, hors ligne, interverrouillage, menace)</td></tr>
+    <tr><td>37</td><td>Porte ouverte trop longtemps</td><td>la porte a été laissée ouverte</td></tr>
+    <tr><td>38</td><td>Ouverture forcée</td><td>porte ouverte sans accès valide</td></tr>
+    <tr><td>39</td><td>Incendie</td><td>entrée d'alarme incendie active</td></tr>
+    <tr><td>40</td><td>Fermeture forcée</td><td>entrée de verrouillage forcé active</td></tr>
+    <tr><td>41–43</td><td>Anti-intrusion · Zone 24 h · Urgence</td><td>entrées d'alarme</td></tr>
+    <tr><td>44 / 45</td><td>Ouverture à distance</td><td>ouverte depuis l'application (ou un lecteur USB)</td></tr>
+  </table>
+  <p>Les lignes des accès refusés et des alarmes sont surlignées en rouge dans le tableau de bord, le moniteur et l'historique.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="modes">34 · Modes des portes et règles d'accès</h2>
+  <h3>Modes des portes</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Mode</th><th>Comportement</th></tr></thead>
+    <tr><td>Contrôlée</td><td>fonctionnement normal : la serrure s'ouvre pour un badge autorisé, le bouton de sortie ou une ouverture à distance</td></tr>
+    <tr><td>Normalement ouverte</td><td>la serrure est toujours libérée (par exemple pendant les heures d'ouverture, avec une tâche planifiée)</td></tr>
+    <tr><td>Normalement fermée</td><td>la serrure est toujours verrouillée ; les badges sont refusés (motif 11)</td></tr>
+  </table>
+  <h3>Interverrouillage</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Option</th><th>Portes qui ne peuvent pas être ouvertes en même temps</th></tr></thead>
+    <tr><td>Portes 1 et 2</td><td>1 avec 2</td></tr>
+    <tr><td>Portes 3 et 4</td><td>3 avec 4</td></tr>
+    <tr><td>Portes 1-2 et 3-4</td><td>1 avec 2, et 3 avec 4 (deux sas indépendants)</td></tr>
+    <tr><td>Portes 1, 2 et 3</td><td>deux quelconques parmi 1, 2 et 3</td></tr>
+    <tr><td>Portes 1, 2, 3 et 4</td><td>deux quelconques des quatre portes</td></tr>
+  </table>
+  <h3>Anti-passback</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Option</th><th>Groupes de lecteurs (entrée : sortie)</th></tr></thead>
+    <tr><td>(1:2);(3:4)</td><td>le lecteur 1 alterne avec le lecteur 2, et le lecteur 3 avec le lecteur 4</td></tr>
+    <tr><td>(1,3):(2,4)</td><td>les lecteurs 1 et 3 alternent avec les lecteurs 2 et 4</td></tr>
+    <tr><td>1:(2,3)</td><td>le lecteur 1 alterne avec les lecteurs 2 et 3</td></tr>
+    <tr><td>1:(2,3,4)</td><td>le lecteur 1 alterne avec les lecteurs 2, 3 et 4</td></tr>
+  </table>
+  <p>Sur un contrôleur 4 portes avec un lecteur par porte, "lecteur N" est le lecteur de la porte N. Sur les contrôleurs 1 et 2 portes avec lecteurs d'entrée et de sortie, vérifiez la numérotation dans la documentation du contrôleur.</p>
+
+  <h2 id="trouble">35 · Dépannage</h2>
+  <table>
+    <thead><tr><th style="width:52mm">Problème</th><th>Que vérifier</th></tr></thead>
+    <tr><td>La recherche sur le réseau ne trouve rien</td><td>Serveur et contrôleurs sur le même segment réseau ; câble et alimentation ; pare-feu laissant passer le port UDP 60000 ; avec Docker, réseau "host". Essayez d'ajouter le contrôleur manuellement avec son adresse IP.</td></tr>
+    <tr><td>Contrôleur affiché Hors ligne</td><td>Adresse IP et port dans <i>Réseau et configuration</i> ; ping du contrôleur ; un autre programme qui utilise le contrôleur en même temps.</td></tr>
+    <tr><td>Les passages n'apparaissent pas dans le Moniteur, mais plus tard dans l'historique</td><td>Les événements en temps réel n'arrivent pas au serveur : définissez <code>UHPPOTE_LISTENER_PUBLIC</code> sur le serveur (voir l'avertissement de la page <a href="#system">Système</a>), autorisez en entrée le port UDP 60001, puis <i>Configurer automatiquement</i> la destination sur la page du contrôleur.</td></tr>
+    <tr><td>Un badge est refusé alors qu'il a des autorisations</td><td>Regardez le motif dans l'historique : 13 signifie hors plage horaire ; 6 signifie que le badge n'est pas dans le contrôleur ou n'a pas d'autorisation sur cette porte — lancez <i>Comparer</i> dans la page Synchronisation. Vérifiez que la personne et le badge sont actifs et qu'aujourd'hui est dans la période de validité de la personne.</td></tr>
+    <tr><td>"Enregistré, mais non envoyé à tous les contrôleurs"</td><td>Un contrôleur était hors ligne. À son retour, utilisez <i>Aligner les badges</i> ou <i>Synchronisation complète</i>.</td></tr>
+    <tr><td>"Numéro de badge non valide pour Wiegand-26"</td><td>Le numéro doit avoir site ≤ 255 et code ≤ 65535. Présentez le badge et utilisez le numéro affiché parmi les badges inconnus.</td></tr>
+    <tr><td>Heure erronée dans les événements ou les rapports</td><td>Fuseau horaire du serveur (variable <code>TZ</code>) ; l'horloge du contrôleur est corrigée automatiquement, ou utilisez <i>Synchroniser l'heure</i>.</td></tr>
+    <tr><td>Une sortie de la carte d'extension ne commute pas</td><td>Utilisez <i>Lire depuis le contrôleur</i> pour voir ce que le contrôleur enregistre ; vérifiez que <i>Carte d'extension connectée</i> est activé et enregistrez de nouveau ; que la sortie est active, avec la bonne porte et les bons événements ; que l'alarme se produit vraiment (l'événement apparaît dans le Moniteur : 37 ouverte trop longtemps, 38 ouverture forcée, 39 incendie). L'ouverture forcée nécessite un capteur de porte ; la contrainte un clavier.</td></tr>
+    <tr><td>Mot de passe administrateur oublié</td><td>Définissez <code>ADMIN_PASSWORD</code> sur le serveur et redémarrez-le ; puis connectez-vous comme <code>admin</code>.</td></tr>
+    <tr><td>Téléphone avec l'application d'authentification perdu</td><td>Connectez-vous avec un code de récupération ; ou un autre administrateur la réinitialise (<i>Opérateurs</i>, bouclier barré). Seul administrateur : <code>ADMIN_2FA_BYPASS=true</code>, redémarrez, désactivez-la sur la page <i>Authentification à deux facteurs</i>, retirez la variable et redémarrez (voir <a href="#twofactor">Authentification à deux facteurs</a>).</td></tr>
+    <tr><td>"Code de vérification non valide" avec la bonne application</td><td>Les horloges du serveur et du téléphone doivent être justes (NTP) : les codes changent toutes les 30 secondes.</td></tr>
+    <tr><td>Les sorties de la carte n'apparaissent pas dans Home Assistant</td><td><i>Carte d'extension connectée</i> doit être activé dans l'onglet <i>Carte d'extension</i> ; enregistrez, et les entités <i>Sortie extension 1–4</i> sont créées.</td></tr>
+  </table>
+
+  <h2 id="glossary">36 · Glossaire</h2>
+  <table>
+    <thead><tr><th style="width:42mm">Terme</th><th>Signification</th></tr></thead>
+    <tr><td>Anti-passback</td><td>empêche un badge d'entrer deux fois sans sortir</td></tr>
+    <tr><td>Authentification à deux facteurs (2FA)</td><td>un code d'une application d'authentification demandé à la connexion en plus du mot de passe</td></tr>
+    <tr><td>Broadcast</td><td>un message réseau envoyé à tous les appareils du réseau local ; sert à trouver les contrôleurs</td></tr>
+    <tr><td>Carte d'extension</td><td>la carte additionnelle UT0311-01A avec quatre relais d'alarme et une entrée incendie</td></tr>
+    <tr><td>Code de récupération</td><td>un code à usage unique qui remplace celui de l'application quand le téléphone est perdu</td></tr>
+    <tr><td>Code site</td><td>la première partie (0–255) d'un numéro de badge Wiegand-26</td></tr>
+    <tr><td>Contrôleur</td><td>la carte de contrôle d'accès (UHPPOTE UT0311-L01/L02/L04)</td></tr>
+    <tr><td>Destination des événements</td><td>l'adresse du serveur à laquelle un contrôleur envoie ses événements (listener)</td></tr>
+    <tr><td>Index d'événement</td><td>numéro progressif d'un événement dans la mémoire du contrôleur</td></tr>
+    <tr><td>Interverrouillage</td><td>portes qui ne peuvent pas être ouvertes en même temps (sas)</td></tr>
+    <tr><td>Lien invité</td><td>un lien qui ouvre certaines portes pendant un temps donné, sans badge ni application</td></tr>
+    <tr><td>Plage horaire</td><td>jours et heures où une autorisation est valable (ID 2–254)</td></tr>
+    <tr><td>Pointage</td><td>un passage utilisé pour les présences (entrée / sortie)</td></tr>
+    <tr><td>Premier badge</td><td>fonction qui garde une porte fermée jusqu'à l'arrivée d'une personne autorisée</td></tr>
+    <tr><td>Relais</td><td>la sortie du contrôleur qui libère la serrure électrique</td></tr>
+    <tr><td>Synchronisation</td><td>l'alignement d'un contrôleur sur la base de données de l'application</td></tr>
+    <tr><td>Wiegand-26</td><td>le format de badge accepté par les contrôleurs : site × 100000 + code</td></tr>
+    <tr><td>Zone</td><td>groupe de contrôleurs, sert à limiter les opérateurs</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

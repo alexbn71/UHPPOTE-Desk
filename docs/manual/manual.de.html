@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>UHPPOTE Desk — Benutzerhandbuch</title>
+<style>
+  :root {
+    --blue: #1557a8;
+    --blue2: #2b8ae6;
+    --blue-soft: #e8f1fc;
+    --green: #2f9e6e;
+    --green-soft: #e6f6ee;
+    --orange: #d9480f;
+    --orange-soft: #fff1e6;
+    --violet: #6741d9;
+    --violet-soft: #f0ebff;
+    --ink: #1d2733;
+    --muted: #5d6b7d;
+    --line: #dbe3ee;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.2pt/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color: var(--ink); }
+  .page { padding: 0 18mm; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
+  h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  b, strong { color: #14212f; }
+  code, .k { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: #eef3f9; padding: 0.2mm 1.2mm; border-radius: 1mm; }
+  .ui { font-weight: 600; color: var(--blue); }
+  .part { break-before: page; }
+  .chapter { break-before: auto; }
+  .avoid { break-inside: avoid; }
+
+  /* cover */
+  .cover { height: 263mm; display: flex; flex-direction: column; justify-content: space-between; padding: 0 18mm; break-after: page; }
+  .cover .band { margin-top: 10mm; border-radius: 6mm; padding: 16mm 14mm 14mm; color: #fff; background: linear-gradient(135deg, #1557a8 0%, #2b8ae6 60%, #34c38f 130%); position: relative; overflow: hidden; }
+  .cover .band::after { content: ""; position: absolute; right: -30mm; bottom: -40mm; width: 110mm; height: 110mm; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .cover img { width: 30mm; height: 30mm; background: #fff; border-radius: 7mm; padding: 2mm; }
+  .cover h1 { color: #fff; border: 0; font-size: 34pt; margin: 8mm 0 0; padding: 0; }
+  .cover .subtitle { font-size: 16pt; opacity: 0.95; margin-top: 1mm; }
+  .cover .tagline { margin-top: 10mm; font-size: 11pt; max-width: 130mm; opacity: 0.95; }
+  .cover .meta { color: var(--muted); font-size: 9.5pt; border-top: 1px solid var(--line); padding-top: 4mm; display: flex; justify-content: space-between; }
+  .cover .chips { display: flex; gap: 3mm; flex-wrap: wrap; margin: 8mm 0 0; }
+  .cover .chip { background: var(--blue-soft); color: var(--blue); border-radius: 10mm; padding: 1.5mm 4mm; font-size: 9pt; font-weight: 600; }
+
+  /* table of contents */
+  .toc ol { list-style: none; padding: 0; }
+  .toc > ol > li { margin: 3mm 0 1mm; font-weight: 700; color: var(--blue); }
+  .toc ol ol { padding-left: 6mm; font-weight: 400; columns: 2; column-gap: 8mm; }
+  .toc ol ol li { margin: 0.6mm 0; break-inside: avoid; }
+  .toc a { color: inherit; text-decoration: none; }
+  .toc .num { display: inline-block; min-width: 9mm; color: var(--muted); }
+
+  /* part opener */
+  .opener { border-radius: 5mm; padding: 10mm 12mm; margin: 4mm 0 6mm; color: #fff; }
+  .opener .label { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9pt; opacity: 0.9; }
+  .opener h1 { color: #fff; border: 0; margin: 1mm 0 2mm; padding: 0; font-size: 24pt; }
+  .opener p { margin: 0; opacity: 0.95; }
+  .o-blue { background: linear-gradient(135deg, #1557a8, #2b8ae6); }
+  .o-green { background: linear-gradient(135deg, #1f7a52, #34c38f); }
+  .o-violet { background: linear-gradient(135deg, #5235b8, #8c6ff0); }
+  .o-orange { background: linear-gradient(135deg, #b8390a, #f08c3a); }
+  .o-slate { background: linear-gradient(135deg, #2f3e52, #5d7290); }
+
+  /* section badges per menu group */
+  .grp { display: block; width: fit-content; break-after: avoid; margin-top: 7mm; font-size: 8pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 1.5mm; padding: 0.6mm 2.2mm; margin-bottom: 1mm; }
+  .grp + h2 { margin-top: 1.5mm; }
+  td .grp { margin-top: 0; }
+  .g-ops { background: var(--green-soft); color: var(--green); }
+  .g-reg { background: var(--violet-soft); color: var(--violet); }
+  .g-cfg { background: var(--blue-soft); color: var(--blue); }
+  .g-adm { background: var(--orange-soft); color: var(--orange); }
+
+  /* figures */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(20, 50, 90, 0.10); margin: 0 auto; }
+  figure.narrow img { max-width: 70%; }
+  figure.half img { max-width: 52%; }
+  figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
+  figcaption b { color: var(--blue); }
+
+  /* callouts */
+  .box { border-radius: 2.5mm; padding: 2.5mm 4mm 2.5mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; border-left: 4px solid; }
+  .box > b:first-child { display: block; margin-bottom: 0.5mm; }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .tip { background: var(--green-soft); border-color: var(--green); }
+  .tip > b:first-child { color: var(--green); }
+  .note { background: var(--blue-soft); border-color: var(--blue2); }
+  .note > b:first-child { color: var(--blue); }
+  .warn { background: var(--orange-soft); border-color: var(--orange); }
+  .warn > b:first-child { color: var(--orange); }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; break-inside: auto; }
+  th { background: var(--blue); color: #fff; text-align: left; font-weight: 600; padding: 1.6mm 2.4mm; }
+  td { padding: 1.4mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f9fd; }
+  tr { break-inside: avoid; }
+  td.c, th.c { text-align: center; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: #b0b9c6; }
+
+  /* steps */
+  ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.2mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0.2mm; width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--blue2); color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+
+  /* concept cards */
+  .cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 3mm 0 4mm; }
+  .concept { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; background: #fbfdff; }
+  .concept h4 { margin-top: 0; display: flex; align-items: center; gap: 2mm; }
+  .concept h4 .dot { width: 3mm; height: 3mm; border-radius: 50%; display: inline-block; }
+  .concept p { margin-bottom: 0; font-size: 9.5pt; }
+  .diagram { margin: 3mm 0 5mm; break-inside: avoid; }
+  .diagram svg { width: 100%; height: auto; }
+  .kbd { border: 1px solid #c3cddb; border-bottom-width: 2px; border-radius: 1mm; padding: 0 1.4mm; font-size: 8.5pt; background: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ===================================================================== COVER -->
+<section class="cover">
+  <div class="band">
+    <img src="../../apps/web/public/icon.svg" alt="">
+    <h1>UHPPOTE Desk</h1>
+    <div class="subtitle">Benutzerhandbuch</div>
+    <div class="tagline">Webanwendung zur Verwaltung der Zutrittscontroller UHPPOTE UT0311-L0x: Türen, Karten, Berechtigungen, Zeitprofile, Echtzeit-Überwachung, Ereignisverlauf und Anwesenheit.</div>
+  </div>
+  <div>
+    <div class="chips">
+      <span class="chip">Zutrittskontrolle</span><span class="chip">Live-Monitor</span><span class="chip">Zeitprofile</span><span class="chip">Anwesenheit</span><span class="chip">Mehrere Bediener</span><span class="chip">EN · IT · ES · FR · DE</span>
+    </div>
+  </div>
+  <div class="meta"><span>Version <span data-version>0.1.0</span> · <span data-date></span></span><span>github.com/alexbn71/UHPPOTE-Desk</span></div>
+</section>
+
+<!-- ===================================================================== CONTENTS -->
+<section class="page toc">
+  <h1>Inhalt</h1>
+  <ol>
+    <li><a href="#part1">Teil 1 — UHPPOTE Desk verstehen</a>
+      <ol>
+        <li><a href="#what"><span class="num">1</span>Was UHPPOTE Desk ist</a></li>
+        <li><a href="#how"><span class="num">2</span>Wie das System funktioniert</a></li>
+        <li><a href="#concepts"><span class="num">3</span>Grundbegriffe</a></li>
+        <li><a href="#roles"><span class="num">4</span>Bediener und Rollen</a></li>
+        <li><a href="#interface"><span class="num">5</span>Die Benutzeroberfläche</a></li>
+        <li><a href="#start"><span class="num">6</span>Erste Schritte</a></li>
+      </ol>
+    </li>
+    <li><a href="#part2">Teil 2 — Betrieb</a>
+      <ol>
+        <li><a href="#dashboard"><span class="num">7</span>Übersicht</a></li>
+        <li><a href="#monitor"><span class="num">8</span>Monitor</a></li>
+        <li><a href="#events"><span class="num">9</span>Ereignisverlauf</a></li>
+        <li><a href="#attendance"><span class="num">10</span>Anwesenheit</a></li>
+        <li><a href="#plates"><span class="num">11</span>Kennzeichen</a></li>
+      </ol>
+    </li>
+    <li><a href="#part3">Teil 3 — Stammdaten</a>
+      <ol>
+        <li><a href="#people"><span class="num">12</span>Personen</a></li>
+        <li><a href="#cards"><span class="num">13</span>Karten</a></li>
+        <li><a href="#permissions"><span class="num">14</span>Berechtigungen</a></li>
+        <li><a href="#structure"><span class="num">15</span>Abteilungen und Zonen</a></li>
+        <li><a href="#guests"><span class="num">16</span>Gäste</a></li>
+      </ol>
+    </li>
+    <li><a href="#part4">Teil 4 — Konfiguration</a>
+      <ol>
+        <li><a href="#controllers"><span class="num">17</span>Controller</a></li>
+        <li><a href="#doors"><span class="num">18</span>Türen</a></li>
+        <li><a href="#profiles"><span class="num">19</span>Zeitprofile</a></li>
+        <li><a href="#tasks"><span class="num">20</span>Geplante Aufgaben</a></li>
+        <li><a href="#sync"><span class="num">21</span>Synchronisierung</a></li>
+      </ol>
+    </li>
+    <li><a href="#part5">Teil 5 — Verwaltung</a>
+      <ol>
+        <li><a href="#operators"><span class="num">22</span>Bediener</a></li>
+        <li><a href="#audit"><span class="num">23</span>Protokoll</a></li>
+        <li><a href="#system"><span class="num">24</span>System</a></li>
+        <li><a href="#password"><span class="num">25</span>Passwort ändern</a></li>
+        <li><a href="#twofactor"><span class="num">26</span>Zwei-Faktor-Authentifizierung</a></li>
+      </ol>
+    </li>
+    <li><a href="#partauto">Teil 6 — Automatisierung und Integrationen</a>
+      <ol>
+        <li><a href="#rules"><span class="num">27</span>Regeln</a></li>
+        <li><a href="#notifications"><span class="num">28</span>Benachrichtigungen</a></li>
+        <li><a href="#webhooks"><span class="num">29</span>Webhooks</a></li>
+        <li><a href="#tokens"><span class="num">30</span>API-Token</a></li>
+        <li><a href="#mobile"><span class="num">31</span>Mobile App</a></li>
+        <li><a href="#homeassistant"><span class="num">32</span>Home Assistant</a></li>
+      </ol>
+    </li>
+    <li><a href="#part6">Teil 7 — Referenz</a>
+      <ol>
+        <li><a href="#reasons"><span class="num">33</span>Ereignisgründe</a></li>
+        <li><a href="#modes"><span class="num">34</span>Türmodi und Zutrittsregeln</a></li>
+        <li><a href="#trouble"><span class="num">35</span>Fehlerbehebung</a></li>
+        <li><a href="#glossary"><span class="num">36</span>Glossar</a></li>
+      </ol>
+    </li>
+  </ol>
+  <div class="box note"><b>Zu diesem Handbuch</b>
+    <p>Die Bildschirmfotos stammen aus einer Demo-Installation mit einem simulierten 4-Türen-Controller und erfundenen Personen; Ihre Namen, Nummern und Daten sind andere. Die Installation (Docker, Netzwerk, Umgebungsvariablen) beschreibt eine eigene Anleitung, <code>docs/DOCKER.md</code> im Projekt-Repository.</p>
+  </div>
+  <div class="box note"><b>Danksagung</b><p>UHPPOTE Desk baut auf dem Protokollwissen auf, das das Open-Source-Projekt <b>uhppoted</b> (codeberg.org/uhppoted) veröffentlicht hat. UHPPOTE Desk ist ein unabhängiges Projekt, weder mit uhppoted noch mit dem Hersteller der Controller verbunden.</p></div>
+</section>
+
+<!-- ===================================================================== PART 1 -->
+<section class="page part" id="part1">
+  <div class="opener o-blue"><div class="label">Teil 1</div><h1>UHPPOTE Desk verstehen</h1><p>Was die Anwendung tut, wie sie mit den Zutrittscontrollern spricht und die wenigen Begriffe, die Sie vor der Nutzung kennen sollten.</p></div>
+
+  <h2 id="what">1 · Was UHPPOTE Desk ist</h2>
+  <p>UHPPOTE Desk ist eine <b>Webanwendung</b> zur Verwaltung der Zutrittscontroller UHPPOTE <b>UT0311-L0x</b> (1, 2 oder 4 Türen; dieses Handbuch verwendet den 4-Türen-Controller UT0311-L04). Sie ersetzt das mit den Controllern gelieferte Windows-Programm ("Access Control", N3000) durch eine moderne Anwendung, die:</p>
+  <ul>
+    <li>auf einem Server oder NAS läuft (normalerweise als Docker-Container) und aus jedem <b>Browser</b> — PC, Tablet oder Telefon — ohne Installation genutzt wird;</li>
+    <li>von <b>mehreren Bedienern gleichzeitig</b> verwendet wird, jeder mit einer Rolle (Administrator, Bediener, Nur Lesen) und bei Bedarf auf Bereiche des Gebäudes beschränkt;</li>
+    <li>Personen, Karten und Berechtigungen in einer eigenen <b>Datenbank</b> hält und jede Änderung automatisch an die Controller sendet;</li>
+    <li>Buchungen und Alarme <b>in Echtzeit</b> empfängt, den vollständigen <b>Ereignisverlauf</b> speichert und die <b>Anwesenheit</b> berechnet (Arbeitsstunden, Verspätungen, Abwesenheiten);</li>
+    <li>auf <b>Englisch, Italienisch, Spanisch, Französisch und Deutsch</b> verfügbar ist; jeder Benutzer wählt seine Sprache.</li>
+  </ul>
+
+  <h2 id="how">2 · Wie das System funktioniert</h2>
+  <p>Eine Zutrittsanlage besteht aus drei Teilen: den <b>Controllern</b> in der Nähe der Türen, dem <b>Server</b>, auf dem UHPPOTE Desk läuft, und den <b>Browsern</b> der Bediener.</p>
+  <div class="diagram">
+    <svg viewBox="0 0 760 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+      <defs>
+        <linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1557a8"/><stop offset="1" stop-color="#2b8ae6"/></linearGradient>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5d6b7d"/></marker>
+        <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f9e6e"/></marker>
+      </defs>
+      <g>
+        <rect x="10" y="40" width="150" height="190" rx="14" fill="#f0ebff" stroke="#c9bdf5"/>
+        <text x="85" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="#6741d9">Bediener</text>
+        <rect x="32" y="82" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="107" text-anchor="middle" font-size="12" fill="#1d2733">Browser (PC)</text>
+        <rect x="32" y="132" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="157" text-anchor="middle" font-size="12" fill="#1d2733">Tablet / Telefon</text>
+        <text x="85" y="200" text-anchor="middle" font-size="10.5" fill="#5d6b7d">beliebig viele Benutzer</text>
+        <text x="85" y="214" text-anchor="middle" font-size="10.5" fill="#5d6b7d">mit Rollen</text>
+      </g>
+      <g>
+        <rect x="255" y="30" width="230" height="210" rx="14" fill="url(#gs)"/>
+        <text x="370" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">UHPPOTE-Desk-Server</text>
+        <text x="370" y="76" text-anchor="middle" font-size="10.5" fill="#dbe9fb">Docker auf Server / NAS</text>
+        <rect x="275" y="90" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#1557a8">Datenbank (Referenz)</text>
+        <rect x="275" y="132" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="154" text-anchor="middle" font-size="11.5" fill="#1557a8">Synchronisierung · Ereignisse</text>
+        <rect x="275" y="174" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="196" text-anchor="middle" font-size="11.5" fill="#1557a8">Anwesenheit · Protokoll · Backups</text>
+      </g>
+      <g>
+        <rect x="580" y="30" width="170" height="100" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Controller 1</text>
+        <text x="665" y="76" text-anchor="middle" font-size="10.5" fill="#1d2733">UT0311-L04 · 4 Türen</text>
+        <text x="665" y="94" text-anchor="middle" font-size="10.5" fill="#5d6b7d">Leser · Schlösser · Sensoren</text>
+        <text x="665" y="110" text-anchor="middle" font-size="10.5" fill="#5d6b7d">Ausgangstaster</text>
+        <rect x="580" y="145" width="170" height="85" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="172" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Controller 2 …</text>
+        <text x="665" y="192" text-anchor="middle" font-size="10.5" fill="#1d2733">entscheidet selbst,</text>
+        <text x="665" y="208" text-anchor="middle" font-size="10.5" fill="#1d2733">auch offline</text>
+      </g>
+      <line x1="162" y1="120" x2="250" y2="120" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="250" y1="150" x2="164" y2="150" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="206" y="112" text-anchor="middle" font-size="10" fill="#5d6b7d">HTTP</text>
+      <text x="206" y="168" text-anchor="middle" font-size="10" fill="#5d6b7d">Live-Updates</text>
+      <line x1="488" y1="90" x2="575" y2="80" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="531" y="74" text-anchor="middle" font-size="10" fill="#5d6b7d">Befehle</text>
+      <line x1="575" y1="190" x2="490" y2="180" stroke="#2f9e6e" stroke-width="2" marker-end="url(#ag)"/>
+      <text x="531" y="203" text-anchor="middle" font-size="10" fill="#2f9e6e">Ereignisse</text>
+      <text x="531" y="140" text-anchor="middle" font-size="9.5" fill="#5d6b7d">LAN · UDP 60000 / 60001</text>
+    </svg>
+  </div>
+  <ul>
+    <li><b>Die Controller entscheiden.</b> Wird eine Karte vorgehalten, prüft der Controller selbst, ob diese Karte diese Tür zu dieser Zeit öffnen darf, und öffnet das Schloss. Er fragt den Server nicht, daher funktionieren die Türen auch, wenn Server oder Netzwerk ausfallen.</li>
+    <li><b>Der Server ist die Referenz.</b> Personen, Karten, Berechtigungen, Zeitprofile und Einstellungen stehen in der Datenbank von UHPPOTE Desk. Jede Änderung in der Anwendung wird sofort an die erreichbaren Controller gesendet. Ein Controller, der offline war, wird mit der <span class="ui">Synchronisierung</span> auf den aktuellen Stand gebracht.</li>
+    <li><b>Ereignisse fließen zurück.</b> Jede Buchung, Türöffnung und jeder Alarm wird im Speicher des Controllers gespeichert und an den Server gesendet, der sie im Verlauf ablegt und live anzeigt. War das Netzwerk unterbrochen, werden die fehlenden Ereignisse vom Controller geladen, sobald er wieder erreichbar ist: keines geht verloren.</li>
+  </ul>
+  <div class="box note"><b>Warum das wichtig ist</b>
+    <p>Ändern Sie die Controller nicht mit anderen Programmen (der Original-Windows-Software oder der Webseite des Controllers), solange UHPPOTE Desk sie verwaltet: Die Anwendung würde diese Änderungen bei der nächsten Synchronisierung rückgängig machen, weil ihre Datenbank die Referenz ist.</p>
+  </div>
+
+  <h2 id="concepts" class="chapter">3 · Grundbegriffe</h2>
+  <div class="cards2">
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controller</h4><p>Die Elektronikplatine, die 1, 2 oder 4 Türen steuert. Sie wird über ihre <b>Seriennummer</b> (9 Ziffern auf dem S/N-Etikett) identifiziert und im LAN über ihre IP-Adresse erreicht. Sie speichert Zehntausende Karten und Ereignisse.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Tür</h4><p>Jeder Ausgang des Controllers: ein Karten<b>leser</b>, ein elektrisches <b>Schloss</b> (Relais), optional ein <b>Türkontakt</b> (offen/geschlossen) und ein <b>Ausgangstaster</b>. In der Anwendung hat eine Tür einen Namen, einen Betriebsmodus und eine Öffnungszeit.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Person</h4><p>Wer durch die Türen geht: Personalnummer, Name, Abteilung, Gültigkeitszeitraum, optionale Tastatur-PIN, Foto und Schicht für die Anwesenheit.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Karte</h4><p>Eine Proximity-Karte oder ein Schlüsselanhänger. Ihre <b>Nummer</b> hat 8 Ziffern im Wiegand-26-Format: Anlagencode × 100000 + Kartencode, zum Beispiel <code>10058400</code> = Anlage 100, Code 58400. Eine Karte kann einer Person zugeordnet oder als frei registriert sein.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Berechtigung</h4><p>Das Recht einer Person, eine Tür zu öffnen: <b>immer</b> oder nur innerhalb eines <b>Zeitprofils</b>. Berechtigungen gehören zur Person und gelten für alle ihre Karten.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Zeitprofil</h4><p>Ein Zeitfenster (Wochentage, bis zu 3 Zeitintervalle, Gültigkeitsdaten) mit der Nummer 2–254. Es kann mit einem anderen Profil verknüpft werden, um es zu erweitern, z. B. Werktage + Samstagvormittag.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Ereignis</h4><p>Alles, was der Controller aufzeichnet: Kartenbuchungen (erlaubt oder verweigert, mit Grund), Tür geöffnet/geschlossen, Ausgangstaster, Alarme, Einschalten, Fernöffnung.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Synchronisierung</h4><p>Das Abgleichen eines Controllers mit der Datenbank. Sie geschieht automatisch bei jeder Änderung; die Seite <span class="ui">Synchronisierung</span> prüft und behebt Unterschiede (z. B. nach einer langen Offline-Zeit).</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Zone und Abteilung</h4><p><b>Zonen</b> gruppieren Controller (Gebäude, Etagen) und können einschränken, was ein Bediener steuern darf. <b>Abteilungen</b> ordnen die Personen und filtern die Anwesenheitsberichte.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Anwesenheit</h4><p>Buchungen an Lesern, die für die Anwesenheit markiert sind, werden zu Kommen-/Gehen-Stempelungen. Mit Schichten, Feiertagen und Abwesenheiten berechnet die Anwendung Arbeitsstunden, Überstunden und Verspätungen.</p></div>
+  </div>
+  <h3>Wie über einen Zutritt entschieden wird</h3>
+  <p>Wird eine Karte an einer Tür vorgehalten, gewährt der Controller den Zutritt nur, wenn <b>alle</b> diese Bedingungen erfüllt sind; sonst verweigert er ihn und speichert den Grund (siehe <a href="#reasons">Ereignisgründe</a>):</p>
+  <ol class="steps">
+    <li>die Karte ist im Controller gespeichert (Karten inaktiver Personen sowie verlorene oder gesperrte Karten werden aus den Controllern entfernt);</li>
+    <li>heute liegt im Gültigkeitszeitraum des Karteninhabers;</li>
+    <li>die Person hat eine Berechtigung für diese Tür — immer oder mit einem Zeitprofil, das den aktuellen Tag und die Uhrzeit enthält;</li>
+    <li>die Türregeln erlauben es: Türmodus, Verriegelung, Anti-Passback, erste Karte und die PIN, wenn der Leser eine Tastatur hat.</li>
+  </ol>
+</section>
+
+<section class="page chapter">
+  <h2 id="roles">4 · Bediener und Rollen</h2>
+  <p>Wer die Anwendung benutzt, meldet sich mit seinem eigenen <b>Bediener</b>-Konto an. Jeder Bediener hat eine von drei Rollen. Administratoren können einen Bediener außerdem auf einige <b>Zonen</b> beschränken: Fernöffnung und Synchronisierung sind dann nur auf den Controllern dieser Zonen erlaubt.</p>
+  <table>
+    <thead><tr><th>Was der Bediener tun kann</th><th class="c">Nur Lesen</th><th class="c">Bediener</th><th class="c">Administrator</th></tr></thead>
+    <tr><td>Übersicht, Monitor, Ereignisverlauf, Anwesenheitsberichte, Personen, Karten, Berechtigungen, Controller, Türen, Zeitprofile, Aufgaben und Systeminformationen ansehen</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Ereignisse und Anwesenheit als CSV exportieren</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Personen, Karten, Fotos, Berechtigungen anlegen und ändern; Personen aus CSV importieren; Abteilungen</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Türen aus der Ferne öffnen</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Gäste-Links; Kennzeichen von Personen</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Anwesenheit: Schichten, Feiertage, Abwesenheiten, manuelle Stempelungen</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Karten vergleichen und abgleichen, Uhrzeit synchronisieren, Ereignisse herunterladen</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Controller (Hinzufügen, Netzwerk, erweiterte Einstellungen, Zurücksetzen), Türen, Zeitprofile, geplante Aufgaben, Zonen, vollständige Synchronisierung</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Bediener, Protokoll, Sicherungen</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Regeln, Benachrichtigungen, Webhooks, API-Token, Einstellungen der Mobile App, Kennzeichen-Kameras</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Zwei-Faktor-Authentifizierung für das eigene Konto</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+  </table>
+  <p>Seiten und Schaltflächen, die eine Rolle nicht nutzen darf, sind ausgeblendet oder deaktiviert. Jede Änderung und jeder an einen Controller gesendete Befehl wird mit dem Namen des Bedieners im <a href="#audit">Protokoll</a> festgehalten.</p>
+
+  <h2 id="interface">5 · Die Benutzeroberfläche</h2>
+  <figure><img src="shots/dashboard.png"><figcaption><b>Abbildung 1</b> — Das Hauptfenster: Kopfzeile oben, Menü links, die gewählte Seite rechts.</figcaption></figure>
+  <h3>Kopfzeile</h3>
+  <ul>
+    <li><b>LIVE-Anzeige</b> — grün, wenn der Browser Echtzeit-Aktualisierungen vom Server erhält (Ereignisse, Türzustände, Fortschritt der Synchronisierung). Sie wird rot, <span class="ui">Offline</span>, wenn die Verbindung zum Server abbricht, und verbindet sich selbst wieder. Sie betrifft die Verbindung zwischen Ihrem Browser und dem Server, nicht die Controller.</li>
+    <li><b>Name und Rolle</b> des angemeldeten Bedieners.</li>
+    <li><b>Sprache</b> (Symbol <span class="kbd">文A</span>) — English, Italiano, Español, Français, Deutsch. Die Wahl merkt sich der Browser; beim ersten Besuch wird die Browsersprache verwendet.</li>
+    <li><b>Passwort ändern</b> (Schlüsselsymbol), <b>Zwei-Faktor-Authentifizierung</b> (Schildsymbol) und <b>Abmelden</b>.</li>
+  </ul>
+  <figure class="half"><img src="shots/language.png"><figcaption><b>Abbildung 2</b> — Das Sprachmenü.</figcaption></figure>
+  <h3>Menü</h3>
+  <p>Das Menü links ist in vier Gruppen unterteilt, die auch die Teile dieses Handbuchs sind:</p>
+  <table>
+    <thead><tr><th>Gruppe</th><th>Seiten</th><th>Wofür</th></tr></thead>
+    <tr><td><span class="grp g-ops">Betrieb</span></td><td>Übersicht, Monitor, Ereignisverlauf, Anwesende, Kennzeichen, Anwesenheit, Auffälligkeiten</td><td>die tägliche Überwachung</td></tr>
+    <tr><td><span class="grp g-reg">Stammdaten</span></td><td>Personen, Karten, Gäste, Berechtigungen, Abteilungen und Zonen</td><td>wer wohin darf</td></tr>
+    <tr><td><span class="grp g-cfg">Konfiguration</span></td><td>Controller, Türen, Zeitprofile, Geplante Aufgaben, Synchronisierung</td><td>Hardware und Regeln</td></tr>
+    <tr><td><span class="grp g-adm">Verwaltung</span></td><td>Bediener, Protokoll, Regeln, Benachrichtigungen, Webhooks, Mobile App, API-Token, System</td><td>Benutzer, Integrationen und Wartung</td></tr>
+  </table>
+  <p>Meldungen erscheinen oben rechts: grün für erfolgreiche Vorgänge, rot für Fehler. Die gelbe Meldung <span class="ui">Gespeichert, aber nicht an alle Controller gesendet</span> bedeutet, dass die Änderung in der Datenbank ist, aber ein Controller nicht erreichbar war; er wird bei der nächsten Synchronisierung abgeglichen.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="start">6 · Erste Schritte</h2>
+  <h3>Anmelden</h3>
+  <figure class="half"><img src="shots/login.png"><figcaption><b>Abbildung 3</b> — Die Anmeldeseite.</figcaption></figure>
+  <p>Öffnen Sie die Adresse des Servers im Browser (zum Beispiel <code>http://192.168.1.10:8080</code>) und melden Sie sich an. Der erste Administrator ist <code>admin</code>:</p>
+  <ul>
+    <li>wurde der Server mit der Variablen <code>ADMIN_PASSWORD</code> installiert, verwenden Sie dieses Passwort. Es lässt sich nur ändern, indem man die Variable ändert und den Server neu startet;</li>
+    <li>andernfalls wurde beim ersten Start ein temporäres Passwort erzeugt und in das Serverprotokoll geschrieben. Sie werden sofort aufgefordert, ein neues zu wählen.</li>
+  </ul>
+  <p>Nach mehreren falschen Passwörtern wird das Konto für einige Minuten gesperrt. Sitzungen laufen nach einigen Stunden ab (standardmäßig 12).</p>
+  <h3>Erste Einrichtung — Checkliste</h3>
+  <ol class="steps">
+    <li><b>Controller</b> → <span class="ui">Netzwerk durchsuchen</span>: Controller finden, hinzufügen und benennen (<a href="#controllers">Kapitel 17</a>). Hat ein Controller eine Werks-IP außerhalb Ihres Netzes, ändern Sie sie auf seiner Seite.</li>
+    <li><b>Türen</b>: jeder Tür einen sprechenden Namen geben, Modus und Öffnungszeit prüfen und die Leser für die Anwesenheit markieren (<a href="#doors">Kapitel 18</a>).</li>
+    <li><b>Zeitprofile</b>: die benötigten Zeitfenster anlegen, z. B. "Bürozeit" (<a href="#profiles">Kapitel 19</a>). Berechtigungen, die "immer" gelten, brauchen keines.</li>
+    <li><b>Abteilungen und Zonen</b>: die Organisation des Unternehmens und optional die Zonen des Gebäudes anlegen (<a href="#structure">Kapitel 15</a>).</li>
+    <li><b>Personen</b>: einzeln anlegen oder eine CSV-Datei importieren; Karten und Berechtigungen zuweisen (<a href="#people">Kapitel 12</a>). Die Nummer einer neuen Karte liest man einfach, indem man sie an einen beliebigen Leser hält.</li>
+    <li><b>Bediener</b>: für jeden Benutzer der Anwendung ein Konto mit der passenden Rolle anlegen (<a href="#operators">Kapitel 22</a>).</li>
+    <li>Im <b>Monitor</b> prüfen, dass Buchungen in Echtzeit erscheinen. Wenn nicht, siehe <a href="#trouble">Fehlerbehebung</a>.</li>
+  </ol>
+  <div class="box tip"><b>Tipp</b><p>Bevor die Hardware ankommt, können Sie alles mit dem Controller-Simulator im Docker-Image ausprobieren (siehe <code>docs/DOCKER.md</code>, "Trying the app without a controller").</p></div>
+</section>
+
+<!-- ===================================================================== PART 2 -->
+<section class="page part" id="part2">
+  <div class="opener o-green"><div class="label">Teil 2</div><h1>Betrieb</h1><p>Die tägliche Überwachung: Zustand der Controller, Buchungen in Echtzeit, Ereignisverlauf, Anwesenheit und Kennzeichen.</p></div>
+
+  <span class="grp g-ops">Betrieb</span>
+  <h2 id="dashboard">7 · Übersicht</h2>
+  <p>Die erste Seite nach der Anmeldung. Für jeden Controller zeigt sie einen Bereich mit:</p>
+  <ul>
+    <li>Name, Zustand <span class="ui">Online</span>/<span class="ui">Offline</span>, Seriennummer und IP-Adresse sowie Zeit des letzten Kontakts. Geht die Uhr des Controllers um mehr als einige Sekunden falsch, wird die Abweichung angezeigt (die Zeit wird automatisch korrigiert);</li>
+    <li>eine Kachel für jede aktive Tür mit ihrem <b>Modus</b> (Gesteuert, Normalerweise offen, Normalerweise geschlossen), dem Zustand des <b>Türkontakts</b> (Offen/Geschlossen) und dem <b>Schloss</b>symbol, orange, wenn das Relais aktiv ist (Schloss entriegelt);</li>
+    <li>die Schaltfläche zum Öffnen der Tür aus der Ferne (Bediener und Administratoren): nach der Bestätigung wird das Schloss für die Öffnungszeit der Tür freigegeben und ein Ereignis "Fernöffnung" gespeichert;</li>
+    <li>rote Anzeigen für <b>Feueralarm</b> oder <b>Zwangsverriegelung</b>, wenn diese Eingänge des Controllers aktiv sind, und die eingeschalteten Ausgänge der Erweiterungskarte.</li>
+  </ul>
+  <p>Darunter listet <span class="ui">Letzte Ereignisse</span> die neuesten Ereignisse aller Controller; verweigerte Zutritte sind rot hervorgehoben. <span class="ui">Monitor öffnen</span> führt zum Live-Monitor.</p>
+  <p>Die Übersicht in Abbildung 1 zeigt einen typischen Tag: eine Fernöffnung, eine geöffnete und wieder geschlossene Tür, einen Ausgangstaster und eine nicht registrierte Karte.</p>
+
+  <span class="grp g-ops">Betrieb</span>
+  <h2 id="monitor">8 · Monitor</h2>
+  <figure><img src="shots/monitor.png"><figcaption><b>Abbildung 4</b> — Live-Monitor: die letzte Buchung mit dem Foto der Person und die Ereignisse der Sitzung.</figcaption></figure>
+  <p>Der Monitor zeigt Buchungen und Alarme in dem Moment, in dem der Controller sie sendet — das Gegenstück zum "Monitor" der Original-Software, zum Beispiel für einen Empfang.</p>
+  <ul>
+    <li><b>Letzte Buchung</b>: Foto (oder Initialen), Name und Karte der Person, Ergebnis (<span class="yes">ERLAUBT</span> / <span style="color:#d9480f;font-weight:700">VERWEIGERT</span>), Grund, Tür und Richtung (Eintritt/Austritt), Uhrzeit. Eine nicht registrierte Karte wird als solche angezeigt.</li>
+    <li><b>Ereignisse dieser Sitzung</b>: jedes Ereignis seit dem Öffnen der Seite (bis zu den letzten 300), das neueste zuerst.</li>
+    <li>Filter oben: ein einzelner Controller und <span class="ui">Nur Kartenbuchungen</span>, um Tür- und Alarmereignisse auszublenden.</li>
+  </ul>
+  <div class="box note"><b>Hinweis</b><p>Der Monitor zeigt nur, was ankommt, solange er geöffnet ist. Gespeichert wird in jedem Fall alles: ältere Ereignisse stehen im <a href="#events">Ereignisverlauf</a>. Erscheinen Buchungen hier nicht, aber später im Verlauf, empfängt der Server die Ereignisse nicht in Echtzeit — siehe <a href="#trouble">Fehlerbehebung</a>.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Betrieb</span>
+  <h2 id="events">9 · Ereignisverlauf</h2>
+  <figure><img src="shots/events.png"><figcaption><b>Abbildung 5</b> — Ereignisverlauf mit Filtern.</figcaption></figure>
+  <p>Alle von den Controllern gesammelten Ereignisse, die neuesten zuerst. Mit den Filtern finden Sie, was Sie suchen:</p>
+  <ul>
+    <li><b>Von / Bis</b> — Zeitraum;</li>
+    <li><b>Controller</b> und <b>Tür</b>;</li>
+    <li><b>Person</b> oder <b>Kartennummer</b>;</li>
+    <li><b>Ergebnis</b> — nur erlaubte oder nur verweigerte.</li>
+  </ul>
+  <p>Jede Zeile zeigt Datum und Uhrzeit (Uhrzeit des Controllers), Controller, Tür mit Richtungspfeil (↘ Eintritt, ↗ Austritt), Typ (Karte, Tür, Alarm), Person oder Karte, Ergebnis, Grund und Index des Ereignisses im Speicher des Controllers. <span class="ui">CSV exportieren</span> lädt die gefilterten Ereignisse in der aktuellen Sprache herunter, bereit für Excel.</p>
+  <div class="box note"><b>Woher die Ereignisse kommen</b><p>Ereignisse kommen in Echtzeit von den Controllern und werden zusätzlich alle paar Minuten und immer dann automatisch heruntergeladen, wenn ein Controller wieder erreichbar ist; der Verlauf ist daher auch nach Netzwerk- oder Serverausfällen vollständig. Der Speicher des Controllers ist ein Ringspeicher: Bleibt ein Controller so lange getrennt, dass er voll läuft, werden die ältesten Ereignisse überschrieben.</p></div>
+
+  <h3>Anwesende</h3>
+  <figure><img src="shots/presence.png"><figcaption><b>Abbildung 6</b> — Wer gerade im Gebäude ist.</figcaption></figure>
+  <p>Die Seite <span class="ui">Anwesende</span> zeigt, wer gerade im Gebäude ist: für jede Person die letzte <b>erlaubte</b> Kartenbuchung an einer Tür, die für die Anwesenheit zählt. Eine Buchung an einer <b>Eingangstür</b> setzt die Person nach drinnen, eine an einer <b>Ausgangstür</b> (oder am Austrittsleser einer Tür mit zwei Lesern) nach draußen. Die Rolle jeder Tür legen Sie auf der Seite <a href="#doors">Türen</a> fest: <i>Eintritt</i> (Standard), <i>Austritt</i> oder <i>Nicht gezählt</i>.</p>
+  <p>Wählen Sie den Zeitraum (heute, letzte 8 oder 24 Stunden): Personen mit älterer letzter Buchung werden nicht gezählt. Die Seite aktualisiert sich alle 30 Sekunden selbst; <span class="ui">CSV exportieren</span> lädt die Liste herunter, etwa für einen Appell bei einer Evakuierung. Wer mit dem Ausgangstaster (ohne Karte) hinausgeht, ist nicht sichtbar: Für genaue Zählungen braucht es einen Leser auf der Ausgangsseite.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Betrieb</span>
+  <h2 id="attendance">10 · Anwesenheit</h2>
+  <p>UHPPOTE Desk berechnet die Arbeitszeit aus den Buchungen an den Lesern, die als <b>Anwesenheitsleser</b> markiert sind (auf der Seite <a href="#doors">Türen</a>) — meist der Haupteingang. Es zählen nur <b>erlaubte</b> Buchungen. Die Seite hat fünf Register.</p>
+  <h3>Bericht</h3>
+  <figure><img src="shots/attendance-report.png"><figcaption><b>Abbildung 7</b> — Anwesenheitsbericht: Zusammenfassung des Zeitraums und Tagesdetails.</figcaption></figure>
+  <p>Wählen Sie den Zeitraum (standardmäßig vom Ersten des laufenden Monats bis heute) und optional eine Abteilung oder eine Person. Die <b>Zusammenfassung des Zeitraums</b> zeigt je Person: gearbeitete Stunden, Sollstunden, Überstunden, Summe der Verspätungen, Abwesenheitstage und Tage mit Auffälligkeiten. Die <b>Tagesdetails</b> zeigen jeden Tag mit seinem Status (Anwesend, Abwesend, Feiertag, Freier Tag, Urlaub, Freistellung, Krankheit, Dienstreise, Auffälligkeit), erstes Kommen, letztes Gehen, gearbeitete Stunden, Verspätung und alle Stempelungen; manuell erfasste sind mit <b>*</b> markiert. <span class="ui">CSV exportieren</span> lädt die Details herunter.</p>
+  <div class="box note"><b>Wie die Stunden berechnet werden</b>
+    <ul>
+      <li>Stempelungen werden chronologisch gepaart: Kommen, Gehen, Kommen, Gehen… Die Richtung des Lesers wird nicht benötigt.</li>
+      <li>Bei nur einem Stempelpaar am Tag wird die <b>Pause</b> der Schicht automatisch abgezogen; bei zwei oder mehr Paaren gilt die tatsächliche Pause.</li>
+      <li>Eine ungerade Zahl von Stempelungen (z. B. ein vergessenes Gehen) ist eine <b>Auffälligkeit</b>: Die letzte Stempelung wird ignoriert, bis sie mit einer manuellen Stempelung korrigiert ist.</li>
+      <li>Verspätung und früheres Gehen berücksichtigen die <b>Toleranz</b> der Schicht. Zeit über den Sollstunden ist Überstunde; an freien Tagen und Feiertagen ist die gesamte Arbeitszeit Überstunde.</li>
+      <li>Nachtschichten (Ende nach Mitternacht) zählen zu dem Tag, an dem sie begonnen haben.</li>
+      <li>Eine Person ohne Schicht hat keine Sollstunden: Es werden nur die gearbeiteten Stunden berechnet.</li>
+    </ul>
+  </div>
+  <h3>Schichten</h3>
+  <figure><img src="shots/attendance-shifts.png"><figcaption><b>Abbildung 8</b> — Arbeitsschichten.</figcaption></figure>
+  <p>Eine Schicht legt Beginn und Ende, Pause (Minuten), Toleranz (Minuten) und Arbeitstage fest. Eine Schicht, die vor ihrem Beginn endet (z. B. 22:00–06:00), ist eine Nachtschicht. Die Schicht wird in den Details jeder Person zugewiesen (<a href="#people">Personen</a>).</p>
+  <h3>Feiertage</h3>
+  <figure><img src="shots/attendance-holidays.png"><figcaption><b>Abbildung 9</b> — Feiertage.</figcaption></figure>
+  <p>Tage, an denen niemand arbeiten muss. Einzeln hinzufügen (Datum und Beschreibung) oder mit einem Klick die italienischen gesetzlichen Feiertage eines Jahres importieren, Ostern inklusive. Ergänzen Sie nach Bedarf regionale Feiertage, Betriebsferien und Brückentage.</p>
+  <h3>Urlaub und Abwesenheiten</h3>
+  <figure><img src="shots/attendance-leaves.png"><figcaption><b>Abbildung 10</b> — Urlaub und Abwesenheiten.</figcaption></figure>
+  <p>Erfassen Sie Urlaub, Freistellungen, Krankheit, Dienstreisen und andere Abwesenheiten einer Person für einen Datumsbereich. Diese Tage zählen im Bericht nicht mehr als Abwesenheit.</p>
+  <h3>Manuelle Stempelungen</h3>
+  <figure><img src="shots/attendance-punches.png"><figcaption><b>Abbildung 11</b> — Manuelle Stempelungen.</figcaption></figure>
+  <p>Fügen Sie eine Stempelung hinzu, die der Leser nicht erfasst hat — z. B. ein vergessenes Gehen — mit Person, Datum und Uhrzeit, Richtung und Grund. Manuelle Stempelungen sind im Bericht mit * markiert und im Protokoll festgehalten.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Betrieb</span>
+  <h2 id="plates">11 · Kennzeichen</h2>
+  <figure><img src="shots/plates.png"><figcaption><b>Abbildung 12</b> — Kennzeichen-Lesungen: wer eingelassen wurde und wer nicht.</figcaption></figure>
+  <p>Eine Kamera mit Kennzeichenerkennung (getestet mit <b>AgentDVR</b>) sendet jedes gelesene Kennzeichen an UHPPOTE Desk, das entscheidet, ob das Fahrzeug einfahren darf, die Tür öffnet, ein Foto von der Kamera aufnimmt und die Lesung speichert. Die Seite hat drei Register.</p>
+  <ul>
+    <li><b>Lesungen</b> — jedes gelesene Kennzeichen mit Foto, Uhrzeit, Halter, Ergebnis (<i>Erlaubt</i>, <i>Unbekanntes Kennzeichen</i>, <i>Außerhalb des Zeitprofils</i>…) und Kamera. Nach Ergebnis filtern oder nach Kennzeichen oder Name suchen. Fotos werden standardmäßig 30 Tage aufbewahrt (<code>PLATE_PHOTO_DAYS</code>).</li>
+    <li><b>Kennzeichen</b> — die dem System bekannten Kennzeichen. Ein Kennzeichen gehört einer <b>Person</b> (im Register <i>Kennzeichen</i> der Person hinzugefügt: Das Fahrzeug fährt dort ein, wo die Person eine Berechtigung hat, innerhalb ihres Zeitprofils) oder einem <b>Gäste-Link</b> (Feld <i>Kennzeichen der Fahrzeuge</i>: Das Fahrzeug fährt ein, solange der Link gültig ist). Kennzeichen werden verglichen, ohne Leerzeichen, Bindestriche und die am häufigsten verwechselten Zeichen zu beachten (B/8, O/0, I/1, Z/2, S/5).</li>
+    <li><b>Kameras</b> (Administratoren) — eine Zeile pro Kamera: die Tür, die sie öffnet, die Fotoadresse, die Pause nach einer Öffnung (das Auto steht noch vor der Kamera) und <i>Tür öffnen</i> (aus = Lesungen werden nur gespeichert, um eine neue Kamera zu testen).</li>
+  </ul>
+  <figure><img src="shots/plate-cameras.png"><figcaption><b>Abbildung 13</b> — Kameras für die Kennzeichenerkennung.</figcaption></figure>
+  <p>Beim Anlegen einer Kamera zeigt UHPPOTE Desk zwei Adressen mit dem geheimen Schlüssel der Kamera, die in AgentDVR einzutragen sind (Liste der bekannten Kennzeichen und "Call URL"): Der Schlüssel wird nur einmal angezeigt. Lesungen werden außerdem als <code>plate.granted</code> / <code>plate.denied</code> für Benachrichtigungen, Regeln und Webhooks veröffentlicht; Telegram- und E-Mail-Benachrichtigungen enthalten das Foto. Die Einrichtung Schritt für Schritt steht in <code>docs/PLATES.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 3 -->
+<section class="page part" id="part3">
+  <div class="opener o-violet"><div class="label">Teil 3</div><h1>Stammdaten</h1><p>Personen, Karten, Gäste und Zutrittsberechtigungen: wer wohin darf, und wann.</p></div>
+
+  <span class="grp g-reg">Stammdaten</span>
+  <h2 id="people">12 · Personen</h2>
+  <figure><img src="shots/people.png"><figcaption><b>Abbildung 14</b> — Die Personenliste.</figcaption></figure>
+  <p>Die Liste zeigt Personalnummer, Name, Abteilung, Karten, Gültigkeit und Status. Suchen Sie nach Name, Personalnummer oder Kartennummer. Ein Klick auf eine Zeile öffnet die Details; <span class="ui">Neue Person</span> legt eine an.</p>
+  <h3>Details</h3>
+  <figure class="narrow"><img src="shots/person-details.png"><figcaption><b>Abbildung 15</b> — Details einer Person.</figcaption></figure>
+  <ul>
+    <li><b>Personalnummer</b> (eindeutig) und <b>Nach-/Vorname</b>; Abteilung, E-Mail, Telefon, Notizen.</li>
+    <li><b>Zutritt gültig von / bis</b> — außerhalb dieses Zeitraums weisen die Controller alle Karten der Person ab.</li>
+    <li><b>Tastatur-PIN</b> (bis zu 6 Ziffern, 0 = keine) — von Lesern mit Tastatur verlangt, wenn die Tür im Modus "Karte + PIN" arbeitet.</li>
+    <li><b>Schicht</b> — für die Anwesenheit.</li>
+    <li><b>Foto</b> — JPEG, PNG oder WebP; es wird im Monitor angezeigt.</li>
+    <li><b>Aktiv</b> — wenn deaktiviert, werden die Karten der Person aus allen Controllern entfernt (der Verlauf bleibt). Für Personen, die vorübergehend oder dauerhaft gehen.</li>
+  </ul>
+  <h3>Karten einer Person</h3>
+  <figure class="narrow"><img src="shots/person-cards.png"><figcaption><b>Abbildung 16</b> — Register Karten.</figcaption></figure>
+  <p>Geben Sie die 8-stellige Kartennummer ein und <span class="ui">Hinzufügen</span>, oder nutzen Sie <b>Von einem Leser erfassen</b>: Halten Sie die neue Karte an einen beliebigen Leser, dann erscheint sie unter den unbekannten Karten der letzten 10 Minuten; ein Klick ordnet sie zu. Eine Person kann mehrere Karten haben.</p>
+  <ul>
+    <li><span class="ui">Verloren</span> — ersetzt eine verlorene Karte: Die alte wird als verloren markiert und aus den Controllern entfernt, die neue Nummer erhält sofort dieselben Berechtigungen.</li>
+    <li><b>Löschen</b> — entfernt die Karte aus der Datenbank und aus allen Controllern.</li>
+  </ul>
+  <h3>Berechtigungen einer Person</h3>
+  <figure class="narrow"><img src="shots/person-permissions.png"><figcaption><b>Abbildung 17</b> — Register Berechtigungen.</figcaption></figure>
+  <p>Eine Zeile pro Tür jedes Controllers. Haken Sie die Türen an, die die Person öffnen darf, und wählen Sie für jede <b>Immer</b> oder ein <b>Zeitprofil</b>. <b>Erste Karte</b> erlaubt der Person, eine Tür mit der Funktion "erste Karte" zu "öffnen" (siehe <a href="#controllers">Controller → Erweiterte Einstellungen</a>). <span class="ui">Berechtigungen speichern</span> sendet sie sofort an die Controller.</p>
+  <h3>Personen aus einer CSV-Datei importieren</h3>
+  <p><span class="ui">CSV importieren</span> liest eine Datei mit Kopfzeile; das Trennzeichen (Semikolon, Komma oder Tabulator) wird automatisch erkannt. Erkannte Spalten:</p>
+  <table>
+    <thead><tr><th>Spalte</th><th>Akzeptierte Spaltennamen</th><th>Hinweise</th></tr></thead>
+    <tr><td>Personalnummer</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>Pflicht; eine vorhandene Nummer aktualisiert diese Person</td></tr>
+    <tr><td>Nachname</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>Pflicht</td></tr>
+    <tr><td>Vorname</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
+    <tr><td>Karte</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>8-stellige Wiegand-26-Nummer</td></tr>
+    <tr><td>Abteilung</td><td><code>department</code>, <code>reparto</code></td><td>wird angelegt, falls sie fehlt; Unterabteilungen mit <code>\</code>, z. B. <code>Produktion\Montage</code></td></tr>
+  </table>
+  <p>Das Ergebnis zeigt, wie viele Personen und Karten angelegt oder aktualisiert wurden, und die fehlerhaften Zeilen. Importierte Personen haben keine Berechtigungen: Weisen Sie sie danach zu, etwa mit der Sammelzuweisung der Seite <a href="#permissions">Berechtigungen</a>. Ein Export der Original-Windows-Software lässt sich meist direkt importieren.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Stammdaten</span>
+  <h2 id="cards">13 · Karten</h2>
+  <figure><img src="shots/cards.png"><figcaption><b>Abbildung 18</b> — Alle registrierten Karten.</figcaption></figure>
+  <p>Alle der Anwendung bekannten Karten, zugeordnet oder frei, mit Status (Aktiv, Verloren, Gesperrt) und Registrierungsdatum. Der Filter <span class="ui">Frei</span> zeigt die noch nicht vergebenen Karten; eine freie Karte kann aus der Liste zugeordnet werden.</p>
+  <ul>
+    <li><b>Gelesene, aber nicht registrierte Karten (letzte Stunde)</b> — jede unbekannte Karte, die an einen Leser gehalten wurde, erscheint hier: ein Klick registriert sie, frei oder direkt einer Person zugeordnet. Nummern, die keine gültigen Wiegand-26-Karten sind, sind ausgegraut und können nicht registriert werden.</li>
+    <li><b>Serienregistrierung</b> — registriert einen ganzen Nummernbereich als freie Karten (bis zu 1000), z. B. eine neue Schachtel Karten mit fortlaufenden Nummern.</li>
+  </ul>
+  <div class="box note"><b>Kartennummern</b><p>Die Controller akzeptieren nur Wiegand-26-Nummern: Anlagencode 0–255 und Kartencode 0–65535, geschrieben als Anlage × 100000 + Code. Die auf vielen Karten gedruckte Nummer (z. B. <code>100,58400</code> oder <code>0006612288</code>) entspricht diesem Format; im Zweifel halten Sie die Karte an einen Leser und lesen die Nummer in der Liste der unbekannten Karten ab.</p></div>
+
+  <span class="grp g-reg">Stammdaten</span>
+  <h2 id="permissions">14 · Berechtigungen</h2>
+  <figure><img src="shots/permissions.png"><figcaption><b>Abbildung 19</b> — Matrix aus Personen und Türen sowie Sammelzuweisung.</figcaption></figure>
+  <p>Das Gegenstück zu "Access Privilege" der Original-Software: eine Matrix mit einer Zeile pro Person und einer Spalte pro Tür. <b>✓</b> bedeutet immer erlaubt, eine Zahl bedeutet erlaubt in diesem Zeitprofil. Filtern Sie die Personen, um jemanden schnell zu finden.</p>
+  <p>Mit der <b>Sammelzuweisung</b> wählen Sie mehrere Personen und mehrere Türen, optional ein Zeitprofil, und <span class="ui">Erteilen</span> oder <span class="ui">Entziehen</span> alle diese Berechtigungen auf einmal — etwa um einer ganzen neuen Abteilung Zutritt zum Eingang zu geben.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Stammdaten</span>
+  <h2 id="structure">15 · Abteilungen und Zonen</h2>
+  <figure><img src="shots/structure.png"><figcaption><b>Abbildung 20</b> — Abteilungen und Zonen sind Bäume.</figcaption></figure>
+  <ul>
+    <li><b>Abteilungen</b> ordnen das Personal: Sie filtern die Personenliste und die Anwesenheitsberichte. Eine Abteilung kann zu einer anderen gehören (z. B. Produktion → Montage).</li>
+    <li><b>Zonen</b> gruppieren Controller, z. B. nach Gebäude oder Etage. Sie dienen der Beschränkung von Bedienern: Ein auf eine Zone (und ihre Unterzonen) beschränkter Bediener kann nur die Türen dieser Controller öffnen und nur diese synchronisieren.</li>
+  </ul>
+  <p>Verwenden Sie <span class="ui">Neu</span>, Bearbeiten und Löschen; beim Löschen eines Elements werden auch seine Unterelemente gelöscht. Personen und Controller einer gelöschten Abteilung oder Zone bleiben erhalten, ohne Abteilung oder Zone.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Stammdaten</span>
+  <h2 id="guests">16 · Gäste</h2>
+  <figure><img src="shots/guests.png"><figcaption><b>Abbildung 21</b> — Gäste-Links.</figcaption></figure>
+  <p>Ein Gäste-Link öffnet einige Türen für eine gewisse Zeit, <b>ohne Karte, App oder Anmeldung</b>: ein Kurier oder Techniker heute, eine Reinigungsfirma jeden Dienstagabend, ein Freund fürs Wochenende. Bediener legen Links nur für Türen an, die sie selbst öffnen dürfen; Administratoren sehen alle.</p>
+  <ul>
+    <li><b>Türen</b> und <b>Gültigkeit</b> (von, bis; Schaltflächen <i>Heute</i>, <i>7 Tage</i>…), optional <b>nur an bestimmten Tagen und Uhrzeiten</b> (z. B. Montag–Freitag 08:00–18:00) und eine <b>Höchstzahl an Öffnungen</b>.</li>
+    <li><span class="ui">Nur auf dem ersten Telefon, das ihn nutzt</span> (standardmäßig an): Ein weitergeleiteter Link funktioniert auf keinem anderen Telefon, und der Versuch wird gespeichert und gemeldet.</li>
+    <li><b>PIN</b> (4–8 Ziffern), getrennt vom Link weiterzugeben; nach 5 falschen PINs wird der Link gesperrt, bis er entsperrt wird.</li>
+    <li><b>Kennzeichen der Fahrzeuge</b>: Kennzeichen-Kameras öffnen die Türen des Links für diese Fahrzeuge (siehe <a href="#plates">Kennzeichen</a>).</li>
+  </ul>
+  <p>Nach dem Speichern erscheint die zu versendende Nachricht mit den Schaltflächen <span class="ui">Teilen</span>, <span class="ui">WhatsApp</span> und zum Kopieren. <b>Der Link wird nur in diesem Moment angezeigt</b> (gespeichert wird nur sein Hash): Geht er verloren, ersetzt <span class="ui">Neuer Link</span> ihn und der alte funktioniert nicht mehr. In der Liste können Sie einen Link auch widerrufen, vom gebundenen Telefon lösen und seine Öffnungen sehen.</p>
+  <figure class="narrow"><img src="shots/guest-page.png"><figcaption><b>Abbildung 22</b> — Was der Gast auf dem Telefon sieht: eine Schaltfläche "Zum Öffnen gedrückt halten" pro Tür.</figcaption></figure>
+  <p>Die Gastseite zeigt den Namen, die Gültigkeit und pro Tür eine Schaltfläche <span class="ui">Zum Öffnen gedrückt halten</span> (eine kurze Berührung öffnet nicht). Ist der Link nicht nutzbar, erklärt sie warum: noch nicht gültig, außerhalb der Zeiten, abgelaufen, aufgebraucht, widerrufen oder gesperrt. Öffnungen und Ablehnungen stehen im Verlauf und werden als <code>guest.opened</code> / <code>guest.refused</code> veröffentlicht. Details: <code>docs/GUESTS.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 4 -->
+<section class="page part" id="part4">
+  <div class="opener o-blue"><div class="label">Teil 4</div><h1>Konfiguration</h1><p>Controller, Türen und die Regeln, die sie anwenden. Die meisten dieser Seiten sind für Administratoren.</p></div>
+
+  <span class="grp g-cfg">Konfiguration</span>
+  <h2 id="controllers">17 · Controller</h2>
+  <figure><img src="shots/controllers.png"><figcaption><b>Abbildung 23</b> — Die in der Anwendung konfigurierten Controller.</figcaption></figure>
+  <p>Die Liste der Controller mit Name, Seriennummer, Adresse, Firmware, Status und letztem Kontakt. Ein Klick auf eine Zeile öffnet die Seite des Controllers.</p>
+  <h3>Einen Controller finden und hinzufügen</h3>
+  <figure><img src="shots/discovery.png"><figcaption><b>Abbildung 24</b> — Netzwerksuche.</figcaption></figure>
+  <ol class="steps">
+    <li>Klicken Sie auf <span class="ui">Netzwerk durchsuchen</span> und dann auf <span class="ui">Suche starten</span>. Der Server sendet einen Broadcast ins lokale Netz und listet jeden Controller, der innerhalb weniger Sekunden antwortet, mit Seriennummer, IP, MAC und Firmware.</li>
+    <li>Klicken Sie neben einem Controller auf <span class="ui">Hinzufügen</span>. Geben Sie ihm einen Namen, prüfen Sie IP-Adresse und Port (60000), Transport (UDP; TCP nur bei neuerer Firmware) und optional eine Zone.</li>
+    <li>Speichern: Der Controller ist in wenigen Sekunden online. Die Anwendung programmiert ihn so, dass er seine Ereignisse an den Server sendet, stellt seine Uhr und lädt seine gespeicherten Ereignisse herunter.</li>
+  </ol>
+  <p>Ein Controller kann auch manuell mit seiner Seriennummer hinzugefügt werden. Die Suche funktioniert nur, wenn sich der Server im selben Netzsegment wie die Controller befindet; mit Docker muss der Container das "host"-Netzwerk verwenden.</p>
+  <div class="box tip"><b>Controller bereits in Gebrauch?</b><p>Enthält der Controller bereits Karten (zum Beispiel aus der Original-Software) und die Datenbank der Anwendung keine, wird beim Hinzufügen nichts gelöscht. Importieren Sie zuerst die Personen und nutzen Sie dann <a href="#sync">Synchronisierung → Vergleichen</a>, um die Unterschiede vor dem Abgleich zu sehen.</p></div>
+
+  <h3>Seite des Controllers — Diagnose</h3>
+  <figure><img src="shots/controller-diagnostics.png"><figcaption><b>Abbildung 25</b> — Diagnose: alles live vom Controller gelesen.</figcaption></figure>
+  <p>Direkt vom Controller gelesen: Seriennummer, IP, Gateway, MAC, Firmware-Version und -Datum, Uhrzeit des Controllers, Anzahl gespeicherter Karten, letztes Ereignis, Download-Lesezeichen, Ereignis-Listener (wohin der Controller seine Ereignisse sendet), Anti-Passback und Systemfehler. Die Tabelle <b>Türen</b> zeigt Modus, Öffnungsverzögerung, Sensor und Relais jeder Tür, wie im Controller gespeichert.</p>
+  <ul>
+    <li><span class="ui">Erneut vom Controller lesen</span> aktualisiert die Daten.</li>
+    <li><span class="ui">Uhrzeit synchronisieren</span> stellt die Uhr des Controllers auf die Serverzeit. Das geschieht auch automatisch, wenn die Abweichung 30 Sekunden übersteigt.</li>
+    <li><span class="ui">Ereignisse herunterladen</span> lädt sofort die noch nicht gesammelten Ereignisse herunter.</li>
+  </ul>
+
+  <h3>Netzwerk und Konfiguration</h3>
+  <figure><img src="shots/controller-network.png"><figcaption><b>Abbildung 26</b> — Konfiguration in der Anwendung, IP des Controllers und Ziel der Ereignisse.</figcaption></figure>
+  <ul>
+    <li><b>Konfiguration in der Anwendung</b> — wie die Anwendung den Controller erreicht: Seriennummer, Name, IP und Port (leere IP = Broadcast), Transport, Zone und <b>Aktiviert</b> (ein deaktivierter Controller wird weder überwacht noch synchronisiert). <span class="ui">Entfernen</span> löscht den Controller und seinen Ereignisverlauf aus der Datenbank, ohne den Controller zu ändern.</li>
+    <li><b>IP-Adresse des Controllers</b> — ändert IP, Netzmaske und Gateway, die <b>im Controller</b> gespeichert sind. Damit bringen Sie einen neuen Controller von seiner Werksadresse in Ihr Netz. Der Befehl wird per Broadcast gesendet und funktioniert daher auch, wenn die aktuelle Adresse nicht erreichbar ist; danach prüft die Anwendung die neue Adresse.</li>
+    <li><b>Ziel der Ereignisse (Listener)</b> — die Adresse, an die der Controller jedes Ereignis sendet: der Server. Sie wird automatisch gesetzt, wenn der Server mit <code>UHPPOTE_LISTENER_PUBLIC</code> konfiguriert ist; <span class="ui">Automatisch konfigurieren</span> wendet sie sofort an, <span class="ui">Manuell festlegen</span> setzt eine andere Adresse und das Intervall für das automatische Senden des Status.</li>
+  </ul>
+  <div class="box warn"><b>Vorsicht</b><p>Eine falsche IP-Adresse, Netzmaske oder ein falsches Gateway machen den Controller unerreichbar. Er lässt sich dann nur noch von einem Computer im selben Netzsegment mit einer Netzwerksuche neu konfigurieren.</p></div>
+
+  <h3>Erweiterte Einstellungen</h3>
+  <figure><img src="shots/controller-advanced.png"><figcaption><b>Abbildung 27</b> — Zutrittsregeln, Tastaturen und erste Karte.</figcaption></figure>
+  <p>Einstellungen, die für den ganzen Controller gelten. Sie werden in der Datenbank gespeichert und mit <span class="ui">Speichern und an den Controller senden</span> an den Controller übertragen.</p>
+  <ul>
+    <li><b>Verriegelung (Interlock)</b> — die Türen einer Gruppe können nicht gleichzeitig offen sein (Schleusen, z. B. Türen 1 und 2): Eine Tür öffnet nur, wenn die anderen ihrer Gruppe geschlossen sind. Benötigt Türkontakte.</li>
+    <li><b>Anti-Passback</b> — verhindert die Weitergabe einer Karte: Nach dem Eintritt über einen Leser einer Gruppe muss die Karte über einen Leser der anderen Gruppe austreten, bevor sie erneut eintreten kann. Die Gruppierungen stehen in <a href="#modes">Kapitel 34</a>.</li>
+    <li><b>Tür- und Tasterereignisse aufzeichnen</b> — zeichnet auch Tür geöffnet/geschlossen und Ausgangstaster auf (empfohlen).</li>
+    <li><b>PC-Steuerung</b> — der Controller fragt den Server, bevor er Zutritt gewährt. Nicht empfohlen: Die Türen funktionieren nicht mehr, wenn der Server nicht erreichbar ist.</li>
+    <li><b>Automatisches Senden des Status</b> — der Controller sendet zusätzlich zu den Ereignissen alle N Sekunden seinen Status an den Server (0 = nur Ereignisse).</li>
+    <li><b>Tastaturen</b> — haken Sie die Leser mit Tastatur an. <b>Türcodes</b>: bis zu 4 Codes pro Tür (bis zu 6 Ziffern), die die Tür öffnen, wenn sie auf der Tastatur eingegeben werden, ohne Karte.</li>
+    <li><b>Erste Karte</b> — zu den gewählten Stunden und Tagen bleibt die Tür verriegelt, bis die erste berechtigte Person mit der Berechtigung "Erste Karte" bucht; danach wechselt die Tür in den gewählten Modus (z. B. normalerweise offen) bis zum Ende des Zeitraums. Typischer Einsatz: ein Ladeneingang, der erst nach Ankunft des Verantwortlichen für Kunden öffnet.</li>
+    <li><b>Leser- und Türoptionen</b> — die entsprechenden <i>erweiterten Funktionen</i> der Herstellersoftware, nur geschrieben, wenn <span class="ui">Von UHPPOTE Desk verwaltet</span> eingeschaltet ist, und durch Zurücklesen geprüft: <b>vier Buchungen = normalerweise offen</b> (vier Buchungen einer gültigen Karte hintereinander halten die Tür offen, vier weitere verriegeln sie wieder; gespeichert, aber ohne Wirkung auf der getesteten Firmware v9.f8), <b>stummer Leser</b> bei ungültigen Karten (der Controller schaltet die LED des Lesers nicht ein; diese Controller haben keinen Summerausgang, der Piepton des Lesers bei jedem Lesen bleibt also), <b>wiederholte Buchungen nicht speichern</b> (weitere Buchungen derselben Karte innerhalb des Intervalls öffnen die Tür, werden aber nicht erneut gespeichert), <b>Tür als Schalter</b> (eine Buchung schaltet das Schloss um) und <b>Mehrkarten-Zutritt</b> (2–10 verschiedene Karten zum Öffnen nötig). <span class="ui">Aus dem Controller lesen</span> zeigt die im Controller gespeicherten Werte.</li>
+  </ul>
+
+  <h3>Erweiterungskarte</h3>
+  <figure><img src="shots/controller-expansion.png"><figcaption><b>Abbildung 28</b> — Alarm-Erweiterungskarte: vier Ausgänge und der Brandeingang.</figcaption></figure>
+  <p>Die Alarm-Erweiterungskarte UHPPOTE <b>UT0311-01A</b> (auch als ACM-EC05 verkauft) ergänzt den Controller um vier Alarmrelais und einen Brandeingang: Bei Ereignissen an den Türen lassen sich eine Sirene, eine Warnleuchte oder ein Signal an eine Einbruch- oder Brandmeldezentrale schalten. Die Konfiguration steht im Register <span class="ui">Erweiterungskarte</span>; <span class="ui">Speichern und an den Controller senden</span> schreibt sie und liest sie dann zur Kontrolle vom Controller zurück (die Meldung sagt <i>geprüft</i>, wenn der Controller genau das Gesendete gespeichert hat); die vollständige Synchronisierung schreibt sie erneut.</p>
+  <ul>
+    <li><span class="ui">Erweiterungskarte angeschlossen</span> — die Konfiguration wird nur bei eingeschalteter Option in den Controller geschrieben, Controller ohne Karte werden also nie verändert.</li>
+    <li><b>Tür zu lange offen nach</b> — Sekunden, nach denen eine offen gelassene Tür den Alarm <i>Tür zu lange offen</i> auslöst (Standard 25 s).</li>
+    <li><b>Bedrohungscode</b> — ein unter Bedrohung auf der Tastatur eingegebener Code: Die Tür öffnet normal und der <i>Bedrohungs</i>alarm wird ausgelöst. Leer lassen, um den im Controller gespeicherten Code zu behalten.</li>
+    <li>Für jeden <b>Ausgang</b>: die <b>Quelle</b> (eine der vier Türen oder die Einbruchmeldung), der <b>Ausgangsmodus</b>, die <b>auslösenden Ereignisse</b> und die <b>Dauer</b>.</li>
+    <li><b>Alarmoptionen</b> — <b>Tür zu lange offen löst einen Alarm aus</b> (sonst wird eine offen gelassene Tür nur gespeichert; nötig, damit die Ausgänge darauf reagieren), <b>Alarm bei ungültiger Karte erst nach 3 Versuchen</b> und <b>Bedrohungscode erst nach einer registrierten Karte</b>. Es sind die entsprechenden Optionen der <i>erweiterten Funktionen</i> des Herstellers.</li>
+    <li><span class="ui">Aus dem Controller lesen</span> — zeigt die Konfiguration, die der Controller tatsächlich gespeichert hat (nur lesend, es wird nichts geändert), mit einer Anzeige, ob sie der gespeicherten entspricht. <span class="ui">In das Formular übernehmen</span> nimmt sie als Ausgangspunkt, zum Beispiel eine mit der Herstellersoftware erstellte Konfiguration; zum Anwenden speichern.</li>
+  </ul>
+  <table>
+    <thead><tr><th style="width:52mm">Ausgangsmodus</th><th>Das Relais bleibt an…</th></tr></thead>
+    <tr><td>Für die Dauer</td><td>für die eingestellte Zahl an Sekunden</td></tr>
+    <tr><td>Für die Dauer und bis zum Zurücksetzen</td><td>mindestens die eingestellte Zeit und bis die Alarmursache verschwunden ist</td></tr>
+    <tr><td>Bis zum Zurücksetzen des Ereignisses</td><td>bis die Alarmursache verschwunden ist (z. B. die Tür wieder geschlossen ist)</td></tr>
+    <tr><td>Ein beliebiges Signal / Alle Signale</td><td>solange mindestens eines (oder alle) der gewählten Signale aktiv ist: Schlossrelais, Türkontakt, Ausgangstaster, Eingang Zwangsverriegelung, Eingänge A1–A3 und Brandeingang der Karte</td></tr>
+  </table>
+  <p>Auslösende Ereignisse: <b>Bedrohungscode</b>, <b>Tür zu lange offen</b>, <b>gewaltsames Öffnen</b> (Tür ohne gültigen Zutritt geöffnet; benötigt einen Türkontakt), <b>Zwangsverriegelung</b>, <b>ungültige Karte</b> und <b>Feueralarm</b>. Der Feueralarm öffnet außerdem alle Türen des Controllers und wird als Ereignis 39 gespeichert.</p>
+  <p><b>Live-Zustand.</b> Für einen Controller mit <i>Erweiterungskarte angeschlossen</i> zeigt das Register <span class="ui">Diagnose</span> die vier Ausgänge (<i>An</i>/<i>Aus</i>, unter der Türtabelle), und die Kachel in der Übersicht zeigt, welche eingeschaltet sind. Sie werden aus demselben Status gelesen, den die Konsole des Herstellers verwendet, bei jeder Statusprüfung und nach jedem Ereignis bzw. solange etwas eingeschaltet ist alle 2 Sekunden, bis alles aus ist. Der Feueralarm erscheint sofort und verschwindet wenige Sekunden nach dem Lösen des Eingangs.</p>
+  <div class="box warn"><b>Rekonstruiertes Protokoll</b><p>Die Befehle für die Erweiterungskarte gehören nicht zum öffentlichen Protokoll des Controllers: Sie wurden aus der Herstellersoftware rekonstruiert. Geprüft wurden sie an einem UT0311-L04 (Firmware v9.f8) mit angeschlossener UT0311-01A: Gewaltsames Öffnen, Tür zu lange offen, ungültige Karte, Brandeingang und einem Signal folgende Ausgänge schalten die Relais, und der Zustand der Ausgänge wird korrekt gelesen. Noch nicht geprüft: der Bedrohungscode, die Quelle <b>Einbruchmeldung</b> und die Eingänge A1–A3. Eine mit der Herstellersoftware erstellte Konfiguration wird beim nächsten Speichern ersetzt: Lesen Sie sie vorher ein und übernehmen Sie sie in das Formular, wenn Sie sie behalten möchten. Bevor Sie die Karte entfernen, deaktivieren Sie die Ausgänge und speichern Sie.</p></div>
+
+  <h3>Wartung</h3>
+  <figure><img src="shots/controller-maintenance.png"><figcaption><b>Abbildung 29</b> — Verlauf der Synchronisierungen und Werksreset.</figcaption></figure>
+  <p>Der <b>Verlauf der Synchronisierungen</b> listet die Synchronisierungen dieses Controllers mit Bediener, Ergebnis und Zusammenfassung. Der <b>Werksreset</b> löscht Netzwerkeinstellungen, Listener, Karten und Ereignisse des Controllers. Die gespeicherten Karten werden vorher in eine Datei im Sicherungsordner des Servers geschrieben; zur Bestätigung geben Sie die Seriennummer ein. Nach einem Reset muss der Controller neu eingerichtet werden (IP, dann Synchronisierung).</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Konfiguration</span>
+  <h2 id="doors">18 · Türen</h2>
+  <figure><img src="shots/doors.png"><figcaption><b>Abbildung 30</b> — Die Türen aller Controller.</figcaption></figure>
+  <p>Jede Tür jedes Controllers mit Name, Modus, Öffnungszeit, Live-Zustand und Anwesenheitsmarkierung. Von hier aus lässt sie sich aus der Ferne öffnen. Beim Bearbeiten einer Tür ändern Sie:</p>
+  <ul>
+    <li><b>Name</b> — überall in der Anwendung verwendet (Übersicht, Ereignisse, Berechtigungen).</li>
+    <li><b>Modus</b> — <i>Gesteuert</i> (normal: öffnet mit einer berechtigten Karte), <i>Normalerweise offen</i> (immer entriegelt) oder <i>Normalerweise geschlossen</i> (immer verriegelt, auch für gültige Karten).</li>
+    <li><b>Öffnungszeit</b> — Sekunden, die das Schloss nach einer erlaubten Buchung, dem Ausgangstaster oder einer Fernöffnung entriegelt bleibt.</li>
+    <li><b>Aktiv</b> — inaktive Türen (z. B. ungenutzte Ausgänge) sind in Übersicht und Berechtigungen ausgeblendet.</li>
+    <li><b>Leser für die Anwesenheit</b> — Buchungen an diesem Leser werden zu Stempelungen.</li>
+    <li><b>Anwesende</b> — <i>Eintritt</i>, <i>Austritt</i> oder <i>Nicht gezählt</i>: wie die Buchungen an dieser Tür auf der Seite <a href="#events">Anwesende</a> zählen.</li>
+  </ul>
+  <p>Modus und Öffnungszeit werden sofort an den Controller gesendet.</p>
+
+  <span class="grp g-cfg">Konfiguration</span>
+  <h2 id="profiles">19 · Zeitprofile</h2>
+  <figure><img src="shots/time-profiles.png"><figcaption><b>Abbildung 31</b> — Zeitprofile.</figcaption></figure>
+  <p>Ein Zeitprofil sagt, <b>wann</b> eine Berechtigung gilt. Jedes Profil hat:</p>
+  <ul>
+    <li>eine <b>ID</b> von 2 bis 254 (die im Controller gespeicherte Nummer) und einen Namen;</li>
+    <li>einen Gültigkeitszeitraum (<b>Gültig von / bis</b>);</li>
+    <li>die <b>Wochentage</b>;</li>
+    <li>bis zu drei <b>Zeitintervalle</b>, z. B. 08:00–12:30 und 13:30–18:00;</li>
+    <li>optional ein <b>verknüpftes Profil</b>: Fällt eine Buchung nicht in dieses Profil, wird auch das verknüpfte geprüft. Verknüpfen ist der Weg, verschiedene Zeiten an verschiedenen Tagen zu kombinieren.</li>
+  </ul>
+  <figure class="narrow"><img src="shots/time-profile-edit.png"><figcaption><b>Abbildung 32</b> — Bearbeiten eines Profils: "Saturday morning" ist mit "Office hours" verknüpft.</figcaption></figure>
+  <p>Beim Speichern eines Profils werden alle Profile erneut an jeden Controller gesendet. Ein Profil, das von einer Berechtigung verwendet wird, kann nicht gelöscht werden.</p>
+  <div class="box tip"><b>Beispiel</b><p>"Bürozeit" (2) = Mo–Fr 07:30–19:00; "Samstagvormittag" (4) = Sa 08:00–12:30, verknüpft mit 2. Eine Berechtigung mit Profil 4 erlaubt den Zutritt an Werktagen zur Bürozeit <i>und</i> am Samstagvormittag.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Konfiguration</span>
+  <h2 id="tasks">20 · Geplante Aufgaben</h2>
+  <figure><img src="shots/tasks.png"><figcaption><b>Abbildung 33</b> — Von den Controllern ausgeführte geplante Aufgaben.</figcaption></figure>
+  <p>Aktionen, die ein Controller <b>selbst</b> zu einer bestimmten Uhrzeit ausführt, an den gewählten Tagen und in einem Gültigkeitszeitraum — zum Beispiel die Lagertür um 07:00 <i>normalerweise offen</i> und um 18:00 wieder <i>gesteuert</i>. Jede Aufgabe hat Controller, Tür, Aktion, Startzeit, Tage, Gültigkeit und einen Schalter Aktiv. Verfügbare Aktionen:</p>
+  <table>
+    <thead><tr><th>Aktion</th><th>Wirkung ab der Startzeit</th></tr></thead>
+    <tr><td>Tür gesteuert / normalerweise offen / normalerweise geschlossen</td><td>ändert den Modus der Tür</td></tr>
+    <tr><td>Zeitprofile deaktivieren / aktivieren</td><td>Zeitprofile werden ignoriert (Karten jederzeit gültig) oder wieder angewendet</td></tr>
+    <tr><td>Nur Karte (ohne PIN) · Karte + PIN beim Eintritt · Karte + PIN</td><td>wie Leser mit Tastatur die PIN verlangen</td></tr>
+    <tr><td>Mehrkarten aktivieren / deaktivieren</td><td>der Zutritt erfordert mehrere verschiedene berechtigte Karten nacheinander (Anzahl in der Aufgabe festgelegt)</td></tr>
+    <tr><td>Einmalige Öffnung</td><td>öffnet die Tür einmal</td></tr>
+    <tr><td>Ausgangstaster deaktivieren / aktivieren</td><td>ignoriert den Ausgangstaster oder aktiviert ihn wieder</td></tr>
+  </table>
+
+  <span class="grp g-cfg">Konfiguration</span>
+  <h2 id="sync">21 · Synchronisierung</h2>
+  <figure><img src="shots/sync.png"><figcaption><b>Abbildung 34</b> — Vergleich der Datenbank mit einem Controller.</figcaption></figure>
+  <p>Jede Änderung wird in dem Moment an die Controller gesendet, in dem sie gemacht wird. War ein Controller in diesem Moment nicht erreichbar (ausgeschaltet, Netzwerkfehler), wird er hier abgeglichen. Die Seite listet die Controller mit ihrem Zustand und diesen Befehlen:</p>
+  <ul>
+    <li><span class="ui">Vergleichen</span> — liest alle Karten aus dem Controller und zeigt die Unterschiede: hinzuzufügende Karten, zu aktualisierende Karten (Berechtigungen, Gültigkeit, PIN) und zu entfernende Karten (im Controller vorhanden, aber nicht in der Datenbank). Es wird nichts geändert.</li>
+    <li><span class="ui">Karten abgleichen</span> — wendet diese Unterschiede auf die Karten an.</li>
+    <li><span class="ui">Vollständige Synchronisierung</span> (Administratoren) — sendet Türkonfiguration, Zeitprofile, Aufgaben, erweiterte Einstellungen, Erweiterungskarte und alle Karten erneut. Bei vielen Karten kann das einige Minuten dauern; der Fortschritt wird live angezeigt.</li>
+  </ul>
+  <div class="box note"><b>Automatische Wiederherstellung</b><p>Kommt ein Controller <b>ohne jede Karte</b> wieder online, während die Datenbank welche erwartet (Werksreset, ausgetauschter Controller), führt die Anwendung selbst eine vollständige Synchronisierung durch. Jeder andere Unterschied wird nur im Serverprotokoll gemeldet, damit Karten nie ohne die Entscheidung eines Bedieners gelöscht werden.</p></div>
+</section>
+
+<!-- ===================================================================== PART 5 -->
+<section class="page part" id="part5">
+  <div class="opener o-orange"><div class="label">Teil 5</div><h1>Verwaltung</h1><p>Benutzer der Anwendung, Nachvollziehbarkeit, Wartung des Servers und Sicherheit der Konten.</p></div>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="operators">22 · Bediener</h2>
+  <figure><img src="shots/operators.png"><figcaption><b>Abbildung 35</b> — Die Bediener der Anwendung.</figcaption></figure>
+  <p>Die Konten, die sich an der Anwendung anmelden können. Für jeden Bediener: Benutzername, Anzeigename, Rolle (siehe <a href="#roles">Kapitel 4</a>), Zonen und letzte Anmeldung.</p>
+  <ul>
+    <li><span class="ui">Neuer Bediener</span> — Benutzername, Name, Rolle und optional Zonen wählen. Bleibt das Passwort leer, wird ein temporäres erzeugt und einmal angezeigt: Geben Sie es der Person, die es bei der ersten Anmeldung ändern muss.</li>
+    <li><b>Passwort zurücksetzen</b> — erzeugt ein neues temporäres Passwort.</li>
+    <li><b>Aktiv</b> — ein deaktivierter Bediener kann sich nicht anmelden; seine Vorgänge bleiben im Protokoll, wie beim Löschen eines Bedieners.</li>
+    <li><span class="ui">Zwei-Faktor-Authentifizierung Pflicht für</span> — niemand (optional), Administratoren, Bediener und Administratoren oder alle. Wer betroffen ist, muss sie bei der nächsten Anmeldung einrichten, bevor er die Anwendung nutzen kann, und kann sie nicht ausschalten. Die Änderung wird im Protokoll festgehalten.</li>
+    <li>Spalte <b>2FA</b> — wer die Zwei-Faktor-Authentifizierung aktiv hat. Das Symbol <b>durchgestrichenes Schild</b> setzt sie für einen anderen Bediener zurück, der sein Telefon verloren hat: Er meldet sich nur mit dem Passwort an und kann sie neu einrichten; seine Sitzungen und gemerkten Geräte werden beendet.</li>
+  </ul>
+  <p>Sie können Ihre eigene Rolle nicht herabsetzen und sich nicht selbst deaktivieren oder löschen; so bleibt immer mindestens ein Administrator.</p>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="audit">23 · Protokoll</h2>
+  <figure><img src="shots/audit.png"><figcaption><b>Abbildung 36</b> — Jede Änderung und jeder Befehl, mit Bediener und Ergebnis.</figcaption></figure>
+  <p>Das Protokoll jeder Änderung in der Anwendung und jedes an die Controller gesendeten Befehls: Datum und Uhrzeit, Bediener (oder <i>system</i> für automatische Vorgänge), Aktion (z. B. <code>open-door</code>, <code>put-card</code>, <code>sync-cards</code>, <code>login</code>), Ziel, Ergebnis und Details. Filtern Sie nach Aktion, um Fragen wie "Wer hat gestern die Tür zum Hinterbüro geöffnet?" zu beantworten.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="system">24 · System</h2>
+  <figure><img src="shots/system.png"><figcaption><b>Abbildung 37</b> — Informationen zum Server.</figcaption></figure>
+  <ul>
+    <li><b>Server</b> — Version, Hostname, Laufzeit, Netzwerkschnittstellen und Datenmenge (Controller, Personen, Karten, Ereignisse).</li>
+    <li><b>Kommunikation mit den Controllern</b> — die Netzwerkeinstellungen des Servers: lokale Adresse, Broadcast für die Suche, Empfangsport der Ereignisse und der <b>programmierte Listener</b>, also die Adresse, an die die Controller ihre Ereignisse senden. Ist er nicht gesetzt, erscheint eine Warnung: Ereignisse kommen dann nur mit dem regelmäßigen Download, nicht in Echtzeit.</li>
+    <li><b>Home Assistant (MQTT)</b> — der Verbindungsstatus zum Broker, wenn konfiguriert (siehe <a href="#homeassistant">Home Assistant</a>).</li>
+    <li><b>Datenbanksicherung</b> — jede Nacht wird eine Kopie der Datenbank erstellt (standardmäßig um 02:00, die letzten 14 werden behalten) im Ordner <code>backups</code> der Serverdaten. <span class="ui">Jetzt sichern</span> erstellt sofort eine, z. B. vor einem großen Import. Nur Administratoren.</li>
+  </ul>
+
+  <h2 id="password">25 · Passwort ändern</h2>
+  <figure class="narrow"><img src="shots/password.png"><figcaption><b>Abbildung 38</b> — Das eigene Passwort ändern.</figcaption></figure>
+  <p>Über das Schlüsselsymbol in der Kopfzeile. Geben Sie das aktuelle Passwort und zweimal das neue ein (mindestens 8 Zeichen). Ihre anderen offenen Sitzungen werden beendet. Ist das Passwort von <code>admin</code> durch die Servervariable <code>ADMIN_PASSWORD</code> festgelegt, erklärt die Seite, dass es nur dort geändert werden kann.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Ihr Konto</span>
+  <h2 id="twofactor">26 · Zwei-Faktor-Authentifizierung</h2>
+  <figure class="narrow"><img src="shots/two-factor.png"><figcaption><b>Abbildung 39</b> — Aktivieren der Zwei-Faktor-Authentifizierung: den QR-Code mit einer Authenticator-App scannen.</figcaption></figure>
+  <p>Neben dem Passwort verlangt die Anmeldung einen 6-stelligen Code einer Authenticator-App auf Ihrem Telefon (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password…). Jeder Bediener aktiviert sie über das <b>Schildsymbol</b> in der Kopfzeile (grün, wenn aktiv):</p>
+  <ol>
+    <li><span class="ui">Aktivieren</span> und das Passwort bestätigen.</li>
+    <li>Den QR-Code mit der App scannen oder den darunter angezeigten Schlüssel eintippen, dann den Code der App eingeben und <span class="ui">Bestätigen</span>.</li>
+    <li>Die <b>10 Wiederherstellungscodes</b> speichern (kopieren oder herunterladen) und getrennt vom Telefon aufbewahren: Jeder ersetzt einmal den Code der App, und sie werden nicht erneut angezeigt.</li>
+  </ol>
+  <p>Ab dann verlangt die Anmeldung nach dem Passwort den Code; die anderen offenen Sitzungen und gemerkten Geräte (Mobile App) werden abgemeldet und melden sich mit dem Code neu an. Ein Code gilt nur einmal, und falsche Codes zählen als fehlgeschlagene Anmeldeversuche. Auf derselben Seite können Sie <b>neue Wiederherstellungscodes</b> erzeugen oder sie <b>ausschalten</b> (Passwort und Code).</p>
+  <p><b>Telefon verloren.</b> Melden Sie sich mit einem Wiederherstellungscode an, oder ein anderer Administrator setzt sie auf der Seite <a href="#operators">Bediener</a> zurück.</p>
+  <div class="box warn"><b>Notfallzugang für Administratoren</b><p>Hat der einzige Administrator sowohl das Telefon als auch die Wiederherstellungscodes verloren, setzen Sie auf dem Server <code>ADMIN_2FA_BYPASS=true</code> (Home-Assistant-Add-on: Option <i>Emergency access without two-factor authentication</i>) und starten Sie neu. Administratoren melden sich dann nur mit dem Passwort an und können ihre Zwei-Faktor-Authentifizierung ohne Code ausschalten, auch wenn sie Pflicht ist (dann richten sie sie bei der nächsten Anmeldung mit dem neuen Telefon wieder ein). Bediener und Benutzer mit Nur-Lese-Rechten sind nicht betroffen: Sie brauchen weiterhin ihren Code. Solange die Variable gesetzt ist, erscheint auf jeder Seite ein roter Hinweis, und jede solche Anmeldung wird im Protokoll markiert. Entfernen Sie die Variable und starten Sie neu, sobald der Zugang wiederhergestellt ist.</p></div>
+</section>
+
+<!-- ===================================================================== PART: AUTOMATION AND INTEGRATIONS -->
+<section class="page part" id="partauto">
+  <div class="opener o-violet"><div class="label">Teil 6</div><h1>Automatisierung und Integrationen</h1><p>Regeln, Benachrichtigungen, Webhooks, API-Token, die Mobile App und Home Assistant. Nur Administratoren.</p></div>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="rules">27 · Regeln</h2>
+  <figure><img src="shots/rules.png"><figcaption><b>Abbildung 40</b> — Automatisierungsregeln.</figcaption></figure>
+  <p>Eine Regel sagt, <b>wenn</b> etwas passiert und <b>nur falls</b> bestimmte Bedingungen zutreffen, <b>dann</b> etwas zu tun ist. Zum Beispiel: eine verweigerte Karte am Haupteingang nach 20:00 → Alarmbenachrichtigung; die Lagertür länger als 5 Minuten offen → Warnung.</p>
+  <ul>
+    <li><b>Wenn</b> — ein beliebiges Ereignis (Zutritt erlaubt oder verweigert, Türereignis, Alarm, Tür geöffnet oder geschlossen, Controller offline oder wieder online, ungewöhnliche Uhrzeit, wiederholte verweigerte Versuche, Gäste-Link, Kennzeichen) oder <b>Tür länger offen als</b> eine Zahl an Sekunden (benötigt den Türkontakt).</li>
+    <li><b>Nur falls</b> — Türen, Personen oder Karten, ein Zeitfenster (kann über Mitternacht gehen) und Wochentage.</li>
+    <li><b>Dann</b> — eine Benachrichtigung an einige Kanäle senden, einige Webhooks aufrufen, einige Türen öffnen. Jede Auslösung erscheint auch in der Web-App: Alarme bleiben auf dem Bildschirm, bis sie geschlossen werden.</li>
+    <li>Die <b>Schwere</b> (Information, Warnung, Alarm) bestimmt Emoji und Priorität der Benachrichtigungen; die <b>Nachricht</b> kann <code>{person}</code>, <code>{card}</code>, <code>{door}</code>, <code>{time}</code>… enthalten; die <b>Pause</b> verhindert wiederholte Auslösungen.</li>
+  </ul>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="notifications">28 · Benachrichtigungen</h2>
+  <figure><img src="shots/notifications.png"><figcaption><b>Abbildung 41</b> — Benachrichtigungskanäle.</figcaption></figure>
+  <p>Nachrichten über <b>Telegram</b>, per <b>E-Mail</b> oder an <b>ntfy</b> und <b>Gotify</b> (Push-Server, die auf Ihrem eigenen NAS laufen können). Jeder Kanal hat die Ereignisse, die eine Nachricht senden, einen optionalen Türfilter, die Sprache und den optionalen <b>Tagesbericht</b> (wer gekommen ist, verweigerte Zutritte, Alarme und Auffälligkeiten der letzten 24 Stunden). Auf Telegram können Nachrichten zu einer Tür eine Schaltfläche <b>Tür öffnen</b> tragen, nutzbar nur von den im Kanal eingetragenen Telegram-Benutzern und für 15 Minuten. <span class="ui">Test senden</span> prüft den Kanal sofort. Einrichtung jedes Typs: <code>docs/NOTIFICATIONS.md</code>.</p>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="webhooks">29 · Webhooks</h2>
+  <figure><img src="shots/webhooks.png"><figcaption><b>Abbildung 42</b> — Ausgehende Webhooks.</figcaption></figure>
+  <p>Eine HTTP-<code>POST</code>-Anfrage an andere Systeme (n8n, Node-RED, Make, ein Webhook-Auslöser von Home Assistant, ein eigener Dienst), wenn etwas passiert: die URL, die Ereignisse, ein optionaler Türfilter und zusätzliche Header. Jede Anfrage ist mit dem Geheimnis des Webhooks signiert (<code>X-UHPPOTE-Signature</code>). <span class="ui">Test senden</span> sendet eine Testanfrage; <span class="ui">Zustellungen</span> listet die letzten 100 Anfragen mit Statuscode und Inhalt. Inhalte und Signatur: <code>docs/WEBHOOKS.md</code>.</p>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="tokens">30 · API-Token</h2>
+  <figure><img src="shots/api-tokens.png"><figcaption><b>Abbildung 43</b> — API-Token für andere Systeme und Skripte.</figcaption></figure>
+  <p>Ein Token erlaubt einem anderen System, die API von UHPPOTE Desk ohne Anmeldung eines Bedieners zu nutzen: eine Hausautomation, die das Tor öffnet, ein Skript, das Ereignisse liest, ein Personalsystem, das Personen anlegt. Zugriffsstufen: <b>Nur Lesen</b>, <b>Lesen + Türöffnung</b>, <b>Bediener</b>, <b>Administrator</b>; optional auf einige Zonen oder die öffnenbaren Türen beschränkt und mit Ablaufdatum. Das Token (<code>uhd_…</code>) wird nur einmal angezeigt; deaktivieren oder löschen Sie es, um es zu widerrufen. Alles, was mit einem Token geschieht, steht im Protokoll als <code>token:&lt;Name&gt;</code>. Endpunkte: <code>docs/API-TOKENS.md</code>.</p>
+
+  <span class="grp g-adm">Verwaltung</span>
+  <h2 id="mobile">31 · Mobile App</h2>
+  <figure class="half"><img src="shots/mobile.png"><figcaption><b>Abbildung 44</b> — Die Mobile App auf einem Telefon.</figcaption></figure>
+  <p>Die Seite <code>/m</code> ist für Telefone gemacht und lässt sich wie eine App auf dem Startbildschirm installieren. Sie zeigt die Türen mit ihrem Live-Zustand, öffnet sie mit einer Bestätigung, listet die letzten Ereignisse und empfängt <b>Push-Benachrichtigungen</b>. Das Telefonsymbol in der Kopfzeile öffnet sie.</p>
+  <ul>
+    <li><span class="ui">Dieses Gerät merken</span> bei der Anmeldung gibt dem Telefon eine eigene lange Anmeldung: ohne Ablauf mit registriertem Fingerabdruck/Face ID, sonst 30–180 Tage.</li>
+    <li>Die Türöffnung wird durch <b>Gedrückthalten der Schaltfläche</b> bestätigt oder, wenn der Administrator es wählt, mit <b>Fingerabdruck/Face ID</b> des Telefons.</li>
+    <li>Installation, Fingerabdruck/Face ID und Push-Benachrichtigungen erfordern HTTPS (<code>PUBLIC_URL</code> und einen Reverse Proxy).</li>
+  </ul>
+  <figure><img src="shots/mobile-admin.png"><figcaption><b>Abbildung 45</b> — Einstellungen der Mobile App und gemerkte Geräte.</figcaption></figure>
+  <p>Unter <span class="ui">Verwaltung → Mobile App</span> wählen Administratoren die Öffnungsbestätigung und die Anmeldedauer und sehen jedes gemerkte Gerät (Bediener, letzte Nutzung, Fingerabdruck/Face ID, Push), um es zu widerrufen. Details: <code>docs/MOBILE.md</code>.</p>
+
+  <h2 id="homeassistant">32 · Home Assistant</h2>
+  <p>UHPPOTE Desk veröffentlicht seine Controller und Türen über <b>Home-Assistant-MQTT-Discovery</b> an einen MQTT-Broker: Die Geräte erscheinen in Home Assistant von selbst. Unter Home Assistant OS ist das <b>Add-on UHPPOTE Desk</b> der einfachste Weg (Repository <code>https://github.com/alexbn71/UHPPOTE-Desk</code>): Mit dem Add-on Mosquitto broker wird die Verbindung automatisch eingerichtet. Mit Docker setzen Sie <code>MQTT_URL</code>, <code>MQTT_USERNAME</code> und <code>MQTT_PASSWORD</code>; der Status steht auf der Seite <a href="#system">System</a>.</p>
+  <table>
+    <thead><tr><th style="width:46mm">Entität</th><th>Bedeutung</th></tr></thead>
+    <tr><td colspan="2"><b>Controller</b></td></tr>
+    <tr><td>Konnektivität, Problem</td><td>Controller erreichbar; Systemfehler gemeldet</td></tr>
+    <tr><td>Feueralarm</td><td>Feueralarm aktiv: sofort an beim Brandereignis, aus wenige Sekunden nach dem Lösen des Eingangs</td></tr>
+    <tr><td>Zwangsverriegelung</td><td>Zwangsverriegelung aktiv</td></tr>
+    <tr><td>Erweiterungsausgang 1–4</td><td>Ausgänge der UT0311-01A (nur mit <i>Erweiterungskarte angeschlossen</i>)</td></tr>
+    <tr><td colspan="2"><b>Tür</b> (eine pro aktiver Tür)</td></tr>
+    <tr><td>Tür, Schloss</td><td>Türkontakt (an = offen); Relais (an = entriegelt)</td></tr>
+    <tr><td>Öffnen</td><td>Schaltfläche, die die Tür öffnet (abschaltbar mit <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>
+    <tr><td>Zutritt</td><td>Ereignis-Entität: erlaubt, verweigert, Tür, Alarm — mit Person, Karte, Richtung und Grund</td></tr>
+    <tr><td>Letzter Zutritt</td><td>Name der letzten Person, die gebucht hat</td></tr>
+  </table>
+  <p>Die Namen der Entitäten folgen <code>MQTT_LANGUAGE</code> (Add-on-Option <i>MQTT language</i>). Beispielautomationen: <code>docs/HOME-ASSISTANT.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 6 -->
+<section class="page part" id="part6">
+  <div class="opener o-slate"><div class="label">Teil 7</div><h1>Referenz</h1><p>Ereignisgründe, Türmodi und Regeln, Fehlerbehebung und Glossar.</p></div>
+
+  <h2 id="reasons">33 · Ereignisgründe</h2>
+  <p>Jedes Ereignis trägt einen Grundcode, der im Monitor und im Verlauf als Text angezeigt wird.</p>
+  <table>
+    <thead><tr><th style="width:12mm">Code</th><th style="width:58mm">Grund</th><th>Bedeutung</th></tr></thead>
+    <tr><td>1</td><td>Kartenbuchung</td><td>Zutritt mit einer Karte erlaubt</td></tr>
+    <tr><td>6</td><td>Keine Zutrittsrechte</td><td>Karte dem Controller unbekannt oder keine Berechtigung für diese Tür</td></tr>
+    <tr><td>7</td><td>Falsches Passwort</td><td>falsche PIN auf der Tastatur</td></tr>
+    <tr><td>8</td><td>Anti-Passback</td><td>die Karte muss zuerst einen Leser der anderen Gruppe passieren</td></tr>
+    <tr><td>9</td><td>Mehrkarten</td><td>weitere Karten zum Öffnen erforderlich</td></tr>
+    <tr><td>10</td><td>Erste Karte</td><td>Tür wartet auf die erste berechtigte Karte</td></tr>
+    <tr><td>11</td><td>Tür normalerweise geschlossen</td><td>die Tür ist auf normalerweise geschlossen gestellt</td></tr>
+    <tr><td>12</td><td>Verriegelung</td><td>eine andere Tür der Verriegelungsgruppe ist offen</td></tr>
+    <tr><td>13</td><td>Außerhalb des Zeitprofils</td><td>die Berechtigung gilt an diesem Tag / zu dieser Uhrzeit nicht</td></tr>
+    <tr><td>15</td><td>Ungültige Zeitzone</td><td>das Zeitprofil ist im Controller nicht definiert</td></tr>
+    <tr><td>18</td><td>Zutritt verweigert</td><td>vom Controller aus einem anderen als den übrigen Gründen abgelehnt</td></tr>
+    <tr><td>20</td><td>Ausgangstaster</td><td>Tür mit dem Ausgangstaster geöffnet</td></tr>
+    <tr><td>23 / 24</td><td>Tür geöffnet / Tür geschlossen</td><td>Türkontakt (mit "Tür- und Tasterereignisse aufzeichnen")</td></tr>
+    <tr><td>25</td><td>Tür geöffnet (Supervisor-Passwort)</td><td>mit einem Türcode geöffnet</td></tr>
+    <tr><td>28 / 29</td><td>Controller eingeschaltet / zurückgesetzt</td><td>der Controller wurde eingeschaltet oder zurückgesetzt</td></tr>
+    <tr><td>31–34</td><td>Taster ungültig</td><td>Ausgangstaster abgelehnt (Tür verriegelt, offline, Verriegelung, Bedrohung)</td></tr>
+    <tr><td>37</td><td>Tür zu lange offen</td><td>die Tür wurde offen gelassen</td></tr>
+    <tr><td>38</td><td>Gewaltsam geöffnet</td><td>Tür ohne gültigen Zutritt geöffnet</td></tr>
+    <tr><td>39</td><td>Feuer</td><td>Brandmeldeeingang aktiv</td></tr>
+    <tr><td>40</td><td>Zwangsverriegelt</td><td>Eingang Zwangsverriegelung aktiv</td></tr>
+    <tr><td>41–43</td><td>Einbruchschutz · 24-h-Zone · Notfall</td><td>Alarmeingänge</td></tr>
+    <tr><td>44 / 45</td><td>Fernöffnung</td><td>aus der Anwendung geöffnet (oder von einem USB-Leser)</td></tr>
+  </table>
+  <p>Zeilen mit verweigerten Zutritten und Alarmen sind in Übersicht, Monitor und Verlauf rot hervorgehoben.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="modes">34 · Türmodi und Zutrittsregeln</h2>
+  <h3>Türmodi</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Modus</th><th>Verhalten</th></tr></thead>
+    <tr><td>Gesteuert</td><td>Normalbetrieb: Das Schloss öffnet für eine berechtigte Karte, den Ausgangstaster oder eine Fernöffnung</td></tr>
+    <tr><td>Normalerweise offen</td><td>das Schloss ist immer entriegelt (z. B. während der Öffnungszeiten, mit einer geplanten Aufgabe)</td></tr>
+    <tr><td>Normalerweise geschlossen</td><td>das Schloss ist immer verriegelt; Karten werden abgewiesen (Grund 11)</td></tr>
+  </table>
+  <h3>Verriegelung</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Option</th><th>Türen, die nicht gleichzeitig offen sein können</th></tr></thead>
+    <tr><td>Türen 1 und 2</td><td>1 mit 2</td></tr>
+    <tr><td>Türen 3 und 4</td><td>3 mit 4</td></tr>
+    <tr><td>Türen 1-2 und 3-4</td><td>1 mit 2 sowie 3 mit 4 (zwei unabhängige Schleusen)</td></tr>
+    <tr><td>Türen 1, 2 und 3</td><td>je zwei von 1, 2 und 3</td></tr>
+    <tr><td>Türen 1, 2, 3 und 4</td><td>je zwei der vier Türen</td></tr>
+  </table>
+  <h3>Anti-Passback</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Option</th><th>Lesergruppen (Eintritt : Austritt)</th></tr></thead>
+    <tr><td>(1:2);(3:4)</td><td>Leser 1 wechselt mit Leser 2, Leser 3 mit Leser 4</td></tr>
+    <tr><td>(1,3):(2,4)</td><td>Leser 1 und 3 wechseln mit Leser 2 und 4</td></tr>
+    <tr><td>1:(2,3)</td><td>Leser 1 wechselt mit Leser 2 und 3</td></tr>
+    <tr><td>1:(2,3,4)</td><td>Leser 1 wechselt mit Leser 2, 3 und 4</td></tr>
+  </table>
+  <p>Bei einem 4-Türen-Controller mit einem Leser pro Tür ist "Leser N" der Leser von Tür N. Bei 1- und 2-Türen-Controllern mit Eintritts- und Austrittslesern prüfen Sie die Nummerierung in der Dokumentation des Controllers.</p>
+
+  <h2 id="trouble">35 · Fehlerbehebung</h2>
+  <table>
+    <thead><tr><th style="width:52mm">Problem</th><th>Was zu prüfen ist</th></tr></thead>
+    <tr><td>Die Netzwerksuche findet nichts</td><td>Server und Controller im selben Netzsegment; Kabel und Stromversorgung; Firewall lässt UDP-Port 60000 durch; mit Docker "host"-Netzwerk. Versuchen Sie, den Controller manuell mit seiner IP-Adresse hinzuzufügen.</td></tr>
+    <tr><td>Controller als Offline angezeigt</td><td>IP-Adresse und Port in <i>Netzwerk und Konfiguration</i>; Controller anpingen; ein anderes Programm, das den Controller gleichzeitig nutzt.</td></tr>
+    <tr><td>Buchungen erscheinen nicht im Monitor, aber später im Verlauf</td><td>Echtzeit-Ereignisse erreichen den Server nicht: <code>UHPPOTE_LISTENER_PUBLIC</code> auf dem Server setzen (siehe Warnung auf der Seite <a href="#system">System</a>), eingehenden UDP-Port 60001 erlauben, dann den Listener auf der Controllerseite <i>Automatisch konfigurieren</i>.</td></tr>
+    <tr><td>Eine Karte wird trotz Berechtigung abgewiesen</td><td>Den Grund im Verlauf ansehen: 13 bedeutet außerhalb des Zeitprofils; 6 bedeutet, die Karte ist nicht im Controller oder hat keine Berechtigung für diese Tür — <i>Vergleichen</i> auf der Seite Synchronisierung ausführen. Prüfen, dass Person und Karte aktiv sind und heute im Gültigkeitszeitraum der Person liegt.</td></tr>
+    <tr><td>"Gespeichert, aber nicht an alle Controller gesendet"</td><td>Ein Controller war offline. Sobald er zurück ist, <i>Karten abgleichen</i> oder <i>Vollständige Synchronisierung</i> verwenden.</td></tr>
+    <tr><td>"Kartennummer für Wiegand-26 ungültig"</td><td>Die Nummer muss Anlage ≤ 255 und Code ≤ 65535 haben. Karte vorhalten und die unter den unbekannten Karten angezeigte Nummer verwenden.</td></tr>
+    <tr><td>Falsche Uhrzeit in Ereignissen oder Berichten</td><td>Zeitzone des Servers (Variable <code>TZ</code>); die Uhr des Controllers wird automatisch korrigiert, oder <i>Uhrzeit synchronisieren</i> verwenden.</td></tr>
+    <tr><td>Ein Ausgang der Erweiterungskarte schaltet nicht</td><td>Mit <i>Aus dem Controller lesen</i> sehen, was der Controller gespeichert hat; prüfen, dass <i>Erweiterungskarte angeschlossen</i> an ist, und erneut speichern; dass der Ausgang aktiv ist, mit der richtigen Tür und den richtigen Ereignissen; dass der Alarm wirklich auftritt (das Ereignis erscheint im Monitor: 37 zu lange offen, 38 gewaltsam geöffnet, 39 Feuer). Gewaltsames Öffnen braucht einen Türkontakt; Bedrohung eine PIN-Tastatur.</td></tr>
+    <tr><td>Administratorpasswort vergessen</td><td><code>ADMIN_PASSWORD</code> auf dem Server setzen und neu starten; dann als <code>admin</code> anmelden.</td></tr>
+    <tr><td>Telefon mit der Authenticator-App verloren</td><td>Mit einem Wiederherstellungscode anmelden; oder ein anderer Administrator setzt sie zurück (<i>Bediener</i>, durchgestrichenes Schild). Einziger Administrator: <code>ADMIN_2FA_BYPASS=true</code>, neu starten, auf der Seite <i>Zwei-Faktor-Authentifizierung</i> ausschalten, Variable entfernen und neu starten (siehe <a href="#twofactor">Zwei-Faktor-Authentifizierung</a>).</td></tr>
+    <tr><td>"Bestätigungscode ungültig" mit der richtigen App</td><td>Die Uhren von Server und Telefon müssen stimmen (NTP): Die Codes wechseln alle 30 Sekunden.</td></tr>
+    <tr><td>Die Ausgänge der Erweiterungskarte erscheinen nicht in Home Assistant</td><td><i>Erweiterungskarte angeschlossen</i> muss im Register <i>Erweiterungskarte</i> an sein; speichern, dann werden die Entitäten <i>Erweiterungsausgang 1–4</i> angelegt.</td></tr>
+  </table>
+
+  <h2 id="glossary">36 · Glossar</h2>
+  <table>
+    <thead><tr><th style="width:42mm">Begriff</th><th>Bedeutung</th></tr></thead>
+    <tr><td>Anlagencode</td><td>der erste Teil (0–255) einer Wiegand-26-Kartennummer</td></tr>
+    <tr><td>Anti-Passback</td><td>verhindert, dass eine Karte zweimal eintritt, ohne auszutreten</td></tr>
+    <tr><td>Broadcast</td><td>eine Netzwerknachricht an alle Geräte des lokalen Netzes; dient zum Finden der Controller</td></tr>
+    <tr><td>Controller</td><td>die Zutrittskontrollplatine (UHPPOTE UT0311-L01/L02/L04)</td></tr>
+    <tr><td>Erste Karte</td><td>Funktion, die eine Tür verriegelt hält, bis eine berechtigte Person ankommt</td></tr>
+    <tr><td>Erweiterungskarte</td><td>die Zusatzkarte UT0311-01A mit vier Alarmrelais und einem Brandeingang</td></tr>
+    <tr><td>Ereignisindex</td><td>fortlaufende Nummer eines Ereignisses im Speicher des Controllers</td></tr>
+    <tr><td>Gäste-Link</td><td>ein Link, der einige Türen für eine gewisse Zeit öffnet, ohne Karte oder App</td></tr>
+    <tr><td>Listener</td><td>die Serveradresse, an die ein Controller seine Ereignisse sendet</td></tr>
+    <tr><td>Relais</td><td>der Ausgang des Controllers, der das elektrische Schloss freigibt</td></tr>
+    <tr><td>Stempelung</td><td>eine für die Anwesenheit verwendete Buchung (Kommen / Gehen)</td></tr>
+    <tr><td>Synchronisierung</td><td>das Abgleichen eines Controllers mit der Datenbank der Anwendung</td></tr>
+    <tr><td>Verriegelung</td><td>Türen, die nicht gleichzeitig offen sein können (Schleuse)</td></tr>
+    <tr><td>Wiederherstellungscode</td><td>ein Einmalcode, der den Code der App ersetzt, wenn das Telefon verloren ist</td></tr>
+    <tr><td>Wiegand-26</td><td>das von den Controllern akzeptierte Kartenformat: Anlage × 100000 + Code</td></tr>
+    <tr><td>Zeitprofil</td><td>Tage und Stunden, in denen eine Berechtigung gilt (ID 2–254)</td></tr>
+    <tr><td>Zone</td><td>Gruppe von Controllern, dient zur Beschränkung von Bedienern</td></tr>
+    <tr><td>Zwei-Faktor-Authentifizierung (2FA)</td><td>ein Code einer Authenticator-App, der bei der Anmeldung zusätzlich zum Passwort verlangt wird</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

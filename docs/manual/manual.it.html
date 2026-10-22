@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>UHPPOTE Desk — Manuale utente</title>
+<style>
+  :root {
+    --blue: #1557a8;
+    --blue2: #2b8ae6;
+    --blue-soft: #e8f1fc;
+    --green: #2f9e6e;
+    --green-soft: #e6f6ee;
+    --orange: #d9480f;
+    --orange-soft: #fff1e6;
+    --violet: #6741d9;
+    --violet-soft: #f0ebff;
+    --ink: #1d2733;
+    --muted: #5d6b7d;
+    --line: #dbe3ee;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.2pt/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color: var(--ink); }
+  .page { padding: 0 18mm; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--blue); }
+  h1 { font-size: 22pt; margin: 0 0 4mm; padding-bottom: 3mm; border-bottom: 3px solid var(--blue2); }
+  h2 { font-size: 15pt; margin: 8mm 0 3mm; padding-left: 3mm; border-left: 5px solid var(--blue2); break-after: avoid; }
+  h3 { font-size: 12pt; margin: 5mm 0 2mm; color: #23466f; break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #23466f; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  b, strong { color: #14212f; }
+  code, .k { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: #eef3f9; padding: 0.2mm 1.2mm; border-radius: 1mm; }
+  .ui { font-weight: 600; color: var(--blue); }
+  .part { break-before: page; }
+  .chapter { break-before: auto; }
+  .avoid { break-inside: avoid; }
+
+  /* cover */
+  .cover { height: 263mm; display: flex; flex-direction: column; justify-content: space-between; padding: 0 18mm; break-after: page; }
+  .cover .band { margin-top: 10mm; border-radius: 6mm; padding: 16mm 14mm 14mm; color: #fff; background: linear-gradient(135deg, #1557a8 0%, #2b8ae6 60%, #34c38f 130%); position: relative; overflow: hidden; }
+  .cover .band::after { content: ""; position: absolute; right: -30mm; bottom: -40mm; width: 110mm; height: 110mm; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .cover img { width: 30mm; height: 30mm; background: #fff; border-radius: 7mm; padding: 2mm; }
+  .cover h1 { color: #fff; border: 0; font-size: 34pt; margin: 8mm 0 0; padding: 0; }
+  .cover .subtitle { font-size: 16pt; opacity: 0.95; margin-top: 1mm; }
+  .cover .tagline { margin-top: 10mm; font-size: 11pt; max-width: 130mm; opacity: 0.95; }
+  .cover .meta { color: var(--muted); font-size: 9.5pt; border-top: 1px solid var(--line); padding-top: 4mm; display: flex; justify-content: space-between; }
+  .cover .chips { display: flex; gap: 3mm; flex-wrap: wrap; margin: 8mm 0 0; }
+  .cover .chip { background: var(--blue-soft); color: var(--blue); border-radius: 10mm; padding: 1.5mm 4mm; font-size: 9pt; font-weight: 600; }
+
+  /* table of contents */
+  .toc ol { list-style: none; padding: 0; }
+  .toc > ol > li { margin: 3mm 0 1mm; font-weight: 700; color: var(--blue); }
+  .toc ol ol { padding-left: 6mm; font-weight: 400; columns: 2; column-gap: 8mm; }
+  .toc ol ol li { margin: 0.6mm 0; break-inside: avoid; }
+  .toc a { color: inherit; text-decoration: none; }
+  .toc .num { display: inline-block; min-width: 9mm; color: var(--muted); }
+
+  /* part opener */
+  .opener { border-radius: 5mm; padding: 10mm 12mm; margin: 4mm 0 6mm; color: #fff; }
+  .opener .label { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9pt; opacity: 0.9; }
+  .opener h1 { color: #fff; border: 0; margin: 1mm 0 2mm; padding: 0; font-size: 24pt; }
+  .opener p { margin: 0; opacity: 0.95; }
+  .o-blue { background: linear-gradient(135deg, #1557a8, #2b8ae6); }
+  .o-green { background: linear-gradient(135deg, #1f7a52, #34c38f); }
+  .o-violet { background: linear-gradient(135deg, #5235b8, #8c6ff0); }
+  .o-orange { background: linear-gradient(135deg, #b8390a, #f08c3a); }
+  .o-slate { background: linear-gradient(135deg, #2f3e52, #5d7290); }
+
+  /* section badges per menu group */
+  .grp { display: block; width: fit-content; break-after: avoid; margin-top: 7mm; font-size: 8pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 1.5mm; padding: 0.6mm 2.2mm; margin-bottom: 1mm; }
+  .grp + h2 { margin-top: 1.5mm; }
+  td .grp { margin-top: 0; }
+  .g-ops { background: var(--green-soft); color: var(--green); }
+  .g-reg { background: var(--violet-soft); color: var(--violet); }
+  .g-cfg { background: var(--blue-soft); color: var(--blue); }
+  .g-adm { background: var(--orange-soft); color: var(--orange); }
+
+  /* figures */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(20, 50, 90, 0.10); margin: 0 auto; }
+  figure.narrow img { max-width: 70%; }
+  figure.half img { max-width: 52%; }
+  figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
+  figcaption b { color: var(--blue); }
+
+  /* callouts */
+  .box { border-radius: 2.5mm; padding: 2.5mm 4mm 2.5mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; border-left: 4px solid; }
+  .box > b:first-child { display: block; margin-bottom: 0.5mm; }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .tip { background: var(--green-soft); border-color: var(--green); }
+  .tip > b:first-child { color: var(--green); }
+  .note { background: var(--blue-soft); border-color: var(--blue2); }
+  .note > b:first-child { color: var(--blue); }
+  .warn { background: var(--orange-soft); border-color: var(--orange); }
+  .warn > b:first-child { color: var(--orange); }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; break-inside: auto; }
+  th { background: var(--blue); color: #fff; text-align: left; font-weight: 600; padding: 1.6mm 2.4mm; }
+  td { padding: 1.4mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f9fd; }
+  tr { break-inside: avoid; }
+  td.c, th.c { text-align: center; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: #b0b9c6; }
+
+  /* steps */
+  ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.2mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0.2mm; width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--blue2); color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+
+  /* concept cards */
+  .cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 3mm 0 4mm; }
+  .concept { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; background: #fbfdff; }
+  .concept h4 { margin-top: 0; display: flex; align-items: center; gap: 2mm; }
+  .concept h4 .dot { width: 3mm; height: 3mm; border-radius: 50%; display: inline-block; }
+  .concept p { margin-bottom: 0; font-size: 9.5pt; }
+  .diagram { margin: 3mm 0 5mm; break-inside: avoid; }
+  .diagram svg { width: 100%; height: auto; }
+  .kbd { border: 1px solid #c3cddb; border-bottom-width: 2px; border-radius: 1mm; padding: 0 1.4mm; font-size: 8.5pt; background: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ===================================================================== COVER -->
+<section class="cover">
+  <div class="band">
+    <img src="../../apps/web/public/icon.svg" alt="">
+    <h1>UHPPOTE Desk</h1>
+    <div class="subtitle">Manuale utente</div>
+    <div class="tagline">Applicazione web per gestire i controller di accesso UHPPOTE UT0311-L0x: porte, tessere, permessi, fasce orarie, monitoraggio in tempo reale, storico eventi e presenze.</div>
+  </div>
+  <div>
+    <div class="chips">
+      <span class="chip">Controllo accessi</span><span class="chip">Monitor in tempo reale</span><span class="chip">Fasce orarie</span><span class="chip">Presenze</span><span class="chip">Multi-operatore</span><span class="chip">EN · IT · ES · FR · DE</span>
+    </div>
+  </div>
+  <div class="meta"><span>Versione <span data-version>0.1.0</span> · <span data-date></span></span><span>github.com/alexbn71/UHPPOTE-Desk</span></div>
+</section>
+
+<!-- ===================================================================== CONTENTS -->
+<section class="page toc">
+  <h1>Indice</h1>
+  <ol>
+    <li><a href="#part1">Parte 1 — Capire UHPPOTE Desk</a>
+      <ol>
+        <li><a href="#what"><span class="num">1</span>Che cos'è UHPPOTE Desk</a></li>
+        <li><a href="#how"><span class="num">2</span>Come funziona il sistema</a></li>
+        <li><a href="#concepts"><span class="num">3</span>Concetti di base</a></li>
+        <li><a href="#roles"><span class="num">4</span>Operatori e ruoli</a></li>
+        <li><a href="#interface"><span class="num">5</span>L'interfaccia</a></li>
+        <li><a href="#start"><span class="num">6</span>Primi passi</a></li>
+      </ol>
+    </li>
+    <li><a href="#part2">Parte 2 — Operatività</a>
+      <ol>
+        <li><a href="#dashboard"><span class="num">7</span>Panoramica</a></li>
+        <li><a href="#monitor"><span class="num">8</span>Monitor</a></li>
+        <li><a href="#events"><span class="num">9</span>Storico eventi</a></li>
+        <li><a href="#attendance"><span class="num">10</span>Presenze</a></li>
+        <li><a href="#plates"><span class="num">11</span>Targhe</a></li>
+      </ol>
+    </li>
+    <li><a href="#part3">Parte 3 — Anagrafica</a>
+      <ol>
+        <li><a href="#people"><span class="num">12</span>Persone</a></li>
+        <li><a href="#cards"><span class="num">13</span>Tessere</a></li>
+        <li><a href="#permissions"><span class="num">14</span>Permessi</a></li>
+        <li><a href="#structure"><span class="num">15</span>Reparti e zone</a></li>
+        <li><a href="#guests"><span class="num">16</span>Ospiti</a></li>
+      </ol>
+    </li>
+    <li><a href="#part4">Parte 4 — Configurazione</a>
+      <ol>
+        <li><a href="#controllers"><span class="num">17</span>Controller</a></li>
+        <li><a href="#doors"><span class="num">18</span>Porte</a></li>
+        <li><a href="#profiles"><span class="num">19</span>Fasce orarie</a></li>
+        <li><a href="#tasks"><span class="num">20</span>Attività pianificate</a></li>
+        <li><a href="#sync"><span class="num">21</span>Sincronizzazione</a></li>
+      </ol>
+    </li>
+    <li><a href="#part5">Parte 5 — Amministrazione</a>
+      <ol>
+        <li><a href="#operators"><span class="num">22</span>Operatori</a></li>
+        <li><a href="#audit"><span class="num">23</span>Registro operazioni</a></li>
+        <li><a href="#system"><span class="num">24</span>Sistema</a></li>
+        <li><a href="#password"><span class="num">25</span>Cambia password</a></li>
+        <li><a href="#twofactor"><span class="num">26</span>Autenticazione a due fattori</a></li>
+      </ol>
+    </li>
+    <li><a href="#partauto">Parte 6 — Automazioni e integrazioni</a>
+      <ol>
+        <li><a href="#rules"><span class="num">27</span>Regole</a></li>
+        <li><a href="#notifications"><span class="num">28</span>Notifiche</a></li>
+        <li><a href="#webhooks"><span class="num">29</span>Webhook</a></li>
+        <li><a href="#tokens"><span class="num">30</span>Token API</a></li>
+        <li><a href="#mobile"><span class="num">31</span>App mobile</a></li>
+        <li><a href="#homeassistant"><span class="num">32</span>Home Assistant</a></li>
+      </ol>
+    </li>
+    <li><a href="#part6">Parte 7 — Riferimento</a>
+      <ol>
+        <li><a href="#reasons"><span class="num">33</span>Motivi degli eventi</a></li>
+        <li><a href="#modes"><span class="num">34</span>Modalità delle porte e regole di accesso</a></li>
+        <li><a href="#trouble"><span class="num">35</span>Risoluzione dei problemi</a></li>
+        <li><a href="#glossary"><span class="num">36</span>Glossario</a></li>
+      </ol>
+    </li>
+  </ol>
+  <div class="box note"><b>Questo manuale</b>
+    <p>Gli screenshot provengono da un'installazione dimostrativa con un controller simulato a 4 porte e persone inventate: nomi, numeri e date saranno diversi dai tuoi. L'installazione (Docker, rete, variabili d'ambiente) è descritta in una guida a parte, <code>docs/DOCKER.md</code> nel repository del progetto.</p>
+  </div>
+  <div class="box note"><b>Ringraziamenti</b><p>UHPPOTE Desk si basa sulla conoscenza del protocollo pubblicata dal progetto open source <b>uhppoted</b> (codeberg.org/uhppoted). UHPPOTE Desk è un progetto indipendente, non affiliato a uhppoted né al produttore dei controller.</p></div>
+</section>
+
+<!-- ===================================================================== PART 1 -->
+<section class="page part" id="part1">
+  <div class="opener o-blue"><div class="label">Parte 1</div><h1>Capire UHPPOTE Desk</h1><p>Cosa fa l'applicazione, come comunica con i controller di accesso e i pochi concetti da conoscere prima di usarla.</p></div>
+
+  <h2 id="what">1 · Che cos'è UHPPOTE Desk</h2>
+  <p>UHPPOTE Desk è un'<b>applicazione web</b> per gestire i controller di accesso UHPPOTE <b>UT0311-L0x</b> (1, 2 o 4 porte; questo manuale usa il modello a 4 porte UT0311-L04). Sostituisce il programma Windows fornito con i controller ("Access Control", N3000) con un'applicazione moderna che:</p>
+  <ul>
+    <li>gira su un server o un NAS (di norma come container Docker) e si usa da qualsiasi <b>browser</b> — PC, tablet o telefono — senza installare nulla;</li>
+    <li>è usata da <b>più operatori contemporaneamente</b>, ognuno con un ruolo (amministratore, operatore, sola lettura) e, se serve, limitato ad alcune aree dell'edificio;</li>
+    <li>tiene persone, tessere e permessi nel proprio <b>database</b> e invia automaticamente ogni modifica ai controller;</li>
+    <li>riceve passaggi e allarmi <b>in tempo reale</b>, conserva lo <b>storico eventi</b> completo e calcola le <b>presenze</b> (ore lavorate, ritardi, assenze);</li>
+    <li>è disponibile in <b>inglese, italiano, spagnolo, francese e tedesco</b>; ogni utente sceglie la sua lingua.</li>
+  </ul>
+
+  <h2 id="how">2 · Come funziona il sistema</h2>
+  <p>Un impianto di controllo accessi è fatto di tre parti: i <b>controller</b> montati vicino alle porte, il <b>server</b> su cui gira UHPPOTE Desk e i <b>browser</b> degli operatori.</p>
+  <div class="diagram">
+    <svg viewBox="0 0 760 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+      <defs>
+        <linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1557a8"/><stop offset="1" stop-color="#2b8ae6"/></linearGradient>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5d6b7d"/></marker>
+        <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f9e6e"/></marker>
+      </defs>
+      <g>
+        <rect x="10" y="40" width="150" height="190" rx="14" fill="#f0ebff" stroke="#c9bdf5"/>
+        <text x="85" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="#6741d9">Operatori</text>
+        <rect x="32" y="82" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="107" text-anchor="middle" font-size="12" fill="#1d2733">Browser (PC)</text>
+        <rect x="32" y="132" width="106" height="40" rx="6" fill="#fff" stroke="#c9bdf5"/><text x="85" y="157" text-anchor="middle" font-size="12" fill="#1d2733">Tablet / telefono</text>
+        <text x="85" y="200" text-anchor="middle" font-size="10.5" fill="#5d6b7d">utenti illimitati</text>
+        <text x="85" y="214" text-anchor="middle" font-size="10.5" fill="#5d6b7d">con ruoli</text>
+      </g>
+      <g>
+        <rect x="255" y="30" width="230" height="210" rx="14" fill="url(#gs)"/>
+        <text x="370" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Server UHPPOTE Desk</text>
+        <text x="370" y="76" text-anchor="middle" font-size="10.5" fill="#dbe9fb">Docker su server / NAS</text>
+        <rect x="275" y="90" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#1557a8">Database (riferimento)</text>
+        <rect x="275" y="132" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="154" text-anchor="middle" font-size="11.5" fill="#1557a8">Sincronizzazione · Raccolta eventi</text>
+        <rect x="275" y="174" width="190" height="34" rx="6" fill="#ffffff" opacity="0.95"/><text x="370" y="196" text-anchor="middle" font-size="11.5" fill="#1557a8">Presenze · Registro · Backup</text>
+      </g>
+      <g>
+        <rect x="580" y="30" width="170" height="100" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Controller 1</text>
+        <text x="665" y="76" text-anchor="middle" font-size="10.5" fill="#1d2733">UT0311-L04 · 4 porte</text>
+        <text x="665" y="94" text-anchor="middle" font-size="10.5" fill="#5d6b7d">lettori · serrature · sensori</text>
+        <text x="665" y="110" text-anchor="middle" font-size="10.5" fill="#5d6b7d">pulsanti di uscita</text>
+        <rect x="580" y="145" width="170" height="85" rx="12" fill="#e6f6ee" stroke="#9fd8bd"/>
+        <text x="665" y="172" text-anchor="middle" font-size="13" font-weight="700" fill="#2f9e6e">Controller 2 …</text>
+        <text x="665" y="192" text-anchor="middle" font-size="10.5" fill="#1d2733">decide da solo,</text>
+        <text x="665" y="208" text-anchor="middle" font-size="10.5" fill="#1d2733">anche se scollegato</text>
+      </g>
+      <line x1="162" y1="120" x2="250" y2="120" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="250" y1="150" x2="164" y2="150" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="206" y="112" text-anchor="middle" font-size="10" fill="#5d6b7d">HTTP</text>
+      <text x="206" y="168" text-anchor="middle" font-size="10" fill="#5d6b7d">aggiornamenti live</text>
+      <line x1="488" y1="90" x2="575" y2="80" stroke="#5d6b7d" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="531" y="74" text-anchor="middle" font-size="10" fill="#5d6b7d">comandi</text>
+      <line x1="575" y1="190" x2="490" y2="180" stroke="#2f9e6e" stroke-width="2" marker-end="url(#ag)"/>
+      <text x="531" y="203" text-anchor="middle" font-size="10" fill="#2f9e6e">eventi</text>
+      <text x="531" y="140" text-anchor="middle" font-size="9.5" fill="#5d6b7d">LAN · UDP 60000 / 60001</text>
+    </svg>
+  </div>
+  <ul>
+    <li><b>Decidono i controller.</b> Quando si passa una tessera è il controller stesso a verificare se quella tessera può aprire quella porta in quel momento, e ad aprire la serratura. Non chiede nulla al server, quindi le porte funzionano anche se il server o la rete sono fermi.</li>
+    <li><b>Il server è il riferimento.</b> Persone, tessere, permessi, fasce orarie e impostazioni stanno nel database di UHPPOTE Desk. Ogni modifica fatta nell'applicazione viene inviata subito ai controller raggiungibili. Un controller che era scollegato viene riallineato con la <span class="ui">Sincronizzazione</span>.</li>
+    <li><b>Gli eventi tornano indietro.</b> Ogni passaggio, apertura o allarme viene registrato nella memoria del controller e inviato al server, che lo salva nello storico e lo mostra in tempo reale. Se la rete era interrotta, gli eventi mancanti vengono scaricati dal controller appena torna raggiungibile: nessuno va perso.</li>
+  </ul>
+  <div class="box note"><b>Perché è importante</b>
+    <p>Non modificare i controller con altri programmi (il software Windows originale o la pagina web del controller) mentre li gestisce UHPPOTE Desk: alla sincronizzazione successiva l'applicazione annullerebbe quelle modifiche, perché il riferimento è il suo database.</p>
+  </div>
+
+  <h2 id="concepts" class="chapter">3 · Concetti di base</h2>
+  <div class="cards2">
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controller</h4><p>La scheda elettronica che gestisce 1, 2 o 4 porte. È identificato dal <b>numero di serie</b> (9 cifre sull'etichetta S/N) e raggiunto in rete tramite il suo indirizzo IP. Memorizza decine di migliaia di tessere ed eventi.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Porta</h4><p>Ogni uscita del controller: un <b>lettore</b> di tessere, una <b>serratura</b> elettrica (relè), eventualmente un <b>sensore porta</b> (aperta/chiusa) e un <b>pulsante di uscita</b>. Nell'applicazione una porta ha un nome, una modalità di funzionamento e un tempo di apertura.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Persona</h4><p>Chi passa dalle porte: matricola, nome, reparto, periodo di validità, PIN per la tastiera (facoltativo), foto e turno per le presenze.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Tessera</h4><p>Una tessera di prossimità o un portachiavi. Il suo <b>numero</b> ha 8 cifre in formato Wiegand-26: codice impianto × 100000 + codice tessera, per esempio <code>10058400</code> = impianto 100, codice 58400. Una tessera può essere assegnata a una persona o registrata come libera.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Permesso</h4><p>Il diritto di una persona di aprire una porta: <b>sempre</b>, oppure solo all'interno di una <b>fascia oraria</b>. I permessi appartengono alla persona e valgono per tutte le sue tessere.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Fascia oraria</h4><p>Una finestra temporale (giorni della settimana, fino a 3 intervalli orari, date di validità) numerata da 2 a 254. Può essere collegata a un'altra fascia per estenderla, ad esempio giorni feriali + sabato mattina.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Evento</h4><p>Tutto ciò che il controller registra: passaggi di tessere (consentiti o negati, con il motivo), porta aperta/chiusa, pulsante di uscita, allarmi, accensione, apertura remota.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Sincronizzazione</h4><p>L'allineamento di un controller con il database. Avviene automaticamente a ogni modifica; la pagina <span class="ui">Sincronizzazione</span> verifica e corregge le differenze (ad esempio dopo un lungo periodo scollegato).</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Zona e reparto</h4><p>Le <b>zone</b> raggruppano i controller (edifici, piani) e possono limitare ciò che un operatore può comandare. I <b>reparti</b> organizzano le persone e filtrano i resoconti delle presenze.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#5d7290"></span>Presenze</h4><p>I passaggi sui lettori indicati per le presenze diventano timbrature di entrata/uscita. Con turni, festività e assenze l'applicazione calcola ore lavorate, straordinari e ritardi.</p></div>
+  </div>
+  <h3>Come viene deciso un accesso</h3>
+  <p>Quando si passa una tessera su una porta, il controller concede l'accesso solo se <b>tutte</b> queste condizioni sono vere; altrimenti lo nega e registra il motivo (vedi <a href="#reasons">Motivi degli eventi</a>):</p>
+  <ol class="steps">
+    <li>la tessera è memorizzata nel controller (le tessere di una persona non attiva, smarrite o disattivate vengono tolte dai controller);</li>
+    <li>oggi rientra nel periodo di validità del titolare;</li>
+    <li>la persona ha un permesso su quella porta — sempre, o con una fascia oraria che comprende il giorno e l'ora correnti;</li>
+    <li>le regole della porta lo consentono: modalità della porta, interblocco, anti-passback, prima tessera e PIN quando il lettore ha la tastiera.</li>
+  </ol>
+</section>
+
+<section class="page chapter">
+  <h2 id="roles">4 · Operatori e ruoli</h2>
+  <p>Chi usa l'applicazione accede con il proprio account di <b>operatore</b>. Ogni operatore ha uno di tre ruoli. Gli amministratori possono anche limitare un operatore ad alcune <b>zone</b>: apertura remota delle porte e sincronizzazione sono allora consentite solo sui controller di quelle zone.</p>
+  <table>
+    <thead><tr><th>Cosa può fare l'operatore</th><th class="c">Sola lettura</th><th class="c">Operatore</th><th class="c">Amministratore</th></tr></thead>
+    <tr><td>Vedere panoramica, monitor, storico eventi, resoconti presenze, persone, tessere, permessi, controller, porte, fasce orarie, attività, informazioni di sistema</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Esportare eventi e presenze in CSV</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Creare e modificare persone, tessere, foto, permessi; importare persone da CSV; reparti</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Aprire le porte da remoto</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Link per ospiti; targhe delle persone</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Presenze: turni, festività, assenze, timbrature manuali</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Confrontare e allineare le tessere, sincronizzare l'orologio, scaricare gli eventi</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Controller (aggiunta, rete, impostazioni avanzate, reset), porte, fasce orarie, attività pianificate, zone, sincronizzazione completa</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Operatori, registro operazioni, backup</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Regole, notifiche, webhook, token API, impostazioni dell'app mobile, telecamere per le targhe</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Autenticazione a due fattori sul proprio account</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+  </table>
+  <p>Le pagine e i pulsanti che un ruolo non può usare sono nascosti o disattivati. Ogni modifica e ogni comando inviato a un controller viene registrato nel <a href="#audit">Registro operazioni</a> con il nome dell'operatore.</p>
+
+  <h2 id="interface">5 · L'interfaccia</h2>
+  <figure><img src="shots/dashboard.png"><figcaption><b>Figura 1</b> — La finestra principale: intestazione in alto, menu a sinistra, la pagina scelta a destra.</figcaption></figure>
+  <h3>Intestazione</h3>
+  <ul>
+    <li><b>Indicatore LIVE</b> — verde quando il browser riceve gli aggiornamenti in tempo reale dal server (eventi, stato delle porte, avanzamento delle sincronizzazioni). Diventa rosso, <span class="ui">Offline</span>, se la connessione con il server si interrompe, e si ricollega da solo. Riguarda la connessione tra il tuo browser e il server, non i controller.</li>
+    <li><b>Nome e ruolo</b> dell'operatore collegato.</li>
+    <li><b>Lingua</b> (icona <span class="kbd">文A</span>) — English, Italiano, Español, Français, Deutsch. La scelta viene ricordata dal browser; alla prima visita si usa la lingua del browser.</li>
+    <li><b>Cambia password</b> (icona a chiave), <b>Autenticazione a due fattori</b> (icona a scudo) ed <b>Esci</b>.</li>
+  </ul>
+  <figure class="half"><img src="shots/language.png"><figcaption><b>Figura 2</b> — Il menu della lingua.</figcaption></figure>
+  <h3>Menu</h3>
+  <p>Il menu a sinistra è diviso in quattro gruppi, che sono anche le parti di questo manuale:</p>
+  <table>
+    <thead><tr><th>Gruppo</th><th>Pagine</th><th>Serve per</th></tr></thead>
+    <tr><td><span class="grp g-ops">Operatività</span></td><td>Panoramica, Monitor, Storico eventi, Presenti, Targhe, Presenze, Anomalie</td><td>la sorveglianza quotidiana</td></tr>
+    <tr><td><span class="grp g-reg">Anagrafica</span></td><td>Persone, Tessere, Ospiti, Permessi, Reparti e zone</td><td>chi può andare dove</td></tr>
+    <tr><td><span class="grp g-cfg">Configurazione</span></td><td>Controller, Porte, Fasce orarie, Attività pianificate, Sincronizzazione</td><td>hardware e regole</td></tr>
+    <tr><td><span class="grp g-adm">Amministrazione</span></td><td>Operatori, Registro operazioni, Regole, Notifiche, Webhook, App mobile, Token API, Sistema</td><td>utenti, integrazioni e manutenzione</td></tr>
+  </table>
+  <p>I messaggi compaiono nell'angolo in alto a destra: verdi per le operazioni riuscite, rossi per gli errori. Il messaggio giallo <span class="ui">Salvato, ma non inviato a tutti i controller</span> significa che la modifica è nel database ma qualche controller non era raggiungibile: verrà allineato alla prossima sincronizzazione.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="start">6 · Primi passi</h2>
+  <h3>Accesso</h3>
+  <figure class="half"><img src="shots/login.png"><figcaption><b>Figura 3</b> — La pagina di accesso.</figcaption></figure>
+  <p>Apri l'indirizzo del server nel browser (per esempio <code>http://192.168.1.10:8080</code>) ed effettua l'accesso. Il primo amministratore è <code>admin</code>:</p>
+  <ul>
+    <li>se il server è stato installato con la variabile <code>ADMIN_PASSWORD</code>, usa quella password. Si può cambiare solo cambiando la variabile e riavviando il server;</li>
+    <li>altrimenti al primo avvio è stata generata una password temporanea, scritta nel log del server. Ti verrà chiesto subito di sceglierne una nuova.</li>
+  </ul>
+  <p>Dopo diverse password sbagliate l'account viene bloccato per qualche minuto. Le sessioni scadono dopo alcune ore di utilizzo (12 per impostazione predefinita).</p>
+  <h3>Prima configurazione — elenco dei passi</h3>
+  <ol class="steps">
+    <li><b>Controller</b> → <span class="ui">Cerca in rete</span>: trova i controller, aggiungili e dai loro un nome (<a href="#controllers">capitolo 17</a>). Se un controller ha un indirizzo IP di fabbrica fuori dalla tua rete, cambialo dalla sua pagina.</li>
+    <li><b>Porte</b>: dai a ogni porta un nome comprensibile, controlla modalità e tempo di apertura e indica i lettori da usare per le presenze (<a href="#doors">capitolo 18</a>).</li>
+    <li><b>Fasce orarie</b>: crea le finestre orarie che ti servono, ad esempio "Orario d'ufficio" (<a href="#profiles">capitolo 19</a>). I permessi validi "sempre" non ne hanno bisogno.</li>
+    <li><b>Reparti e zone</b>: crea l'organizzazione dell'azienda e, se vuoi, le zone dell'edificio (<a href="#structure">capitolo 15</a>).</li>
+    <li><b>Persone</b>: creale una per una o importa un file CSV; assegna tessere e permessi (<a href="#people">capitolo 12</a>). Il numero di una tessera nuova si legge semplicemente passandola su un lettore qualsiasi.</li>
+    <li><b>Operatori</b>: crea un account per ogni utente dell'applicazione, con il ruolo giusto (<a href="#operators">capitolo 22</a>).</li>
+    <li>Controlla nel <b>Monitor</b> che i passaggi compaiano in tempo reale. Se non compaiono, vedi <a href="#trouble">Risoluzione dei problemi</a>.</li>
+  </ol>
+  <div class="box tip"><b>Suggerimento</b><p>Prima che arrivi l'hardware puoi provare tutto con il simulatore di controller incluso nell'immagine Docker (vedi <code>docs/DOCKER.md</code>, "Trying the app without a controller").</p></div>
+</section>
+
+<!-- ===================================================================== PART 2 -->
+<section class="page part" id="part2">
+  <div class="opener o-green"><div class="label">Parte 2</div><h1>Operatività</h1><p>La sorveglianza di tutti i giorni: stato dei controller, passaggi in tempo reale, storico eventi, presenze e targhe.</p></div>
+
+  <span class="grp g-ops">Operatività</span>
+  <h2 id="dashboard">7 · Panoramica</h2>
+  <p>La prima pagina dopo l'accesso. Per ogni controller mostra un riquadro con:</p>
+  <ul>
+    <li>il nome, lo stato <span class="ui">Online</span>/<span class="ui">Offline</span>, numero di serie e indirizzo IP, e l'ora dell'ultimo contatto. Se l'orologio del controller sbaglia di più di qualche secondo viene mostrata la deriva (l'ora viene corretta automaticamente);</li>
+    <li>un riquadro per ogni porta attiva con la sua <b>modalità</b> (Controllata, Normalmente aperta, Normalmente chiusa), lo stato del <b>sensore porta</b> (Aperta/Chiusa) e l'icona della <b>serratura</b>, arancione quando il relè è attivo (serratura sbloccata);</li>
+    <li>il pulsante per aprire la porta da remoto (operatori e amministratori): dopo la conferma la serratura viene sbloccata per il tempo di apertura della porta e viene registrato un evento "Apertura remota";</li>
+    <li>indicatori rossi per <b>Allarme incendio</b> o <b>Blocco forzato</b> quando quegli ingressi del controller sono attivi, e l'elenco delle uscite della scheda di espansione accese.</li>
+  </ul>
+  <p>Sotto, <span class="ui">Ultimi eventi</span> elenca gli eventi più recenti di tutti i controller; gli accessi negati sono evidenziati in rosso. <span class="ui">Apri monitor</span> porta al monitor in tempo reale.</p>
+  <p>La panoramica della Figura 1 mostra una giornata tipo: un'apertura remota, una porta aperta e richiusa, un pulsante di uscita e una tessera non registrata.</p>
+
+  <span class="grp g-ops">Operatività</span>
+  <h2 id="monitor">8 · Monitor</h2>
+  <figure><img src="shots/monitor.png"><figcaption><b>Figura 4</b> — Monitor in tempo reale: l'ultimo passaggio con la foto della persona e gli eventi della sessione.</figcaption></figure>
+  <p>Il monitor mostra passaggi e allarmi nel momento in cui il controller li invia — l'equivalente del "Monitor" del software originale, ad esempio per una reception.</p>
+  <ul>
+    <li><b>Ultimo passaggio</b>: foto (o iniziali), nome e tessera della persona, esito (<span class="yes">CONSENTITO</span> / <span style="color:#d9480f;font-weight:700">NEGATO</span>), motivo, porta e direzione (Entrata/Uscita), ora. Una tessera non registrata viene indicata come tale.</li>
+    <li><b>Eventi della sessione</b>: ogni evento ricevuto da quando la pagina è aperta (fino ai 300 più recenti), dal più nuovo.</li>
+    <li>Filtri in alto: un solo controller, e <span class="ui">Solo passaggi tessera</span> per nascondere eventi di porta e allarmi.</li>
+  </ul>
+  <div class="box note"><b>Nota</b><p>Il monitor mostra solo ciò che arriva mentre è aperto. Tutto viene comunque salvato: gli eventi precedenti sono nello <a href="#events">Storico eventi</a>. Se i passaggi non compaiono qui ma compaiono più tardi nello storico, il server non riceve gli eventi in tempo reale — vedi <a href="#trouble">Risoluzione dei problemi</a>.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Operatività</span>
+  <h2 id="events">9 · Storico eventi</h2>
+  <figure><img src="shots/events.png"><figcaption><b>Figura 5</b> — Storico eventi con i filtri.</figcaption></figure>
+  <p>Tutti gli eventi raccolti dai controller, dal più recente. Usa i filtri per trovare ciò che cerchi:</p>
+  <ul>
+    <li><b>Dal / Al</b> — periodo;</li>
+    <li><b>Controller</b> e <b>Porta</b>;</li>
+    <li><b>Persona</b> o <b>Numero tessera</b>;</li>
+    <li><b>Esito</b> — solo consentiti o solo negati.</li>
+  </ul>
+  <p>Ogni riga mostra data e ora (ora del controller), controller, porta con la freccia della direzione (↘ entrata, ↗ uscita), tipo (Tessera, Porta, Allarme), persona o tessera, esito, motivo e indice dell'evento nella memoria del controller. <span class="ui">Esporta CSV</span> scarica gli eventi filtrati nella lingua corrente, pronti per Excel.</p>
+  <div class="box note"><b>Da dove arrivano gli eventi</b><p>Gli eventi arrivano in tempo reale dai controller e vengono anche scaricati automaticamente ogni pochi minuti e ogni volta che un controller torna raggiungibile, quindi lo storico è completo anche dopo interruzioni di rete o del server. La memoria del controller è circolare: se un controller resta scollegato così a lungo da riempirla, gli eventi più vecchi vengono sovrascritti.</p></div>
+
+  <h3>Presenti</h3>
+  <figure><img src="shots/presence.png"><figcaption><b>Figura 6</b> — Chi è dentro in questo momento.</figcaption></figure>
+  <p>La pagina <span class="ui">Presenti</span> mostra chi è dentro adesso: per ogni persona, l'ultimo passaggio <b>consentito</b> su una porta che conta per le presenze. Un passaggio su una porta di <b>entrata</b> mette la persona dentro; un passaggio su una porta di <b>uscita</b> (o sul lettore di uscita di una porta con due lettori) la mette fuori. Il ruolo di ogni porta si imposta nella pagina <a href="#doors">Porte</a>: <i>Entrata</i> (predefinito), <i>Uscita</i> o <i>Non conteggiata</i>.</p>
+  <p>Scegli il periodo (oggi, ultime 8 o 24 ore): chi ha l'ultimo passaggio più vecchio non viene contato. La pagina si aggiorna da sola ogni 30 secondi; <span class="ui">Esporta CSV</span> scarica l'elenco, ad esempio per l'appello durante un'evacuazione. Chi esce con il pulsante di uscita (senza tessera) non si vede: per conteggi esatti serve un lettore anche in uscita.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Operatività</span>
+  <h2 id="attendance">10 · Presenze</h2>
+  <p>UHPPOTE Desk calcola l'orario di lavoro dai passaggi sui lettori indicati come <b>lettori per le presenze</b> (nella pagina <a href="#doors">Porte</a>) — di solito l'ingresso principale. Contano solo i passaggi <b>consentiti</b>. La pagina ha cinque schede.</p>
+  <h3>Resoconto</h3>
+  <figure><img src="shots/attendance-report.png"><figcaption><b>Figura 7</b> — Resoconto presenze: riepilogo del periodo e dettaglio giornaliero.</figcaption></figure>
+  <p>Scegli il periodo (dal primo del mese corrente a oggi per impostazione predefinita) e, se vuoi, un reparto o una persona. Il <b>Riepilogo del periodo</b> mostra per ogni persona: ore lavorate, ore previste, straordinari, totale dei ritardi, giorni di assenza e giorni con anomalie. Il <b>Dettaglio giornaliero</b> mostra ogni giorno con il suo stato (Presente, Assente, Festività, Giorno libero, Ferie, Permesso, Malattia, Trasferta, Anomalia), prima entrata, ultima uscita, ore lavorate, ritardo e tutte le timbrature; quelle inserite a mano sono segnate con <b>*</b>. <span class="ui">Esporta CSV</span> scarica il dettaglio.</p>
+  <div class="box note"><b>Come si calcolano le ore</b>
+    <ul>
+      <li>Le timbrature vengono accoppiate in ordine cronologico: entrata, uscita, entrata, uscita… Non serve la direzione del lettore.</li>
+      <li>Con una sola coppia di timbrature in un giorno, la <b>pausa</b> del turno viene sottratta automaticamente; con due o più coppie si usa la pausa effettiva.</li>
+      <li>Un numero dispari di timbrature (ad esempio un'uscita dimenticata) è un'<b>anomalia</b>: l'ultima timbratura viene ignorata finché non la si corregge con una timbratura manuale.</li>
+      <li>Ritardi e uscite anticipate tengono conto della <b>tolleranza</b> del turno. Il tempo oltre le ore previste è straordinario; nei giorni liberi e festivi tutto il tempo lavorato è straordinario.</li>
+      <li>I turni notturni (che finiscono dopo mezzanotte) vengono attribuiti al giorno in cui sono iniziati.</li>
+      <li>Una persona senza turno non ha ore previste: si calcolano solo le ore lavorate.</li>
+    </ul>
+  </div>
+  <h3>Turni</h3>
+  <figure><img src="shots/attendance-shifts.png"><figcaption><b>Figura 8</b> — Turni di lavoro.</figcaption></figure>
+  <p>Un turno definisce ora di inizio e fine, pausa (minuti), tolleranza (minuti) e giorni lavorativi. Un turno che finisce prima di iniziare (ad esempio 22:00–06:00) è un turno notturno. Il turno si assegna nei dettagli di ogni persona (<a href="#people">Persone</a>).</p>
+  <h3>Festività</h3>
+  <figure><img src="shots/attendance-holidays.png"><figcaption><b>Figura 9</b> — Festività.</figcaption></figure>
+  <p>I giorni in cui non si lavora. Aggiungili uno per uno (data e descrizione) oppure importa con un clic le festività nazionali italiane di un anno, Pasqua compresa. Aggiungi le festività locali, le chiusure aziendali e i ponti secondo necessità.</p>
+  <h3>Assenze</h3>
+  <figure><img src="shots/attendance-leaves.png"><figcaption><b>Figura 10</b> — Ferie e assenze.</figcaption></figure>
+  <p>Registra ferie, permessi, malattie, trasferte e altre assenze di una persona per un intervallo di date. Quei giorni non vengono più contati come assenze nel resoconto.</p>
+  <h3>Timbrature manuali</h3>
+  <figure><img src="shots/attendance-punches.png"><figcaption><b>Figura 11</b> — Timbrature manuali.</figcaption></figure>
+  <p>Aggiungi una timbratura che il lettore non ha registrato — ad esempio un'uscita dimenticata — con persona, data e ora, direzione e un motivo. Le timbrature manuali sono segnate con * nel resoconto e registrate nel registro operazioni.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-ops">Operatività</span>
+  <h2 id="plates">11 · Targhe</h2>
+  <figure><img src="shots/plates.png"><figcaption><b>Figura 12</b> — Letture delle targhe: chi è stato fatto entrare e chi no.</figcaption></figure>
+  <p>Una telecamera con riconoscimento targhe (provata con <b>AgentDVR</b>) invia ogni targa letta a UHPPOTE Desk, che decide se il veicolo può entrare, apre la porta, scatta una foto dalla telecamera e registra la lettura. La pagina ha tre schede.</p>
+  <ul>
+    <li><b>Letture</b> — ogni targa letta, con foto, ora, proprietario, esito (<i>Consentito</i>, <i>Targa sconosciuta</i>, <i>Fuori fascia oraria</i>…) e telecamera. Filtra per esito o cerca per targa o nome. Le foto vengono conservate 30 giorni per impostazione predefinita (<code>PLATE_PHOTO_DAYS</code>).</li>
+    <li><b>Targhe</b> — le targhe conosciute dal sistema. Una targa appartiene a una <b>persona</b> (si aggiunge nella scheda <i>Targhe</i> della persona: il veicolo passa dove la persona ha un permesso, nella sua fascia oraria) oppure a un <b>link per ospiti</b> (campo <i>Targhe dei veicoli</i>: il veicolo passa finché il link è valido). Le targhe vengono confrontate ignorando spazi, trattini e i caratteri che i lettori confondono più spesso (B/8, O/0, I/1, Z/2, S/5).</li>
+    <li><b>Telecamere</b> (amministratori) — una riga per telecamera: la porta che apre, l'indirizzo della foto, la pausa dopo un'apertura (l'auto è ancora davanti alla telecamera) e <i>Apri la porta</i> (spento = le letture vengono solo registrate, per provare una telecamera nuova).</li>
+  </ul>
+  <figure><img src="shots/plate-cameras.png"><figcaption><b>Figura 13</b> — Telecamere per la lettura delle targhe.</figcaption></figure>
+  <p>Quando si crea una telecamera, UHPPOTE Desk mostra due indirizzi che contengono la chiave segreta della telecamera, da copiare in AgentDVR (elenco delle targhe conosciute e "Call URL"): la chiave viene mostrata una sola volta. Le letture vengono anche pubblicate come <code>plate.granted</code> / <code>plate.denied</code> per notifiche, regole e webhook; le notifiche Telegram ed e-mail contengono la foto. La configurazione passo per passo è in <code>docs/PLATES.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 3 -->
+<section class="page part" id="part3">
+  <div class="opener o-violet"><div class="label">Parte 3</div><h1>Anagrafica</h1><p>Persone, tessere, ospiti e permessi di accesso: chi può andare dove, e quando.</p></div>
+
+  <span class="grp g-reg">Anagrafica</span>
+  <h2 id="people">12 · Persone</h2>
+  <figure><img src="shots/people.png"><figcaption><b>Figura 14</b> — L'elenco delle persone.</figcaption></figure>
+  <p>L'elenco mostra matricola, nome, reparto, tessere, validità e stato. Cerca per nome, matricola o numero di tessera. Clicca una riga per aprire i dettagli; <span class="ui">Nuova persona</span> ne crea una.</p>
+  <h3>Dettagli</h3>
+  <figure class="narrow"><img src="shots/person-details.png"><figcaption><b>Figura 15</b> — Dettagli della persona.</figcaption></figure>
+  <ul>
+    <li><b>Matricola</b> (unica) e <b>cognome/nome</b>; reparto, e-mail, telefono, note.</li>
+    <li><b>Accesso valido dal / al</b> — fuori da questo periodo tutte le tessere della persona vengono rifiutate dai controller.</li>
+    <li><b>PIN tastiera</b> (fino a 6 cifre, 0 = nessuno) — richiesto dai lettori con tastiera quando la porta funziona in modalità "tessera + PIN".</li>
+    <li><b>Turno</b> — per le presenze.</li>
+    <li><b>Foto</b> — JPEG, PNG o WebP; viene mostrata nel monitor.</li>
+    <li><b>Attiva</b> — se disattivata, le tessere della persona vengono tolte da tutti i controller (lo storico resta). Usala per chi se ne va, temporaneamente o per sempre.</li>
+  </ul>
+  <h3>Tessere di una persona</h3>
+  <figure class="narrow"><img src="shots/person-cards.png"><figcaption><b>Figura 16</b> — Scheda Tessere.</figcaption></figure>
+  <p>Scrivi il numero di 8 cifre della tessera e <span class="ui">Aggiungi</span>, oppure usa <b>Leggi da un lettore</b>: passa la tessera nuova su un lettore qualsiasi e comparirà tra le tessere sconosciute lette negli ultimi 10 minuti; cliccala per assegnarla. Una persona può avere più tessere.</p>
+  <ul>
+    <li><span class="ui">Smarrita</span> — sostituisce una tessera persa: la vecchia viene segnata come smarrita e tolta dai controller, il nuovo numero riceve subito gli stessi permessi.</li>
+    <li><b>Elimina</b> — toglie la tessera dal database e da tutti i controller.</li>
+  </ul>
+  <h3>Permessi di una persona</h3>
+  <figure class="narrow"><img src="shots/person-permissions.png"><figcaption><b>Figura 17</b> — Scheda Permessi.</figcaption></figure>
+  <p>Una riga per ogni porta di ogni controller. Spunta le porte che la persona può aprire e scegli, per ciascuna, <b>Sempre</b> o una <b>fascia oraria</b>. <b>Prima tessera</b> indica che la persona può "aprire" una porta che usa la funzione prima tessera (vedi <a href="#controllers">Controller → Impostazioni avanzate</a>). <span class="ui">Salva permessi</span> li invia subito ai controller.</p>
+  <h3>Importare persone da un file CSV</h3>
+  <p><span class="ui">Importa CSV</span> legge un file con una riga di intestazione; il separatore (punto e virgola, virgola o tabulazione) viene riconosciuto da solo. Colonne riconosciute:</p>
+  <table>
+    <thead><tr><th>Colonna</th><th>Nomi di intestazione accettati</th><th>Note</th></tr></thead>
+    <tr><td>Matricola</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>obbligatoria; una matricola esistente aggiorna quella persona</td></tr>
+    <tr><td>Cognome</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>obbligatorio</td></tr>
+    <tr><td>Nome</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
+    <tr><td>Tessera</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>numero Wiegand-26 di 8 cifre</td></tr>
+    <tr><td>Reparto</td><td><code>department</code>, <code>reparto</code></td><td>creato se manca; sottoreparti con <code>\</code>, ad esempio <code>Produzione\Montaggio</code></td></tr>
+  </table>
+  <p>Il risultato indica quante persone e tessere sono state create o aggiornate e le righe con errori. Le persone importate non hanno permessi: assegnali dopo, ad esempio con l'assegnazione multipla della pagina <a href="#permissions">Permessi</a>. Un'esportazione del software Windows originale di solito si importa direttamente.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Anagrafica</span>
+  <h2 id="cards">13 · Tessere</h2>
+  <figure><img src="shots/cards.png"><figcaption><b>Figura 18</b> — Tutte le tessere registrate.</figcaption></figure>
+  <p>Tutte le tessere conosciute dall'applicazione, assegnate o libere, con stato (Attiva, Smarrita, Disattivata) e data di registrazione. Il filtro <span class="ui">Libere</span> mostra le tessere non ancora date a nessuno; una tessera libera si può assegnare dall'elenco.</p>
+  <ul>
+    <li><b>Tessere lette ma non registrate (ultima ora)</b> — ogni tessera sconosciuta passata su un lettore compare qui: cliccala per registrarla, come libera o direttamente assegnata a una persona. I numeri che non sono tessere Wiegand-26 valide sono in grigio e non si possono registrare.</li>
+    <li><b>Registrazione a blocchi</b> — registra un intero intervallo di numeri come tessere libere (fino a 1000), ad esempio una scatola nuova di tessere con numeri consecutivi.</li>
+  </ul>
+  <div class="box note"><b>Numeri delle tessere</b><p>I controller accettano solo numeri Wiegand-26: codice impianto 0–255 e codice tessera 0–65535, scritti come impianto × 100000 + codice. Il numero stampato su molte tessere (ad esempio <code>100,58400</code> o <code>0006612288</code>) corrisponde a questo formato; nel dubbio passa la tessera e leggi il numero nell'elenco delle tessere sconosciute.</p></div>
+
+  <span class="grp g-reg">Anagrafica</span>
+  <h2 id="permissions">14 · Permessi</h2>
+  <figure><img src="shots/permissions.png"><figcaption><b>Figura 19</b> — Matrice persone e porte, e assegnazione multipla.</figcaption></figure>
+  <p>L'equivalente di "Access Privilege" del software originale: una matrice con una riga per persona e una colonna per porta. <b>✓</b> significa sempre consentito, un numero significa consentito in quella fascia oraria. Filtra le persone per trovare qualcuno rapidamente.</p>
+  <p>Con l'<b>assegnazione multipla</b> selezioni più persone e più porte, facoltativamente una fascia oraria, e con <span class="ui">Concedi</span> o <span class="ui">Revoca</span> applichi tutti quei permessi in un colpo — ad esempio per dare l'accesso all'ingresso a un intero reparto nuovo.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Anagrafica</span>
+  <h2 id="structure">15 · Reparti e zone</h2>
+  <figure><img src="shots/structure.png"><figcaption><b>Figura 20</b> — Reparti e zone sono alberi.</figcaption></figure>
+  <ul>
+    <li>I <b>reparti</b> organizzano il personale: servono a filtrare l'elenco delle persone e i resoconti delle presenze. Un reparto può appartenere a un altro (ad esempio Produzione → Montaggio).</li>
+    <li>Le <b>zone</b> raggruppano i controller, ad esempio per edificio o piano. Servono a limitare gli operatori: un operatore limitato a una zona (e alle sue sottozone) può aprire porte e sincronizzare solo i controller di quella zona.</li>
+  </ul>
+  <p>Usa <span class="ui">Nuovo</span>, modifica ed elimina; eliminando un elemento si eliminano anche i suoi sottoelementi. Persone e controller di un reparto o di una zona eliminati restano, senza reparto o zona.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-reg">Anagrafica</span>
+  <h2 id="guests">16 · Ospiti</h2>
+  <figure><img src="shots/guests.png"><figcaption><b>Figura 21</b> — Link per ospiti.</figcaption></figure>
+  <p>Un link per ospiti apre alcune porte per un certo tempo, <b>senza tessera, app né accesso</b>: un corriere o un tecnico oggi, un'impresa di pulizie ogni martedì sera, un amico per il fine settimana. Gli operatori creano link solo per le porte che possono aprire loro stessi; gli amministratori li vedono tutti.</p>
+  <ul>
+    <li><b>Porte</b> e <b>validità</b> (dal, al; pulsanti <i>Oggi</i>, <i>7 giorni</i>…), facoltativamente <b>solo in alcuni giorni e orari</b> (ad esempio lunedì–venerdì 08:00–18:00) e un <b>numero massimo di aperture</b>.</li>
+    <li><span class="ui">Solo sul primo telefono che lo usa</span> (attivo per impostazione predefinita): un link inoltrato non funziona su un altro telefono, e il tentativo viene registrato e notificato.</li>
+    <li><b>PIN</b> (4–8 cifre), da dare separatamente dal link; dopo 5 PIN sbagliati il link viene bloccato finché non lo si sblocca.</li>
+    <li><b>Targhe dei veicoli</b>: le telecamere per le targhe aprono le porte del link per questi veicoli (vedi <a href="#plates">Targhe</a>).</li>
+  </ul>
+  <p>Dopo il salvataggio viene mostrato il messaggio da inviare, con i pulsanti <span class="ui">Condividi</span>, <span class="ui">WhatsApp</span> e quelli per copiare. <b>Il link viene mostrato solo in quel momento</b> (viene conservato solo il suo hash): se lo perdi, <span class="ui">Nuovo link</span> lo sostituisce e il vecchio smette di funzionare. Dall'elenco puoi anche revocare un link, svincolarlo dal telefono a cui è legato e vederne le aperture.</p>
+  <figure class="narrow"><img src="shots/guest-page.png"><figcaption><b>Figura 22</b> — Cosa vede l'ospite sul telefono: un pulsante "Tieni premuto per aprire" per ogni porta.</figcaption></figure>
+  <p>La pagina dell'ospite mostra il nome, la validità e un pulsante <span class="ui">Tieni premuto per aprire</span> per ogni porta (un tocco breve non apre). Quando il link non è utilizzabile ne spiega il motivo: non ancora valido, fuori orario, scaduto, esaurito, revocato o bloccato. Aperture e rifiuti finiscono nello storico e vengono pubblicati come <code>guest.opened</code> / <code>guest.refused</code>. Dettagli: <code>docs/GUESTS.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 4 -->
+<section class="page part" id="part4">
+  <div class="opener o-blue"><div class="label">Parte 4</div><h1>Configurazione</h1><p>Controller, porte e le regole che applicano. Gran parte di queste pagine è per gli amministratori.</p></div>
+
+  <span class="grp g-cfg">Configurazione</span>
+  <h2 id="controllers">17 · Controller</h2>
+  <figure><img src="shots/controllers.png"><figcaption><b>Figura 23</b> — I controller configurati nell'applicazione.</figcaption></figure>
+  <p>L'elenco dei controller con nome, numero di serie, indirizzo, firmware, stato e ultimo contatto. Clicca una riga per aprirne la pagina.</p>
+  <h3>Trovare e aggiungere un controller</h3>
+  <figure><img src="shots/discovery.png"><figcaption><b>Figura 24</b> — Ricerca in rete.</figcaption></figure>
+  <ol class="steps">
+    <li>Clicca <span class="ui">Cerca in rete</span>, poi <span class="ui">Avvia ricerca</span>. Il server invia un broadcast sulla rete locale ed elenca ogni controller che risponde entro pochi secondi, con numero di serie, IP, MAC e firmware.</li>
+    <li>Clicca <span class="ui">Aggiungi</span> accanto a un controller. Dagli un nome, controlla indirizzo IP e porta (60000), trasporto (UDP; TCP solo con firmware recenti) e, se vuoi, una zona.</li>
+    <li>Salva: il controller compare online in pochi secondi. L'applicazione lo programma per inviarle i suoi eventi, ne sincronizza l'orologio e scarica gli eventi memorizzati.</li>
+  </ol>
+  <p>Un controller si può aggiungere anche a mano con il suo numero di serie. La ricerca funziona solo se il server è sullo stesso segmento di rete dei controller; con Docker il container deve usare la rete "host".</p>
+  <div class="box tip"><b>Controller già in uso?</b><p>Se il controller contiene già delle tessere (ad esempio dal software originale) e il database dell'applicazione non ne ha, aggiungendolo non si cancella nulla. Importa prima le persone, poi usa <a href="#sync">Sincronizzazione → Confronta</a> per vedere le differenze prima di allineare.</p></div>
+
+  <h3>Pagina del controller — Diagnostica</h3>
+  <figure><img src="shots/controller-diagnostics.png"><figcaption><b>Figura 25</b> — Diagnostica: tutto letto in diretta dal controller.</figcaption></figure>
+  <p>Letti direttamente dal controller: numero di serie, IP, gateway, MAC, versione e data del firmware, ora del controller, numero di tessere memorizzate, ultimo evento, segnalibro di scaricamento, listener degli eventi (dove il controller invia i suoi eventi), anti-passback ed errore di sistema. La tabella <b>Porte</b> mostra modalità, ritardo di apertura, sensore e relè di ogni porta, come memorizzati nel controller.</p>
+  <ul>
+    <li><span class="ui">Rileggi dal controller</span> aggiorna i dati.</li>
+    <li><span class="ui">Sincronizza orologio</span> imposta l'orologio del controller sull'ora del server. Succede anche automaticamente quando la deriva supera i 30 secondi.</li>
+    <li><span class="ui">Scarica eventi</span> scarica subito gli eventi non ancora raccolti.</li>
+  </ul>
+
+  <h3>Rete e configurazione</h3>
+  <figure><img src="shots/controller-network.png"><figcaption><b>Figura 26</b> — Configurazione nell'applicazione, IP del controller e destinazione degli eventi.</figcaption></figure>
+  <ul>
+    <li><b>Configurazione nell'applicazione</b> — come l'applicazione raggiunge il controller: numero di serie, nome, IP e porta (IP vuoto = broadcast), trasporto, zona e <b>Abilitato</b> (un controller disabilitato non viene né monitorato né sincronizzato). <span class="ui">Rimuovi</span> elimina il controller e il suo storico eventi dal database, senza modificare il controller.</li>
+    <li><b>Indirizzo IP del controller</b> — cambia IP, maschera di rete e gateway memorizzati <b>nel controller</b>. Serve a portare un controller nuovo dal suo indirizzo di fabbrica alla tua rete. Il comando viene inviato in broadcast, quindi funziona anche se l'indirizzo attuale non è raggiungibile; dopo, l'applicazione verifica il nuovo indirizzo.</li>
+    <li><b>Destinazione degli eventi (listener)</b> — l'indirizzo a cui il controller invia ogni evento: il server. Viene impostato automaticamente quando il server è configurato con <code>UHPPOTE_LISTENER_PUBLIC</code>; <span class="ui">Configura automaticamente</span> lo applica subito, <span class="ui">Imposta manualmente</span> imposta un indirizzo diverso e l'intervallo di invio automatico dello stato.</li>
+  </ul>
+  <div class="box warn"><b>Attenzione</b><p>Un indirizzo IP, una maschera o un gateway sbagliati rendono il controller irraggiungibile. Si potrà riconfigurare solo da un computer sullo stesso segmento di rete, con una ricerca in rete.</p></div>
+
+  <h3>Impostazioni avanzate</h3>
+  <figure><img src="shots/controller-advanced.png"><figcaption><b>Figura 27</b> — Regole di accesso, tastiere e prima tessera.</figcaption></figure>
+  <p>Impostazioni che valgono per tutto il controller. Vengono salvate nel database e inviate al controller con <span class="ui">Salva e invia al controller</span>.</p>
+  <ul>
+    <li><b>Interblocco</b> — le porte di un gruppo non possono essere aperte contemporaneamente (bussole, ad esempio porte 1 e 2): una porta si apre solo quando le altre del suo gruppo sono chiuse. Richiede i sensori porta.</li>
+    <li><b>Anti-passback</b> — impedisce di ripassare la tessera a qualcun altro: dopo essere entrata da un lettore di un gruppo, la tessera deve uscire da un lettore dell'altro gruppo prima di poter rientrare. Vedi il <a href="#modes">capitolo 34</a> per i raggruppamenti.</li>
+    <li><b>Registra eventi porta e pulsante</b> — registra anche gli eventi di porta aperta/chiusa e pulsante di uscita (consigliato).</li>
+    <li><b>Controllo da PC</b> — il controller chiede al server prima di concedere l'accesso. Sconsigliato: le porte smettono di funzionare quando il server non è raggiungibile.</li>
+    <li><b>Invio automatico dello stato</b> — il controller invia il suo stato al server ogni N secondi oltre agli eventi (0 = solo eventi).</li>
+    <li><b>Tastiere</b> — spunta i lettori che hanno una tastiera. <b>Codici porta</b>: fino a 4 codici per porta (fino a 6 cifre) che aprono la porta digitandoli sulla tastiera, senza tessera.</li>
+    <li><b>Prima tessera</b> — nelle ore e nei giorni scelti la porta resta chiusa finché non passa la prima persona autorizzata con il permesso "Prima tessera"; poi la porta passa alla modalità scelta (ad esempio normalmente aperta) fino alla fine del periodo. Uso tipico: l'ingresso di un negozio che apre al pubblico solo dopo l'arrivo del responsabile.</li>
+    <li><b>Opzioni lettori e porte</b> — le corrispondenti <i>funzioni estese</i> del software del produttore, scritte solo quando <span class="ui">Gestite da UHPPOTE Desk</span> è attivo e verificate rileggendole: <b>quattro passaggi = sempre aperta</b> (quattro passaggi di fila di una tessera valida tengono la porta aperta, altri quattro la richiudono; memorizzata ma senza effetto sul firmware v9.f8 provato), <b>lettore silenzioso</b> sulle tessere non valide (il controller non accende il LED del lettore; questi controller non hanno un'uscita per il buzzer, quindi il bip che il lettore fa a ogni lettura resta), <b>non registrare i passaggi ripetuti</b> della stessa tessera (i passaggi successivi entro l'intervallo aprono la porta ma non vengono registrati di nuovo), <b>porta come interruttore</b> (un passaggio alterna la serratura) e <b>accesso con più tessere</b> (servono 2–10 tessere diverse per aprire). <span class="ui">Leggi dal controller</span> mostra i valori che il controller memorizza.</li>
+  </ul>
+
+  <h3>Scheda di espansione</h3>
+  <figure><img src="shots/controller-expansion.png"><figcaption><b>Figura 28</b> — Scheda di espansione allarmi: quattro uscite e l'ingresso incendio.</figcaption></figure>
+  <p>La scheda di espansione allarmi UHPPOTE <b>UT0311-01A</b> (venduta anche come ACM-EC05) aggiunge al controller quattro relè di allarme e un ingresso incendio: si può accendere una sirena, una luce di avviso o mandare un segnale a una centrale antifurto o antincendio quando succede qualcosa alle porte. La configurazione è nella scheda <span class="ui">Scheda espansione</span>; <span class="ui">Salva e invia al controller</span> la scrive e poi la rilegge dal controller per verificarla (il messaggio dice <i>verificata</i> quando il controller memorizza esattamente ciò che è stato inviato); la sincronizzazione completa la riscrive.</p>
+  <ul>
+    <li><span class="ui">Scheda di espansione collegata</span> — la configurazione viene scritta nel controller solo quando è attiva, quindi i controller senza scheda non vengono mai toccati.</li>
+    <li><b>Porta aperta troppo a lungo dopo</b> — secondi dopo i quali una porta lasciata aperta genera l'allarme <i>Porta aperta troppo a lungo</i> (predefinito 25 s).</li>
+    <li><b>Codice coercizione</b> — un codice digitato sulla tastiera sotto minaccia: la porta si apre normalmente e scatta l'allarme di <i>coercizione</i>. Lascialo vuoto per mantenere il codice memorizzato nel controller.</li>
+    <li>Per ogni <b>uscita</b>: la <b>sorgente</b> (una delle quattro porte, o l'antifurto), la <b>modalità dell'uscita</b>, gli <b>eventi</b> che la attivano e la <b>durata</b>.</li>
+    <li><b>Opzioni di allarme</b> — <b>porta aperta troppo a lungo genera un allarme</b> (altrimenti una porta lasciata aperta viene solo registrata; serve perché le uscite reagiscano), <b>allarme tessera non valida solo dopo 3 tentativi</b> e <b>codice coercizione solo dopo una tessera registrata</b>. Sono le opzioni corrispondenti delle <i>funzioni estese</i> del produttore.</li>
+    <li><span class="ui">Leggi dal controller</span> — mostra la configurazione che il controller memorizza davvero (sola lettura, non cambia nulla), con un'indicazione se coincide con quella salvata. <span class="ui">Copia nel modulo</span> la prende come punto di partenza, ad esempio una configurazione fatta con il software del produttore; salva per applicarla.</li>
+  </ul>
+  <table>
+    <thead><tr><th style="width:52mm">Modalità dell'uscita</th><th>Il relè resta acceso…</th></tr></thead>
+    <tr><td>Per la durata</td><td>per il numero di secondi impostato</td></tr>
+    <tr><td>Per la durata e fino al reset</td><td>almeno per il tempo impostato, e finché la causa dell'allarme non è sparita</td></tr>
+    <tr><td>Fino al reset dell'evento</td><td>finché la causa dell'allarme non è sparita (ad esempio la porta viene richiusa)</td></tr>
+    <tr><td>Un segnale qualsiasi / Tutti i segnali</td><td>finché almeno uno (o tutti) i segnali scelti è attivo: relè della serratura, sensore porta, pulsante di uscita, ingresso blocco forzato, ingressi A1–A3 e ingresso incendio della scheda</td></tr>
+  </table>
+  <p>Eventi che attivano le uscite: <b>codice coercizione</b>, <b>porta aperta troppo a lungo</b>, <b>apertura forzata</b> (porta aperta senza un accesso valido; serve il sensore porta), <b>blocco forzato</b>, <b>tessera non valida</b> e <b>allarme incendio</b>. L'allarme incendio apre anche tutte le porte del controller e viene registrato come evento 39.</p>
+  <p><b>Stato in tempo reale.</b> Per un controller con <i>Scheda di espansione collegata</i>, la scheda <span class="ui">Diagnostica</span> mostra le quattro uscite (<i>Accesa</i>/<i>Spenta</i>, sotto la tabella delle porte) e il riquadro nella panoramica indica quali sono accese. Vengono lette dallo stesso stato che usa la console del produttore, a ogni controllo periodico e, dopo un evento o finché qualcosa è acceso, ogni 2 secondi finché tutto è spento. L'allarme incendio compare subito e sparisce pochi secondi dopo il rilascio dell'ingresso.</p>
+  <div class="box warn"><b>Protocollo ricostruito</b><p>I comandi per la scheda di espansione non fanno parte del protocollo pubblico del controller: sono stati ricostruiti dal software del produttore. Sono stati verificati su un UT0311-L04 (firmware v9.f8) con una scheda UT0311-01A collegata: apertura forzata, porta aperta troppo a lungo, tessera non valida, ingresso incendio e uscite che seguono un segnale fanno scattare i relè, e lo stato delle uscite viene letto correttamente. Non ancora verificati: il codice coercizione, la sorgente <b>antifurto</b> e gli ingressi A1–A3. Una configurazione fatta con il software del produttore viene sostituita al salvataggio successivo: se vuoi tenerla, prima leggila e copiala nel modulo. Prima di togliere la scheda, disattiva le uscite e salva.</p></div>
+
+  <h3>Manutenzione</h3>
+  <figure><img src="shots/controller-maintenance.png"><figcaption><b>Figura 29</b> — Storico delle sincronizzazioni e ripristino di fabbrica.</figcaption></figure>
+  <p>Lo <b>storico delle sincronizzazioni</b> elenca le sincronizzazioni di questo controller, con operatore, esito e riepilogo. Il <b>ripristino di fabbrica</b> cancella impostazioni di rete, listener, tessere ed eventi del controller. Le tessere memorizzate vengono prima salvate in un file nella cartella dei backup del server; per confermare si scrive il numero di serie. Dopo un ripristino il controller va riconfigurato (IP, poi sincronizzazione).</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Configurazione</span>
+  <h2 id="doors">18 · Porte</h2>
+  <figure><img src="shots/doors.png"><figcaption><b>Figura 30</b> — Le porte di tutti i controller.</figcaption></figure>
+  <p>Ogni porta di ogni controller con nome, modalità, tempo di apertura, stato in tempo reale e indicazione delle presenze. Da qui si può aprire da remoto. Modificando una porta puoi cambiare:</p>
+  <ul>
+    <li><b>Nome</b> — usato ovunque nell'applicazione (panoramica, eventi, permessi).</li>
+    <li><b>Modalità</b> — <i>Controllata</i> (normale: si apre con una tessera autorizzata), <i>Normalmente aperta</i> (sempre sbloccata) o <i>Normalmente chiusa</i> (sempre bloccata, anche per le tessere valide).</li>
+    <li><b>Tempo di apertura</b> — secondi in cui la serratura resta sbloccata dopo un passaggio consentito, il pulsante di uscita o un'apertura remota.</li>
+    <li><b>Attiva</b> — le porte non attive (ad esempio uscite inutilizzate) sono nascoste dalla panoramica e dai permessi.</li>
+    <li><b>Lettore usato per le presenze</b> — i passaggi su questo lettore diventano timbrature.</li>
+    <li><b>Presenti</b> — <i>Entrata</i>, <i>Uscita</i> o <i>Non conteggiata</i>: come contano i passaggi su questa porta nella pagina <a href="#events">Presenti</a>.</li>
+  </ul>
+  <p>Modalità e tempo di apertura vengono inviati subito al controller.</p>
+
+  <span class="grp g-cfg">Configurazione</span>
+  <h2 id="profiles">19 · Fasce orarie</h2>
+  <figure><img src="shots/time-profiles.png"><figcaption><b>Figura 31</b> — Fasce orarie.</figcaption></figure>
+  <p>Una fascia oraria dice <b>quando</b> un permesso è valido. Ogni fascia ha:</p>
+  <ul>
+    <li>un <b>ID</b> da 2 a 254 (il numero memorizzato nel controller) e un nome;</li>
+    <li>un periodo di validità (<b>Valida dal / al</b>);</li>
+    <li>i <b>giorni</b> della settimana;</li>
+    <li>fino a tre <b>intervalli orari</b>, ad esempio 08:00–12:30 e 13:30–18:00;</li>
+    <li>facoltativamente una <b>fascia collegata</b>: se un passaggio non rientra in questa fascia, si controlla anche quella collegata. Il collegamento è il modo per combinare orari diversi in giorni diversi.</li>
+  </ul>
+  <figure class="narrow"><img src="shots/time-profile-edit.png"><figcaption><b>Figura 32</b> — Modifica di una fascia: "Saturday morning" è collegata a "Office hours".</figcaption></figure>
+  <p>Quando si salva una fascia, tutte le fasce vengono reinviate a ogni controller. Una fascia usata da qualche permesso non si può eliminare.</p>
+  <div class="box tip"><b>Esempio</b><p>"Orario d'ufficio" (2) = lun–ven 07:30–19:00; "Sabato mattina" (4) = sab 08:00–12:30, collegata alla 2. Un permesso con la fascia 4 consente l'accesso nei giorni feriali in orario d'ufficio <i>e</i> il sabato mattina.</p></div>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-cfg">Configurazione</span>
+  <h2 id="tasks">20 · Attività pianificate</h2>
+  <figure><img src="shots/tasks.png"><figcaption><b>Figura 33</b> — Attività pianificate eseguite dai controller.</figcaption></figure>
+  <p>Azioni che un controller esegue <b>da solo</b> a un'ora stabilita, nei giorni scelti e in un periodo di validità — ad esempio la porta del magazzino <i>normalmente aperta</i> alle 07:00 e di nuovo <i>controllata</i> alle 18:00. Ogni attività ha controller, porta, azione, ora di inizio, giorni, validità e un interruttore Attiva. Azioni disponibili:</p>
+  <table>
+    <thead><tr><th>Azione</th><th>Effetto dall'ora di inizio</th></tr></thead>
+    <tr><td>Porta controllata / normalmente aperta / normalmente chiusa</td><td>cambia la modalità della porta</td></tr>
+    <tr><td>Disattiva / attiva le fasce orarie</td><td>le fasce orarie vengono ignorate (tessere valide a qualsiasi ora) o di nuovo applicate</td></tr>
+    <tr><td>Solo tessera (senza PIN) · Tessera + PIN in ingresso · Tessera + PIN</td><td>come i lettori con tastiera chiedono il PIN</td></tr>
+    <tr><td>Attiva / disattiva più tessere</td><td>l'accesso richiede più tessere autorizzate diverse in sequenza (numero di tessere impostato nell'attività)</td></tr>
+    <tr><td>Apertura singola</td><td>apre la porta una volta</td></tr>
+    <tr><td>Disattiva / attiva il pulsante di uscita</td><td>ignora o riattiva il pulsante di uscita</td></tr>
+  </table>
+
+  <span class="grp g-cfg">Configurazione</span>
+  <h2 id="sync">21 · Sincronizzazione</h2>
+  <figure><img src="shots/sync.png"><figcaption><b>Figura 34</b> — Confronto del database con un controller.</figcaption></figure>
+  <p>Ogni modifica viene inviata ai controller nel momento in cui la si fa. Se in quel momento un controller non era raggiungibile (spento, guasto di rete), lo si riallinea qui. La pagina elenca i controller con il loro stato e questi comandi:</p>
+  <ul>
+    <li><span class="ui">Confronta</span> — legge tutte le tessere dal controller e mostra le differenze: tessere da aggiungere, da aggiornare (permessi, validità, PIN) e da togliere (presenti nel controller ma non nel database). Non cambia nulla.</li>
+    <li><span class="ui">Allinea tessere</span> — applica quelle differenze alle tessere.</li>
+    <li><span class="ui">Sincronizzazione completa</span> (amministratori) — reinvia configurazione delle porte, fasce orarie, attività, impostazioni avanzate, scheda di espansione e tutte le tessere. Con molte tessere può richiedere alcuni minuti; l'avanzamento è mostrato in diretta.</li>
+  </ul>
+  <div class="box note"><b>Recupero automatico</b><p>Quando un controller torna raggiungibile <b>senza nessuna tessera</b> mentre il database se ne aspetta (ripristino di fabbrica, controller sostituito), l'applicazione esegue da sola una sincronizzazione completa. Ogni altra differenza viene solo segnalata nel log del server, così le tessere non vengono mai cancellate senza la decisione di un operatore.</p></div>
+</section>
+
+<!-- ===================================================================== PART 5 -->
+<section class="page part" id="part5">
+  <div class="opener o-orange"><div class="label">Parte 5</div><h1>Amministrazione</h1><p>Utenti dell'applicazione, tracciabilità, manutenzione del server e sicurezza degli account.</p></div>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="operators">22 · Operatori</h2>
+  <figure><img src="shots/operators.png"><figcaption><b>Figura 35</b> — Gli operatori dell'applicazione.</figcaption></figure>
+  <p>Gli account che possono accedere all'applicazione. Per ogni operatore: nome utente, nome visualizzato, ruolo (vedi <a href="#roles">capitolo 4</a>), zone e ultimo accesso.</p>
+  <ul>
+    <li><span class="ui">Nuovo operatore</span> — scegli nome utente, nome, ruolo e, se vuoi, le zone. Se lasci vuota la password, ne viene generata una temporanea mostrata una sola volta: dalla alla persona, che dovrà cambiarla al primo accesso.</li>
+    <li><b>Reimposta password</b> — genera una nuova password temporanea.</li>
+    <li><b>Attivo</b> — un operatore disattivato non può accedere; le sue operazioni restano nel registro, come quando un operatore viene eliminato.</li>
+    <li><span class="ui">Autenticazione a due fattori obbligatoria per</span> — nessuno (facoltativa), amministratori, operatori e amministratori, oppure tutti. Chi rientra nella scelta deve configurarla al prossimo accesso, prima di usare l'applicazione, e non può disattivarla. La modifica viene registrata nel registro operazioni.</li>
+    <li>Colonna <b>2FA</b> — chi ha l'autenticazione a due fattori attiva. L'icona a <b>scudo barrato</b> la azzera per un altro operatore che ha perso il telefono: potrà accedere con la sola password e riconfigurarla; le sue sessioni e i dispositivi ricordati vengono chiusi.</li>
+  </ul>
+  <p>Non puoi abbassare il tuo ruolo, disattivarti o eliminarti: così resta sempre almeno un amministratore.</p>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="audit">23 · Registro operazioni</h2>
+  <figure><img src="shots/audit.png"><figcaption><b>Figura 36</b> — Ogni modifica e ogni comando, con operatore ed esito.</figcaption></figure>
+  <p>Il registro di ogni modifica fatta nell'applicazione e di ogni comando inviato ai controller: data e ora, operatore (o <i>system</i> per le operazioni automatiche), azione (ad esempio <code>open-door</code>, <code>put-card</code>, <code>sync-cards</code>, <code>login</code>), oggetto, esito e dettagli. Filtra per azione per rispondere a domande come "chi ha aperto ieri la porta dell'ufficio sul retro?".</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="system">24 · Sistema</h2>
+  <figure><img src="shots/system.png"><figcaption><b>Figura 37</b> — Informazioni sul server.</figcaption></figure>
+  <ul>
+    <li><b>Server</b> — versione, nome host, tempo di attività, interfacce di rete e quantità di dati (controller, persone, tessere, eventi).</li>
+    <li><b>Comunicazione con i controller</b> — le impostazioni di rete del server: indirizzo locale, broadcast per la ricerca, porta di ascolto degli eventi e <b>listener programmato</b>, cioè l'indirizzo a cui i controller inviano i loro eventi. Se non è impostato compare un avviso: gli eventi arrivano allora solo con lo scaricamento periodico, non in tempo reale.</li>
+    <li><b>Home Assistant (MQTT)</b> — lo stato della connessione al broker, quando è configurato (vedi <a href="#homeassistant">Home Assistant</a>).</li>
+    <li><b>Backup del database</b> — ogni notte viene fatta una copia del database (alle 02:00 per impostazione predefinita, si tengono le ultime 14) nella cartella <code>backups</code> dei dati del server. <span class="ui">Crea backup ora</span> ne fa una subito, ad esempio prima di un'importazione grande. Solo amministratori.</li>
+  </ul>
+
+  <h2 id="password">25 · Cambia password</h2>
+  <figure class="narrow"><img src="shots/password.png"><figcaption><b>Figura 38</b> — Cambio della propria password.</figcaption></figure>
+  <p>Dall'icona a chiave nell'intestazione. Inserisci la password attuale e due volte quella nuova (almeno 8 caratteri). Le altre sessioni aperte vengono chiuse. Se la password di <code>admin</code> è impostata dalla variabile <code>ADMIN_PASSWORD</code> del server, la pagina spiega che si può cambiare solo lì.</p>
+</section>
+
+<section class="page chapter">
+  <span class="grp g-adm">Il tuo account</span>
+  <h2 id="twofactor">26 · Autenticazione a due fattori</h2>
+  <figure class="narrow"><img src="shots/two-factor.png"><figcaption><b>Figura 39</b> — Attivazione dell'autenticazione a due fattori: inquadra il QR code con un'app di autenticazione.</figcaption></figure>
+  <p>Oltre alla password, l'accesso chiede un codice di 6 cifre di un'app di autenticazione sul telefono (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password…). Ogni operatore la attiva dall'<b>icona a scudo</b> nell'intestazione (verde quando è attiva):</p>
+  <ol>
+    <li><span class="ui">Attiva</span> e conferma la password.</li>
+    <li>Inquadra il QR code con l'app, oppure scrivi la chiave mostrata sotto, poi inserisci il codice che mostra l'app e premi <span class="ui">Conferma</span>.</li>
+    <li>Salva i <b>10 codici di recupero</b> (copiali o scaricali) e tienili lontano dal telefono: ognuno sostituisce una volta il codice dell'app, e non vengono più mostrati.</li>
+  </ol>
+  <p>Da quel momento l'accesso chiede il codice dopo la password; le altre sessioni aperte e i dispositivi ricordati (app mobile) vengono disconnessi e rientrano con il codice. Un codice vale una sola volta, e i codici sbagliati contano come tentativi di accesso falliti. Dalla stessa pagina puoi generare <b>nuovi codici di recupero</b> o <b>disattivarla</b> (password e codice).</p>
+  <p><b>Telefono perso.</b> Accedi con un codice di recupero, oppure un altro amministratore la azzera dalla pagina <a href="#operators">Operatori</a>.</p>
+  <div class="box warn"><b>Accesso di emergenza per gli amministratori</b><p>Se l'unico amministratore ha perso sia il telefono sia i codici di recupero, imposta <code>ADMIN_2FA_BYPASS=true</code> sul server (add-on di Home Assistant: opzione <i>Accesso di emergenza senza autenticazione a due fattori</i>) e riavvia. Gli amministratori accedono allora con la sola password e possono disattivare la propria autenticazione a due fattori senza codice, anche se è obbligatoria (in quel caso la riconfigurano con il nuovo telefono al prossimo accesso). Operatori e utenti in sola lettura non sono interessati: devono comunque inserire il loro codice. Finché la variabile è impostata, in ogni pagina compare un avviso rosso e ogni accesso di questo tipo viene segnato nel registro operazioni. Togli la variabile e riavvia appena l'accesso è ripristinato.</p></div>
+</section>
+
+<!-- ===================================================================== PART: AUTOMATION AND INTEGRATIONS -->
+<section class="page part" id="partauto">
+  <div class="opener o-violet"><div class="label">Parte 6</div><h1>Automazioni e integrazioni</h1><p>Regole, notifiche, webhook, token API, l'app mobile e Home Assistant. Solo amministratori.</p></div>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="rules">27 · Regole</h2>
+  <figure><img src="shots/rules.png"><figcaption><b>Figura 40</b> — Regole di automazione.</figcaption></figure>
+  <p>Una regola dice <b>quando</b> succede qualcosa, <b>solo se</b> valgono certe condizioni, <b>allora</b> fai qualcosa. Per esempio: una tessera negata all'ingresso principale dopo le 20:00 → notifica di allarme; la porta del magazzino aperta per più di 5 minuti → avviso.</p>
+  <ul>
+    <li><b>Quando</b> — un evento qualsiasi (accesso consentito o negato, evento di porta, allarme, porta aperta o chiusa, controller scollegato o di nuovo raggiungibile, orario insolito, tentativi negati ripetuti, link per ospiti, targa) oppure <b>porta aperta per più di</b> un numero di secondi (serve il sensore porta).</li>
+    <li><b>Solo se</b> — porte, persone o tessere, una fascia di orario (può attraversare la mezzanotte) e giorni della settimana.</li>
+    <li><b>Allora</b> — invia una notifica ad alcuni canali, chiama alcuni webhook, apri alcune porte. Ogni attivazione compare anche nell'app web: gli allarmi restano sullo schermo finché non vengono chiusi.</li>
+    <li>La <b>gravità</b> (informazione, avviso, allarme) stabilisce emoji e priorità delle notifiche; il <b>messaggio</b> può usare <code>{person}</code>, <code>{card}</code>, <code>{door}</code>, <code>{time}</code>…; la <b>pausa</b> evita attivazioni ripetute.</li>
+  </ul>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="notifications">28 · Notifiche</h2>
+  <figure><img src="shots/notifications.png"><figcaption><b>Figura 41</b> — Canali di notifica.</figcaption></figure>
+  <p>Messaggi su <b>Telegram</b>, via <b>e-mail</b>, oppure a <b>ntfy</b> e <b>Gotify</b> (server push che puoi far girare sul tuo NAS). Ogni canale ha gli eventi che inviano un messaggio, un filtro facoltativo per porte, la lingua e il <b>resoconto giornaliero</b> facoltativo (chi è entrato, accessi negati, allarmi e anomalie delle ultime 24 ore). Su Telegram i messaggi che riguardano una porta possono avere un pulsante <b>Apri porta</b>, usabile solo dagli utenti Telegram indicati nel canale e per 15 minuti. <span class="ui">Invia test</span> prova subito il canale. Configurazione di ogni tipo: <code>docs/NOTIFICATIONS.md</code>.</p>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="webhooks">29 · Webhook</h2>
+  <figure><img src="shots/webhooks.png"><figcaption><b>Figura 42</b> — Webhook in uscita.</figcaption></figure>
+  <p>Una richiesta HTTP <code>POST</code> ad altri sistemi (n8n, Node-RED, Make, un trigger webhook di Home Assistant, un tuo servizio) quando succede qualcosa: l'URL, gli eventi, un filtro facoltativo per porte e intestazioni aggiuntive. Ogni richiesta è firmata con il segreto del webhook (<code>X-UHPPOTE-Signature</code>). <span class="ui">Invia test</span> invia una richiesta di prova; <span class="ui">Invii</span> elenca le ultime 100 richieste con codice di stato e contenuto. Contenuti e firma: <code>docs/WEBHOOKS.md</code>.</p>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="tokens">30 · Token API</h2>
+  <figure><img src="shots/api-tokens.png"><figcaption><b>Figura 43</b> — Token API per altri sistemi e script.</figcaption></figure>
+  <p>Un token permette a un altro sistema di usare le API di UHPPOTE Desk senza l'accesso di un operatore: una domotica che apre il cancello, uno script che legge gli eventi, un sistema del personale che crea persone. Livelli di accesso: <b>sola lettura</b>, <b>lettura + apertura porte</b>, <b>operatore</b>, <b>amministratore</b>; facoltativamente limitato ad alcune zone o alle porte che può aprire, e con una data di scadenza. Il token (<code>uhd_…</code>) viene mostrato una sola volta; disattivalo o eliminalo per revocarlo. Tutto ciò che viene fatto con un token è nel registro operazioni come <code>token:&lt;nome&gt;</code>. Endpoint: <code>docs/API-TOKENS.md</code>.</p>
+
+  <span class="grp g-adm">Amministrazione</span>
+  <h2 id="mobile">31 · App mobile</h2>
+  <figure class="half"><img src="shots/mobile.png"><figcaption><b>Figura 44</b> — L'app mobile su un telefono.</figcaption></figure>
+  <p>La pagina <code>/m</code> è fatta per i telefoni e si può installare nella schermata home come un'app. Mostra le porte con il loro stato in tempo reale, le apre con una conferma, elenca gli ultimi eventi e riceve <b>notifiche push</b>. L'icona del telefono nell'intestazione la apre.</p>
+  <ul>
+    <li><span class="ui">Ricorda questo dispositivo</span> all'accesso dà al telefono un accesso lungo tutto suo: senza scadenza con impronta/Face ID registrati, altrimenti 30–180 giorni.</li>
+    <li>L'apertura di una porta si conferma <b>tenendo premuto il pulsante</b> oppure, se l'amministratore lo sceglie, con l'<b>impronta/Face ID</b> del telefono.</li>
+    <li>Installazione, impronta/Face ID e notifiche push richiedono HTTPS (<code>PUBLIC_URL</code> e un reverse proxy).</li>
+  </ul>
+  <figure><img src="shots/mobile-admin.png"><figcaption><b>Figura 45</b> — Impostazioni dell'app mobile e dispositivi ricordati.</figcaption></figure>
+  <p>In <span class="ui">Amministrazione → App mobile</span> gli amministratori scelgono la conferma di apertura e la durata dell'accesso, e vedono ogni dispositivo ricordato (operatore, ultimo uso, impronta/Face ID, push) per revocarlo. Dettagli: <code>docs/MOBILE.md</code>.</p>
+
+  <h2 id="homeassistant">32 · Home Assistant</h2>
+  <p>UHPPOTE Desk pubblica controller e porte su un broker MQTT con il <b>discovery MQTT di Home Assistant</b>: i dispositivi compaiono in Home Assistant da soli. Su Home Assistant OS la strada più semplice è l'<b>add-on UHPPOTE Desk</b> (repository <code>https://github.com/alexbn71/UHPPOTE-Desk</code>): con l'add-on Mosquitto broker la connessione si configura da sola. Con Docker imposta <code>MQTT_URL</code>, <code>MQTT_USERNAME</code> e <code>MQTT_PASSWORD</code>; lo stato è nella pagina <a href="#system">Sistema</a>.</p>
+  <table>
+    <thead><tr><th style="width:46mm">Entità</th><th>Significato</th></tr></thead>
+    <tr><td colspan="2"><b>Controller</b></td></tr>
+    <tr><td>Connettività, Problema</td><td>controller raggiungibile; errore di sistema segnalato</td></tr>
+    <tr><td>Allarme incendio</td><td>allarme incendio attivo: si accende subito all'evento incendio, si spegne pochi secondi dopo il rilascio dell'ingresso</td></tr>
+    <tr><td>Blocco forzato</td><td>blocco forzato attivo</td></tr>
+    <tr><td>Uscita scheda espansione 1–4</td><td>uscite della scheda UT0311-01A (solo con <i>Scheda di espansione collegata</i>)</td></tr>
+    <tr><td colspan="2"><b>Porta</b> (una per ogni porta attiva)</td></tr>
+    <tr><td>Porta, Serratura</td><td>sensore porta (acceso = aperta); relè (acceso = sbloccata)</td></tr>
+    <tr><td>Apri</td><td>pulsante che apre la porta (si può disattivare con <code>MQTT_DOOR_CONTROL=false</code>)</td></tr>
+    <tr><td>Accesso</td><td>entità evento: consentito, negato, porta, allarme — con persona, tessera, direzione e motivo</td></tr>
+    <tr><td>Ultimo accesso</td><td>nome dell'ultima persona che è passata</td></tr>
+  </table>
+  <p>I nomi delle entità seguono <code>MQTT_LANGUAGE</code> (opzione <i>MQTT language</i> dell'add-on). Esempi di automazioni: <code>docs/HOME-ASSISTANT.md</code>.</p>
+</section>
+
+<!-- ===================================================================== PART 6 -->
+<section class="page part" id="part6">
+  <div class="opener o-slate"><div class="label">Parte 7</div><h1>Riferimento</h1><p>Motivi degli eventi, modalità delle porte e regole, risoluzione dei problemi e glossario.</p></div>
+
+  <h2 id="reasons">33 · Motivi degli eventi</h2>
+  <p>Ogni evento porta un codice di motivo, mostrato come testo nel monitor e nello storico.</p>
+  <table>
+    <thead><tr><th style="width:12mm">Codice</th><th style="width:58mm">Motivo</th><th>Significato</th></tr></thead>
+    <tr><td>1</td><td>Passaggio tessera</td><td>accesso consentito con una tessera</td></tr>
+    <tr><td>6</td><td>Nessun diritto di accesso</td><td>tessera sconosciuta al controller, o nessun permesso su quella porta</td></tr>
+    <tr><td>7</td><td>Password errata</td><td>PIN sbagliato sulla tastiera</td></tr>
+    <tr><td>8</td><td>Anti-passback</td><td>la tessera deve prima passare da un lettore dell'altro gruppo</td></tr>
+    <tr><td>9</td><td>Più tessere</td><td>servono altre tessere per aprire</td></tr>
+    <tr><td>10</td><td>Prima tessera</td><td>porta in attesa della prima tessera autorizzata</td></tr>
+    <tr><td>11</td><td>Porta normalmente chiusa</td><td>la porta è impostata su normalmente chiusa</td></tr>
+    <tr><td>12</td><td>Interblocco</td><td>un'altra porta del gruppo di interblocco è aperta</td></tr>
+    <tr><td>13</td><td>Fuori fascia oraria</td><td>il permesso non è valido in questo giorno/ora</td></tr>
+    <tr><td>15</td><td>Fascia oraria non valida</td><td>la fascia oraria non è definita nel controller</td></tr>
+    <tr><td>18</td><td>Accesso negato</td><td>accesso rifiutato dal controller per un motivo non coperto dagli altri codici</td></tr>
+    <tr><td>20</td><td>Pulsante di uscita</td><td>porta aperta con il pulsante di uscita</td></tr>
+    <tr><td>23 / 24</td><td>Porta aperta / Porta chiusa</td><td>sensore porta (con "Registra eventi porta e pulsante")</td></tr>
+    <tr><td>25</td><td>Porta aperta (password supervisore)</td><td>aperta con un codice porta</td></tr>
+    <tr><td>28 / 29</td><td>Accensione / reset del controller</td><td>il controller è stato acceso o resettato</td></tr>
+    <tr><td>31–34</td><td>Pulsante non valido</td><td>pulsante di uscita rifiutato (porta bloccata, offline, interblocco, minaccia)</td></tr>
+    <tr><td>37</td><td>Porta aperta troppo a lungo</td><td>la porta è stata lasciata aperta</td></tr>
+    <tr><td>38</td><td>Apertura forzata</td><td>porta aperta senza un accesso valido</td></tr>
+    <tr><td>39</td><td>Incendio</td><td>ingresso allarme incendio attivo</td></tr>
+    <tr><td>40</td><td>Chiusura forzata</td><td>ingresso blocco forzato attivo</td></tr>
+    <tr><td>41–43</td><td>Antifurto · Zona 24 ore · Emergenza</td><td>ingressi di allarme</td></tr>
+    <tr><td>44 / 45</td><td>Apertura remota</td><td>aperta dall'applicazione (o da un lettore USB)</td></tr>
+  </table>
+  <p>Le righe degli accessi negati e degli allarmi sono evidenziate in rosso nella panoramica, nel monitor e nello storico.</p>
+</section>
+
+<section class="page chapter">
+  <h2 id="modes">34 · Modalità delle porte e regole di accesso</h2>
+  <h3>Modalità delle porte</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Modalità</th><th>Comportamento</th></tr></thead>
+    <tr><td>Controllata</td><td>funzionamento normale: la serratura si apre per una tessera autorizzata, il pulsante di uscita o un'apertura remota</td></tr>
+    <tr><td>Normalmente aperta</td><td>la serratura è sempre sbloccata (ad esempio durante l'orario di apertura, con un'attività pianificata)</td></tr>
+    <tr><td>Normalmente chiusa</td><td>la serratura è sempre bloccata; le tessere vengono rifiutate (motivo 11)</td></tr>
+  </table>
+  <h3>Interblocco</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Opzione</th><th>Porte che non possono essere aperte contemporaneamente</th></tr></thead>
+    <tr><td>Porte 1 e 2</td><td>1 con 2</td></tr>
+    <tr><td>Porte 3 e 4</td><td>3 con 4</td></tr>
+    <tr><td>Porte 1-2 e 3-4</td><td>1 con 2, e 3 con 4 (due bussole indipendenti)</td></tr>
+    <tr><td>Porte 1, 2 e 3</td><td>due qualsiasi tra 1, 2 e 3</td></tr>
+    <tr><td>Porte 1, 2, 3 e 4</td><td>due qualsiasi delle quattro porte</td></tr>
+  </table>
+  <h3>Anti-passback</h3>
+  <table>
+    <thead><tr><th style="width:42mm">Opzione</th><th>Gruppi di lettori (entrata : uscita)</th></tr></thead>
+    <tr><td>(1:2);(3:4)</td><td>il lettore 1 si alterna con il lettore 2, e il lettore 3 con il lettore 4</td></tr>
+    <tr><td>(1,3):(2,4)</td><td>i lettori 1 e 3 si alternano con i lettori 2 e 4</td></tr>
+    <tr><td>1:(2,3)</td><td>il lettore 1 si alterna con i lettori 2 e 3</td></tr>
+    <tr><td>1:(2,3,4)</td><td>il lettore 1 si alterna con i lettori 2, 3 e 4</td></tr>
+  </table>
+  <p>Su un controller a 4 porte con un lettore per porta, "lettore N" è il lettore della porta N. Sui controller a 1 e 2 porte con lettori di entrata e di uscita, verifica la numerazione nella documentazione del controller.</p>
+
+  <h2 id="trouble">35 · Risoluzione dei problemi</h2>
+  <table>
+    <thead><tr><th style="width:52mm">Problema</th><th>Cosa controllare</th></tr></thead>
+    <tr><td>La ricerca in rete non trova nulla</td><td>Server e controller sullo stesso segmento di rete; cavo e alimentazione; firewall che lasci passare la porta UDP 60000; con Docker, rete "host". Prova ad aggiungere il controller a mano con il suo indirizzo IP.</td></tr>
+    <tr><td>Controller indicato Offline</td><td>Indirizzo IP e porta in <i>Rete e configurazione</i>; ping del controller; un altro programma che usa il controller nello stesso momento.</td></tr>
+    <tr><td>I passaggi non compaiono nel Monitor, ma compaiono più tardi nello storico</td><td>Gli eventi in tempo reale non arrivano al server: imposta <code>UHPPOTE_LISTENER_PUBLIC</code> sul server (vedi l'avviso nella pagina <a href="#system">Sistema</a>), consenti in ingresso la porta UDP 60001, poi <i>Configura automaticamente</i> il listener nella pagina del controller.</td></tr>
+    <tr><td>Una tessera viene rifiutata anche se ha i permessi</td><td>Guarda il motivo nello storico: 13 significa fuori fascia oraria; 6 significa che la tessera non è nel controller o non ha permessi su quella porta — esegui <i>Confronta</i> nella pagina Sincronizzazione. Verifica che persona e tessera siano attive e che oggi rientri nel periodo di validità della persona.</td></tr>
+    <tr><td>"Salvato, ma non inviato a tutti i controller"</td><td>Qualche controller era scollegato. Quando torna, usa <i>Allinea tessere</i> o <i>Sincronizzazione completa</i>.</td></tr>
+    <tr><td>"Numero di tessera non valido per Wiegand-26"</td><td>Il numero deve avere impianto ≤ 255 e codice ≤ 65535. Passa la tessera e usa il numero mostrato tra le tessere sconosciute.</td></tr>
+    <tr><td>Ora sbagliata negli eventi o nei resoconti</td><td>Fuso orario del server (variabile <code>TZ</code>); l'orologio del controller viene corretto automaticamente, oppure usa <i>Sincronizza orologio</i>.</td></tr>
+    <tr><td>Un'uscita della scheda di espansione non scatta</td><td>Usa <i>Leggi dal controller</i> per vedere cosa memorizza il controller; verifica che <i>Scheda di espansione collegata</i> sia attiva e salva di nuovo; che l'uscita sia attiva, con la porta e gli eventi giusti; che l'allarme avvenga davvero (l'evento compare nel Monitor: 37 aperta troppo a lungo, 38 apertura forzata, 39 incendio). L'apertura forzata richiede il sensore porta; la coercizione una tastiera.</td></tr>
+    <tr><td>Password dell'amministratore dimenticata</td><td>Imposta <code>ADMIN_PASSWORD</code> sul server e riavvialo; poi accedi come <code>admin</code>.</td></tr>
+    <tr><td>Telefono con l'app di autenticazione perso</td><td>Accedi con un codice di recupero; oppure un altro amministratore la azzera (<i>Operatori</i>, scudo barrato). Se sei l'unico amministratore: <code>ADMIN_2FA_BYPASS=true</code>, riavvia, disattivala nella pagina <i>Autenticazione a due fattori</i>, togli la variabile e riavvia (vedi <a href="#twofactor">Autenticazione a due fattori</a>).</td></tr>
+    <tr><td>"Codice di verifica non valido" con l'app giusta</td><td>Gli orologi del server e del telefono devono essere corretti (NTP): i codici cambiano ogni 30 secondi.</td></tr>
+    <tr><td>Le uscite della scheda non compaiono in Home Assistant</td><td><i>Scheda di espansione collegata</i> deve essere attiva nella scheda <i>Scheda espansione</i>; salva, e vengono create le entità <i>Uscita scheda espansione 1–4</i>.</td></tr>
+  </table>
+
+  <h2 id="glossary">36 · Glossario</h2>
+  <table>
+    <thead><tr><th style="width:42mm">Termine</th><th>Significato</th></tr></thead>
+    <tr><td>Anti-passback</td><td>impedisce a una tessera di entrare due volte senza uscire</td></tr>
+    <tr><td>Autenticazione a due fattori (2FA)</td><td>un codice di un'app di autenticazione chiesto all'accesso oltre alla password</td></tr>
+    <tr><td>Broadcast</td><td>un messaggio di rete inviato a tutti i dispositivi della rete locale; serve a trovare i controller</td></tr>
+    <tr><td>Codice di recupero</td><td>un codice monouso che sostituisce quello dell'app quando il telefono è perso</td></tr>
+    <tr><td>Codice impianto</td><td>la prima parte (0–255) di un numero di tessera Wiegand-26</td></tr>
+    <tr><td>Controller</td><td>la scheda di controllo accessi (UHPPOTE UT0311-L01/L02/L04)</td></tr>
+    <tr><td>Fascia oraria</td><td>giorni e ore in cui un permesso è valido (ID 2–254)</td></tr>
+    <tr><td>Indice evento</td><td>numero progressivo di un evento nella memoria del controller</td></tr>
+    <tr><td>Interblocco</td><td>porte che non possono essere aperte contemporaneamente (bussola)</td></tr>
+    <tr><td>Link per ospiti</td><td>un link che apre alcune porte per un certo tempo, senza tessera né app</td></tr>
+    <tr><td>Listener</td><td>l'indirizzo del server a cui un controller invia i suoi eventi</td></tr>
+    <tr><td>Prima tessera</td><td>funzione che tiene chiusa una porta finché non arriva una persona autorizzata</td></tr>
+    <tr><td>Relè</td><td>l'uscita del controller che sblocca la serratura elettrica</td></tr>
+    <tr><td>Scheda di espansione</td><td>la scheda aggiuntiva UT0311-01A con quattro relè di allarme e un ingresso incendio</td></tr>
+    <tr><td>Sincronizzazione</td><td>l'allineamento di un controller con il database dell'applicazione</td></tr>
+    <tr><td>Timbratura</td><td>un passaggio usato per le presenze (entrata / uscita)</td></tr>
+    <tr><td>Wiegand-26</td><td>il formato di tessera accettato dai controller: impianto × 100000 + codice</td></tr>
+    <tr><td>Zona</td><td>gruppo di controller, usato per limitare gli operatori</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

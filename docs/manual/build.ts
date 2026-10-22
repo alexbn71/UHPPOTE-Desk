@@ -5,14 +5,17 @@
  *   3. takes screenshots of every page with Playwright,
  *   4. renders docs/manual/manual.html (which references the screenshots) to PDF.
  *
- *   npm run manual        (builds the web app first)
+ *   npm run manual        (builds the web app first, then the manual in every language)
+ *   tsx docs/manual/build.ts --lang it    (one language; English by default)
  *
  * With `--readme` (npm run screenshots) it only takes the screenshots shown in the README (docs/screenshots).
  */
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { spawnSync } from 'node:child_process'
 import { chromium, type Page } from '@playwright/test'
+import { LANGUAGES, translate, type Language } from '@uhppote-desk/shared'
 import { FakeController } from '@uhppote-desk/protocol/testing'
 import { buildApp } from '../../apps/server/src/app.js'
 import { createContext } from '../../apps/server/src/context.js'
@@ -20,8 +23,32 @@ import { currentStep, hotp } from '../../apps/server/src/auth/totp.js'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const MANUAL_DIR = path.join(ROOT, 'docs/manual')
-const SHOTS = path.join(MANUAL_DIR, 'shots')
-const OUTPUT = path.join(ROOT, 'docs/UHPPOTE-Desk-Manual.pdf')
+
+// --all: one run per language (each starts its own server and simulated controller)
+if (process.argv.includes('--all')) {
+  for (const { code } of LANGUAGES) {
+    const r = spawnSync(process.execPath, [...process.execArgv, process.argv[1]!, '--lang', code], { stdio: 'inherit' })
+    if (r.status !== 0) process.exit(r.status ?? 1)
+  }
+  process.exit(0)
+}
+const langArg = process.argv[process.argv.indexOf('--lang') + 1]
+const LANG = (process.argv.includes('--lang') ? langArg : 'en') as Language
+if (!LANGUAGES.some((l) => l.code === LANG)) throw new Error(`unknown language: ${langArg}`)
+/** Browser locale: the web app follows it, so the screenshots are in the language of the manual. */
+const LOCALE = { en: 'en-GB', it: 'it-IT', de: 'de-DE', fr: 'fr-FR', es: 'es-ES' }[LANG]
+/** Texts of the user interface used to find buttons, tabs and headings. */
+const t = (key: string, params: Record<string, string | number> = {}) => translate(LANG, key, params)
+const MANUAL_TITLE = {
+  en: 'User manual',
+  it: 'Manuale utente',
+  de: 'Benutzerhandbuch',
+  fr: 'Manuel utilisateur',
+  es: 'Manual de usuario',
+}[LANG]
+const SHOTS = path.join(MANUAL_DIR, 'shots', LANG)
+const SOURCE = path.join(MANUAL_DIR, LANG === 'en' ? 'manual.html' : `manual.${LANG}.html`)
+const OUTPUT = path.join(ROOT, LANG === 'en' ? 'docs/UHPPOTE-Desk-Manual.pdf' : `docs/UHPPOTE-Desk-Manual-${LANG}.pdf`)
 const README_SHOTS = path.join(ROOT, 'docs/screenshots')
 const PORT = 8091
 const BASE = `http://127.0.0.1:${PORT}`
@@ -654,12 +681,12 @@ async function readmeScreenshots(): Promise<void> {
 }
 
 // --- screenshots ---------------------------------------------------------------------------------------------
-console.log('Taking screenshots…')
+console.log(`Taking screenshots (${LANG})…`)
 const context = await browser.newContext({
   viewport: { width: 1360, height: 850 },
   deviceScaleFactor: 2,
   colorScheme: 'light',
-  locale: 'en-GB',
+  locale: LOCALE,
 })
 const page = await context.newPage()
 
@@ -694,26 +721,29 @@ async function go(url: string, heading: string): Promise<void> {
 }
 
 await page.goto(BASE)
-await page.getByRole('textbox', { name: 'Username', exact: true }).waitFor()
+await page.getByRole('textbox', { name: t('login.username'), exact: true }).waitFor()
 await page
   .locator('form')
   .first()
   .screenshot({ path: path.join(SHOTS, 'login.png') })
-await page.getByRole('textbox', { name: 'Username', exact: true }).fill('admin')
-await page.getByRole('textbox', { name: 'Password', exact: true }).fill(PASSWORD)
-await page.getByRole('button', { name: 'Log in' }).click()
-await page.getByRole('heading', { name: 'Dashboard' }).waitFor()
-await page.getByText('Online').first().waitFor({ timeout: 10_000 })
+await page.getByRole('textbox', { name: t('login.username'), exact: true }).fill('admin')
+await page.getByRole('textbox', { name: t('login.password'), exact: true }).fill(PASSWORD)
+await page.getByRole('button', { name: t('login.submit') }).click()
+await page.getByRole('heading', { name: t('dashboard.title') }).waitFor()
+await page.getByText(t('common.online')).first().waitFor({ timeout: 10_000 })
 await shot('dashboard', { whole: true })
 
-await page.getByRole('button', { name: 'Language' }).first().click()
+await page
+  .getByRole('button', { name: t('common.language') })
+  .first()
+  .click()
 await page.getByRole('menuitem', { name: 'Deutsch' }).waitFor()
 await sleep(300)
 await page.screenshot({ path: path.join(SHOTS, 'language.png'), clip: { x: 900, y: 0, width: 460, height: 300 } })
 await page.keyboard.press('Escape')
 
-await go('/monitor', 'Monitor')
-await page.getByText('Live', { exact: true }).first().waitFor()
+await go('/monitor', t('monitor.title'))
+await page.getByText(t('common.live'), { exact: true }).first().waitFor()
 fake.swipe(garcia.card, 2, 1)
 await sleep(700)
 fake.swipe(10099999, 3, 1)
@@ -722,43 +752,43 @@ fake.swipe(rossi.card, 1, 1)
 await page.getByText('Rossi Maria').first().waitFor({ timeout: 10_000 })
 await shot('monitor', { maxHeight: 700 })
 
-await go('/events', 'Event history')
+await go('/events', t('events.title'))
 await shot('events')
-await go('/presence', 'Persons inside')
+await go('/presence', t('presence.title'))
 await page.getByTestId('presence-count').waitFor()
 await shot('presence', { maxHeight: 900 })
 
-await go('/plates', 'Licence plates')
+await go('/plates', t('plates.title'))
 await page.getByText('FG456HJ').first().waitFor({ timeout: 10_000 })
 await shot('plates', { maxHeight: 700 })
-await page.getByRole('tab', { name: 'Cameras' }).click()
+await page.getByRole('tab', { name: t('plates.tabReaders') }).click()
 await shot('plate-cameras', { maxHeight: 520 })
 
-await go('/people', 'People')
+await go('/people', t('people.title'))
 await shot('people')
 await page.getByRole('cell', { name: 'E001' }).click()
-await page.getByRole('tab', { name: 'Details' }).waitFor()
+await page.getByRole('tab', { name: t('people.tabDetails') }).waitFor()
 await shot('person-details')
-await page.getByRole('tab', { name: /Cards/ }).click()
+await page.getByRole('tab', { name: new RegExp(t('people.tabCards')) }).click()
 await shot('person-cards')
-await page.getByRole('tab', { name: 'Permissions' }).click()
+await page.getByRole('tab', { name: t('people.tabPermissions') }).click()
 await shot('person-permissions')
 await page.keyboard.press('Escape')
 
-await go('/cards', 'Cards')
+await go('/cards', t('cards.title'))
 await shot('cards')
-await go('/permissions', 'Access permissions')
+await go('/permissions', t('permissions.title'))
 await shot('permissions')
-await go('/structure', 'Departments and zones')
+await go('/structure', t('structure.title'))
 await shot('structure')
-await go('/guests', 'Guests')
+await go('/guests', t('guests.title'))
 await page.getByText('Plumber (Fixit Ltd)').first().waitFor()
 await shot('guests', { maxHeight: 640 })
 
-await go('/controllers', 'Controllers')
+await go('/controllers', t('controllers.title'))
 await shot('controllers', { maxHeight: 420 })
-await page.getByRole('button', { name: 'Search network' }).click()
-await page.getByRole('button', { name: 'Start search' }).click()
+await page.getByRole('button', { name: t('controllers.search') }).click()
+await page.getByRole('button', { name: t('controllers.startSearch') }).click()
 await page
   .getByRole('dialog')
   .getByRole('cell', { name: String(SERIAL) })
@@ -769,75 +799,84 @@ await page.keyboard.press('Escape')
 await go(`/controllers/${controller.id}`, 'Main building')
 await page.getByText('v8.92').first().waitFor({ timeout: 10_000 })
 await shot('controller-diagnostics', { maxHeight: 1600 })
-await page.getByRole('tab', { name: 'Network and configuration' }).click()
+await page.getByRole('tab', { name: t('controllerDetail.tabNetwork') }).click()
 await shot('controller-network', { maxHeight: 1600 })
-await page.getByRole('tab', { name: 'Advanced settings' }).click()
+await page.getByRole('tab', { name: t('controllerDetail.tabAdvanced') }).click()
 await shot('controller-advanced', { maxHeight: 1600 })
-await page.getByRole('tab', { name: 'Expansion board' }).click()
-await page.getByText('Alarm expansion board (UT0311-01A)').waitFor()
-await page.getByRole('button', { name: 'Read from the controller' }).click()
-await page.getByText('Same as the saved configuration').waitFor({ timeout: 10_000 })
+await page.getByRole('tab', { name: t('controllerDetail.tabExpansion') }).click()
+await page.getByText(t('expansion.title')).waitFor()
+await page.getByRole('button', { name: t('expansion.read') }).click()
+await page.getByText(t('expansion.readAligned')).waitFor({ timeout: 10_000 })
 await shot('controller-expansion', { maxHeight: 1600 })
-await page.getByRole('tab', { name: 'Maintenance' }).click()
+await page.getByRole('tab', { name: t('controllerDetail.tabMaintenance') }).click()
 await shot('controller-maintenance', { maxHeight: 1600 })
 
-await go('/doors', 'Doors')
+await go('/doors', t('doors.title'))
 await shot('doors', { maxHeight: 480 })
-await go('/time-profiles', 'Time profiles')
+await go('/time-profiles', t('timeProfiles.title'))
 await shot('time-profiles', { maxHeight: 480 })
 await page
   .getByRole('row', { name: /Saturday morning/ })
-  .getByRole('button', { name: 'Edit' })
+  .getByRole('button', { name: t('common.edit') })
   .click()
 await page.getByRole('dialog').waitFor()
 await shot('time-profile-edit')
 await page.keyboard.press('Escape')
-await go('/tasks', 'Scheduled tasks')
+await go('/tasks', t('tasks.title'))
 await shot('tasks', { maxHeight: 480 })
 
-await go('/sync', 'Synchronisation')
-await page.getByRole('button', { name: 'Compare' }).first().click()
+await go('/sync', t('sync.title'))
 await page
-  .getByText(/aligned/)
+  .getByRole('button', { name: t('sync.compare') })
+  .first()
+  .click()
+await page
+  .getByText(
+    new RegExp(
+      t('sync.diffCards')
+        .split('{{')[0]!
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    ),
+  )
   .first()
   .waitFor({ timeout: 10_000 })
 await shot('sync', { maxHeight: 520 })
 
-await go('/attendance', 'Attendance')
-await page.getByText('Period summary').waitFor()
+await go('/attendance', t('attendance.title'))
+await page.getByText(t('attendance.summary')).waitFor()
 await shot('attendance-report', { maxHeight: 1250 })
 for (const [tab, name] of [
-  ['Shifts', 'attendance-shifts'],
-  ['Holidays', 'attendance-holidays'],
-  ['Leave and absences', 'attendance-leaves'],
-  ['Manual punches', 'attendance-punches'],
+  [t('attendance.tabShifts'), 'attendance-shifts'],
+  [t('attendance.tabHolidays'), 'attendance-holidays'],
+  [t('attendance.tabLeaves'), 'attendance-leaves'],
+  [t('attendance.tabPunches'), 'attendance-punches'],
 ] as const) {
   await page.getByRole('tab', { name: tab }).click()
   await shot(name, { maxHeight: 640 })
 }
 
-await go('/operators', 'Operators')
+await go('/operators', t('operators.title'))
 await shot('operators', { maxHeight: 560 })
-await go('/rules', 'Rules')
+await go('/rules', t('rules.title'))
 await shot('rules', { maxHeight: 560 })
-await go('/notifications', 'Notifications')
+await go('/notifications', t('notifications.title'))
 await shot('notifications', { maxHeight: 560 })
-await go('/webhooks', 'Webhooks')
+await go('/webhooks', t('webhooks.title'))
 await shot('webhooks', { maxHeight: 560 })
-await go('/api-tokens', 'API tokens')
+await go('/api-tokens', t('apiTokens.title'))
 await shot('api-tokens', { maxHeight: 560 })
-await go('/mobile-app', 'Mobile app')
+await go('/mobile-app', t('mobileAdmin.title'))
 await shot('mobile-admin', { maxHeight: 900 })
-await go('/audit', 'Audit log')
+await go('/audit', t('audit.title'))
 await shot('audit', { maxHeight: 760 })
-await go('/system', 'System')
+await go('/system', t('system.title'))
 await shot('system', { maxHeight: 1600 })
-await go('/password', 'Change password')
+await go('/password', t('password.title'))
 await shot('password', { maxHeight: 520 })
-await go('/two-factor', 'Two-factor authentication')
-await page.getByRole('button', { name: 'Activate' }).click()
-await page.getByRole('textbox', { name: 'Confirm your password to start', exact: true }).fill(PASSWORD)
-await page.getByRole('button', { name: 'Continue' }).click()
+await go('/two-factor', t('twoFactor.title'))
+await page.getByRole('button', { name: t('twoFactor.enable') }).click()
+await page.getByRole('textbox', { name: t('twoFactor.passwordPrompt'), exact: true }).fill(PASSWORD)
+await page.getByRole('button', { name: t('twoFactor.continue') }).click()
 await page.getByAltText('QR').waitFor()
 await shot('two-factor', { maxHeight: 900 })
 await context.close()
@@ -849,14 +888,14 @@ const phone = await browser.newContext({
   isMobile: true,
   hasTouch: true,
   colorScheme: 'light',
-  locale: 'en-GB',
+  locale: LOCALE,
 })
 const mobile = await phone.newPage()
 await mobile.goto(BASE)
-await mobile.getByRole('textbox', { name: 'Username', exact: true }).fill('admin')
-await mobile.getByRole('textbox', { name: 'Password', exact: true }).fill(PASSWORD)
-await mobile.getByRole('button', { name: 'Log in' }).click()
-await mobile.getByRole('heading', { name: 'Dashboard' }).waitFor()
+await mobile.getByRole('textbox', { name: t('login.username'), exact: true }).fill('admin')
+await mobile.getByRole('textbox', { name: t('login.password'), exact: true }).fill(PASSWORD)
+await mobile.getByRole('button', { name: t('login.submit') }).click()
+await mobile.getByRole('heading', { name: t('dashboard.title') }).waitFor()
 await mobile.goto(`${BASE}/m`)
 await mobile.getByText('Main entrance').first().waitFor({ timeout: 10_000 })
 await sleep(500)
@@ -872,23 +911,36 @@ await phone.close()
 // --- PDF -----------------------------------------------------------------------------------------------------------
 console.log('Rendering the PDF…')
 const pdfPage = await browser.newPage()
-await pdfPage.goto(`file://${path.join(MANUAL_DIR, 'manual.html').replaceAll('\\', '/')}`)
+await pdfPage.goto(`file://${SOURCE.replaceAll('\\', '/')}`)
+// the HTML references shots/<name>.png: the screenshots of this language are in shots/<language>/
+await pdfPage.evaluate(
+  (lang) =>
+    Promise.all(
+      [...document.images].map((img) => {
+        img.src = img.getAttribute('src')!.replace(/^shots\//, `shots/${lang}/`)
+        return img.decode().catch(() => undefined)
+      }),
+    ),
+  LANG,
+)
 await pdfPage.waitForLoadState('networkidle')
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version as string
-await pdfPage.evaluate((v) => {
-  document.querySelectorAll('[data-version]').forEach((e) => (e.textContent = v))
-  document
-    .querySelectorAll('[data-date]')
-    .forEach((e) => (e.textContent = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long' })))
-}, version)
+await pdfPage.evaluate(
+  ({ v, locale }) => {
+    document.querySelectorAll('[data-version]').forEach((e) => (e.textContent = v))
+    document
+      .querySelectorAll('[data-date]')
+      .forEach((e) => (e.textContent = new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long' })))
+  },
+  { v: version, locale: LOCALE },
+)
 await pdfPage.pdf({
   path: OUTPUT,
   format: 'A4',
   printBackground: true,
   displayHeaderFooter: true,
   headerTemplate: '<span></span>',
-  footerTemplate:
-    '<div style="width:100%;font:8px system-ui,Segoe UI,sans-serif;color:#7a8699;padding:0 14mm;display:flex;justify-content:space-between"><span>UHPPOTE Desk — User manual</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>',
+  footerTemplate: `<div style="width:100%;font:8px system-ui,Segoe UI,sans-serif;color:#7a8699;padding:0 14mm;display:flex;justify-content:space-between"><span>UHPPOTE Desk — ${MANUAL_TITLE}</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`,
   margin: { top: '14mm', bottom: '16mm', left: '0', right: '0' },
 })
 await pdfPage.close()

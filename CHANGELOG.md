@@ -5,6 +5,11 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+### Added
+- **User manual in every language**: Italian, German, French and Spanish besides English
+  (`docs/UHPPOTE-Desk-Manual-<lang>.pdf`), with the screenshots taken in that language. `npm run manual` builds all
+  five; `docs/manual/renumber.py` renumbers parts, chapters, figures and contents of a translated source.
+
 ## [1.2.1] - 2026-10-22
 
 ### Added
