@@ -3,6 +3,12 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.3
+
+- **Events for the expansion board inputs A1–A3**: mark the inputs you use on the *Expansion board* tab; their
+  openings and closings appear in the monitor and the event history and can trigger rules, notifications and
+  webhooks (*Expansion input opened* / *closed again*).
+
 ## 1.2.2
 
 - **Expansion board inputs A1–A3** as Home Assistant binary sensors *Expansion input A1–A3* (on = normally closed

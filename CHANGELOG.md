@@ -5,6 +5,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-10-22
+
 ### Added
 - **Events for the expansion board inputs A1–A3**: inputs marked *in use* on the *Expansion board* tab are recorded
   when they open or close (new event type *Input*, reasons 201–203 / 211–213, recorded by the server since the
@@ -173,6 +175,7 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.2.3]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.3
 [1.2.2]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.2
 [1.2.1]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.1
 [1.2.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.0
