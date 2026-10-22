@@ -5,6 +5,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-22
+
 ### Added
 - **User manual in every language**: Italian, German, French and Spanish besides English
   (`docs/UHPPOTE-Desk-Manual-<lang>.pdf`), with the screenshots taken in that language. `npm run manual` builds all
@@ -13,10 +15,14 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
   Assistant binary sensors *Expansion input A1–A3* (`opening`: on = normally closed contact open). Found with a
   probe on the real board (byte 58 of the console status, bits 4–6, set at rest); since they send no event, the
   board status is now read every 2 s for the controllers with *Expansion board connected*.
+- **Version in the footer** of every page, linked to the release notes of that version.
 
 ### Fixed
 - Turning *Expansion board connected* on or off now adds or removes its Home Assistant entities at once (before:
   only after a restart of the server or of the MQTT connection).
+- The update notice never shrinks its *Reload* button.
+- User manual: no thin piece of a chapter heading left at the bottom of the previous page; numbered steps and list
+  items are never split across pages; no transparency (some PDF viewers showed the cover wrongly).
 
 ## [1.2.1] - 2026-10-22
 
@@ -161,6 +167,7 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.2.2]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.2
 [1.2.1]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.1
 [1.2.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.0
 [1.1.0]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.1.0

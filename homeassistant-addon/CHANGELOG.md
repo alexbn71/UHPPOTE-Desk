@@ -3,6 +3,14 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.2
+
+- **Expansion board inputs A1–A3** as Home Assistant binary sensors *Expansion input A1–A3* (on = normally closed
+  contact open), read every 2 s, and in the controller *Diagnostics*.
+- Turning *Expansion board connected* on or off adds or removes its Home Assistant entities at once (before: only
+  after restarting the add-on).
+- Version shown in the footer of the web interface; user manual in Italian, German, French and Spanish.
+
 ## 1.2.1
 
 - New option **Emergency access without two-factor authentication**: administrators log in with the password only
