@@ -5,6 +5,9 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+### Fixed
+- Italian: "Sincronizza ora" (clock) read as "synchronise now": it is now *Sincronizza orologio*.
+
 ## [1.2.0] - 2026-10-21
 
 ### Added
