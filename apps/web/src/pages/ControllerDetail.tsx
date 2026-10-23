@@ -73,15 +73,17 @@ interface Info {
   doors: { door: number; mode: number; delay: number }[]
 }
 
-function Diagnostics({ id }: { id: number }) {
+function Diagnostics({ id, enabled }: { id: number; enabled: boolean }) {
   const { t } = useTranslation()
   const codes = useCodes()
   // outputs and inputs of the expansion board: only in the live state (vendor status), null without a board
   const expansion = useLive().states[id]?.expansion ?? null
+  // a disabled controller is not queried (it may be switched off or unreachable on purpose)
   const info = useQuery({
     queryKey: ['controller-info', id],
     queryFn: () => api.get<Info>(`/controllers/${id}/info`),
     retry: false,
+    enabled,
   })
   const { can } = useAuth()
   const [busy, setBusy] = useState<string | null>(null)
@@ -98,6 +100,9 @@ function Diagnostics({ id }: { id: number }) {
     }
   }
 
+  if (!enabled) {
+    return <Alert color="gray">{t('controllerDetail.disabledNoRead')}</Alert>
+  }
   if (info.isError) {
     return (
       <Alert color="red" icon={<IconAlertTriangle />} title={t('controllerDetail.unreachable')}>
@@ -295,6 +300,7 @@ function Network({ c }: { c: ControllerDto }) {
     queryKey: ['controller-info', c.id],
     queryFn: () => api.get<Info>(`/controllers/${c.id}/info`),
     retry: false,
+    enabled: c.enabled,
   })
   const prefilled = useRef(false)
   useEffect(() => {
@@ -789,7 +795,7 @@ export function ControllerDetailPage() {
           {can('admin') && <Tabs.Tab value="maintenance">{t('controllerDetail.tabMaintenance')}</Tabs.Tab>}
         </Tabs.List>
         <Tabs.Panel value="diagnostics">
-          <Diagnostics id={cid} />
+          <Diagnostics id={cid} enabled={c.enabled} />
         </Tabs.Panel>
         <Tabs.Panel value="network">
           <Network c={c} />

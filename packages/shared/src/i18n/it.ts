@@ -396,6 +396,8 @@ export const it: Messages = {
     tabMaintenance: 'Manutenzione',
     tabExpansion: 'Scheda espansione',
     unreachable: 'Controller non raggiungibile',
+    disabledNoRead:
+      'Questo controller è disabilitato: UHPPOTE Desk non lo interroga. Abilitalo in Rete e configurazione per leggerne lo stato.',
     retry: 'Riprova',
     reread: 'Rileggi dal controller',
     syncTime: 'Sincronizza orologio',
@@ -600,7 +602,7 @@ export const it: Messages = {
     allUsers: 'Tutti gli utenti',
     silent: 'Lettore muto con tessere non valide',
     silentHint:
-      "Il controller non accende il LED del lettore per una tessera non valida (produttore: firmware V5.48+). Solo il LED: questi controller hanno un'uscita LED verso il lettore ma nessuna uscita buzzer, quindi il bip a ogni lettura lo fa il lettore stesso. Serve il filo LED del lettore collegato al controller",
+      "Il controller non dà il segnale di rifiuto sul filo LED del lettore per una tessera non valida (produttore: firmware V5.48+; verificato su UHPPOTE v9.f8: senza l'opzione un beep lungo e due corti, con l'opzione niente). Questi controller hanno solo un'uscita LED verso il lettore: collegaci il filo LED del lettore (e anche il filo BEEP, per sentire il segnale). Il bip a ogni lettura lo fa il lettore stesso",
     swipeGap: 'Non registrare i passaggi ripetuti della stessa tessera (s)',
     swipeGapHint:
       'I passaggi successivi della stessa tessera entro questo tempo aprono la porta ma non vengono registrati. Numero pari di secondi, 0 = disattivato',

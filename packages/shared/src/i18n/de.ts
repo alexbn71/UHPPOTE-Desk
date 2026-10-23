@@ -397,6 +397,8 @@ export const de: Messages = {
     tabMaintenance: 'Wartung',
     tabExpansion: 'Erweiterungskarte',
     unreachable: 'Controller nicht erreichbar',
+    disabledNoRead:
+      'Dieser Controller ist deaktiviert: UHPPOTE Desk fragt ihn nicht ab. Aktivieren Sie ihn unter Netzwerk und Konfiguration, um seinen Zustand zu lesen.',
     retry: 'Erneut versuchen',
     reread: 'Erneut vom Controller lesen',
     syncTime: 'Uhrzeit synchronisieren',
@@ -605,7 +607,7 @@ export const de: Messages = {
     allUsers: 'Alle Benutzer',
     silent: 'Leser stumm bei ungültigen Karten',
     silentHint:
-      'Der Controller schaltet die LED des Lesers bei einer ungültigen Karte nicht ein (Hersteller: Firmware V5.48+). Nur die LED: diese Controller haben einen LED-Ausgang zum Leser, aber keinen Summerausgang, der Piepton bei jedem Lesen kommt also vom Leser selbst. Die LED-Leitung des Lesers muss am Controller angeschlossen sein',
+      'Der Controller gibt bei einer ungültigen Karte kein Ablehnungssignal auf der LED-Leitung des Lesers aus (Hersteller: Firmware V5.48+; geprüft mit UHPPOTE v9.f8: ohne die Option ein langer und zwei kurze Pieptöne, mit ihr nichts). Diese Controller haben nur einen LED-Ausgang zum Leser: die LED-Leitung des Lesers daran anschließen (und auch die BEEP-Leitung, um das Signal zu hören). Der Piepton bei jedem Lesen kommt vom Leser selbst',
     swipeGap: 'Wiederholte Buchungen derselben Karte nicht speichern (s)',
     swipeGapHint:
       'Weitere Buchungen derselben Karte innerhalb dieser Zeit öffnen die Tür, werden aber nicht gespeichert. Gerade Anzahl Sekunden, 0 = aus',

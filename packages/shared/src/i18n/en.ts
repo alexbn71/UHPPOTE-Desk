@@ -395,6 +395,8 @@ export const en = {
     tabMaintenance: 'Maintenance',
     tabExpansion: 'Expansion board',
     unreachable: 'Controller unreachable',
+    disabledNoRead:
+      'This controller is disabled: UHPPOTE Desk does not query it. Enable it in Network and configuration to read its state.',
     retry: 'Retry',
     reread: 'Read again from controller',
     syncTime: 'Synchronise time',
@@ -600,7 +602,7 @@ export const en = {
     allUsers: 'Every user',
     silent: 'Silent reader on invalid cards',
     silentHint:
-      'The controller does not light the reader LED for an invalid card (vendor: firmware V5.48+). Only the LED: these controllers have an LED output to the reader but no buzzer output, so the beep at every read comes from the reader itself. Needs the reader LED wire connected to the controller',
+      'The controller gives no refused signal on the reader LED wire for an invalid card (vendor: firmware V5.48+; verified on UHPPOTE v9.f8: without the option a long and two short beeps, with it nothing). These controllers have only an LED output to the reader: connect the reader LED wire to it (and the BEEP wire too, to hear the signal). The beep at every read comes from the reader itself',
     swipeGap: "Don't record repeated swipes of the same card (s)",
     swipeGapHint:
       'Further swipes of the same card within this time open the door but are not recorded. Even number of seconds, 0 = off',

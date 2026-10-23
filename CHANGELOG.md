@@ -5,6 +5,15 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+### Fixed
+- A disabled controller is no longer queried when its page is opened: *Diagnostics* says it is disabled instead of
+  waiting for an answer, *Network and configuration* starts from the saved values.
+
+### Changed
+- *Silent reader on an invalid card*: the hint says it is verified on UHPPOTE firmware v9.f8 (without the option a
+  long and two short beeps, with it nothing) and that the reader LED wire, and the BEEP wire to hear it, go to the
+  controller LED output.
+
 ## [1.2.4] - 2026-10-23
 
 ### Changed

@@ -397,6 +397,8 @@ export const fr: Messages = {
     tabMaintenance: 'Maintenance',
     tabExpansion: "Carte d'extension",
     unreachable: 'Contrôleur injoignable',
+    disabledNoRead:
+      "Ce contrôleur est désactivé : UHPPOTE Desk ne l'interroge pas. Activez-le dans Réseau et configuration pour lire son état.",
     retry: 'Réessayer',
     reread: 'Relire depuis le contrôleur',
     syncTime: "Synchroniser l'heure",
@@ -604,7 +606,7 @@ export const fr: Messages = {
     allUsers: 'Tous les utilisateurs',
     silent: 'Lecteur silencieux pour les badges non valides',
     silentHint:
-      "Le contrôleur n'allume pas la LED du lecteur pour un badge non valide (fabricant : firmware V5.48+). Seulement la LED : ces contrôleurs ont une sortie LED vers le lecteur mais pas de sortie buzzer, le bip à chaque lecture vient donc du lecteur lui-même. Le fil LED du lecteur doit être relié au contrôleur",
+      "Le contrôleur ne donne pas le signal de refus sur le fil LED du lecteur pour un badge non valide (fabricant : firmware V5.48+ ; vérifié sur UHPPOTE v9.f8 : sans l'option un bip long et deux courts, avec l'option rien). Ces contrôleurs n'ont qu'une sortie LED vers le lecteur : reliez-y le fil LED du lecteur (et aussi le fil BEEP, pour entendre le signal). Le bip à chaque lecture vient du lecteur lui-même",
     swipeGap: 'Ne pas enregistrer les passages répétés du même badge (s)',
     swipeGapHint:
       'Les passages suivants du même badge pendant ce temps ouvrent la porte mais ne sont pas enregistrés. Nombre pair de secondes, 0 = désactivé',

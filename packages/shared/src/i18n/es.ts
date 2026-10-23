@@ -397,6 +397,8 @@ export const es: Messages = {
     tabMaintenance: 'Mantenimiento',
     tabExpansion: 'Placa de expansión',
     unreachable: 'Controlador inaccesible',
+    disabledNoRead:
+      'Este controlador está desactivado: UHPPOTE Desk no lo consulta. Actívelo en Red y configuración para leer su estado.',
     retry: 'Reintentar',
     reread: 'Volver a leer del controlador',
     syncTime: 'Sincronizar hora',
@@ -604,7 +606,7 @@ export const es: Messages = {
     allUsers: 'Todos los usuarios',
     silent: 'Lector silencioso con tarjetas no válidas',
     silentHint:
-      'El controlador no enciende el LED del lector para una tarjeta no válida (fabricante: firmware V5.48+). Solo el LED: estos controladores tienen una salida LED hacia el lector pero ninguna salida de zumbador, así que el pitido en cada lectura lo hace el propio lector. El cable LED del lector debe estar conectado al controlador',
+      'El controlador no da la señal de rechazo en el cable LED del lector para una tarjeta no válida (fabricante: firmware V5.48+; verificado en UHPPOTE v9.f8: sin la opción un pitido largo y dos cortos, con ella nada). Estos controladores solo tienen una salida LED hacia el lector: conecte a ella el cable LED del lector (y también el cable BEEP, para oír la señal). El pitido en cada lectura lo hace el propio lector',
     swipeGap: 'No registrar las pasadas repetidas de la misma tarjeta (s)',
     swipeGapHint:
       'Las pasadas siguientes de la misma tarjeta dentro de este tiempo abren la puerta pero no se registran. Número par de segundos, 0 = desactivado',
