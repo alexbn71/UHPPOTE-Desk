@@ -131,6 +131,28 @@ function Empty() {
 
 const hasSwipes = (rows: { granted: number; denied: number }[]) => rows.some((r) => r.granted + r.denied > 0)
 
+/** Width of the door names in the per-door chart; longer names are cut with "…" (full name in the tooltip). */
+const DOOR_LABEL_WIDTH = 140
+
+/** Y axis tick of the per-door chart: one line, never wrapped over the next bar. */
+function DoorTick({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) {
+  const full = String(payload?.value ?? '')
+  const max = Math.floor(DOOR_LABEL_WIDTH / 6.5)
+  return (
+    <text x={x} y={y} dy={4} textAnchor="end" fontSize={12} fill="var(--mantine-color-dimmed)">
+      <title>{full}</title>
+      {full.length > max ? `${full.slice(0, max - 1)}…` : full}
+    </text>
+  )
+}
+
+/** Door name without the controller name in front, when the names repeat it (e.g. "Building A - Main door"). */
+function shortDoorName(doorName: string, controllerName: string): string {
+  if (!doorName.startsWith(controllerName)) return doorName
+  const rest = doorName.slice(controllerName.length).replace(/^[\s\-–—·:/|]+/, '')
+  return rest || doorName
+}
+
 /** Hourly swipes of the last 24 hours and swipes per door of the last 7 days. */
 export function ActivityCharts({ stats }: { stats: EventStatsDto }) {
   const { t } = useTranslation()
@@ -139,9 +161,15 @@ export function ActivityCharts({ stats }: { stats: EventStatsDto }) {
     { name: 'denied', label: t('dashboard.denied'), color: DENIED },
   ]
   const hourly = stats.hourly.map((h) => ({ ...h, label: `${h.hour.slice(11, 13)}:00` }))
+  // with one controller its name in front of every door only takes space
+  const oneController = new Set(stats.byDoor.map((d) => d.controllerName)).size === 1
   const doors = stats.byDoor.map((d) => ({
     ...d,
-    label: d.doorName ?? `${d.controllerName} · ${t('common.doorN', { n: d.door })}`,
+    label: d.doorName
+      ? oneController
+        ? shortDoorName(d.doorName, d.controllerName)
+        : d.doorName
+      : `${d.controllerName} · ${t('common.doorN', { n: d.door })}`,
   }))
   return (
     <SimpleGrid cols={{ base: 1, lg: 2 }} mb="lg">
@@ -180,7 +208,7 @@ export function ActivityCharts({ stats }: { stats: EventStatsDto }) {
             tickLine="none"
             maxBarWidth={20}
             xAxisProps={{ allowDecimals: false }}
-            yAxisProps={{ width: 130 }}
+            yAxisProps={{ width: DOOR_LABEL_WIDTH + 8, tick: <DoorTick />, interval: 0 }}
           />
         ) : (
           <Empty />
