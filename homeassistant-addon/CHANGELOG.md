@@ -3,6 +3,13 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.4
+
+- **Cards of every Wiegand format (26 to 40 bits)**: card numbers up to 4294967294 can be registered, also with one
+  click from the cards read by a Wiegand-34 reader (before: Wiegand-26 only).
+- Unknown cards always appear in "Capture from a reader" (they could be missing with some time zone settings).
+- Dashboard: door names in the per-door chart on one line.
+
 ## 1.2.3
 
 - **Events for the expansion board inputs A1–A3**: mark the inputs you use on the *Expansion board* tab; their

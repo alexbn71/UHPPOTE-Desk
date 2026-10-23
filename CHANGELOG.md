@@ -5,6 +5,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-10-23
+
 ### Changed
 - **Cards of every Wiegand format (26 to 40 bits)**: the controller stores a 32-bit number, so any card number from 1
   to 4294967294 can now be registered (before: Wiegand-26 only, facility ≤ 255 and code ≤ 65535). Cards read by a
@@ -15,6 +17,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 ### Fixed
 - Unknown cards could be missing from "Capture from a reader" when the container's system time zone differed from
   `TZ`: the time an event is received is now written by the server, like the bounds it is compared with.
+- Dashboard, swipes per door: long door names wrapped over the next bar; they are now on one line (cut with "…",
+  full name in the tooltip), without the controller name in front when there is only one controller.
 
 ## [1.2.3] - 2026-10-22
 
@@ -186,6 +190,7 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.2.4]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.4
 [1.2.3]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.3
 [1.2.2]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.2
 [1.2.1]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.1
