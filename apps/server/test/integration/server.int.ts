@@ -253,8 +253,17 @@ describe('people, cards and permissions', () => {
     ])
   })
 
-  it('non Wiegand-26 card rejected', async () => {
-    expect((await api('POST', '/cards', { number: 25665536, personId })).statusCode).toBe(400)
+  it('Wiegand-34 card (32-bit number): stored, sent to the controller and opening; out of range rejected', async () => {
+    const r = await api('POST', '/cards', { number: 3049078276, personId })
+    expect(r.statusCode).toBe(200)
+    try {
+      expect(fake.cards.find((c) => c.card === 3049078276)).toMatchObject({ doors: [1, 10, 0, 0] })
+      expect(fake.swipe(3049078276, 1).granted).toBe(true)
+    } finally {
+      await api('DELETE', `/cards/${r.json().id}`)
+    }
+    expect(fake.cards.some((c) => c.card === 3049078276)).toBe(false)
+    expect((await api('POST', '/cards', { number: 4294967295, personId })).statusCode).toBe(400)
   })
 
   it('disabled person → card removed from the controller', async () => {

@@ -275,7 +275,8 @@ export const en = {
     cardSinceCol: 'Since',
     lostButton: 'Lost',
     addCard: 'Add card',
-    addCardHint: '8-digit number (facility × 100000 + code)',
+    addCardHint:
+      'Card number: Wiegand 26 facility × 100000 + code (8 digits), or the number of longer formats (Wiegand 34–40, up to 10 digits)',
     cardAssigned: 'Card {{n}} assigned',
     readerTitle: 'Capture from a reader',
     readerHint: 'Swipe the card on any reader: unregistered cards read in the last 10 minutes appear here.',
@@ -1755,7 +1756,7 @@ export const en = {
     emptyFile: 'The file contains no data rows',
     missingColumns: 'Required columns missing: code and last name',
     cardNumberImmutable: 'The number of a card cannot be changed: use the replacement',
-    invalidWiegand: 'Card number not valid for Wiegand-26 (facility ≤ 255, number ≤ 65535)',
+    invalidCardNumber: 'Card number not valid (1 – 4294967294)',
     confirmSerial: 'To confirm, type the serial number of the controller',
     dateOrder: 'The start date must precede the end date',
     invalidSegment: 'Invalid interval: {{start}}-{{end}}',

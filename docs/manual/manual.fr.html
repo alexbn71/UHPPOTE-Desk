@@ -294,7 +294,7 @@
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Contrôleur</h4><p>La carte électronique qui gère 1, 2 ou 4 portes. Il est identifié par son <b>numéro de série</b> (9 chiffres sur l'étiquette S/N) et joint sur le réseau par son adresse IP. Il stocke des dizaines de milliers de badges et d'événements.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Porte</h4><p>Chaque sortie du contrôleur : un <b>lecteur</b> de badges, une <b>serrure</b> électrique (relais), éventuellement un <b>capteur de porte</b> (ouverte/fermée) et un <b>bouton de sortie</b>. Dans l'application, une porte a un nom, un mode de fonctionnement et un temps d'ouverture.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Personne</h4><p>Quelqu'un qui passe les portes : matricule, nom, service, période de validité, code PIN facultatif pour le clavier, photo et horaire pour les présences.</p></div>
-    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Badge</h4><p>Une carte de proximité ou un porte-clés. Son <b>numéro</b> a 8 chiffres au format Wiegand-26 : code site × 100000 + code badge, par exemple <code>10058400</code> = site 100, code 58400. Un badge peut être attribué à une personne ou enregistré comme libre.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Badge</h4><p>Une carte de proximité ou un porte-clés. Son <b>numéro</b> est celui envoyé par le lecteur : en Wiegand-26 8 chiffres, code site × 100000 + code badge (par exemple <code>10058400</code> = site 100, code 58400) ; avec les formats plus longs (Wiegand-34 à 40) un numéro jusqu'à 10 chiffres. Un badge peut être attribué à une personne ou enregistré comme libre.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Autorisation</h4><p>Le droit d'une personne d'ouvrir une porte : <b>toujours</b>, ou seulement dans une <b>plage horaire</b>. Les autorisations appartiennent à la personne et valent pour tous ses badges.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Plage horaire</h4><p>Une fenêtre de temps (jours de la semaine, jusqu'à 3 intervalles horaires, dates de validité) numérotée de 2 à 254. Elle peut être liée à une autre plage pour l'étendre, par exemple jours ouvrés + samedi matin.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Événement</h4><p>Tout ce que le contrôleur enregistre : passages de badge (autorisés ou refusés, avec le motif), porte ouverte/fermée, bouton de sortie, alarmes, mise sous tension, ouverture à distance.</p></div>
@@ -504,7 +504,7 @@
     <tr><td>Matricule</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>obligatoire ; un matricule existant met à jour cette personne</td></tr>
     <tr><td>Nom</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>obligatoire</td></tr>
     <tr><td>Prénom</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
-    <tr><td>Badge</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>numéro Wiegand-26 à 8 chiffres</td></tr>
+    <tr><td>Badge</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>numéro du badge (Wiegand-26 : 8 chiffres ; formats plus longs : jusqu'à 10)</td></tr>
     <tr><td>Service</td><td><code>department</code>, <code>reparto</code></td><td>créé s'il manque ; sous-services avec <code>\</code>, par exemple <code>Production\Assemblage</code></td></tr>
   </table>
   <p>Le résultat indique combien de personnes et de badges ont été créés ou mis à jour, et les lignes en erreur. Les personnes importées n'ont pas d'autorisations : attribuez-les ensuite, par exemple avec l'attribution groupée de la page <a href="#permissions">Autorisations</a>. Un export du logiciel Windows d'origine s'importe en général directement.</p>
@@ -516,10 +516,10 @@
   <figure><img src="shots/cards.png"><figcaption><b>Figure 18</b> — Tous les badges enregistrés.</figcaption></figure>
   <p>Tous les badges connus de l'application, attribués ou libres, avec statut (Actif, Perdu, Désactivé) et date d'enregistrement. Le filtre <span class="ui">Libres</span> montre les badges pas encore attribués ; un badge libre peut être attribué depuis la liste.</p>
   <ul>
-    <li><b>Badges lus mais non enregistrés (dernière heure)</b> — chaque badge inconnu présenté à un lecteur apparaît ici : cliquez pour l'enregistrer, libre ou directement attribué à une personne. Les numéros qui ne sont pas des badges Wiegand-26 valides sont grisés et ne peuvent pas être enregistrés.</li>
+    <li><b>Badges lus mais non enregistrés (dernière heure)</b> — chaque badge inconnu présenté à un lecteur apparaît ici : cliquez pour l'enregistrer, libre ou directement attribué à une personne. Les badges de tout format Wiegand peuvent être enregistrés : les numéros Wiegand-26 sont affichés avec site et code.</li>
     <li><b>Enregistrement par lot</b> — enregistre toute une plage de numéros comme badges libres (jusqu'à 1000), par exemple une nouvelle boîte de badges aux numéros consécutifs.</li>
   </ul>
-  <div class="box note"><b>Numéros de badge</b><p>Les contrôleurs n'acceptent que des numéros Wiegand-26 : code site 0–255 et code badge 0–65535, écrits site × 100000 + code. Le numéro imprimé sur beaucoup de badges (par exemple <code>100,58400</code> ou <code>0006612288</code>) correspond à ce format ; en cas de doute, présentez le badge et lisez son numéro dans la liste des badges inconnus.</p></div>
+  <div class="box note"><b>Numéros de badge</b><p>Les contrôleurs mémorisent un numéro sur 32 bits (1–4294967294) : on peut donc utiliser des lecteurs de Wiegand-26 à Wiegand-40. Un lecteur Wiegand-26 envoie le code site 0–255 et le code badge 0–65535, écrits site × 100000 + code (par exemple <code>100,58400</code> → <code>10058400</code>) ; un lecteur Wiegand-34 envoie le numéro entier, souvent celui à 10 chiffres imprimé sur le badge. Le même badge a un numéro différent dans les deux formats : réglez tous les lecteurs sur le même format et, en cas de doute, utilisez le numéro affiché parmi les badges inconnus.</p></div>
 
   <span class="grp g-reg">Référentiel</span>
   <h2 id="permissions">14 · Autorisations</h2>
@@ -877,7 +877,7 @@
     <tr><td>Les passages n'apparaissent pas dans le Moniteur, mais plus tard dans l'historique</td><td>Les événements en temps réel n'arrivent pas au serveur : définissez <code>UHPPOTE_LISTENER_PUBLIC</code> sur le serveur (voir l'avertissement de la page <a href="#system">Système</a>), autorisez en entrée le port UDP 60001, puis <i>Configurer automatiquement</i> la destination sur la page du contrôleur.</td></tr>
     <tr><td>Un badge est refusé alors qu'il a des autorisations</td><td>Regardez le motif dans l'historique : 13 signifie hors plage horaire ; 6 signifie que le badge n'est pas dans le contrôleur ou n'a pas d'autorisation sur cette porte — lancez <i>Comparer</i> dans la page Synchronisation. Vérifiez que la personne et le badge sont actifs et qu'aujourd'hui est dans la période de validité de la personne.</td></tr>
     <tr><td>"Enregistré, mais non envoyé à tous les contrôleurs"</td><td>Un contrôleur était hors ligne. À son retour, utilisez <i>Aligner les badges</i> ou <i>Synchronisation complète</i>.</td></tr>
-    <tr><td>"Numéro de badge non valide pour Wiegand-26"</td><td>Le numéro doit avoir site ≤ 255 et code ≤ 65535. Présentez le badge et utilisez le numéro affiché parmi les badges inconnus.</td></tr>
+    <tr><td>"Numéro de badge non valide"</td><td>Le numéro doit être compris entre 1 et 4294967294. Présentez le badge et utilisez le numéro affiché parmi les badges inconnus.</td></tr>
     <tr><td>Heure erronée dans les événements ou les rapports</td><td>Fuseau horaire du serveur (variable <code>TZ</code>) ; l'horloge du contrôleur est corrigée automatiquement, ou utilisez <i>Synchroniser l'heure</i>.</td></tr>
     <tr><td>Une sortie de la carte d'extension ne commute pas</td><td>Utilisez <i>Lire depuis le contrôleur</i> pour voir ce que le contrôleur enregistre ; vérifiez que <i>Carte d'extension connectée</i> est activé et enregistrez de nouveau ; que la sortie est active, avec la bonne porte et les bons événements ; que l'alarme se produit vraiment (l'événement apparaît dans le Moniteur : 37 ouverte trop longtemps, 38 ouverture forcée, 39 incendie). L'ouverture forcée nécessite un capteur de porte ; la contrainte un clavier.</td></tr>
     <tr><td>Mot de passe administrateur oublié</td><td>Définissez <code>ADMIN_PASSWORD</code> sur le serveur et redémarrez-le ; puis connectez-vous comme <code>admin</code>.</td></tr>
@@ -905,7 +905,8 @@
     <tr><td>Premier badge</td><td>fonction qui garde une porte fermée jusqu'à l'arrivée d'une personne autorisée</td></tr>
     <tr><td>Relais</td><td>la sortie du contrôleur qui libère la serrure électrique</td></tr>
     <tr><td>Synchronisation</td><td>l'alignement d'un contrôleur sur la base de données de l'application</td></tr>
-    <tr><td>Wiegand-26</td><td>le format de badge accepté par les contrôleurs : site × 100000 + code</td></tr>
+    <tr><td>Wiegand-26</td><td>le format de lecteur le plus courant : site × 100000 + code</td></tr>
+    <tr><td>Wiegand-34</td><td>format de lecteur plus long (jusqu'à 40 bits acceptés) : le numéro entier du badge, jusqu'à 10 chiffres</td></tr>
     <tr><td>Zone</td><td>groupe de contrôleurs, sert à limiter les opérateurs</td></tr>
   </table>
 </section>

@@ -1,13 +1,23 @@
 /**
- * Utilities for Wiegand-26 card numbers.
- * The controller stores the number as facility × 100000 + number (e.g. 10058400 = facility 100, number 58400).
+ * Card numbers. The controller stores a 32-bit number, whatever the Wiegand format of the reader (26 to 40 bits).
+ * Wiegand-26 readers send facility and number, stored as facility × 100000 + number (e.g. 10058400 = facility 100,
+ * number 58400); longer formats (e.g. Wiegand-34) send the number as is (e.g. 3049078276).
  */
+
+/** Highest card number: 0xFFFFFFFF is reserved by the controller. */
+export const MAX_CARD_NUMBER = 0xfffffffe
+
+/** Whether the controller can store this card number (any Wiegand format). */
+export function isValidCardNumber(card: number): boolean {
+  return Number.isInteger(card) && card > 0 && card <= MAX_CARD_NUMBER
+}
 
 export interface Wiegand26 {
   facility: number
   number: number
 }
 
+/** Whether the number has the facility × 100000 + number form of a Wiegand-26 card. */
 export function isValidWiegand26(card: number): boolean {
   if (!Number.isInteger(card) || card <= 0) return false
   const facility = Math.floor(card / 100000)

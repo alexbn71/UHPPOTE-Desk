@@ -276,7 +276,8 @@ export const de: Messages = {
     cardSinceCol: 'Seit',
     lostButton: 'Verloren',
     addCard: 'Karte hinzufügen',
-    addCardHint: '8-stellige Nummer: Anlagencode (Facility) × 100000 + Code',
+    addCardHint:
+      'Kartennummer: Wiegand 26 Anlagencode (Facility) × 100000 + Code (8 Stellen) oder die Nummer längerer Formate (Wiegand 34–40, bis zu 10 Stellen)',
     cardAssigned: 'Karte {{n}} zugewiesen',
     readerTitle: 'Erfassung über einen Leser',
     readerHint:
@@ -1782,7 +1783,7 @@ export const de: Messages = {
     emptyFile: 'Die Datei enthält keine Datenzeilen',
     missingColumns: 'Pflichtspalten fehlen: Personalnummer und Nachname',
     cardNumberImmutable: 'Die Nummer einer Karte kann nicht geändert werden: Verwenden Sie den Ersatz',
-    invalidWiegand: 'Kartennummer für Wiegand-26 ungültig (Anlagencode/Facility ≤ 255, Nummer ≤ 65535)',
+    invalidCardNumber: 'Kartennummer ungültig (1 – 4294967294)',
     confirmSerial: 'Geben Sie zur Bestätigung die Seriennummer des Controllers ein',
     dateOrder: 'Das Anfangsdatum muss vor dem Enddatum liegen',
     invalidSegment: 'Ungültiges Intervall: {{start}}-{{end}}',

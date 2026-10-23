@@ -276,7 +276,8 @@ export const es: Messages = {
     cardSinceCol: 'Desde',
     lostButton: 'Perdida',
     addCard: 'Añadir tarjeta',
-    addCardHint: 'Número de 8 dígitos: código de instalación (facility) × 100000 + código',
+    addCardHint:
+      'Número de tarjeta: Wiegand 26 código de instalación (facility) × 100000 + código (8 dígitos), o el número de los formatos más largos (Wiegand 34–40, hasta 10 dígitos)',
     cardAssigned: 'Tarjeta {{n}} asignada',
     readerTitle: 'Captura desde un lector',
     readerHint:
@@ -1768,8 +1769,7 @@ export const es: Messages = {
     emptyFile: 'El archivo no contiene filas de datos',
     missingColumns: 'Faltan columnas obligatorias: código y apellidos',
     cardNumberImmutable: 'El número de una tarjeta no puede modificarse: use la sustitución',
-    invalidWiegand:
-      'Número de tarjeta no válido para Wiegand-26 (código de instalación/facility ≤ 255, número ≤ 65535)',
+    invalidCardNumber: 'Número de tarjeta no válido (de 1 a 4294967294)',
     confirmSerial: 'Para confirmar, escriba el número de serie del controlador',
     dateOrder: 'La fecha de inicio debe ser anterior a la fecha de fin',
     invalidSegment: 'Intervalo no válido: {{start}}-{{end}}',

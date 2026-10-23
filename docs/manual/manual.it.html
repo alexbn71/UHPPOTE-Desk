@@ -294,7 +294,7 @@
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controller</h4><p>La scheda elettronica che gestisce 1, 2 o 4 porte. È identificato dal <b>numero di serie</b> (9 cifre sull'etichetta S/N) e raggiunto in rete tramite il suo indirizzo IP. Memorizza decine di migliaia di tessere ed eventi.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Porta</h4><p>Ogni uscita del controller: un <b>lettore</b> di tessere, una <b>serratura</b> elettrica (relè), eventualmente un <b>sensore porta</b> (aperta/chiusa) e un <b>pulsante di uscita</b>. Nell'applicazione una porta ha un nome, una modalità di funzionamento e un tempo di apertura.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Persona</h4><p>Chi passa dalle porte: matricola, nome, reparto, periodo di validità, PIN per la tastiera (facoltativo), foto e turno per le presenze.</p></div>
-    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Tessera</h4><p>Una tessera di prossimità o un portachiavi. Il suo <b>numero</b> ha 8 cifre in formato Wiegand-26: codice impianto × 100000 + codice tessera, per esempio <code>10058400</code> = impianto 100, codice 58400. Una tessera può essere assegnata a una persona o registrata come libera.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Tessera</h4><p>Una tessera di prossimità o un portachiavi. Il suo <b>numero</b> è quello inviato dal lettore: in Wiegand-26 8 cifre, codice impianto × 100000 + codice tessera (per esempio <code>10058400</code> = impianto 100, codice 58400); con i formati più lunghi (Wiegand-34 fino a 40) un numero fino a 10 cifre. Una tessera può essere assegnata a una persona o registrata come libera.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Permesso</h4><p>Il diritto di una persona di aprire una porta: <b>sempre</b>, oppure solo all'interno di una <b>fascia oraria</b>. I permessi appartengono alla persona e valgono per tutte le sue tessere.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Fascia oraria</h4><p>Una finestra temporale (giorni della settimana, fino a 3 intervalli orari, date di validità) numerata da 2 a 254. Può essere collegata a un'altra fascia per estenderla, ad esempio giorni feriali + sabato mattina.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Evento</h4><p>Tutto ciò che il controller registra: passaggi di tessere (consentiti o negati, con il motivo), porta aperta/chiusa, pulsante di uscita, allarmi, accensione, apertura remota.</p></div>
@@ -504,7 +504,7 @@
     <tr><td>Matricola</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>obbligatoria; una matricola esistente aggiorna quella persona</td></tr>
     <tr><td>Cognome</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>obbligatorio</td></tr>
     <tr><td>Nome</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
-    <tr><td>Tessera</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>numero Wiegand-26 di 8 cifre</td></tr>
+    <tr><td>Tessera</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>numero della tessera (Wiegand-26: 8 cifre; formati più lunghi: fino a 10)</td></tr>
     <tr><td>Reparto</td><td><code>department</code>, <code>reparto</code></td><td>creato se manca; sottoreparti con <code>\</code>, ad esempio <code>Produzione\Montaggio</code></td></tr>
   </table>
   <p>Il risultato indica quante persone e tessere sono state create o aggiornate e le righe con errori. Le persone importate non hanno permessi: assegnali dopo, ad esempio con l'assegnazione multipla della pagina <a href="#permissions">Permessi</a>. Un'esportazione del software Windows originale di solito si importa direttamente.</p>
@@ -516,10 +516,10 @@
   <figure><img src="shots/cards.png"><figcaption><b>Figura 18</b> — Tutte le tessere registrate.</figcaption></figure>
   <p>Tutte le tessere conosciute dall'applicazione, assegnate o libere, con stato (Attiva, Smarrita, Disattivata) e data di registrazione. Il filtro <span class="ui">Libere</span> mostra le tessere non ancora date a nessuno; una tessera libera si può assegnare dall'elenco.</p>
   <ul>
-    <li><b>Tessere lette ma non registrate (ultima ora)</b> — ogni tessera sconosciuta passata su un lettore compare qui: cliccala per registrarla, come libera o direttamente assegnata a una persona. I numeri che non sono tessere Wiegand-26 valide sono in grigio e non si possono registrare.</li>
+    <li><b>Tessere lette ma non registrate (ultima ora)</b> — ogni tessera sconosciuta passata su un lettore compare qui: cliccala per registrarla, come libera o direttamente assegnata a una persona. Si possono registrare tessere di ogni formato Wiegand: i numeri Wiegand-26 sono mostrati con impianto e codice.</li>
     <li><b>Registrazione a blocchi</b> — registra un intero intervallo di numeri come tessere libere (fino a 1000), ad esempio una scatola nuova di tessere con numeri consecutivi.</li>
   </ul>
-  <div class="box note"><b>Numeri delle tessere</b><p>I controller accettano solo numeri Wiegand-26: codice impianto 0–255 e codice tessera 0–65535, scritti come impianto × 100000 + codice. Il numero stampato su molte tessere (ad esempio <code>100,58400</code> o <code>0006612288</code>) corrisponde a questo formato; nel dubbio passa la tessera e leggi il numero nell'elenco delle tessere sconosciute.</p></div>
+  <div class="box note"><b>Numeri delle tessere</b><p>I controller memorizzano un numero a 32 bit (1–4294967294), quindi si possono usare lettori da Wiegand-26 a Wiegand-40. Un lettore Wiegand-26 invia codice impianto 0–255 e codice tessera 0–65535, scritti come impianto × 100000 + codice (ad esempio <code>100,58400</code> → <code>10058400</code>); un lettore Wiegand-34 invia il numero intero, spesso quello a 10 cifre stampato sulla tessera. La stessa tessera ha un numero diverso nei due formati: tieni tutti i lettori nello stesso formato e, nel dubbio, passa la tessera e usa il numero mostrato tra le tessere sconosciute.</p></div>
 
   <span class="grp g-reg">Anagrafica</span>
   <h2 id="permissions">14 · Permessi</h2>
@@ -877,7 +877,7 @@
     <tr><td>I passaggi non compaiono nel Monitor, ma compaiono più tardi nello storico</td><td>Gli eventi in tempo reale non arrivano al server: imposta <code>UHPPOTE_LISTENER_PUBLIC</code> sul server (vedi l'avviso nella pagina <a href="#system">Sistema</a>), consenti in ingresso la porta UDP 60001, poi <i>Configura automaticamente</i> il listener nella pagina del controller.</td></tr>
     <tr><td>Una tessera viene rifiutata anche se ha i permessi</td><td>Guarda il motivo nello storico: 13 significa fuori fascia oraria; 6 significa che la tessera non è nel controller o non ha permessi su quella porta — esegui <i>Confronta</i> nella pagina Sincronizzazione. Verifica che persona e tessera siano attive e che oggi rientri nel periodo di validità della persona.</td></tr>
     <tr><td>"Salvato, ma non inviato a tutti i controller"</td><td>Qualche controller era scollegato. Quando torna, usa <i>Allinea tessere</i> o <i>Sincronizzazione completa</i>.</td></tr>
-    <tr><td>"Numero di tessera non valido per Wiegand-26"</td><td>Il numero deve avere impianto ≤ 255 e codice ≤ 65535. Passa la tessera e usa il numero mostrato tra le tessere sconosciute.</td></tr>
+    <tr><td>"Numero tessera non valido"</td><td>Il numero deve essere tra 1 e 4294967294. Passa la tessera e usa il numero mostrato tra le tessere sconosciute.</td></tr>
     <tr><td>Ora sbagliata negli eventi o nei resoconti</td><td>Fuso orario del server (variabile <code>TZ</code>); l'orologio del controller viene corretto automaticamente, oppure usa <i>Sincronizza orologio</i>.</td></tr>
     <tr><td>Un'uscita della scheda di espansione non scatta</td><td>Usa <i>Leggi dal controller</i> per vedere cosa memorizza il controller; verifica che <i>Scheda di espansione collegata</i> sia attiva e salva di nuovo; che l'uscita sia attiva, con la porta e gli eventi giusti; che l'allarme avvenga davvero (l'evento compare nel Monitor: 37 aperta troppo a lungo, 38 apertura forzata, 39 incendio). L'apertura forzata richiede il sensore porta; la coercizione una tastiera.</td></tr>
     <tr><td>Password dell'amministratore dimenticata</td><td>Imposta <code>ADMIN_PASSWORD</code> sul server e riavvialo; poi accedi come <code>admin</code>.</td></tr>
@@ -905,7 +905,8 @@
     <tr><td>Scheda di espansione</td><td>la scheda aggiuntiva UT0311-01A con quattro relè di allarme e un ingresso incendio</td></tr>
     <tr><td>Sincronizzazione</td><td>l'allineamento di un controller con il database dell'applicazione</td></tr>
     <tr><td>Timbratura</td><td>un passaggio usato per le presenze (entrata / uscita)</td></tr>
-    <tr><td>Wiegand-26</td><td>il formato di tessera accettato dai controller: impianto × 100000 + codice</td></tr>
+    <tr><td>Wiegand-26</td><td>il formato di lettore più diffuso: impianto × 100000 + codice</td></tr>
+    <tr><td>Wiegand-34</td><td>formato di lettore più lungo (sono accettati fino a 40 bit): il numero della tessera per intero, fino a 10 cifre</td></tr>
     <tr><td>Zona</td><td>gruppo di controller, usato per limitare gli operatori</td></tr>
   </table>
 </section>

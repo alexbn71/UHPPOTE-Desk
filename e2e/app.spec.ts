@@ -105,11 +105,14 @@ test.describe.serial('UHPPOTE Desk', () => {
     await expect(page.getByText('Granted').first()).toBeVisible()
     await request.post('/__sim/swipe', { data: { card: 10099999, door: 2 } })
     await expect(page.getByText('Card 10099999').first()).toBeVisible({ timeout: 10_000 })
-    // the unknown card is offered for registration, but 10099999 (number 99999 > 65535) is not valid Wiegand-26
+    // unknown cards are offered for registration in every Wiegand format: Wiegand-26 with facility and code,
+    // longer formats (10099999 is not a Wiegand-26 pair, 3049078276 is a Wiegand-34 number) as plain numbers
     await request.post('/__sim/swipe', { data: { card: 10065001, door: 2 } })
+    await request.post('/__sim/swipe', { data: { card: 3049078276, door: 2 } })
     await page.goto('/cards')
-    await expect(page.getByRole('button', { name: /^10065001 / })).not.toHaveAttribute('data-disabled')
-    await expect(page.getByRole('button', { name: /^10099999 / })).toHaveAttribute('data-disabled')
+    await expect(page.getByRole('button', { name: /^10065001 \(100,65001\)/ })).not.toHaveAttribute('data-disabled')
+    await expect(page.getByRole('button', { name: /^10099999 · / })).not.toHaveAttribute('data-disabled')
+    await expect(page.getByRole('button', { name: /^3049078276 · / })).not.toHaveAttribute('data-disabled')
     expect(errors).toEqual([])
   })
 

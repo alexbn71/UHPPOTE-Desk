@@ -48,15 +48,19 @@ export function addDays(date: string, days: number): string {
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
 }
 
+/** Highest card number the controller stores (32 bits, 0xFFFFFFFF reserved). */
+export const MAX_CARD_NUMBER = 4294967294
+
+/** Card number with its Wiegand-26 facility and code when it has that form; longer formats as they are. */
 export function cardLabel(n: number): string {
   const facility = Math.floor(n / 100000)
   const num = n % 100000
-  return `${n} (${facility},${num})`
+  return facility <= 255 && num <= 65535 ? `${n} (${facility},${num})` : String(n)
 }
 
-/** Whether a card number fits Wiegand-26 (facility ≤ 255, number ≤ 65535), the only format the controller accepts. */
+/** Whether the controller can store this card number: any Wiegand format from 26 to 40 bits gives a 32-bit number. */
 export function isValidCard(n: number): boolean {
-  return Number.isInteger(n) && n > 0 && Math.floor(n / 100000) <= 255 && n % 100000 <= 65535
+  return Number.isInteger(n) && n > 0 && n <= MAX_CARD_NUMBER
 }
 
 /** Mantine DateInput display format for the current language (dayjs localized format). */

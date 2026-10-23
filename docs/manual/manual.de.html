@@ -294,7 +294,7 @@
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controller</h4><p>Die Elektronikplatine, die 1, 2 oder 4 Türen steuert. Sie wird über ihre <b>Seriennummer</b> (9 Ziffern auf dem S/N-Etikett) identifiziert und im LAN über ihre IP-Adresse erreicht. Sie speichert Zehntausende Karten und Ereignisse.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Tür</h4><p>Jeder Ausgang des Controllers: ein Karten<b>leser</b>, ein elektrisches <b>Schloss</b> (Relais), optional ein <b>Türkontakt</b> (offen/geschlossen) und ein <b>Ausgangstaster</b>. In der Anwendung hat eine Tür einen Namen, einen Betriebsmodus und eine Öffnungszeit.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Person</h4><p>Wer durch die Türen geht: Personalnummer, Name, Abteilung, Gültigkeitszeitraum, optionale Tastatur-PIN, Foto und Schicht für die Anwesenheit.</p></div>
-    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Karte</h4><p>Eine Proximity-Karte oder ein Schlüsselanhänger. Ihre <b>Nummer</b> hat 8 Ziffern im Wiegand-26-Format: Anlagencode × 100000 + Kartencode, zum Beispiel <code>10058400</code> = Anlage 100, Code 58400. Eine Karte kann einer Person zugeordnet oder als frei registriert sein.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Karte</h4><p>Eine Proximity-Karte oder ein Schlüsselanhänger. Ihre <b>Nummer</b> ist die, die der Leser sendet: bei Wiegand-26 8 Ziffern, Anlagencode × 100000 + Kartencode (zum Beispiel <code>10058400</code> = Anlage 100, Code 58400); bei längeren Formaten (Wiegand-34 bis 40) eine Nummer mit bis zu 10 Ziffern. Eine Karte kann einer Person zugeordnet oder als frei registriert sein.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Berechtigung</h4><p>Das Recht einer Person, eine Tür zu öffnen: <b>immer</b> oder nur innerhalb eines <b>Zeitprofils</b>. Berechtigungen gehören zur Person und gelten für alle ihre Karten.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Zeitprofil</h4><p>Ein Zeitfenster (Wochentage, bis zu 3 Zeitintervalle, Gültigkeitsdaten) mit der Nummer 2–254. Es kann mit einem anderen Profil verknüpft werden, um es zu erweitern, z. B. Werktage + Samstagvormittag.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Ereignis</h4><p>Alles, was der Controller aufzeichnet: Kartenbuchungen (erlaubt oder verweigert, mit Grund), Tür geöffnet/geschlossen, Ausgangstaster, Alarme, Einschalten, Fernöffnung.</p></div>
@@ -504,7 +504,7 @@
     <tr><td>Personalnummer</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>Pflicht; eine vorhandene Nummer aktualisiert diese Person</td></tr>
     <tr><td>Nachname</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>Pflicht</td></tr>
     <tr><td>Vorname</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
-    <tr><td>Karte</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>8-stellige Wiegand-26-Nummer</td></tr>
+    <tr><td>Karte</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>Kartennummer (Wiegand-26: 8 Ziffern; längere Formate: bis zu 10)</td></tr>
     <tr><td>Abteilung</td><td><code>department</code>, <code>reparto</code></td><td>wird angelegt, falls sie fehlt; Unterabteilungen mit <code>\</code>, z. B. <code>Produktion\Montage</code></td></tr>
   </table>
   <p>Das Ergebnis zeigt, wie viele Personen und Karten angelegt oder aktualisiert wurden, und die fehlerhaften Zeilen. Importierte Personen haben keine Berechtigungen: Weisen Sie sie danach zu, etwa mit der Sammelzuweisung der Seite <a href="#permissions">Berechtigungen</a>. Ein Export der Original-Windows-Software lässt sich meist direkt importieren.</p>
@@ -516,10 +516,10 @@
   <figure><img src="shots/cards.png"><figcaption><b>Abbildung 18</b> — Alle registrierten Karten.</figcaption></figure>
   <p>Alle der Anwendung bekannten Karten, zugeordnet oder frei, mit Status (Aktiv, Verloren, Gesperrt) und Registrierungsdatum. Der Filter <span class="ui">Frei</span> zeigt die noch nicht vergebenen Karten; eine freie Karte kann aus der Liste zugeordnet werden.</p>
   <ul>
-    <li><b>Gelesene, aber nicht registrierte Karten (letzte Stunde)</b> — jede unbekannte Karte, die an einen Leser gehalten wurde, erscheint hier: ein Klick registriert sie, frei oder direkt einer Person zugeordnet. Nummern, die keine gültigen Wiegand-26-Karten sind, sind ausgegraut und können nicht registriert werden.</li>
+    <li><b>Gelesene, aber nicht registrierte Karten (letzte Stunde)</b> — jede unbekannte Karte, die an einen Leser gehalten wurde, erscheint hier: ein Klick registriert sie, frei oder direkt einer Person zugeordnet. Karten jedes Wiegand-Formats können registriert werden: Wiegand-26-Nummern werden mit Anlage und Code angezeigt.</li>
     <li><b>Serienregistrierung</b> — registriert einen ganzen Nummernbereich als freie Karten (bis zu 1000), z. B. eine neue Schachtel Karten mit fortlaufenden Nummern.</li>
   </ul>
-  <div class="box note"><b>Kartennummern</b><p>Die Controller akzeptieren nur Wiegand-26-Nummern: Anlagencode 0–255 und Kartencode 0–65535, geschrieben als Anlage × 100000 + Code. Die auf vielen Karten gedruckte Nummer (z. B. <code>100,58400</code> oder <code>0006612288</code>) entspricht diesem Format; im Zweifel halten Sie die Karte an einen Leser und lesen die Nummer in der Liste der unbekannten Karten ab.</p></div>
+  <div class="box note"><b>Kartennummern</b><p>Die Controller speichern eine 32-Bit-Nummer (1–4294967294), daher können Leser von Wiegand-26 bis Wiegand-40 verwendet werden. Ein Wiegand-26-Leser sendet Anlagencode 0–255 und Kartencode 0–65535, geschrieben als Anlage × 100000 + Code (z. B. <code>100,58400</code> → <code>10058400</code>); ein Wiegand-34-Leser sendet die ganze Nummer, oft die 10-stellige, die auf der Karte gedruckt ist. Dieselbe Karte hat in beiden Formaten eine andere Nummer: Stellen Sie alle Leser auf dasselbe Format ein und verwenden Sie im Zweifel die Nummer aus der Liste der unbekannten Karten.</p></div>
 
   <span class="grp g-reg">Stammdaten</span>
   <h2 id="permissions">14 · Berechtigungen</h2>
@@ -877,7 +877,7 @@
     <tr><td>Buchungen erscheinen nicht im Monitor, aber später im Verlauf</td><td>Echtzeit-Ereignisse erreichen den Server nicht: <code>UHPPOTE_LISTENER_PUBLIC</code> auf dem Server setzen (siehe Warnung auf der Seite <a href="#system">System</a>), eingehenden UDP-Port 60001 erlauben, dann den Listener auf der Controllerseite <i>Automatisch konfigurieren</i>.</td></tr>
     <tr><td>Eine Karte wird trotz Berechtigung abgewiesen</td><td>Den Grund im Verlauf ansehen: 13 bedeutet außerhalb des Zeitprofils; 6 bedeutet, die Karte ist nicht im Controller oder hat keine Berechtigung für diese Tür — <i>Vergleichen</i> auf der Seite Synchronisierung ausführen. Prüfen, dass Person und Karte aktiv sind und heute im Gültigkeitszeitraum der Person liegt.</td></tr>
     <tr><td>"Gespeichert, aber nicht an alle Controller gesendet"</td><td>Ein Controller war offline. Sobald er zurück ist, <i>Karten abgleichen</i> oder <i>Vollständige Synchronisierung</i> verwenden.</td></tr>
-    <tr><td>"Kartennummer für Wiegand-26 ungültig"</td><td>Die Nummer muss Anlage ≤ 255 und Code ≤ 65535 haben. Karte vorhalten und die unter den unbekannten Karten angezeigte Nummer verwenden.</td></tr>
+    <tr><td>"Kartennummer ungültig"</td><td>Die Nummer muss zwischen 1 und 4294967294 liegen. Karte vorhalten und die unter den unbekannten Karten angezeigte Nummer verwenden.</td></tr>
     <tr><td>Falsche Uhrzeit in Ereignissen oder Berichten</td><td>Zeitzone des Servers (Variable <code>TZ</code>); die Uhr des Controllers wird automatisch korrigiert, oder <i>Uhrzeit synchronisieren</i> verwenden.</td></tr>
     <tr><td>Ein Ausgang der Erweiterungskarte schaltet nicht</td><td>Mit <i>Aus dem Controller lesen</i> sehen, was der Controller gespeichert hat; prüfen, dass <i>Erweiterungskarte angeschlossen</i> an ist, und erneut speichern; dass der Ausgang aktiv ist, mit der richtigen Tür und den richtigen Ereignissen; dass der Alarm wirklich auftritt (das Ereignis erscheint im Monitor: 37 zu lange offen, 38 gewaltsam geöffnet, 39 Feuer). Gewaltsames Öffnen braucht einen Türkontakt; Bedrohung eine PIN-Tastatur.</td></tr>
     <tr><td>Administratorpasswort vergessen</td><td><code>ADMIN_PASSWORD</code> auf dem Server setzen und neu starten; dann als <code>admin</code> anmelden.</td></tr>
@@ -903,7 +903,8 @@
     <tr><td>Synchronisierung</td><td>das Abgleichen eines Controllers mit der Datenbank der Anwendung</td></tr>
     <tr><td>Verriegelung</td><td>Türen, die nicht gleichzeitig offen sein können (Schleuse)</td></tr>
     <tr><td>Wiederherstellungscode</td><td>ein Einmalcode, der den Code der App ersetzt, wenn das Telefon verloren ist</td></tr>
-    <tr><td>Wiegand-26</td><td>das von den Controllern akzeptierte Kartenformat: Anlage × 100000 + Code</td></tr>
+    <tr><td>Wiegand-26</td><td>das verbreitetste Leserformat: Anlage × 100000 + Code</td></tr>
+    <tr><td>Wiegand-34</td><td>längeres Leserformat (bis zu 40 Bit werden akzeptiert): die ganze Kartennummer, bis zu 10 Ziffern</td></tr>
     <tr><td>Zeitprofil</td><td>Tage und Stunden, in denen eine Berechtigung gilt (ID 2–254)</td></tr>
     <tr><td>Zone</td><td>Gruppe von Controllern, dient zur Beschränkung von Bedienern</td></tr>
     <tr><td>Zwei-Faktor-Authentifizierung (2FA)</td><td>ein Code einer Authenticator-App, der bei der Anmeldung zusätzlich zum Passwort verlangt wird</td></tr>

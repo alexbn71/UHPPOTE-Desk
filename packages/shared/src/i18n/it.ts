@@ -275,7 +275,8 @@ export const it: Messages = {
     cardSinceCol: 'Dal',
     lostButton: 'Smarrita',
     addCard: 'Aggiungi tessera',
-    addCardHint: 'Numero a 8 cifre: codice impianto (facility) × 100000 + codice',
+    addCardHint:
+      'Numero tessera: Wiegand 26 codice impianto (facility) × 100000 + codice (8 cifre), oppure il numero dei formati più lunghi (Wiegand 34–40, fino a 10 cifre)',
     cardAssigned: 'Tessera {{n}} assegnata',
     readerTitle: 'Acquisizione da lettore',
     readerHint:
@@ -1761,7 +1762,7 @@ export const it: Messages = {
     emptyFile: 'Il file non contiene righe di dati',
     missingColumns: 'Colonne obbligatorie mancanti: matricola e cognome',
     cardNumberImmutable: 'Il numero di una tessera non può essere modificato: usare la sostituzione',
-    invalidWiegand: 'Numero tessera non valido per Wiegand-26 (codice impianto/facility ≤ 255, numero ≤ 65535)',
+    invalidCardNumber: 'Numero tessera non valido (da 1 a 4294967294)',
     confirmSerial: 'Per confermare digitare il numero di serie del controller',
     dateOrder: 'La data di inizio deve precedere la data di fine',
     invalidSegment: 'Intervallo non valido: {{start}}-{{end}}',

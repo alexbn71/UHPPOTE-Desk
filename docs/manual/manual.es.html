@@ -294,7 +294,7 @@
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controlador</h4><p>La placa electrónica que gestiona 1, 2 o 4 puertas. Se identifica por su <b>número de serie</b> (9 dígitos en la etiqueta S/N) y se accede a ella por la red con su dirección IP. Almacena decenas de miles de tarjetas y eventos.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Puerta</h4><p>Cada salida del controlador: un <b>lector</b> de tarjetas, una <b>cerradura</b> eléctrica (relé), opcionalmente un <b>sensor de puerta</b> (abierta/cerrada) y un <b>pulsador de salida</b>. En la aplicación, una puerta tiene un nombre, un modo de funcionamiento y un tiempo de apertura.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Persona</h4><p>Quien pasa por las puertas: código de empleado, nombre, departamento, periodo de validez, PIN opcional para el teclado, foto y turno para la asistencia.</p></div>
-    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Tarjeta</h4><p>Una tarjeta de proximidad o un llavero. Su <b>número</b> tiene 8 dígitos en formato Wiegand-26: código de instalación × 100000 + código de tarjeta, por ejemplo <code>10058400</code> = instalación 100, código 58400. Una tarjeta puede asignarse a una persona o registrarse como libre.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Tarjeta</h4><p>Una tarjeta de proximidad o un llavero. Su <b>número</b> es el que envía el lector: en Wiegand-26 8 dígitos, código de instalación × 100000 + código de tarjeta (por ejemplo <code>10058400</code> = instalación 100, código 58400); con los formatos más largos (Wiegand-34 a 40) un número de hasta 10 dígitos. Una tarjeta puede asignarse a una persona o registrarse como libre.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Permiso</h4><p>El derecho de una persona a abrir una puerta: <b>siempre</b>, o solo dentro de una <b>franja horaria</b>. Los permisos pertenecen a la persona y valen para todas sus tarjetas.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Franja horaria</h4><p>Una ventana de tiempo (días de la semana, hasta 3 intervalos horarios, fechas de validez) numerada del 2 al 254. Puede enlazarse con otra franja para ampliarla, por ejemplo días laborables + sábado por la mañana.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Evento</h4><p>Todo lo que registra el controlador: pasos de tarjeta (permitidos o denegados, con el motivo), puerta abierta/cerrada, pulsador de salida, alarmas, encendido, apertura remota.</p></div>
@@ -504,7 +504,7 @@
     <tr><td>Código de empleado</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>obligatorio; un código existente actualiza a esa persona</td></tr>
     <tr><td>Apellidos</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>obligatorio</td></tr>
     <tr><td>Nombre</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
-    <tr><td>Tarjeta</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>número Wiegand-26 de 8 dígitos</td></tr>
+    <tr><td>Tarjeta</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>número de la tarjeta (Wiegand-26: 8 dígitos; formatos más largos: hasta 10)</td></tr>
     <tr><td>Departamento</td><td><code>department</code>, <code>reparto</code></td><td>se crea si falta; subdepartamentos con <code>\</code>, por ejemplo <code>Producción\Montaje</code></td></tr>
   </table>
   <p>El resultado indica cuántas personas y tarjetas se crearon o actualizaron, y las filas con errores. Las personas importadas no tienen permisos: asígnelos después, por ejemplo con la asignación masiva de la página <a href="#permissions">Permisos</a>. Una exportación del software de Windows original suele importarse directamente.</p>
@@ -516,10 +516,10 @@
   <figure><img src="shots/cards.png"><figcaption><b>Figura 18</b> — Todas las tarjetas registradas.</figcaption></figure>
   <p>Todas las tarjetas conocidas por la aplicación, asignadas o libres, con estado (Activa, Perdida, Desactivada) y fecha de registro. El filtro <span class="ui">Libres</span> muestra las tarjetas aún sin asignar; una tarjeta libre puede asignarse desde la lista.</p>
   <ul>
-    <li><b>Tarjetas leídas pero no registradas (última hora)</b> — cada tarjeta desconocida pasada por un lector aparece aquí: haga clic para registrarla, libre o asignada directamente a una persona. Los números que no son tarjetas Wiegand-26 válidas aparecen en gris y no se pueden registrar.</li>
+    <li><b>Tarjetas leídas pero no registradas (última hora)</b> — cada tarjeta desconocida pasada por un lector aparece aquí: haga clic para registrarla, libre o asignada directamente a una persona. Se pueden registrar tarjetas de cualquier formato Wiegand: los números Wiegand-26 se muestran con instalación y código.</li>
     <li><b>Registro por lotes</b> — registra un rango completo de números como tarjetas libres (hasta 1000), por ejemplo una caja nueva de tarjetas con números consecutivos.</li>
   </ul>
-  <div class="box note"><b>Números de tarjeta</b><p>Los controladores solo aceptan números Wiegand-26: código de instalación 0–255 y código de tarjeta 0–65535, escritos como instalación × 100000 + código. El número impreso en muchas tarjetas (por ejemplo <code>100,58400</code> o <code>0006612288</code>) corresponde a este formato; en caso de duda, pase la tarjeta y lea su número en la lista de tarjetas desconocidas.</p></div>
+  <div class="box note"><b>Números de tarjeta</b><p>Los controladores guardan un número de 32 bits (1–4294967294), así que se pueden usar lectores de Wiegand-26 a Wiegand-40. Un lector Wiegand-26 envía el código de instalación 0–255 y el código de tarjeta 0–65535, escritos como instalación × 100000 + código (por ejemplo <code>100,58400</code> → <code>10058400</code>); un lector Wiegand-34 envía el número entero, a menudo el de 10 dígitos impreso en la tarjeta. La misma tarjeta tiene un número distinto en los dos formatos: ponga todos los lectores en el mismo formato y, en caso de duda, use el número que aparece entre las tarjetas desconocidas.</p></div>
 
   <span class="grp g-reg">Registro</span>
   <h2 id="permissions">14 · Permisos</h2>
@@ -877,7 +877,7 @@
     <tr><td>Los pasos no aparecen en el Monitor, pero sí más tarde en el historial</td><td>Los eventos en tiempo real no llegan al servidor: defina <code>UHPPOTE_LISTENER_PUBLIC</code> en el servidor (véase el aviso de la página <a href="#system">Sistema</a>), permita la entrada al puerto UDP 60001 y luego <i>Configurar automáticamente</i> el destino en la página del controlador.</td></tr>
     <tr><td>Una tarjeta se rechaza aunque tiene permisos</td><td>Mire el motivo en el historial: 13 significa fuera de franja horaria; 6 significa que la tarjeta no está en el controlador o no tiene permiso en esa puerta — ejecute <i>Comparar</i> en la página Sincronización. Compruebe que persona y tarjeta están activas y que hoy está dentro del periodo de validez de la persona.</td></tr>
     <tr><td>"Guardado, pero no enviado a todos los controladores"</td><td>Algún controlador estaba desconectado. Cuando vuelva, use <i>Alinear tarjetas</i> o <i>Sincronización completa</i>.</td></tr>
-    <tr><td>"Número de tarjeta no válido para Wiegand-26"</td><td>El número debe tener instalación ≤ 255 y código ≤ 65535. Pase la tarjeta y use el número que aparece entre las tarjetas desconocidas.</td></tr>
+    <tr><td>"Número de tarjeta no válido"</td><td>El número debe estar entre 1 y 4294967294. Pase la tarjeta y use el número que aparece entre las tarjetas desconocidas.</td></tr>
     <tr><td>Hora incorrecta en eventos o informes</td><td>Zona horaria del servidor (variable <code>TZ</code>); el reloj del controlador se corrige automáticamente, o use <i>Sincronizar hora</i>.</td></tr>
     <tr><td>Una salida de la placa de expansión no conmuta</td><td>Use <i>Leer del controlador</i> para ver qué guarda el controlador; compruebe que <i>Placa de expansión conectada</i> está activada y guarde de nuevo; que la salida está activa, con la puerta y los eventos correctos; que la alarma ocurre de verdad (el evento aparece en el Monitor: 37 abierta demasiado tiempo, 38 apertura forzada, 39 incendio). La apertura forzada requiere sensor de puerta; la coacción, un teclado.</td></tr>
     <tr><td>Contraseña de administrador olvidada</td><td>Defina <code>ADMIN_PASSWORD</code> en el servidor y reinícielo; luego entre como <code>admin</code>.</td></tr>
@@ -905,7 +905,8 @@
     <tr><td>Primera tarjeta</td><td>función que mantiene una puerta cerrada hasta que llega una persona autorizada</td></tr>
     <tr><td>Relé</td><td>la salida del controlador que libera la cerradura eléctrica</td></tr>
     <tr><td>Sincronización</td><td>alinear un controlador con la base de datos de la aplicación</td></tr>
-    <tr><td>Wiegand-26</td><td>el formato de tarjeta que aceptan los controladores: instalación × 100000 + código</td></tr>
+    <tr><td>Wiegand-26</td><td>el formato de lector más común: instalación × 100000 + código</td></tr>
+    <tr><td>Wiegand-34</td><td>formato de lector más largo (se aceptan hasta 40 bits): el número entero de la tarjeta, hasta 10 dígitos</td></tr>
     <tr><td>Zona</td><td>grupo de controladores, sirve para limitar a los operadores</td></tr>
   </table>
 </section>

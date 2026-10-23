@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { isValidWiegand26 } from '@uhppote-desk/protocol'
+import { isValidCardNumber } from '@uhppote-desk/protocol'
 import {
   bulkPermissionsSchema,
   cardInputSchema,
@@ -187,7 +187,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
 
   app.post('/cards', operator, async (req) => {
     const b = cardInputSchema.parse(req.body)
-    if (!isValidWiegand26(b.number)) throw new HttpError(400, 'invalidWiegand')
+    if (!isValidCardNumber(b.number)) throw new HttpError(400, 'invalidCardNumber')
     const id = ctx.people.createCard(b.number, b.personId, b.status)
     ctx.audit.log(req.user, 'create-card', `card:${b.number}`, b)
     return { id, pushErrors: b.personId ? await push(req, b.personId) : [] }
@@ -221,7 +221,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
     const b = replaceCardSchema.parse(req.body)
     const old = ctx.people.card(id)
     if (!old) throw new HttpError(404, 'cardNotFound')
-    if (!isValidWiegand26(b.newNumber)) throw new HttpError(400, 'invalidWiegand')
+    if (!isValidCardNumber(b.newNumber)) throw new HttpError(400, 'invalidCardNumber')
     const newId = ctx.db.tx(() => {
       ctx.people.updateCard(id, old.personId, 'lost')
       return ctx.people.createCard(b.newNumber, old.personId, 'active')
@@ -292,8 +292,7 @@ export function registerPeopleRoutes(app: FastifyInstance, ctx: AppContext): voi
           const cardRaw = get(cCard)
           if (cardRaw) {
             const number = Number(cardRaw)
-            if (!Number.isInteger(number) || !isValidWiegand26(number))
-              throw new ImportRowError('importInvalidCard', { card: cardRaw })
+            if (!isValidCardNumber(number)) throw new ImportRowError('importInvalidCard', { card: cardRaw })
             const card = ctx.people.cardByNumber(number)
             if (!card) {
               ctx.people.createCard(number, personId)

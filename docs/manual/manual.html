@@ -298,7 +298,7 @@
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Controller</h4><p>The electronic board that manages 1, 2 or 4 doors. It is identified by its <b>serial number</b> (9 digits on the S/N label) and reached over the LAN by its IP address. It stores up to tens of thousands of cards and events.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#2f9e6e"></span>Door</h4><p>Each controller output: a card <b>reader</b>, an electric <b>lock</b> (relay), optionally a <b>door sensor</b> (open/closed) and an <b>exit button</b>. In the application a door has a name, an operating mode and an opening time.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Person</h4><p>Someone who passes through the doors: employee code, name, department, validity period, optional keypad PIN, photo and attendance shift.</p></div>
-    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Card</h4><p>A proximity card or key fob. Its <b>number</b> has 8 digits in Wiegand-26 format: facility code × 100000 + card code, for example <code>10058400</code> = facility 100, code 58400. A card can be assigned to a person, or registered as free.</p></div>
+    <div class="concept"><h4><span class="dot" style="background:#6741d9"></span>Card</h4><p>A proximity card or key fob. Its <b>number</b> is the one the reader sends: in Wiegand-26 8 digits, facility code × 100000 + card code (for example <code>10058400</code> = facility 100, code 58400); with longer formats (Wiegand-34 to 40) a number of up to 10 digits. A card can be assigned to a person, or registered as free.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Permission</h4><p>The right of a person to open a door: <b>always</b>, or only within a <b>time profile</b>. Permissions belong to the person and apply to all of their cards.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#1557a8"></span>Time profile</h4><p>A time window (days of the week, up to 3 time intervals, validity dates) numbered 2–254. It can be linked to another profile to extend it, e.g. weekdays + Saturday morning.</p></div>
     <div class="concept"><h4><span class="dot" style="background:#d9480f"></span>Event</h4><p>Anything the controller records: card swipes (granted or denied, with the reason), door opened/closed, exit button, alarms, power on, remote opening.</p></div>
@@ -508,7 +508,7 @@
     <tr><td>Employee code</td><td><code>code</code>, <code>user no</code>, <code>consumer no</code>, <code>matricola</code></td><td>required; an existing code updates that person</td></tr>
     <tr><td>Last name</td><td><code>last name</code>, <code>lastname</code>, <code>name</code>, <code>cognome</code></td><td>required</td></tr>
     <tr><td>First name</td><td><code>first name</code>, <code>firstname</code>, <code>nome</code></td><td></td></tr>
-    <tr><td>Card</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>8-digit Wiegand-26 number</td></tr>
+    <tr><td>Card</td><td><code>card</code>, <code>card id</code>, <code>card number</code>, <code>tessera</code></td><td>card number (Wiegand-26: 8 digits; longer formats: up to 10)</td></tr>
     <tr><td>Department</td><td><code>department</code>, <code>reparto</code></td><td>created if missing; sub-departments with <code>\</code>, e.g. <code>Production\Assembly</code></td></tr>
   </table>
   <p>The result shows how many people and cards were created or updated, and the rows with errors. Imported people have no permissions: assign them afterwards, for example with the bulk assignment of the <a href="#permissions">Permissions</a> page. An export of the original Windows software can usually be imported directly.</p>
@@ -520,10 +520,10 @@
   <figure><img src="shots/cards.png"><figcaption><b>Figure 18</b> — All registered cards.</figcaption></figure>
   <p>All the cards known to the application, assigned or free, with status (Active, Lost, Disabled) and registration date. Filter <span class="ui">Free</span> to see the cards not yet given to anybody; a free card can be assigned from the list.</p>
   <ul>
-    <li><b>Cards read but not registered (last hour)</b> — every unknown card swiped on any reader appears here: click it to register it, as a free card or directly assigned to a person. Numbers that are not valid Wiegand-26 cards are shown greyed out and cannot be registered.</li>
+    <li><b>Cards read but not registered (last hour)</b> — every unknown card swiped on any reader appears here: click it to register it, as a free card or directly assigned to a person. Cards of every Wiegand format can be registered: Wiegand-26 numbers are shown with facility and code.</li>
     <li><b>Batch registration</b> — registers a whole range of numbers as free cards (up to 1000), e.g. a new box of cards with consecutive numbers.</li>
   </ul>
-  <div class="box note"><b>Card numbers</b><p>The controllers accept Wiegand-26 numbers only: facility code 0–255 and card code 0–65535, written as facility × 100000 + code. The number printed on many cards (e.g. <code>100,58400</code> or <code>0006612288</code>) corresponds to this format; if in doubt, swipe the card and read its number in the unknown cards list.</p></div>
+  <div class="box note"><b>Card numbers</b><p>The controllers store a 32-bit number (1–4294967294), so readers from Wiegand-26 to Wiegand-40 can be used. A Wiegand-26 reader sends facility code 0–255 and card code 0–65535, written as facility × 100000 + code (e.g. <code>100,58400</code> → <code>10058400</code>); a Wiegand-34 reader sends the whole number, often the 10-digit one printed on the card. The same card has a different number in the two formats: keep all readers in the same format, and if in doubt swipe the card and use the number shown in the unknown cards list.</p></div>
 
   <span class="grp g-reg">Registry</span>
   <h2 id="permissions">14 · Permissions</h2>
@@ -882,7 +882,7 @@
     <tr><td>Swipes do not appear in the Monitor, but appear later in the history</td><td>Real-time events are not reaching the server: set <code>UHPPOTE_LISTENER_PUBLIC</code> on the server (see the warning on the <a href="#system">System</a> page), allow inbound UDP port 60001, then <i>Configure automatically</i> the listener on the controller page.</td></tr>
     <tr><td>A card is refused although it has permissions</td><td>Look at the reason in the history: 13 means outside the time profile; 6 means the card is not on the controller or has no permission on that door — run <i>Compare</i> on the Synchronisation page. Check that the person and the card are active and that today is within the person's validity period.</td></tr>
     <tr><td>"Saved, but not sent to every controller"</td><td>Some controller was offline. When it is back, use <i>Align cards</i> or <i>Full synchronisation</i>.</td></tr>
-    <tr><td>"Card number not valid for Wiegand-26"</td><td>The number must have facility ≤ 255 and code ≤ 65535. Swipe the card and use the number shown among the unknown cards.</td></tr>
+    <tr><td>"Card number not valid"</td><td>The number must be between 1 and 4294967294. Swipe the card and use the number shown among the unknown cards.</td></tr>
     <tr><td>Wrong time in events or reports</td><td>Server time zone (<code>TZ</code> variable); the controller clock is corrected automatically, or use <i>Synchronise time</i>.</td></tr>
     <tr><td>An expansion board output does not switch</td><td>Use <i>Read from the controller</i> to see what the controller stores; check that <i>Expansion board connected</i> is on and save again; that the output is active, with the right door and events; that the alarm really happens (the event appears in the Monitor: 37 open too long, 38 forced open, 39 fire). Forced open needs a door sensor; duress needs a PIN keypad.</td></tr>
     <tr><td>Forgotten administrator password</td><td>Set <code>ADMIN_PASSWORD</code> on the server and restart it; then log in as <code>admin</code>.</td></tr>
@@ -910,7 +910,8 @@
     <tr><td>Relay</td><td>the output of the controller that releases the electric lock</td></tr>
     <tr><td>Synchronisation</td><td>aligning a controller with the application database</td></tr>
     <tr><td>Time profile</td><td>days and hours in which a permission is valid (ID 2–254)</td></tr>
-    <tr><td>Wiegand-26</td><td>the card format accepted by the controllers: facility × 100000 + code</td></tr>
+    <tr><td>Wiegand-26</td><td>the most common reader format: facility × 100000 + code</td></tr>
+    <tr><td>Wiegand-34</td><td>longer reader format (up to 40 bits are accepted): the card number as a whole, up to 10 digits</td></tr>
     <tr><td>Zone</td><td>group of controllers, used to restrict operators</td></tr>
   </table>
 </section>

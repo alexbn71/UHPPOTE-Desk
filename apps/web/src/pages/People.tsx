@@ -303,7 +303,7 @@ function CardsEditor({ person, readOnly, onChange }: { person: PersonDto; readOn
                     {cardLabel(u.card)}
                   </Button>
                 ) : (
-                  <Tooltip key={u.card} label={t('errors.invalidWiegand')} multiline w={260}>
+                  <Tooltip key={u.card} label={t('errors.invalidCardNumber')} multiline w={260}>
                     <Button
                       size="compact-sm"
                       variant="outline"

@@ -7,6 +7,7 @@ import {
   encode,
   fromRaw24,
   FunctionCode,
+  isValidCardNumber,
   isValidWiegand26,
   joinWiegand26,
   splitWiegand26,
@@ -165,6 +166,15 @@ describe('Wiegand-26', () => {
     expect(isValidWiegand26(10058400)).toBe(true)
     expect(isValidWiegand26(25665536)).toBe(false) // number 65536 > 65535
     expect(isValidWiegand26(25600001)).toBe(false) // facility 256
+  })
+
+  it('card numbers of every Wiegand format: any 32-bit number but 0 and 0xFFFFFFFF', () => {
+    expect(isValidCardNumber(10058400)).toBe(true) // Wiegand-26
+    expect(isValidCardNumber(3049078276)).toBe(true) // Wiegand-34 (same card as 18915876 in Wiegand-26)
+    expect(isValidCardNumber(4294967294)).toBe(true)
+    expect(isValidCardNumber(4294967295)).toBe(false)
+    expect(isValidCardNumber(0)).toBe(false)
+    expect(isValidCardNumber(1.5)).toBe(false)
   })
 
   it('conversion from/to the 24-bit value', () => {

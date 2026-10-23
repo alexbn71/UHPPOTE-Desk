@@ -5,6 +5,17 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+### Changed
+- **Cards of every Wiegand format (26 to 40 bits)**: the controller stores a 32-bit number, so any card number from 1
+  to 4294967294 can now be registered (before: Wiegand-26 only, facility ≤ 255 and code ≤ 65535). Cards read by a
+  Wiegand-34 reader (e.g. `3049078276`) can be registered with one click from the unknown cards; Wiegand-26 numbers
+  are still shown with facility and code. The real controller records Wiegand-34 numbers as they are (seen on a
+  UT0311-L04).
+
+### Fixed
+- Unknown cards could be missing from "Capture from a reader" when the container's system time zone differed from
+  `TZ`: the time an event is received is now written by the server, like the bounds it is compared with.
+
 ## [1.2.3] - 2026-10-22
 
 ### Added

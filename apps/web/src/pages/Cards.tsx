@@ -137,7 +137,7 @@ export function CardsPage() {
                     {cardLabel(u.card)} · {fmtDateTime(u.timestamp)}
                   </Button>
                 ) : (
-                  <Tooltip key={u.card} label={t('errors.invalidWiegand')} multiline w={260}>
+                  <Tooltip key={u.card} label={t('errors.invalidCardNumber')} multiline w={260}>
                     <Button variant="outline" color="gray" size="xs" data-disabled onClick={(e) => e.preventDefault()}>
                       {cardLabel(u.card)} · {fmtDateTime(u.timestamp)}
                     </Button>

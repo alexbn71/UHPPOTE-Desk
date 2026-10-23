@@ -763,8 +763,10 @@ export class EventRepo {
         ? this.db.get<{ person_id: number | null }>('SELECT person_id FROM cards WHERE number = ?', [e.card])
         : undefined
     const r = this.db.run(
-      `INSERT OR IGNORE INTO events (controller_id, epoch, idx, type, granted, door, direction, card, person_id, timestamp, reason)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      // received_at from the server clock (TZ), like the "last N minutes" bounds compared with it: SQLite's
+      // 'localtime' follows the system time zone, which in a container can differ from TZ
+      `INSERT OR IGNORE INTO events (controller_id, epoch, idx, type, granted, door, direction, card, person_id, timestamp, reason, received_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         e.controllerId,
         e.epoch,
@@ -777,6 +779,7 @@ export class EventRepo {
         person?.person_id ?? null,
         e.timestamp,
         e.reason,
+        localDateTime(),
       ],
     )
     if (r.changes === 0) return null

@@ -276,7 +276,8 @@ export const fr: Messages = {
     cardSinceCol: 'Depuis',
     lostButton: 'Perdu',
     addCard: 'Ajouter un badge',
-    addCardHint: 'Numéro à 8 chiffres : code site (facility) × 100000 + code',
+    addCardHint:
+      "Numéro de badge : Wiegand 26 code site (facility) × 100000 + code (8 chiffres), ou le numéro des formats plus longs (Wiegand 34–40, jusqu'à 10 chiffres)",
     cardAssigned: 'Badge {{n}} attribué',
     readerTitle: 'Saisie depuis un lecteur',
     readerHint:
@@ -1778,7 +1779,7 @@ export const fr: Messages = {
     emptyFile: 'Le fichier ne contient aucune ligne de données',
     missingColumns: 'Colonnes obligatoires manquantes : matricule et nom',
     cardNumberImmutable: "Le numéro d'un badge ne peut pas être modifié : utilisez le remplacement",
-    invalidWiegand: 'Numéro de badge non valide pour Wiegand-26 (code site/facility ≤ 255, numéro ≤ 65535)',
+    invalidCardNumber: 'Numéro de badge non valide (de 1 à 4294967294)',
     confirmSerial: 'Pour confirmer, saisissez le numéro de série du contrôleur',
     dateOrder: 'La date de début doit précéder la date de fin',
     invalidSegment: 'Intervalle non valide : {{start}}-{{end}}',
