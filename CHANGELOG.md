@@ -5,6 +5,8 @@ also published as a Docker image `ghcr.io/alexbn71/uhppote-desk:<version>` (see 
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-10-23
+
 ### Fixed
 - A disabled controller is no longer queried when its page is opened: *Diagnostics* says it is disabled instead of
   waiting for an answer, *Network and configuration* starts from the saved values.
@@ -199,6 +201,7 @@ First public release: a web application that replaces the Windows "Access Contro
 - GNU Affero General Public License v3.0 or later, with the additional term of
   [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md): the author credits shown in the application must stay visible
 
+[1.2.5]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.5
 [1.2.4]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.4
 [1.2.3]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.3
 [1.2.2]: https://github.com/alexbn71/UHPPOTE-Desk/releases/tag/v1.2.2

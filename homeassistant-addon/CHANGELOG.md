@@ -3,6 +3,11 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.5
+
+- A disabled controller is no longer queried when its page is opened (Diagnostics says it is disabled).
+- *Silent reader on an invalid card*: verified on UHPPOTE firmware v9.f8; the hint explains the wiring.
+
 ## 1.2.4
 
 - **Cards of every Wiegand format (26 to 40 bits)**: card numbers up to 4294967294 can be registered, also with one

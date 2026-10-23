@@ -1,4 +1,4 @@
 # Base image when the add-on is built locally (the published add-on uses the images built by the CI).
 build_from:
-  amd64: ghcr.io/alexbn71/uhppote-desk:1.2.4
-  aarch64: ghcr.io/alexbn71/uhppote-desk:1.2.4
+  amd64: ghcr.io/alexbn71/uhppote-desk:1.2.5
+  aarch64: ghcr.io/alexbn71/uhppote-desk:1.2.5
