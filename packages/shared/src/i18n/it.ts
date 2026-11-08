@@ -372,6 +372,7 @@ export const it: Messages = {
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Già configurato',
+    openConfigured: 'Già in elenco: apri il controller (cambia indirizzo IP e destinazione eventi)',
     noneFound:
       'Nessun risultato (avvia la ricerca). Se la scheda non risponde verifica cavo, subnet, firewall (UDP 60000) e, in Docker, la rete «host».',
     newTitle: 'Nuovo controller',

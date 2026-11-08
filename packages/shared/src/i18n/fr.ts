@@ -373,6 +373,8 @@ export const fr: Messages = {
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Déjà configuré',
+    openConfigured:
+      'Déjà dans la liste : ouvrir le contrôleur (modifier l’adresse IP et la destination des événements)',
     noneFound:
       'Aucun résultat (lancez la recherche). Si le contrôleur ne répond pas, vérifiez le câble, le sous-réseau, le pare-feu (UDP 60000) et, avec Docker, le réseau « host ».',
     newTitle: 'Nouveau contrôleur',

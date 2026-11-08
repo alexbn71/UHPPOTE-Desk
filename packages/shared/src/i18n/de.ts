@@ -373,6 +373,7 @@ export const de: Messages = {
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Bereits konfiguriert',
+    openConfigured: 'Bereits in der Liste: Controller öffnen (IP-Adresse und Ereignisziel ändern)',
     noneFound:
       'Keine Ergebnisse (Suche starten). Wenn der Controller nicht antwortet, prüfen Sie Kabel, Subnetz, Firewall (UDP 60000) und bei Docker das „host“-Netzwerk.',
     newTitle: 'Neuer Controller',

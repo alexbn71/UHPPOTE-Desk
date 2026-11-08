@@ -373,6 +373,7 @@ export const es: Messages = {
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Ya configurado',
+    openConfigured: 'Ya está en la lista: abrir el controlador (cambiar la dirección IP y el destino de eventos)',
     noneFound:
       'Sin resultados (inicie la búsqueda). Si el controlador no responde, compruebe el cable, la subred, el cortafuegos (UDP 60000) y, con Docker, la red «host».',
     newTitle: 'Nuevo controlador',

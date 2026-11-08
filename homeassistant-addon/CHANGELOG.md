@@ -3,6 +3,10 @@
 The full history of UHPPOTE Desk is in the
 [project changelog](https://github.com/alexbn71/UHPPOTE-Desk/blob/main/CHANGELOG.md).
 
+## 1.2.6
+
+- *Search network*: "Already configured" opens the controller found on the network, with a tooltip.
+
 ## 1.2.5
 
 - A disabled controller is no longer queried when its page is opened (Diagnostics says it is disabled).

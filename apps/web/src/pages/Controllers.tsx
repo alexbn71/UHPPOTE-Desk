@@ -13,6 +13,7 @@ import {
   Table,
   Text,
   TextInput,
+  Tooltip,
 } from '@mantine/core'
 import { IconPlus, IconRadar } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -282,7 +283,19 @@ export function ControllersPage() {
                     </Table.Td>
                     <Table.Td>
                       {f.configured ? (
-                        <Badge>{t('controllers.alreadyConfigured')}</Badge>
+                        <Tooltip label={t('controllers.openConfigured')} multiline w={260} withArrow>
+                          <Button
+                            size="xs"
+                            variant="light"
+                            style={{ whiteSpace: 'nowrap' }}
+                            onClick={() => {
+                              setFound(null)
+                              navigate(`/controllers/${f.configured}`)
+                            }}
+                          >
+                            {t('controllers.alreadyConfigured')}
+                          </Button>
+                        </Tooltip>
                       ) : (
                         <Button
                           size="xs"

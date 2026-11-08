@@ -371,6 +371,7 @@ export const en = {
     colIp: 'IP',
     colMac: 'MAC',
     alreadyConfigured: 'Already configured',
+    openConfigured: 'Already in the list: open the controller (change its IP address and event destination)',
     noneFound:
       'No results (start the search). If the controller does not reply check the cable, subnet, firewall (UDP 60000) and, with Docker, "host" networking.',
     newTitle: 'New controller',
